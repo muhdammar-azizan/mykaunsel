@@ -2,13 +2,8 @@
     <style>
         .masuk { animation: masuk .5s cubic-bezier(.32,.72,0,1) both; }
         @keyframes masuk { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-        .goyang { animation: goyang .3s ease-in-out 1; }
-        @keyframes goyang { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 50%{transform:translateX(6px)} 80%{transform:translateX(-3px)} }
-        .putar { animation: putar .7s linear infinite; }
-        @keyframes putar { to { transform: rotate(360deg); } }
         @media (prefers-reduced-motion: reduce) {
             .masuk { animation: none; opacity: 1; transform: none; }
-            .goyang { animation: none; }
         }
     </style>
 @endpush

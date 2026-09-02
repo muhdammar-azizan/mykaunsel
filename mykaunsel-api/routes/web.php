@@ -35,7 +35,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/register/type', [AccountTypeController::class, 'index'])->name('register.type');
 
     Route::get('/organizations/signup', [OrgSignupController::class, 'create'])->name('organizations.signup.create');
+    Route::post('/organizations/signup', [OrgSignupController::class, 'store'])->name('organizations.signup.store');
+
     Route::get('/counselors/signup', [CounselorSignupController::class, 'create'])->name('counselors.signup.create');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/organizations/signup/{organization}/submitted', [OrgSignupController::class, 'submitted'])->name('organizations.signup.submitted');
 });
 
 Route::middleware('auth')->group(function () {

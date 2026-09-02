@@ -4,8 +4,6 @@
         @keyframes masuk { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
         .fp-sampul { animation: sampul .45s cubic-bezier(.34,1.56,.64,1) both .1s; }
         @keyframes sampul { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
-        .goyang { animation: goyang .3s ease-in-out 1; }
-        @keyframes goyang { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 50%{transform:translateX(6px)} 80%{transform:translateX(-3px)} }
         @media (prefers-reduced-motion: reduce) {
             .fp-lapis, .fp-sampul { animation: none; opacity: 1; transform: none; }
         }

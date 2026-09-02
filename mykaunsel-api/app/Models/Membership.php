@@ -18,6 +18,7 @@ class Membership extends Model
         'org_id',
         'unit_id',
         'role',
+        'title',
         'status',
         'join_source',
         'expected_graduation_date',

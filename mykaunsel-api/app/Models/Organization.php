@@ -17,6 +17,7 @@ class Organization extends Model
     protected $fillable = [
         'name',
         'org_type',
+        'ssm_number',
         'access_model',
         'subscription_status',
         'subscription_tier',

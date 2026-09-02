@@ -4,15 +4,6 @@
         @keyframes masuk { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
         .fp-sampul { animation: sampul .45s cubic-bezier(.34,1.56,.64,1) both .1s; }
         @keyframes sampul { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
-        .rp-syarat { transition: color .2s ease; }
-        .rp-ikon { transition: background-color .2s ease, border-color .2s ease; }
-        .rp-semak, .rp-silang { display: none; }
-        .rp-syarat[data-keadaan="ok"] { color: rgba(14,42,51,.75); }
-        .rp-syarat[data-keadaan="ok"] .rp-ikon { background: #0F6B7D; border-color: #0F6B7D; }
-        .rp-syarat[data-keadaan="ok"] .rp-semak { display: block; }
-        .rp-syarat[data-keadaan="gagal"] { color: #C4574A; }
-        .rp-syarat[data-keadaan="gagal"] .rp-ikon { background: #C4574A; border-color: #C4574A; }
-        .rp-syarat[data-keadaan="gagal"] .rp-silang { display: block; }
         @media (prefers-reduced-motion: reduce) {
             .fp-lapis, .fp-sampul { animation: none; opacity: 1; transform: none; }
         }
