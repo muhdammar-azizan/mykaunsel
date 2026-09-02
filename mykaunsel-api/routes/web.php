@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AccountTypeController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ContextSelectionController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Counselor\CounselorAppointmentController;
 use App\Http\Controllers\Counselor\CounselorDashboardController;
 use App\Http\Controllers\Counselor\CounselorPlannerController;
 use App\Http\Controllers\Counselor\CounselorProfileController;
+use App\Http\Controllers\Counselor\CounselorSignupController;
 use App\Http\Controllers\CounselorSearchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedController;
@@ -14,6 +16,7 @@ use App\Http\Controllers\Organization\OrgCounselorController;
 use App\Http\Controllers\Organization\OrgDashboardController;
 use App\Http\Controllers\Organization\OrgMemberController;
 use App\Http\Controllers\Organization\OrgSettingController;
+use App\Http\Controllers\Organization\OrgSignupController;
 use App\Http\Controllers\Platform\PlatformComplaintController;
 use App\Http\Controllers\Platform\PlatformCounselorController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
@@ -23,6 +26,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::middleware('guest')->group(function () {
+    // New routes, not part of the original spec — the entry point for
+    // choosing which kind of account to create (individual is hidden on
+    // web for now; that flow is Flutter-only).
+    Route::get('/register/type', [AccountTypeController::class, 'index'])->name('register.type');
+
+    Route::get('/organizations/signup', [OrgSignupController::class, 'create'])->name('organizations.signup.create');
+    Route::get('/counselors/signup', [CounselorSignupController::class, 'create'])->name('counselors.signup.create');
 });
 
 Route::middleware('auth')->group(function () {

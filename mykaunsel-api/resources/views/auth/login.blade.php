@@ -80,10 +80,10 @@
             </button>
         </form>
 
-        @if (Route::has('register'))
+        @if (Route::has('register.type'))
             <p class="mt-7 flex items-center justify-center gap-1.5 text-[14px] text-navy/60">
                 {{ __("Don't have an account?") }}
-                <a href="{{ route('register') }}" class="font-medium text-teal">{{ __('Sign up') }}</a>
+                <a href="{{ route('register.type') }}" class="font-medium text-teal">{{ __('Sign up') }}</a>
             </p>
         @endif
     </div>
