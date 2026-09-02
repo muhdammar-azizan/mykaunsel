@@ -14,6 +14,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\Organization\OrgCounselorController;
 use App\Http\Controllers\Organization\OrgDashboardController;
+use App\Http\Controllers\Organization\OrgDomainVerificationController;
 use App\Http\Controllers\Organization\OrgMemberController;
 use App\Http\Controllers\Organization\OrgSettingController;
 use App\Http\Controllers\Organization\OrgSignupController;
@@ -42,6 +43,10 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/organizations/signup/{organization}/submitted', [OrgSignupController::class, 'submitted'])->name('organizations.signup.submitted');
+
+    Route::get('/organizations/{organization}/verify-domain', [OrgDomainVerificationController::class, 'show'])->name('organizations.signup.verify-domain');
+    Route::post('/organizations/{organization}/verify-domain/continue', [OrgDomainVerificationController::class, 'continue'])->name('organizations.signup.verify-domain.continue');
+    Route::post('/organizations/{organization}/domains/{domain}/check', [OrgDomainVerificationController::class, 'check'])->name('organizations.signup.verify-domain.check');
 });
 
 Route::middleware('auth')->group(function () {

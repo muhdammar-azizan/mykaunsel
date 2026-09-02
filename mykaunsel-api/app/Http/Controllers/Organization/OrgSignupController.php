@@ -91,6 +91,10 @@ class OrgSignupController extends Controller
             return $organization;
         });
 
+        if (! $isClinic && ! $noDomain) {
+            return redirect()->route('organizations.signup.verify-domain', $organization);
+        }
+
         return redirect()->route('organizations.signup.submitted', $organization);
     }
 
