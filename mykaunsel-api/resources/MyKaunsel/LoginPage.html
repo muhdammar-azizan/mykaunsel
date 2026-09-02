@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2048%2048%22%3E%3Cpath%20d%3D%22M5.5%2016a10%2010%200%200%201%2010-10h17a10%2010%200%200%201%2010%2010v10a10%2010%200%200%201-10%2010H16.5l-8%207v-7.7%22%20fill%3D%22none%22%20stroke%3D%22%230F6B7D%22%20stroke-width%3D%223.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M15%2020a5%205%200%200%201%205-5h8a5%205%200%200%201%205%205v1a5%205%200%200%201-5%205h-8a5%205%200%200%201-5-5z%22%20fill%3D%22%23D98F4A%22%2F%3E%3C%2Fsvg%3E">
+<title>Log in — MyKaunsel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: { navy: '#0E2A33', cream: '#FAF8F5', teal: '#0F6B7D', amber: '#D98F4A', ralat: '#C4574A' },
+      fontFamily: { sans: ['"Plus Jakarta Sans"', 'Helvetica', 'sans-serif'] },
+      letterSpacing: { tightest: '-0.035em' }
+    }
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  [hidden] { display: none !important; }
+  body { -webkit-font-smoothing: antialiased; background: #FAF8F5; }
+  a { color: inherit; }
+  a:hover { color: #0F6B7D; }
+  img:not([src]), img[src=""] { visibility: hidden; }
+
+  .medan { width: 100%; border-radius: 10px; background: #FAF8F5; padding: 11px 13px; font-size: 14px;
+    color: #0E2A33; border: 1px solid rgba(14,42,51,.15); outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease; }
+  .medan::placeholder { color: rgba(14,42,51,.35); }
+  .medan:not(:placeholder-shown) { border-color: rgba(14,42,51,.25); }
+  .medan:focus { border: 2px solid #0F6B7D; padding: 10px 12px; box-shadow: 0 0 0 4px rgba(15,107,125,.10); }
+  .medan[aria-invalid="true"] { border-color: #C4574A; }
+  .medan[aria-invalid="true"]:focus { border-color: #C4574A; box-shadow: 0 0 0 4px rgba(196,87,74,.10); }
+  .medan:disabled { background: rgba(14,42,51,.05); border-color: rgba(14,42,51,.10); color: rgba(14,42,51,.3); }
+  .medan:disabled::placeholder { color: rgba(14,42,51,.3); }
+
+  .btn-utama { transition: background-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+  .btn-utama:hover:not(:disabled) { background: #3565E6; transform: translateY(-1px); color: #FAF8F5; }
+  .btn-utama:disabled { cursor: default; }
+
+  .goyang { animation: goyang .3s ease-in-out 1; }
+  @keyframes goyang { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 50%{transform:translateX(6px)} 80%{transform:translateX(-3px)} }
+
+  .putar { animation: putar .7s linear infinite; }
+  @keyframes putar { to { transform: rotate(360deg); } }
+
+  .rp-syarat { transition: color .2s ease; }
+  .rp-syarat span:last-child { white-space: nowrap; }
+  .rp-ikon { transition: background-color .2s ease, border-color .2s ease; }
+  .rp-semak, .rp-silang { display: none; }
+  .rp-syarat[data-keadaan="ok"] { color: rgba(14,42,51,.75); }
+  .rp-syarat[data-keadaan="ok"] .rp-ikon { background: #0F6B7D; border-color: #0F6B7D; }
+  .rp-syarat[data-keadaan="ok"] .rp-semak { display: block; }
+  .rp-syarat[data-keadaan="gagal"] { color: #C4574A; }
+  .rp-syarat[data-keadaan="gagal"] .rp-ikon { background: #C4574A; border-color: #C4574A; }
+  .rp-syarat[data-keadaan="gagal"] .rp-silang { display: block; }
+  .su-kanan { animation: masuk .4s cubic-bezier(.32,.72,0,1) both; }
+  .su-kiri p { transition: opacity .2s ease; }
+  .su-item { opacity: 0; transform: translateY(10px); animation: masuk .45s cubic-bezier(.32,.72,0,1) both; animation-delay: var(--tunda,0s); }
+  .fp-lapis { animation: masuk .4s cubic-bezier(.32,.72,0,1) both; }
+  .fp-sampul { animation: sampul .45s cubic-bezier(.34,1.56,.64,1) both .1s; }
+  @keyframes sampul { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
+  .cc-teks { animation: masuk .4s cubic-bezier(.32,.72,0,1) both; }
+  .cc-kad { opacity: 0; animation: masuk .5s cubic-bezier(.32,.72,0,1) both; animation-delay: var(--tunda, 0s);
+    transition: border-color .25s ease-out, background-color .25s ease-out, transform .25s ease-out, box-shadow .25s ease-out; }
+  .cc-kad:hover { border: 1.5px solid var(--aksen); padding: 22.5px;
+    background: color-mix(in srgb, var(--aksen) 3%, #FAF8F5); transform: translateY(-3px);
+    box-shadow: 0 18px 40px -20px rgba(14,42,51,.25); }
+  .cc-kad.cc-tekan { transform: scale(.98); }
+  .cc-anak { transition: color .25s ease-out, transform .25s ease-out; }
+  .cc-kad:hover .cc-anak { color: var(--aksen); transform: translateX(4px); }
+  #screenContext.cc-keluar { opacity: 0; transition: opacity .3s ease; }
+  .jk-pilih { opacity: 0; transform: translateY(16px);
+    animation: masuk .5s cubic-bezier(.32,.72,0,1) both; animation-delay: var(--tunda, 0s);
+    transition: border-color .25s ease, background-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+  .jk-pilih:hover { border-color: rgba(14,42,51,.25); transform: translateY(-2px); box-shadow: 0 16px 36px -18px rgba(14,42,51,.25); }
+  .jk-pilih[aria-pressed="true"] { border: 2px solid var(--aksen); padding: 31px;
+    background: color-mix(in srgb, var(--aksen) 4%, #FAF8F5); transform: translateY(-2px);
+    box-shadow: 0 16px 36px -18px rgba(14,42,51,.2); }
+  .jk-radio { transition: background-color .25s ease, border-color .25s ease; }
+  .jk-pilih[aria-pressed="true"] .jk-radio { background: var(--aksen); border-color: var(--aksen); }
+  .jk-semak { transform: scale(0); transition: transform .2s cubic-bezier(.34,1.56,.64,1); }
+  .jk-pilih[aria-pressed="true"] .jk-semak { transform: scale(1); }
+  #btnTeruskan { transition: opacity .3s ease, background-color .2s ease, transform .2s ease; }
+  #btnTeruskan:disabled { opacity: .4; cursor: default; }
+  .masuk { animation: masuk .5s cubic-bezier(.32,.72,0,1) both; }
+  @keyframes masuk { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .masuk, .jk-pilih, .cc-kad, .cc-teks, .fp-lapis, .fp-sampul { animation: none; opacity: 1; transform: none; }
+    .cc-kad:hover { transform: none; }
+    .jk-pilih:hover, .jk-pilih[aria-pressed="true"] { transform: none; }
+    .goyang { animation: none; }
+    .btn-utama:hover:not(:disabled) { transform: none; }
+  }
+  /* BG2 mesh background — applied to Log In screen */
+  .mesh-wrap { position: fixed; inset: 0; overflow: hidden; z-index: 0; }
+  .plume { position: absolute; top: 50%; left: 95%; }
+  .strand { position: absolute; top: 50%; left: 113%; width: 22vw; height: 150vh;
+    border-radius: 50%; overflow: hidden; filter: blur(46px);
+    transform-origin: center center; will-change: transform; }
+  .strand-inner { position: absolute; inset: -10%; }
+  .strand-lines { position: absolute; inset: -10%; mix-blend-mode: soft-light; opacity: .5;
+    background: repeating-linear-gradient(0deg,
+      rgba(255,255,255,.8) 0px, rgba(255,255,255,.8) 1.5px,
+      transparent 3px, transparent 7px);
+    filter: blur(1px); }
+  .s1 { width: 20vw; margin-left: -14vw; transform: translate(-50%,-50%) rotate(-38deg); animation: sway-s1 11s ease-in-out infinite; }
+  .s1 .strand-inner { background: linear-gradient(180deg, transparent 0%, #A9C4FF 12%, #4A7DFF 32%, #4CC9A0 55%, transparent 88%); }
+  .s2 { width: 24vw; margin-left: -4vw; transform: translate(-50%,-50%) rotate(-32deg); animation: sway-s2 14s ease-in-out infinite; }
+  .s2 .strand-inner { background: linear-gradient(180deg, transparent 0%, #6FA0FF 10%, #1A4550 34%, #4CC9A0 58%, transparent 90%); }
+  .s3 { width: 27vw; margin-left: 6vw; transform: translate(-50%,-50%) rotate(-27deg); animation: sway-s3 12s ease-in-out infinite; }
+  .s3 .strand-inner { background: linear-gradient(180deg, transparent 0%, #4CC9A0 10%, #2FA88A 35%, #6FA0FF 62%, transparent 92%); }
+  .s4 { width: 16vw; margin-left: 18vw; transform: translate(-50%,-50%) rotate(-22deg); animation: sway-s4 15s ease-in-out infinite; }
+  .s4 .strand-inner { background: linear-gradient(180deg, transparent 0%, #A9C4FF 15%, #4CC9A0 40%, #4A7DFF 70%, transparent 94%); opacity: .85; }
+  @keyframes sway-s1 { 0%,100% { transform: translate(-50%,-50%) rotate(-38deg) scale(1); } 50% { transform: translate(-72%,-28%) rotate(-16deg) scale(1.3); } }
+  @keyframes sway-s2 { 0%,100% { transform: translate(-50%,-50%) rotate(-32deg) scale(1); } 50% { transform: translate(-28%,-72%) rotate(-52deg) scale(1.28); } }
+  @keyframes sway-s3 { 0%,100% { transform: translate(-50%,-50%) rotate(-27deg) scale(1); } 50% { transform: translate(-74%,-26%) rotate(-6deg) scale(1.32); } }
+  @keyframes sway-s4 { 0%,100% { transform: translate(-50%,-50%) rotate(-22deg) scale(1); } 50% { transform: translate(-26%,-74%) rotate(-44deg) scale(1.35); } }
+  .mesh-veil { position: absolute; inset: 0; background: rgba(255,255,255,.82); }
+  @media (prefers-reduced-motion: reduce) { .s1,.s2,.s3,.s4 { animation: none !important; } }
+
+  /* BG1 mesh for Select Account Type screen */
+  .b1-wrap { position: fixed; inset: 0; overflow: hidden; z-index: 0; }
+  .b1-plume { position: absolute; top: 50%; left: 50%; }
+  .b1-strand { position: absolute; top: 50%; left: 78%; width: 22vw; height: 150vh;
+    border-radius: 50%; overflow: hidden; filter: blur(46px);
+    transform-origin: center center; will-change: transform; }
+  .b1-inner { position: absolute; inset: -10%; }
+  .b1-lines { position: absolute; inset: -10%; mix-blend-mode: soft-light; opacity: .5;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,.8) 0px, rgba(255,255,255,.8) 1.5px, transparent 3px, transparent 7px);
+    filter: blur(1px); }
+  .b1-s1 { width: 30vw; margin-left: -14vw; transform: translate(-50%,-50%) rotate(-38deg); animation: sway-s1 11s ease-in-out infinite; }
+  .b1-s1 .b1-inner { background: linear-gradient(180deg, transparent 0%, #6E8CFB 12%, #4A7DFF 32%, #14919B 55%, transparent 88%); }
+  .b1-s2 { width: 34vw; margin-left: -4vw; transform: translate(-50%,-50%) rotate(-32deg); animation: sway-s2 14s ease-in-out infinite; }
+  .b1-s2 .b1-inner { background: linear-gradient(180deg, transparent 0%, #8B6FE0 10%, #0F6B7D 34%, #14919B 58%, transparent 90%); }
+  .b1-s3 { width: 37vw; margin-left: 6vw; transform: translate(-50%,-50%) rotate(-27deg); animation: sway-s3 12s ease-in-out infinite; }
+  .b1-s3 .b1-inner { background: linear-gradient(180deg, transparent 0%, #E8709A 10%, #D98F4A 35%, #F2C14E 62%, transparent 92%); }
+  .b1-s4 { width: 24vw; margin-left: 18vw; transform: translate(-50%,-50%) rotate(-22deg); animation: sway-s4 15s ease-in-out infinite; }
+  .b1-s4 .b1-inner { background: linear-gradient(180deg, transparent 0%, #4A7DFF 15%, #8B6FE0 40%, #F2C14E 70%, transparent 94%); opacity: .85; }
+  .b1-veil { position: absolute; inset: 0; background: rgba(255,255,255,.82); }
+</style>
+</head>
+<body class="font-sans text-navy antialiased">
+
+<div id="screenLogin" class="flex min-h-screen md:h-screen md:overflow-hidden">
+
+  <!-- LEFT COLUMN -->
+  <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
+    <div class="flex h-full flex-col p-8">
+      <a href="LandingPage.html" class="flex shrink-0 items-center gap-2.5">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+
+      <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
+           style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
+        <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
+          <img data-slot="login-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+          <span class="pointer-events-none absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: user using the MyKaunsel app</span>
+          <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
+        </div>
+        <div class="shrink-0 p-7">
+          <p class="max-w-[24ch] text-[22px] font-semibold leading-[1.2] tracking-tightest lg:text-[26px]" style="text-wrap:pretty">The right support, connected the right way.</p>
+          <p class="mt-3 text-[14.5px] leading-relaxed text-cream/65">Log in to continue to your account.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- LAJUR KANAN -->
+  <main class="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-10 md:overflow-y-auto md:px-10">
+    <div class="mesh-wrap" aria-hidden="true">
+      <div class="plume">
+        <div class="strand s1"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s2"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s3"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s4"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+      </div>
+      <div class="mesh-veil"></div>
+    </div>
+    <div class="masuk my-auto w-full max-w-[300px]" style="position:relative;z-index:1;">
+
+      <a href="LandingPage.html" class="mb-8 flex items-center gap-2.5 md:hidden">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+
+      <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">Log in to MyKaunsel</h1>
+      <p class="mt-2 text-[13.5px] text-navy/60">Enter your email and password</p>
+
+      <form class="mt-6" id="borang" novalidate>
+        <label class="block">
+          <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Email</span>
+          <input type="email" id="emel" name="emel" autocomplete="email" placeholder="name@example.com" class="medan">
+          <p id="ralatEmel" hidden class="mt-2 flex items-center gap-1.5 text-[12.5px]" style="color:#C4574A">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            Invalid email or password
+          </p>
+        </label>
+
+        <label class="mt-4 block">
+          <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Password</span>
+          <span class="relative block">
+            <input type="password" id="kataLaluan" name="kata_laluan" autocomplete="current-password" placeholder="••••••••" class="medan pr-12">
+            <button type="button" id="mata" aria-label="Show password"
+                    class="absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-navy/45 transition-colors duration-200 hover:text-navy">
+              <svg data-mata="tutup" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.87 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.87 0"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg data-mata="buka" hidden width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.64 0 8.57 3.22 9.94 6.65a1 1 0 0 1 0 .7 10.9 10.9 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2.06 11.65a1 1 0 0 0 0 .7A10.75 10.75 0 0 0 12 19a9.7 9.7 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
+            </button>
+          </span>
+        </label>
+        <div class="mt-2 flex justify-end">
+          <a href="#forgot" class="text-[13.5px] text-navy/60 transition-colors duration-200 hover:text-teal">Forgot password?</a>
+        </div>
+
+        <label class="mt-4 flex cursor-pointer items-center gap-2.5">
+          <input type="checkbox" class="h-[17px] w-[17px] rounded-[5px] border border-navy/25 accent-teal">
+          <span class="text-[14.5px] text-navy/75">Remember me</span>
+        </label>
+
+        <button type="submit" id="btnMasuk"
+                class="btn-utama mt-5 grid h-[44px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">
+          <span data-btn="label">Continue</span>
+          <svg data-btn="spin" hidden class="putar" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.22-8.56" /></svg>
+        </button>
+
+        <div class="my-5 flex items-center gap-4">
+          <span class="h-px flex-1 bg-navy/12"></span>
+          <span class="text-[13px] text-navy/45">or</span>
+          <span class="h-px flex-1 bg-navy/12"></span>
+        </div>
+
+        <button type="button" class="group flex h-[44px] w-full items-center justify-center gap-0 overflow-hidden rounded-full border border-navy/20 bg-white text-[14px] font-medium text-navy transition-colors duration-200 hover:border-navy/40 hover:bg-navy/[.03]">
+          <svg width="18" height="18" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84a10.13 10.13 0 0 1-4.4 6.65v5.52h7.11c4.16-3.83 6.57-9.47 6.57-16.18"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.3-9.07H4.34v5.7A22 22 0 0 0 24 46"/><path fill="#FBBC05" d="M11.7 28.18A13.2 13.2 0 0 1 11.01 24c0-1.45.25-2.86.69-4.18v-5.7H4.34A21.99 21.99 0 0 0 2 24c0 3.55.85 6.91 2.34 9.88z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.36 5.7c1.72-5.2 6.57-9.07 12.3-9.07"/></svg>
+          <span class="max-w-0 whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[160px] group-hover:pl-[10px] group-hover:opacity-100">Continue with Google</span>
+        </button>
+      </form>
+
+      <p class="mt-7 flex items-center justify-center gap-1.5 text-[14px] text-navy/60">
+        Don't have an account?
+        <a href="#signup" class="font-medium text-teal">Sign up</a>
+      </p>
+
+    </div>
+  </main>
+</div>
+
+<!-- SCREEN: SELECT ACCOUNT TYPE -->
+<div id="screenType" hidden class="relative min-h-screen overflow-hidden bg-cream">
+  <div class="b1-wrap" aria-hidden="true">
+    <div class="b1-plume">
+      <div class="b1-strand b1-s1"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+      <div class="b1-strand b1-s2"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+      <div class="b1-strand b1-s3"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+      <div class="b1-strand b1-s4"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+    </div>
+    <div class="b1-veil"></div>
+  </div>
+  <div class="relative p-8">
+    <a href="LandingPage.html" class="inline-flex items-center gap-2.5">
+      <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+      <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+    </a>
+  </div>
+
+  <div class="relative flex min-h-[calc(100vh-104px)] flex-col items-center justify-center px-5 pb-16 md:px-8">
+    <div class="w-full max-w-[1000px]">
+      <h1 class="text-center text-[28px] font-semibold leading-[1.15] tracking-tightest md:text-[34px]">How would you like to use MyKaunsel?</h1>
+      <p class="mt-3 text-center text-[15px] text-navy/55">We'll set up the right experience for you.</p>
+
+      <div class="mt-12 grid gap-6 md:grid-cols-3">
+
+          <button type="button" class="jk-pilih group relative flex flex-col items-center rounded-2xl border border-navy/12 bg-cream p-8 text-center" data-jenis="individual" data-aksen="#0F6B7D" aria-pressed="false" style="--aksen:#0F6B7D; --tunda:0.00s">
+            <span class="jk-radio absolute right-5 top-5 grid h-[22px] w-[22px] place-items-center rounded-full border-2 border-navy/20" aria-hidden="true">
+              <svg class="jk-semak" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+            </span>
+            <span class="grid h-[84px] w-[84px] place-items-center rounded-2xl" style="background:color-mix(in srgb, var(--aksen) 10%, transparent); color:var(--aksen)">
+              <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><circle cx="26" cy="18" r="9" fill="currentColor" opacity=".28"/><path d="M11 45c0-8.28 6.72-15 15-15s15 6.72 15 15z" fill="currentColor" opacity=".55"/><circle cx="38" cy="12" r="6.5" fill="currentColor"/></svg>
+            </span>
+            <span class="mt-6 block text-[17px] font-semibold tracking-tight text-navy">Individual</span>
+            <span class="mt-2.5 block max-w-[26ch] text-[13.5px] leading-relaxed text-navy/55">Chat with the assistant, find a registered counselor, and book sessions.</span>
+          </button>
+          <button type="button" class="jk-pilih group relative flex flex-col items-center rounded-2xl border border-navy/12 bg-cream p-8 text-center" data-jenis="organization" data-aksen="#D98F4A" aria-pressed="false" style="--aksen:#D98F4A; --tunda:0.08s">
+            <span class="jk-radio absolute right-5 top-5 grid h-[22px] w-[22px] place-items-center rounded-full border-2 border-navy/20" aria-hidden="true">
+              <svg class="jk-semak" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+            </span>
+            <span class="grid h-[84px] w-[84px] place-items-center rounded-2xl" style="background:color-mix(in srgb, var(--aksen) 10%, transparent); color:var(--aksen)">
+              <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="20" width="17" height="24" rx="3" fill="currentColor" opacity=".3"/><rect x="20" y="9" width="21" height="35" rx="3" fill="currentColor" opacity=".6"/><rect x="27" y="17" width="7" height="7" rx="1.6" fill="#FAF8F5"/><rect x="27" y="29" width="7" height="7" rx="1.6" fill="#FAF8F5"/></svg>
+            </span>
+            <span class="mt-6 block text-[17px] font-semibold tracking-tight text-navy">Organization</span>
+            <span class="mt-2.5 block max-w-[26ch] text-[13.5px] leading-relaxed text-navy/55">Manage counselors, availability, and bookings for your organization.</span>
+          </button>
+          <button type="button" class="jk-pilih group relative flex flex-col items-center rounded-2xl border border-navy/12 bg-cream p-8 text-center" data-jenis="counselor" data-aksen="#4A7DFF" aria-pressed="false" style="--aksen:#4A7DFF; --tunda:0.16s">
+            <span class="jk-radio absolute right-5 top-5 grid h-[22px] w-[22px] place-items-center rounded-full border-2 border-navy/20" aria-hidden="true">
+              <svg class="jk-semak" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+            </span>
+            <span class="grid h-[84px] w-[84px] place-items-center rounded-2xl" style="background:color-mix(in srgb, var(--aksen) 10%, transparent); color:var(--aksen)">
+              <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="12" width="30" height="30" rx="5" fill="currentColor" opacity=".3"/><path d="M9 20h30" stroke="currentColor" stroke-width="2.6" opacity=".55"/><circle cx="24" cy="31" r="9" fill="currentColor"/><path d="m20 31 3 3 5-5.5" stroke="#FAF8F5" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="mt-6 block text-[17px] font-semibold tracking-tight text-navy">Registered Counselor</span>
+            <span class="mt-2.5 block max-w-[26ch] text-[13.5px] leading-relaxed text-navy/55">Accept bookings and manage your own schedule on the platform.</span>
+          </button>
+      </div>
+
+      <div class="mt-12 flex flex-col items-center gap-5">
+        <button type="button" id="btnTeruskan" disabled
+                class="btn-utama grid h-[46px] w-[200px] place-items-center rounded-full text-[14px] font-medium text-white"
+                style="background:#4A7DFF">Continue</button>
+        <p class="flex items-center gap-1.5 text-[13.5px] text-navy/55">
+          Already have an account?
+          <a href="#login" class="font-medium text-teal">Log in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: FORGOT PASSWORD -->
+<div id="screenForgot" hidden class="min-h-screen bg-cream">
+  <div class="p-8">
+    <a href="LandingPage.html" class="inline-flex items-center gap-2.5">
+      <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+      <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+    </a>
+  </div>
+
+  <div class="flex min-h-[calc(100vh-104px)] flex-col items-center justify-center px-5 pb-16">
+    <div class="w-full max-w-[360px]">
+
+      <div id="fpBorang" class="fp-lapis">
+        <h1 class="text-center text-[26px] font-semibold leading-[1.15] tracking-tightest md:text-[30px]">Reset your password</h1>
+        <p class="mx-auto mt-3 max-w-[38ch] text-center text-[14px] leading-relaxed text-navy/55">Enter the email linked to your account and we'll send you a reset link.</p>
+
+        <form id="fpForm" class="mt-8" novalidate>
+          <label class="block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Email</span>
+            <input type="email" id="fpEmel" name="emel" autocomplete="email" placeholder="name@example.com" class="medan">
+          </label>
+          <button type="submit" class="btn-utama mt-5 grid h-[44px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Send reset link</button>
+        </form>
+
+        <div class="mt-6 text-center">
+          <a href="#login" class="inline-flex items-center gap-1.5 text-[13.5px] text-navy/55"><span aria-hidden="true">←</span> Back to log in</a>
+        </div>
+      </div>
+
+      <div id="fpHantar" hidden class="fp-lapis text-center">
+        <p class="mb-8 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">State: after submission — not visible by default</p>
+        <span class="fp-sampul mx-auto grid h-[52px] w-[52px] place-items-center rounded-full" style="background:rgba(15,107,125,.10);color:#0F6B7D">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="m3 7 8.24 5.5a1.4 1.4 0 0 0 1.52 0L21 7"/></svg>
+        </span>
+        <h1 class="mt-6 text-[24px] font-semibold leading-[1.15] tracking-tightest">Check your email</h1>
+        <p class="mx-auto mt-3 max-w-[40ch] text-[14px] leading-relaxed text-navy/70">We've sent a password reset link to <strong class="font-semibold text-navy">your email</strong>. The link expires in 30 minutes.</p>
+        <p class="mx-auto mt-5 max-w-[40ch] text-[12.5px] leading-relaxed text-navy/55">
+          Didn't receive the email? Check your spam folder or
+          <button type="button" id="fpSemula" disabled class="font-medium text-teal disabled:font-normal disabled:text-navy/35">send again</button>.
+        </p>
+        <div class="mt-8">
+          <a href="#login" class="inline-flex items-center gap-1.5 text-[13.5px] text-navy/55"><span aria-hidden="true">←</span> Back to log in</a>
+        </div>
+
+        <div class="mt-10 rounded-xl border border-dashed border-navy/15 px-4 py-3 text-left text-[11.5px] leading-relaxed text-navy/45">
+          <span class="font-medium text-navy/60">Demo</span> — follow the emailed link:
+          <a href="#reset" class="font-medium text-teal">open reset form</a> ·
+          <a href="#reset-expired" class="font-medium text-teal">expired link</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: RESET PASSWORD -->
+<div id="screenReset" hidden class="min-h-screen bg-cream">
+  <div class="p-8">
+    <a href="LandingPage.html" class="inline-flex items-center gap-2.5">
+      <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+      <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+    </a>
+  </div>
+
+  <div class="flex min-h-[calc(100vh-104px)] flex-col items-center justify-center px-5 pb-16">
+    <div class="w-full max-w-[380px]">
+
+      <div id="rpBorang" class="fp-lapis">
+        <h1 class="text-[26px] font-semibold leading-[1.15] tracking-tightest md:text-[30px]">Reset your password</h1>
+        <p class="mt-2.5 text-[14px] leading-relaxed text-navy/55">Please enter a new password below.</p>
+
+        <form id="rpForm" class="mt-7" novalidate>
+          <label class="block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">New password</span>
+            <span class="relative block">
+              <input type="password" id="rpBaru" placeholder="Type your new password" class="medan pr-12" autocomplete="new-password">
+              <button type="button" class="rp-mata absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-navy/45 transition-colors duration-200 hover:text-navy" data-untuk="rpBaru" aria-label="Show password">
+                <svg data-mata="tutup" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.87 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.87 0"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg data-mata="buka" hidden width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.64 0 8.57 3.22 9.94 6.65a1 1 0 0 1 0 .7 10.9 10.9 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2.06 11.65a1 1 0 0 0 0 .7A10.75 10.75 0 0 0 12 19a9.7 9.7 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
+              </button>
+            </span>
+          </label>
+
+          <ul class="mt-3 flex flex-col gap-2.5 rounded-[10px] p-3" style="background:rgba(14,42,51,.04)">
+
+              <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="len" data-keadaan="kosong">
+                <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                  <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                  <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </span>
+                <span>At least 8 characters</span>
+              </li>
+              <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="upper" data-keadaan="kosong">
+                <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                  <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                  <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </span>
+                <span>Contains one uppercase letter</span>
+              </li>
+              <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="num" data-keadaan="kosong">
+                <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                  <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                  <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </span>
+                <span>Contains one number</span>
+              </li>
+              <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="spec" data-keadaan="kosong">
+                <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                  <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                  <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </span>
+                <span>Contains one special character</span>
+              </li>
+          </ul>
+
+          <label class="mt-5 block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Confirm password</span>
+            <span class="relative block">
+              <input type="password" id="rpSah" placeholder="Repeat your new password" class="medan pr-12" autocomplete="new-password">
+              <button type="button" class="rp-mata absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-navy/45 transition-colors duration-200 hover:text-navy" data-untuk="rpSah" aria-label="Show password">
+                <svg data-mata="tutup" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.87 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.87 0"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg data-mata="buka" hidden width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.64 0 8.57 3.22 9.94 6.65a1 1 0 0 1 0 .7 10.9 10.9 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2.06 11.65a1 1 0 0 0 0 .7A10.75 10.75 0 0 0 12 19a9.7 9.7 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
+              </button>
+            </span>
+          </label>
+          <p id="rpPadan" hidden class="mt-2 flex items-center gap-1.5 text-[12.5px]"></p>
+
+          <button type="submit" id="rpBtn" disabled class="btn-utama mt-6 grid h-[44px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Confirm</button>
+        </form>
+      </div>
+
+      <div id="rpBerjaya" hidden class="fp-lapis text-center">
+        <p class="mb-8 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">State: after successful reset — not visible by default</p>
+        <span class="fp-sampul mx-auto grid h-[56px] w-[56px] place-items-center rounded-full" style="background:rgba(15,107,125,.10);color:#0F6B7D">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+        </span>
+        <h1 class="mt-6 text-[24px] font-semibold leading-[1.15] tracking-tightest">Password reset</h1>
+        <p class="mx-auto mt-3 max-w-[38ch] text-[14px] leading-relaxed text-navy/60">Your password has been updated. You can now log in with your new password.</p>
+        <a href="#login" class="btn-utama mt-7 grid h-[44px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Continue to log in</a>
+      </div>
+
+      <div id="rpLuput" hidden class="fp-lapis text-center">
+        <p class="mb-8 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">State: expired or invalid token — shown when link is no longer valid</p>
+        <span class="fp-sampul mx-auto grid h-[52px] w-[52px] place-items-center rounded-full" style="background:rgba(217,143,74,.12);color:#D98F4A">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        </span>
+        <h1 class="mt-6 text-[24px] font-semibold leading-[1.15] tracking-tightest">This link has expired</h1>
+        <p class="mx-auto mt-3 max-w-[38ch] text-[14px] leading-relaxed text-navy/60">Reset links are valid for 30 minutes. Please request a new one.</p>
+        <a href="#forgot" class="btn-utama mt-7 grid h-[44px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Request new link</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: SIGNUP -->
+<div id="screenSignup" hidden class="flex min-h-screen md:h-screen md:overflow-hidden">
+  <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
+    <div class="flex h-full flex-col p-8">
+      <a href="LandingPage.html" class="flex shrink-0 items-center gap-2.5">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
+           style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
+        <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
+          <img data-slot="signup-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+          <span class="pointer-events-none absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: person using the app</span>
+          <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
+        </div>
+        <div id="SignupKiri" class="su-kiri shrink-0 p-7">
+          <p class="max-w-[24ch] text-[22px] font-semibold leading-[1.2] tracking-tightest lg:text-[26px]" style="text-wrap:pretty">Get support that's actually verified.</p>
+          <p class="mt-3 text-[14.5px] leading-relaxed text-cream/65">Join thousands who found the right counselor through MyKaunsel.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-10 md:overflow-y-auto md:px-10">
+    <div class="mesh-wrap" aria-hidden="true">
+      <div class="plume">
+        <div class="strand s1"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s2"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s3"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s4"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+      </div>
+      <div class="mesh-veil"></div>
+    </div>
+    <div id="SignupKanan" class="su-kanan my-auto w-full max-w-[340px]" style="position:relative;z-index:1;">
+      <a href="LandingPage.html" class="mb-8 flex items-center gap-2.5 md:hidden">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">Create your account</h1>
+      <p class="mt-2 text-[13.5px] text-navy/60">Start with a free MyKaunsel account</p>
+
+      <form id="suForm" class="mt-6" novalidate>
+        <label class="block">
+          <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Full Name</span>
+          <input type="text" id="suNama" placeholder="Ammar Azizan" class="medan">
+        </label>
+
+        <label class="mt-4 block">
+          <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Email</span>
+          <input type="email" id="suEmel" placeholder="name@example.com" class="medan">
+          <p class="mt-1.5 text-[11.5px] leading-relaxed text-navy/45">If your email matches a registered organization domain, you'll be linked automatically.</p>
+        </label>
+
+        <label class="mt-4 block">
+          <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Password</span>
+          <span class="relative block">
+            <input type="password" id="suKataLaluan" placeholder="••••••••" class="medan pr-12" autocomplete="new-password">
+            <button type="button" class="rp-mata absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-navy/45 transition-colors duration-200 hover:text-navy" data-untuk="suKataLaluan" aria-label="Show password">
+              <svg data-mata="tutup" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.87 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.87 0"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg data-mata="buka" hidden width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.64 0 8.57 3.22 9.94 6.65a1 1 0 0 1 0 .7 10.9 10.9 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2.06 11.65a1 1 0 0 0 0 .7A10.75 10.75 0 0 0 12 19a9.7 9.7 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
+            </button>
+          </span>
+        </label>
+        <ul class="mt-3 flex flex-col gap-2.5 rounded-[10px] p-3" style="background:rgba(14,42,51,.04)">
+          <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="len" data-keadaan="kosong">
+            <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+              <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+              <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </span>
+            <span>At least 8 characters</span>
+          </li>
+          <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="upper" data-keadaan="kosong">
+            <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+              <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+              <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </span>
+            <span>Contains one uppercase letter</span>
+          </li>
+          <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="num" data-keadaan="kosong">
+            <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+              <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+              <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </span>
+            <span>Contains one number</span>
+          </li>
+          <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="spec" data-keadaan="kosong">
+            <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+              <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+              <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </span>
+            <span>Contains one special character</span>
+          </li>
+        </ul>
+
+        <label class="mt-4 block">
+          <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Confirm Password</span>
+          <span class="relative block">
+            <input type="password" id="suKataLaluanSah" placeholder="••••••••" class="medan pr-12" autocomplete="new-password">
+            <button type="button" class="rp-mata absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-navy/45 transition-colors duration-200 hover:text-navy" data-untuk="suKataLaluanSah" aria-label="Show password">
+              <svg data-mata="tutup" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.87 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.87 0"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg data-mata="buka" hidden width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.64 0 8.57 3.22 9.94 6.65a1 1 0 0 1 0 .7 10.9 10.9 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2.06 11.65a1 1 0 0 0 0 .7A10.75 10.75 0 0 0 12 19a9.7 9.7 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
+            </button>
+          </span>
+        </label>
+        <p id="suPadan" hidden class="mt-2 flex items-center gap-1.5 text-[12.5px]"></p>
+
+        <label class="mt-4 flex cursor-pointer items-start gap-2.5">
+          <input type="checkbox" id="suSetuju" class="mt-0.5 h-[17px] w-[17px] shrink-0 rounded-[5px] border border-navy/25 accent-teal">
+          <span class="text-[13.5px] leading-snug text-navy/75">I agree to the Terms of Service and Privacy Policy</span>
+        </label>
+
+        <button type="submit" id="suBtn" data-siap="0" class="btn-utama mt-5 grid h-[44px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF;opacity:.4">Continue</button>
+
+        <div class="my-5 flex items-center gap-4">
+          <span class="h-px flex-1 bg-navy/12"></span>
+          <span class="text-[13px] text-navy/45">or</span>
+          <span class="h-px flex-1 bg-navy/12"></span>
+        </div>
+
+        <button type="button" class="group flex h-[44px] w-full items-center justify-center gap-0 overflow-hidden rounded-full border border-navy/20 text-[14px] font-medium text-navy transition-colors duration-200 hover:border-navy/40 hover:bg-navy/[.03]">
+          <svg width="18" height="18" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84a10.13 10.13 0 0 1-4.4 6.65v5.52h7.11c4.16-3.83 6.57-9.47 6.57-16.18"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.3-9.07H4.34v5.7A22 22 0 0 0 24 46"/><path fill="#FBBC05" d="M11.7 28.18A13.2 13.2 0 0 1 11.01 24c0-1.45.25-2.86.69-4.18v-5.7H4.34A21.99 21.99 0 0 0 2 24c0 3.55.85 6.91 2.34 9.88z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.36 5.7c1.72-5.2 6.57-9.07 12.3-9.07"/></svg>
+          <span class="max-w-0 whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[160px] group-hover:pl-[10px] group-hover:opacity-100">Continue with Google</span>
+        </button>
+      </form>
+
+      <p class="mt-7 flex items-center justify-center gap-1.5 text-[14px] text-navy/60">
+        Already have an account?
+        <a href="#login" class="font-medium text-teal">Log in</a>
+      </p>
+    </div>
+  </main>
+</div>
+
+<!-- SCREEN: INVITE -->
+<div id="screenInvite" hidden class="flex min-h-screen md:h-screen md:overflow-hidden">
+  <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
+    <div class="flex h-full flex-col p-8">
+      <a href="LandingPage.html" class="flex shrink-0 items-center gap-2.5">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
+           style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
+        <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
+          <img data-slot="signup-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+          <span class="pointer-events-none absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: person using the app</span>
+          <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
+        </div>
+        <div id="InviteKiri" class="su-kiri shrink-0 p-7">
+          <p class="max-w-[24ch] text-[22px] font-semibold leading-[1.2] tracking-tightest lg:text-[26px]" style="text-wrap:pretty">Joining through an organization?</p>
+          <p class="mt-3 text-[14.5px] leading-relaxed text-cream/65">Enter your invite code to connect with your organization's counselors.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-10 md:overflow-y-auto md:px-10">
+    <div class="mesh-wrap" aria-hidden="true">
+      <div class="plume">
+        <div class="strand s1"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s2"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s3"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s4"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+      </div>
+      <div class="mesh-veil"></div>
+    </div>
+    <div id="InviteKanan" class="su-kanan my-auto w-full max-w-[340px]" style="position:relative;z-index:1;">
+      <a href="LandingPage.html" class="mb-8 flex items-center gap-2.5 md:hidden">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">Have an invite code?</h1>
+      <p class="mt-2 max-w-[34ch] text-[13.5px] leading-relaxed text-navy/60">If your organization gave you a code, enter it below. Otherwise, you can skip this step.</p>
+
+      <form id="icForm" class="mt-6" novalidate>
+        <label class="block">
+          <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Invite Code</span>
+          <input type="text" id="icKod" placeholder="e.g. UMPSA-7K2M" class="medan" style="text-transform:uppercase" autocomplete="off">
+        </label>
+        <p id="icStatus" class="mt-2 flex items-center gap-1.5 text-[12.5px] text-navy/50"></p>
+
+        <button type="submit" id="icBtn" class="btn-utama mt-5 grid h-[44px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Continue</button>
+      </form>
+
+      <div class="mt-5 text-center">
+        <a href="#welcome" id="icSkip" class="text-[13.5px] text-navy/55">Skip for now</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- SCREEN: WELCOME -->
+<div id="screenWelcome" hidden class="flex min-h-screen md:h-screen md:overflow-hidden">
+  <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
+    <div class="flex h-full flex-col p-8">
+      <a href="LandingPage.html" class="flex shrink-0 items-center gap-2.5">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
+           style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
+        <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
+          <img data-slot="signup-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+          <span class="pointer-events-none absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: person using the app</span>
+          <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
+        </div>
+        <div id="WelcomeKiri" class="su-kiri shrink-0 p-7">
+          <p class="max-w-[24ch] text-[22px] font-semibold leading-[1.2] tracking-tightest lg:text-[26px]" style="text-wrap:pretty">You're almost there.</p>
+          <p class="mt-3 text-[14.5px] leading-relaxed text-cream/65">One more step and you'll be ready to go.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-10 md:overflow-y-auto md:px-10">
+    <div class="mesh-wrap" aria-hidden="true">
+      <div class="plume">
+        <div class="strand s1"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s2"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s3"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s4"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+      </div>
+      <div class="mesh-veil"></div>
+    </div>
+    <div id="WelcomeKanan" class="su-kanan my-auto w-full max-w-[340px]" style="position:relative;z-index:1;">
+      <a href="LandingPage.html" class="mb-8 flex items-center gap-2.5 md:hidden">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <div class="text-center">
+        <span class="mx-auto grid h-16 w-16 place-items-center rounded-full" style="background:rgba(15,107,125,.10);color:#0F6B7D">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="m3 7 8.24 5.5a1.4 1.4 0 0 0 1.52 0L21 7"/></svg>
+        </span>
+        <h1 class="mt-6 text-[26px] font-semibold leading-[1.15] tracking-tightest">One more step</h1>
+        <p class="mx-auto mt-3 max-w-[34ch] text-[14px] leading-relaxed text-navy/60">Your account is almost ready. We've sent a verification link to <strong class="font-semibold text-navy">ammar@example.com</strong> — verify it to get started.</p>
+
+        <ul class="mt-7 flex flex-col gap-3 rounded-xl p-4 text-left" style="background:rgba(14,42,51,.04)">
+          <li class="su-item flex items-center gap-3 text-[13.5px] text-navy/70" style="--tunda:0s">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="m3 7 8.24 5.5a1.4 1.4 0 0 0 1.52 0L21 7"/></svg>
+            Verify your email
+          </li>
+          <li class="su-item flex items-center gap-3 text-[13.5px] text-navy/70" style="--tunda:0.1s">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.42 3.58-8 8-8s8 3.58 8 8z"/></svg>
+            Find a registered counselor
+          </li>
+          <li class="su-item flex items-center gap-3 text-[13.5px] text-navy/70" style="--tunda:0.2s">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+            Book your first session
+          </li>
+        </ul>
+
+        <a href="VerifyEmail.html" class="btn-utama mt-7 grid h-[44px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Go to email verification</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- SCREEN: ACCOUNT ACTIVATED -->
+<div id="screenActivated" hidden class="flex min-h-screen md:h-screen md:overflow-hidden">
+  <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
+    <div class="flex h-full flex-col p-8">
+      <a href="LandingPage.html" class="flex shrink-0 items-center gap-2.5">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
+           style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
+        <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
+          <img data-slot="signup-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+          <span class="pointer-events-none absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: person using the app</span>
+          <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
+        </div>
+        <div class="shrink-0 p-7">
+          <p class="max-w-[24ch] text-[22px] font-semibold leading-[1.2] tracking-tightest lg:text-[26px]" style="text-wrap:pretty">You're all set.</p>
+          <p class="mt-3 text-[14.5px] leading-relaxed text-cream/65">Your account is fully active.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-10 md:overflow-y-auto md:px-10">
+    <div class="mesh-wrap" aria-hidden="true">
+      <div class="plume">
+        <div class="strand s1"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s2"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s3"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s4"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+      </div>
+      <div class="mesh-veil"></div>
+    </div>
+    <div class="su-kanan my-auto w-full max-w-[340px]" style="position:relative;z-index:1;">
+      <a href="LandingPage.html" class="mb-8 flex items-center gap-2.5 md:hidden">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <div class="text-center">
+        <span class="mx-auto grid h-16 w-16 place-items-center rounded-full" style="background:#0F6B7D;color:#FAF8F5">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 6 6L20 6"/></svg>
+        </span>
+        <h1 class="mt-6 text-[26px] font-semibold leading-[1.15] tracking-tightest">Account activated</h1>
+        <p class="mx-auto mt-3 max-w-[34ch] text-[14px] leading-relaxed text-navy/60">Your email is verified and your account is now active. You're ready to get started on MyKaunsel.</p>
+
+        <ul class="mt-7 flex flex-col gap-3 rounded-xl p-4 text-left" style="background:rgba(14,42,51,.04)">
+          <li class="su-item flex items-center gap-3 text-[13.5px] text-navy/70" style="--tunda:0s">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+            Email verified
+          </li>
+          <li class="su-item flex items-center gap-3 text-[13.5px] text-navy/70" style="--tunda:0.1s">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.42 3.58-8 8-8s8 3.58 8 8z"/></svg>
+            Find a registered counselor
+          </li>
+          <li class="su-item flex items-center gap-3 text-[13.5px] text-navy/70" style="--tunda:0.2s">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+            Book your first session
+          </li>
+        </ul>
+
+        <a href="#dashboard" class="btn-utama mt-7 grid h-[44px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Go to your dashboard</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- SCREEN: DASHBOARD (placeholder) -->
+<div id="screenDash" hidden class="grid min-h-screen place-items-center bg-cream px-6">
+  <div class="max-w-[420px] text-center">
+    <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl" style="background:rgba(15,107,125,.10);color:#0F6B7D">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+    </span>
+    <h1 class="mt-6 text-[24px] font-semibold tracking-tightest">Signed in</h1>
+    <p class="mt-3 text-[14px] leading-relaxed text-navy/55">This account has one membership, so it is routed straight to its dashboard. The dashboard itself is not part of this file yet.</p>
+    <a href="#login" class="mt-7 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-teal">Back to log in</a>
+  </div>
+</div>
+
+<!-- SCREEN: CHOOSE CONTEXT -->
+<div id="screenContext" hidden class="relative min-h-screen overflow-hidden bg-cream">
+  <div class="b1-wrap" aria-hidden="true">
+    <div class="b1-plume">
+      <div class="b1-strand b1-s1"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+      <div class="b1-strand b1-s2"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+      <div class="b1-strand b1-s3"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+      <div class="b1-strand b1-s4"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+    </div>
+    <div class="b1-veil"></div>
+  </div>
+  <div class="relative z-10 flex items-start justify-between p-8">
+    <a href="LandingPage.html" class="inline-flex items-center gap-2.5">
+      <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+      <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+    </a>
+    <p class="flex items-center gap-1.5 pt-1 text-[13px] text-navy/50">
+      Not you?
+      <a href="#login" class="font-medium text-teal">Log out</a>
+    </p>
+  </div>
+
+  <div class="relative z-10 flex min-h-[calc(100vh-104px)] flex-col items-center justify-center px-5 pb-16 md:px-8">
+    <div class="w-full max-w-[1040px]">
+      <p class="cc-teks text-center text-[15px] text-navy/60">Welcome back, Encik Afif</p>
+      <h1 class="cc-teks mt-3 text-center text-[28px] font-semibold leading-[1.15] tracking-tightest md:text-[34px]" style="animation-delay:.06s">Continue as</h1>
+      <p class="cc-teks mx-auto mt-4 max-w-[52ch] text-center text-[14.5px] leading-relaxed text-navy/55" style="animation-delay:.1s">You have more than one role on MyKaunsel. Choose which one to use for this session.</p>
+
+      <div class="mt-12 flex flex-col items-center justify-center gap-5 md:flex-row md:flex-wrap md:items-stretch">
+
+          <button type="button" class="cc-kad group relative flex w-full flex-col rounded-[14px] border border-navy/12 bg-cream p-6 text-left md:w-[320px]" style="--aksen:#D98F4A; --tunda:0.12s">
+            <span class="grid h-11 w-11 place-items-center rounded-xl" style="background:color-mix(in srgb, var(--aksen) 10%, transparent); color:var(--aksen)">
+              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="9" width="8" height="12" rx="1.5" fill="currentColor" opacity=".35"/><rect x="9" y="4" width="12" height="17" rx="1.5" fill="currentColor" opacity=".75"/><rect x="13" y="8" width="4" height="4" rx=".8" fill="#FAF8F5"/><rect x="13" y="14" width="4" height="4" rx=".8" fill="#FAF8F5"/></svg>
+            </span>
+            <span class="mt-5 block text-[10.5px] font-medium uppercase tracking-[0.16em]" style="color:var(--aksen)">University</span>
+            <span class="mt-2 block text-[17px] font-semibold tracking-tight text-navy">UMPSA Counseling Unit</span>
+            <span class="mt-1.5 block text-[13.5px] text-navy/60">Registered Counselor</span>
+            <span class="mt-4 block text-[12.5px] text-navy/45">Joined March 2025</span>
+            <span class="cc-anak absolute bottom-6 right-6 text-[15px] leading-none text-navy/30" aria-hidden="true">→</span>
+          </button>
+          <button type="button" class="cc-kad group relative flex w-full flex-col rounded-[14px] border border-navy/12 bg-cream p-6 text-left md:w-[320px]" style="--aksen:#4A7DFF; --tunda:0.20s">
+            <span class="grid h-11 w-11 place-items-center rounded-xl" style="background:color-mix(in srgb, var(--aksen) 10%, transparent); color:var(--aksen)">
+              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2" fill="currentColor" opacity=".45"/><path d="M4 21c0-4.42 3.58-8 8-8s8 3.58 8 8z" fill="currentColor" opacity=".8"/></svg>
+            </span>
+            <span class="mt-5 block text-[10.5px] font-medium uppercase tracking-[0.16em]" style="color:var(--aksen)">Independent practice</span>
+            <span class="mt-2 block text-[17px] font-semibold tracking-tight text-navy">Independent Counselor</span>
+            <span class="mt-1.5 block text-[13.5px] text-navy/60">Verified Practitioner</span>
+            <span class="mt-4 block text-[12.5px] text-navy/45">Since January 2026</span>
+            <span class="cc-anak absolute bottom-6 right-6 text-[15px] leading-none text-navy/30" aria-hidden="true">→</span>
+          </button>
+          <button type="button" class="cc-kad group relative flex w-full flex-col rounded-[14px] border border-navy/12 bg-cream p-6 text-left md:w-[320px]" style="--aksen:#0F6B7D; --tunda:0.28s">
+            <span class="grid h-11 w-11 place-items-center rounded-xl" style="background:color-mix(in srgb, var(--aksen) 10%, transparent); color:var(--aksen)">
+              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="15" rx="2" fill="currentColor" opacity=".4"/><path d="M12 10v7M8.5 13.5h7" stroke="#FAF8F5" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </span>
+            <span class="mt-5 block text-[10.5px] font-medium uppercase tracking-[0.16em]" style="color:var(--aksen)">Clinic</span>
+            <span class="mt-2 block text-[17px] font-semibold tracking-tight text-navy">Klinik Kaunseling Damai</span>
+            <span class="mt-1.5 block text-[13.5px] text-navy/60">Registered Counselor</span>
+            <span class="mt-4 block text-[12.5px] text-navy/45">Joined June 2025</span>
+            <span class="cc-anak absolute bottom-6 right-6 text-[15px] leading-none text-navy/30" aria-hidden="true">→</span>
+          </button>
+      </div>
+
+      <div class="mt-11 text-center">
+        <a href="#" class="inline-flex items-center gap-1.5 text-[13.5px] text-navy/55">Manage your memberships <span aria-hidden="true">→</span></a>
+      </div>
+
+      <div class="mx-auto mt-16 max-w-[560px] rounded-2xl border border-dashed border-navy/20 p-6" style="background:rgba(14,42,51,.02)">
+        <p class="text-[10.5px] uppercase tracking-[0.16em] text-navy/40">Reference — not part of the flow</p>
+        <p class="mt-3 text-[13.5px] leading-relaxed text-navy/60">Users with only one membership are routed directly to their dashboard and never see this screen.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function borang(){
+    var f = document.getElementById('borang');
+    var btn = document.getElementById('btnMasuk');
+    var label = btn.querySelector('[data-btn="label"]');
+    var spin = btn.querySelector('[data-btn="spin"]');
+    var kl = document.getElementById('kataLaluan');
+    var emel = document.getElementById('emel');
+    var ralat = document.getElementById('ralatEmel');
+    function sah(){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emel.value.trim()) && kl.value.length > 0; }
+    emel.addEventListener('input', function(){
+      if (!ralat.hidden) { ralat.hidden = true; emel.removeAttribute('aria-invalid'); }
+    });
+    f.addEventListener('submit', function(e){
+      e.preventDefault();
+      if (!sah()) {
+        emel.setAttribute('aria-invalid', 'true');
+        ralat.hidden = false;
+        emel.classList.remove('goyang');
+        void emel.offsetWidth;
+        emel.classList.add('goyang');
+        emel.addEventListener('animationend', function(){ emel.classList.remove('goyang'); }, { once: true });
+        emel.focus();
+        return;
+      }
+      btn.disabled = true; label.hidden = true; spin.hidden = false;
+      setTimeout(function(){
+        btn.disabled = false; label.hidden = false; spin.hidden = true;
+        location.hash = '#context';
+      }, 1200);
+    });
+
+    var mata = document.getElementById('mata');
+    var iTutup = mata.querySelector('[data-mata="tutup"]');
+    var iBuka = mata.querySelector('[data-mata="buka"]');
+    mata.addEventListener('click', function(){
+      var lihat = kl.type === 'password';
+      kl.type = lihat ? 'text' : 'password';
+      iTutup.hidden = lihat; iBuka.hidden = !lihat;
+      mata.setAttribute('aria-label', lihat ? 'Hide password' : 'Show password');
+    });
+  }
+
+  function jenis(){
+    var skrin = { login: document.getElementById('screenLogin'), signup: document.getElementById('screenType'), context: document.getElementById('screenContext'), dashboard: document.getElementById('screenDash'), forgot: document.getElementById('screenForgot'), reset: document.getElementById('screenReset'), Signup: document.getElementById('screenSignup'), Invite: document.getElementById('screenInvite'), Welcome: document.getElementById('screenWelcome'), Activated: document.getElementById('screenActivated') };
+    var kad = [].slice.call(document.querySelectorAll('.jk-pilih'));
+    var btn = document.getElementById('btnTeruskan');
+
+    function papar(){
+      var s = location.hash.replace('#', '');
+      var peta = { 'create-account':'Signup', 'invite-code':'Invite', 'welcome':'Welcome', 'activated':'Activated' };
+      if (peta[s]) s = peta[s];
+      if (['signup','context','dashboard','forgot','reset','reset-expired','Signup','Invite','Welcome','Activated'].indexOf(s) < 0) s = 'login';
+      if (s === 'reset-expired') s = 'reset';
+      Object.keys(skrin).forEach(function(k){ skrin[k].hidden = k !== s; });
+      skrin.context.classList.remove('cc-keluar');
+      if (s === 'forgot') document.dispatchEvent(new Event('mkResetForgot'));
+      if (s === 'reset') document.dispatchEvent(new Event('mkResetPw'));
+      var anim = s === 'signup' ? kad : [].slice.call(skrin.context.querySelectorAll('.cc-kad,.cc-teks'));
+      anim.forEach(function(el){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+      if (['Signup','Invite','Welcome','Activated'].indexOf(s) >= 0) {
+        var kanan = skrin[s].querySelector('.su-kanan');
+        var item = [].slice.call(skrin[s].querySelectorAll('.su-item'));
+        [kanan].concat(item).forEach(function(el){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+      }
+    }
+    window.addEventListener('hashchange', papar);
+    papar();
+
+    var terpilih = null;
+    kad.forEach(function(el){
+      el.addEventListener('click', function(){
+        kad.forEach(function(o){ o.setAttribute('aria-pressed', o === el ? 'true' : 'false'); });
+        btn.disabled = false;
+        terpilih = el.getAttribute('data-jenis');
+      });
+    });
+    btn.addEventListener('click', function(){
+      if (terpilih === 'individual') location.hash = '#create-account';
+      else if (terpilih === 'organization') location.href = 'Org Sign Up.html';
+      else if (terpilih === 'counselor') location.href = 'Counselor Sign Up.html';
+    });
+
+    [].slice.call(document.querySelectorAll('.cc-kad')).forEach(function(el){
+      el.addEventListener('click', function(){
+        el.classList.add('cc-tekan');
+        setTimeout(function(){ skrin.context.classList.add('cc-keluar'); }, 120);
+        setTimeout(function(){ el.classList.remove('cc-tekan'); skrin.context.classList.remove('cc-keluar'); }, 900);
+      });
+    });
+  }
+
+  function lupa(){
+    var f = document.getElementById('fpForm');
+    var emel = document.getElementById('fpEmel');
+    var wrapB = document.getElementById('fpBorang');
+    var wrapH = document.getElementById('fpHantar');
+    var btn = document.getElementById('fpSemula');
+    var timer = null;
+
+    function hitung(){
+      var baki = 30;
+      btn.disabled = true;
+      btn.textContent = 'send again in ' + baki + 's';
+      clearInterval(timer);
+      timer = setInterval(function(){
+        baki -= 1;
+        if (baki <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = 'send again'; return; }
+        btn.textContent = 'send again in ' + baki + 's';
+      }, 1000);
+    }
+
+    f.addEventListener('submit', function(e){
+      e.preventDefault();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emel.value.trim())) {
+        emel.setAttribute('aria-invalid', 'true');
+        emel.classList.remove('goyang'); void emel.offsetWidth; emel.classList.add('goyang');
+        return;
+      }
+      emel.removeAttribute('aria-invalid');
+      wrapB.hidden = true;
+      wrapH.hidden = false;
+      wrapH.style.animation = 'none'; void wrapH.offsetWidth; wrapH.style.animation = '';
+      hitung();
+    });
+
+    btn.addEventListener('click', hitung);
+    document.addEventListener('mkResetForgot', function(){
+      wrapB.hidden = false; wrapH.hidden = true; clearInterval(timer);
+    });
+  }
+
+  function daftarIndividu(){
+    var f = document.getElementById('suForm');
+    var nama = document.getElementById('suNama');
+    var emel = document.getElementById('suEmel');
+    var kl = document.getElementById('suKataLaluan');
+    var klSah = document.getElementById('suKataLaluanSah');
+    var padanNota = document.getElementById('suPadan');
+    var setuju = document.getElementById('suSetuju');
+    var btn = document.getElementById('suBtn');
+    var syarat = [].slice.call(document.querySelectorAll('#screenSignup .rp-syarat'));
+    var uji = {
+      len: function(v){ return v.length >= 8; },
+      upper: function(v){ return /[A-Z]/.test(v); },
+      num: function(v){ return /[0-9]/.test(v); },
+      spec: function(v){ return /[^A-Za-z0-9]/.test(v); }
+    };
+    function semakPadan(){
+      if (klSah.value.length === 0) { padanNota.hidden = true; klSah.removeAttribute('aria-invalid'); return false; }
+      if (klSah.value === kl.value) {
+        padanNota.hidden = false; padanNota.style.color = '#0F6B7D';
+        padanNota.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg> Passwords match';
+        klSah.removeAttribute('aria-invalid');
+        return true;
+      }
+      padanNota.hidden = false; padanNota.style.color = '#C4574A';
+      padanNota.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Passwords don\'t match';
+      klSah.setAttribute('aria-invalid', 'true');
+      return false;
+    }
+    function semak(){
+      var semuaOK = true;
+      syarat.forEach(function(li){
+        var k = li.getAttribute('data-syarat'), v = kl.value, lulus = uji[k](v);
+        if (!lulus) semuaOK = false;
+        li.setAttribute('data-keadaan', v.length === 0 ? 'kosong' : (lulus ? 'ok' : 'gagal'));
+      });
+      var padanOK = semakPadan();
+      var siap = semuaOK && padanOK && nama.value.trim().length > 1 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emel.value.trim()) && setuju.checked;
+      btn.dataset.siap = siap ? '1' : '0';
+      btn.style.opacity = siap ? '1' : '.4';
+    }
+    [nama, emel, kl, klSah].forEach(function(el){ el.addEventListener('input', semak); });
+    setuju.addEventListener('change', semak);
+
+    f.addEventListener('submit', function(e){
+      e.preventDefault();
+      if (btn.dataset.siap !== '1') {
+        var goyangkan = function(el){ el.classList.remove('goyang'); void el.offsetWidth; el.classList.add('goyang'); el.addEventListener('animationend', function(){ el.classList.remove('goyang'); }, { once: true }); };
+        var fokusEl = null;
+        if (nama.value.trim().length < 2) { nama.setAttribute('aria-invalid', 'true'); goyangkan(nama); fokusEl = fokusEl || nama; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emel.value.trim())) { emel.setAttribute('aria-invalid', 'true'); goyangkan(emel); fokusEl = fokusEl || emel; }
+        var klBermasalah = syarat.some(function(li){ return li.getAttribute('data-keadaan') !== 'ok'; });
+        if (klBermasalah) { goyangkan(kl); fokusEl = fokusEl || kl; }
+        if (!semakPadan()) { goyangkan(klSah); fokusEl = fokusEl || klSah; }
+        if (!setuju.checked) { goyangkan(setuju.closest('label')); fokusEl = fokusEl || setuju; }
+        if (fokusEl) fokusEl.focus();
+        return;
+      }
+      var domainOrg = emel.value.trim().toLowerCase().indexOf('@umpsa.edu.my') > -1;
+      location.hash = domainOrg ? '#welcome' : '#invite-code';
+    });
+  }
+
+  function kodJemputan(){
+    var f = document.getElementById('icForm');
+    var kod = document.getElementById('icKod');
+    var status = document.getElementById('icStatus');
+    var btn = document.getElementById('icBtn');
+    var tunda = null;
+
+    function keadaan(state, teks){
+      kod.removeAttribute('aria-invalid');
+      if (state === 'sah') { status.style.color = '#0F6B7D'; status.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg> ' + teks; }
+      else if (state === 'gagal') { kod.setAttribute('aria-invalid', 'true'); status.style.color = '#C4574A'; status.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> ' + teks; }
+      else if (state === 'semak') { status.style.color = 'rgba(14,42,51,.5)'; status.innerHTML = '<svg class="putar" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg> ' + teks; }
+      else { status.textContent = ''; }
+    }
+    function sahKini(){ return kod.dataset.sah === '1'; }
+
+    kod.addEventListener('input', function(){
+      kod.value = kod.value.toUpperCase();
+      kod.dataset.sah = '';
+      clearTimeout(tunda);
+      if (kod.value.length === 0) { keadaan('kosong',''); btn.disabled = false; return; }
+      if (kod.value.length < 6) { keadaan('kosong',''); btn.disabled = true; return; }
+      keadaan('semak', 'Checking code...');
+      btn.disabled = true;
+      tunda = setTimeout(function(){
+        if (kod.value === 'UMPSA-7K2M') { keadaan('sah', 'Valid — Klinik Kaunseling Damai'); kod.dataset.sah = '1'; btn.disabled = false; }
+        else { keadaan('gagal', 'This code is invalid or has expired'); btn.disabled = true; }
+      }, 700);
+    });
+
+    f.addEventListener('submit', function(e){
+      e.preventDefault();
+      if (btn.disabled) return;
+      location.hash = '#welcome';
+    });
+  }
+
+  function tetapSemula(){
+    var f = document.getElementById('rpForm');
+    var baru = document.getElementById('rpBaru');
+    var sah = document.getElementById('rpSah');
+    var btn = document.getElementById('rpBtn');
+    var nota = document.getElementById('rpPadan');
+    var wrapF = document.getElementById('rpBorang');
+    var wrapOK = document.getElementById('rpBerjaya');
+    var wrapX = document.getElementById('rpLuput');
+    var syarat = [].slice.call(document.querySelectorAll('.rp-syarat'));
+    var uji = {
+      len: function(v){ return v.length >= 8; },
+      upper: function(v){ return /[A-Z]/.test(v); },
+      num: function(v){ return /[0-9]/.test(v); },
+      spec: function(v){ return /[^A-Za-z0-9]/.test(v); }
+    };
+    var tunda = null;
+
+    [].slice.call(document.querySelectorAll('.rp-mata')).forEach(function(b){
+      var medan = document.getElementById(b.getAttribute('data-untuk'));
+      var t = b.querySelector('[data-mata="tutup"]'), o = b.querySelector('[data-mata="buka"]');
+      b.addEventListener('click', function(){
+        var lihat = medan.type === 'password';
+        medan.type = lihat ? 'text' : 'password';
+        t.hidden = lihat; o.hidden = !lihat;
+        b.setAttribute('aria-label', lihat ? 'Hide password' : 'Show password');
+      });
+    });
+
+    function semak(){
+      var v = baru.value, semuaOK = true;
+      syarat.forEach(function(li){
+        var k = li.getAttribute('data-syarat'), lulus = uji[k](v);
+        if (!lulus) semuaOK = false;
+        li.setAttribute('data-keadaan', v.length === 0 ? 'kosong' : (lulus ? 'ok' : 'gagal'));
+      });
+      var padan = sah.value.length > 0 && sah.value === v;
+      btn.disabled = !(semuaOK && padan);
+      return { semuaOK: semuaOK, padan: padan };
+    }
+
+    function notaPadan(lambat){
+      if (sah.value.length === 0) { nota.hidden = true; sah.removeAttribute('aria-invalid'); return; }
+      if (sah.value === baru.value) {
+        nota.hidden = false;
+        nota.style.color = '#0F6B7D';
+        nota.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg> Passwords match';
+        sah.removeAttribute('aria-invalid');
+        return;
+      }
+      if (baru.value.indexOf(sah.value) === 0 && !lambat) {
+        nota.hidden = false;
+        nota.style.color = 'rgba(14,42,51,.55)';
+        nota.textContent = 'Keep typing...';
+        sah.removeAttribute('aria-invalid');
+        return;
+      }
+      if (!lambat) {
+        nota.hidden = false;
+        nota.style.color = 'rgba(14,42,51,.55)';
+        nota.textContent = 'Keep typing...';
+        return;
+      }
+      nota.hidden = false;
+      nota.style.color = '#C4574A';
+      nota.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Passwords don\'t match';
+      sah.setAttribute('aria-invalid', 'true');
+    }
+
+    baru.addEventListener('input', function(){ semak(); notaPadan(false); });
+    sah.addEventListener('input', function(){
+      semak(); notaPadan(false);
+      clearTimeout(tunda);
+      tunda = setTimeout(function(){ notaPadan(true); }, 400);
+    });
+
+    f.addEventListener('submit', function(e){
+      e.preventDefault();
+      var s = semak();
+      if (!s.semuaOK || !s.padan) return;
+      wrapF.hidden = true; wrapX.hidden = true; wrapOK.hidden = false;
+      wrapOK.style.animation = 'none'; void wrapOK.offsetWidth; wrapOK.style.animation = '';
+    });
+
+    document.addEventListener('mkResetPw', function(){
+      var luput = location.hash === '#reset-expired';
+      wrapF.hidden = luput; wrapOK.hidden = true; wrapX.hidden = !luput;
+      if (!luput) { baru.value = ''; sah.value = ''; nota.hidden = true; semak(); }
+    });
+  }
+
+
+  function start(){ borang(); jenis(); lupa(); tetapSemula(); daftarIndividu(); kodJemputan(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
+
+</body>
+</html>

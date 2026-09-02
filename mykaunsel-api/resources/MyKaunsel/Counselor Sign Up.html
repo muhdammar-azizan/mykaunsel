@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2048%2048%22%3E%3Cpath%20d%3D%22M5.5%2016a10%2010%200%200%201%2010-10h17a10%2010%200%200%201%2010%2010v10a10%2010%200%200%201-10%2010H16.5l-8%207v-7.7%22%20fill%3D%22none%22%20stroke%3D%22%230F6B7D%22%20stroke-width%3D%223.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M15%2020a5%205%200%200%201%205-5h8a5%205%200%200%201%205%205v1a5%205%200%200%201-5%205h-8a5%205%200%200%201-5-5z%22%20fill%3D%22%23D98F4A%22%2F%3E%3C%2Fsvg%3E">
+<title>Register as a Counselor — MyKaunsel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: { navy: '#0E2A33', cream: '#FAF8F5', teal: '#0F6B7D', amber: '#D98F4A', ralat: '#C4574A' },
+      fontFamily: { sans: ['"Plus Jakarta Sans"', 'Helvetica', 'sans-serif'] },
+      letterSpacing: { tightest: '-0.035em' }
+    }
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  [hidden] { display: none !important; }
+  body { -webkit-font-smoothing: antialiased; background: #FAF8F5; }
+  a { color: inherit; }
+  a:hover { color: #0F6B7D; }
+  img:not([src]), img[src=""] { visibility: hidden; }
+
+  .medan { width: 100%; border-radius: 10px; background: #FAF8F5; padding: 11px 13px; font-size: 14px;
+    color: #0E2A33; border: 1px solid rgba(14,42,51,.15); outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease; }
+  .medan::placeholder { color: rgba(14,42,51,.35); }
+  .medan:not(:placeholder-shown) { border-color: rgba(14,42,51,.25); }
+  .medan:focus { border: 2px solid #0F6B7D; padding: 10px 12px; box-shadow: 0 0 0 4px rgba(15,107,125,.10); }
+  .medan[aria-invalid="true"] { border-color: #C4574A; }
+  .medan[aria-invalid="true"]:focus { border-color: #C4574A; box-shadow: 0 0 0 4px rgba(196,87,74,.10); }
+  .medan:disabled { background: rgba(14,42,51,.05); border-color: rgba(14,42,51,.10); color: rgba(14,42,51,.3); }
+  .medan:disabled::placeholder { color: rgba(14,42,51,.3); }
+
+  .btn-utama { transition: background-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+  .btn-utama:hover:not(:disabled) { background: #3565E6; transform: translateY(-1px); }
+  .btn-utama:disabled { cursor: default; opacity: .55; }
+
+  .putar { animation: putar .7s linear infinite; }
+  @keyframes putar { to { transform: rotate(360deg); } }
+
+  .rp-syarat { transition: color .2s ease; }
+  .rp-ikon { transition: background-color .2s ease, border-color .2s ease; }
+  .rp-semak, .rp-silang { display: none; }
+  .rp-syarat[data-keadaan="ok"] { color: rgba(14,42,51,.75); }
+  .rp-syarat[data-keadaan="ok"] .rp-ikon { background: #0F6B7D; border-color: #0F6B7D; }
+  .rp-syarat[data-keadaan="ok"] .rp-semak { display: block; }
+  .rp-syarat[data-keadaan="gagal"] { color: #C4574A; }
+  .rp-syarat[data-keadaan="gagal"] .rp-ikon { background: #C4574A; border-color: #C4574A; }
+  .rp-syarat[data-keadaan="gagal"] .rp-silang { display: block; }
+
+  .cs-check { opacity: 0; transform: scale(0); transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .2s ease; }
+  .cs-check.is-shown { opacity: 1; transform: scale(1); }
+  .cs-lapis { animation: masuk .4s cubic-bezier(.32,.72,0,1) both; }
+  @keyframes masuk { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+  .cs-sampul { animation: sampul .45s cubic-bezier(.34,1.56,.64,1) both .1s; }
+  @keyframes sampul { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
+
+  .lkm-right { transition: opacity .4s ease; }
+  .lkm-right.is-fading { opacity: 0; }
+  .lkm-ikon-besar { animation: sampul .4s cubic-bezier(.34,1.56,.64,1) both; }
+  .lkm-row { opacity: 0; transform: translateY(8px); animation: masuk .4s cubic-bezier(.32,.72,0,1) both; animation-delay: var(--tunda,0s); }
+  .lkm-ring-spin { animation: putar 1s linear infinite; }
+  .lkm-step[data-state] .lkm-i-wait, .lkm-step[data-state] .lkm-i-active, .lkm-step[data-state] .lkm-i-done { display: none; }
+  .lkm-step[data-state="wait"] .lkm-i-wait { display: block; }
+  .lkm-step[data-state="active"] .lkm-i-active { display: block; }
+  .lkm-step[data-state="done"] .lkm-i-done { display: block; }
+  .lkm-step[data-state="done"] { color: rgba(14,42,51,.75); }
+  .lkm-i-active { animation: putar 1s linear infinite; }
+
+  .uz { opacity: 0; transform: translateY(12px); animation: masuk .4s cubic-bezier(.32,.72,0,1) both; animation-delay: var(--tunda,0s); }
+  .uz-zone { transition: border-color .25s ease, background-color .25s ease; }
+  .uz-input { pointer-events: none; }
+  .uz-zone[data-state="empty"] .uz-input, .uz-zone[data-state="hover"] .uz-input, .uz-zone[data-state="error"] .uz-input, .uz-zone[data-state="needsupdate"] .uz-input { pointer-events: auto; cursor: pointer; }
+  .uz-zone[data-state="hover"] { border-color: #0F6B7D; border-style: solid; background: rgba(15,107,125,.04); }
+  .uz-zone[data-state="hover"] .uz-empty { color: #0F6B7D; }
+  .uz-zone[data-state="uploading"] { border-style: solid; border-color: rgba(14,42,51,.15); }
+  .uz-zone[data-state="done"] { border-style: solid; border-width: 1.5px; border-color: #0F6B7D; background: rgba(15,107,125,.03); }
+  .uz-zone[data-state="error"] { border-style: solid; border-width: 1.5px; border-color: #C4574A; background: rgba(196,87,74,.04); }
+  .uz-zone[data-state="needsupdate"] { border-color: #D98F4A; background: rgba(217,143,74,.04); animation: nuPulse 4s ease-in-out infinite; transition: background-color .2s ease, border-color .2s ease; }
+  .uz-zone[data-state="needsupdate"]:hover { background: rgba(217,143,74,.09); }
+  .uz-zone[data-state="needsupdate"] .uz-needsupdate span { transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .2s ease; }
+  .uz-zone[data-state="needsupdate"]:hover .uz-needsupdate span { background: #D98F4A; color: #FAF8F5; transform: translateY(-1px); }
+  @keyframes nuPulse { 0%,80%,100% { border-color: #D98F4A; } 90% { border-color: rgba(217,143,74,.5); } }
+  .uz-locked { border: 1.5px solid #0F6B7D; background: rgba(15,107,125,.03); border-radius: 14px; padding: 20px; }
+  .uz-check { transform: scale(0); opacity: 0; transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .2s ease; }
+  .uz-check.is-shown { transform: scale(1); opacity: 1; }
+  .uz-bar { transition: width .2s linear; }
+  #d3Modal.is-open { opacity: 1 !important; }
+  #d3Modal.is-open #d3ModalCard { transform: scale(1) !important; }
+
+  .wa-lapis { animation: masuk .4s cubic-bezier(.32,.72,0,1) both; }
+  .wa-item { opacity: 0; transform: translateY(6px); animation: masuk .4s cubic-bezier(.32,.72,0,1) both; animation-delay: var(--tunda,0s); }
+  .wa-ikon-denyut { animation: waDenyut 3s ease-in-out infinite; }
+  @keyframes waDenyut { 0%,70%,100% { transform: scale(1); } 82% { transform: scale(1.08); } }
+  .wa-spring { animation: sampul .45s cubic-bezier(.34,1.56,.64,1) both; }
+  #waBar { transition: width 2s linear; }
+  @media (prefers-reduced-motion: reduce) {
+    .wa-lapis, .wa-item, .wa-spring { animation: none !important; opacity: 1 !important; transform: none !important; }
+    .wa-ikon-denyut { animation: none; }
+  }
+
+  /* BG2 mesh background */
+  .mesh-wrap { position: fixed; inset: 0; overflow: hidden; z-index: 0; }
+  .plume { position: absolute; top: 50%; left: 95%; }
+  .strand { position: absolute; top: 50%; left: 113%; width: 22vw; height: 150vh;
+    border-radius: 50%; overflow: hidden; filter: blur(46px);
+    transform-origin: center center; will-change: transform; }
+  .strand-inner { position: absolute; inset: -10%; }
+  .strand-lines { position: absolute; inset: -10%; mix-blend-mode: soft-light; opacity: .5;
+    background: repeating-linear-gradient(0deg,
+      rgba(255,255,255,.8) 0px, rgba(255,255,255,.8) 1.5px,
+      transparent 3px, transparent 7px);
+    filter: blur(1px); }
+  .s1 { width: 20vw; margin-left: -14vw; transform: translate(-50%,-50%) rotate(-38deg); animation: sway-s1 11s ease-in-out infinite; }
+  .s1 .strand-inner { background: linear-gradient(180deg, transparent 0%, #A9C4FF 12%, #4A7DFF 32%, #4CC9A0 55%, transparent 88%); }
+  .s2 { width: 24vw; margin-left: -4vw; transform: translate(-50%,-50%) rotate(-32deg); animation: sway-s2 14s ease-in-out infinite; }
+  .s2 .strand-inner { background: linear-gradient(180deg, transparent 0%, #6FA0FF 10%, #1A4550 34%, #4CC9A0 58%, transparent 90%); }
+  .s3 { width: 27vw; margin-left: 6vw; transform: translate(-50%,-50%) rotate(-27deg); animation: sway-s3 12s ease-in-out infinite; }
+  .s3 .strand-inner { background: linear-gradient(180deg, transparent 0%, #4CC9A0 10%, #2FA88A 35%, #6FA0FF 62%, transparent 92%); }
+  .s4 { width: 16vw; margin-left: 18vw; transform: translate(-50%,-50%) rotate(-22deg); animation: sway-s4 15s ease-in-out infinite; }
+  .s4 .strand-inner { background: linear-gradient(180deg, transparent 0%, #A9C4FF 15%, #4CC9A0 40%, #4A7DFF 70%, transparent 94%); opacity: .85; }
+  @keyframes sway-s1 { 0%,100% { transform: translate(-50%,-50%) rotate(-38deg) scale(1); } 50% { transform: translate(-72%,-28%) rotate(-16deg) scale(1.3); } }
+  @keyframes sway-s2 { 0%,100% { transform: translate(-50%,-50%) rotate(-32deg) scale(1); } 50% { transform: translate(-28%,-72%) rotate(-52deg) scale(1.28); } }
+  @keyframes sway-s3 { 0%,100% { transform: translate(-50%,-50%) rotate(-27deg) scale(1); } 50% { transform: translate(-74%,-26%) rotate(-6deg) scale(1.32); } }
+  @keyframes sway-s4 { 0%,100% { transform: translate(-50%,-50%) rotate(-22deg) scale(1); } 50% { transform: translate(-26%,-74%) rotate(-44deg) scale(1.35); } }
+  .mesh-veil { position: absolute; inset: 0; background: rgba(255,255,255,.82); }
+  @media (prefers-reduced-motion: reduce) { .s1,.s2,.s3,.s4 { animation: none !important; } }
+</style>
+</head>
+<body class="font-sans text-navy antialiased">
+
+<div id="screenD1" class="flex min-h-screen md:h-screen md:overflow-hidden">
+
+  <!-- LAJUR KIRI -->
+  <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
+    <div class="flex h-full flex-col p-8">
+      <a href="LandingPage.html" class="flex shrink-0 items-center gap-2.5">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
+           style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
+        <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
+          <img data-slot="counselor-signup-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+          <span class="pointer-events-none absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: counselor at work</span>
+          <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
+        </div>
+        <div class="shrink-0 p-7">
+          <p class="max-w-[24ch] text-[22px] font-semibold leading-[1.2] tracking-tightest lg:text-[26px]" style="text-wrap:pretty">Bring your practice online.</p>
+          <p class="mt-3 text-[14.5px] leading-relaxed text-cream/65">Join as a verified counselor and accept bookings on your own schedule — no need to build your own system.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- LAJUR KANAN -->
+  <main class="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-10 md:overflow-y-auto md:px-10">
+    <div class="mesh-wrap" aria-hidden="true">
+      <div class="plume">
+        <div class="strand s1"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s2"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s3"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s4"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+      </div>
+      <div class="mesh-veil"></div>
+    </div>
+
+    <div class="my-auto w-full max-w-[420px]" style="position:relative;z-index:1;">
+
+      <a href="LandingPage.html" class="mb-8 flex items-center gap-2.5 md:hidden">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+
+      <div id="csForm" class="cs-lapis">
+        <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">Register as a Counselor</h1>
+        <p class="mt-2 text-[13.5px] leading-relaxed text-navy/60">We'll verify your credentials with the Malaysian Board of Counsellors (LKM) before your account is activated.</p>
+
+        <form id="borang" class="mt-6" novalidate>
+
+          <label class="block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Full Name</span>
+            <input type="text" id="csName" placeholder="Ahmad bin Ismail" autocomplete="name" class="medan">
+            <p class="mt-1.5 text-[11.5px] leading-relaxed text-navy/45">Must match your name exactly as registered with LKM.</p>
+          </label>
+
+          <label class="mt-4 block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Email</span>
+            <input type="email" id="csEmail" placeholder="name@example.com" autocomplete="email" class="medan">
+            <p class="mt-1.5 text-[11.5px] leading-relaxed text-navy/45">Use your personal email. This is separate from your LKM records.</p>
+          </label>
+
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <label class="block">
+              <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">KB Number</span>
+              <span class="relative block">
+                <input type="text" id="csKB" placeholder="KB08253" maxlength="7" class="medan pr-9">
+                <svg id="csKBCheck" class="cs-check absolute right-3 top-1/2 -translate-y-1/2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+              </span>
+              <p id="csKBRalat" hidden class="mt-1.5 text-[11.5px] leading-relaxed" style="color:#C4574A">Please enter a valid KB number (e.g. KB08253)</p>
+            </label>
+            <label class="block">
+              <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">PA Number</span>
+              <span class="relative block">
+                <input type="text" id="csPA" placeholder="PA07841" maxlength="7" class="medan pr-9">
+                <svg id="csPACheck" class="cs-check absolute right-3 top-1/2 -translate-y-1/2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+              </span>
+              <p id="csPARalat" hidden class="mt-1.5 text-[11.5px] leading-relaxed" style="color:#C4574A">Please enter a valid PA number (e.g. PA07841)</p>
+            </label>
+          </div>
+
+          <label class="mt-4 block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Password</span>
+            <span class="relative block">
+              <input type="password" id="csPassword" placeholder="••••••••" class="medan pr-12" autocomplete="new-password">
+              <button type="button" class="cs-mata absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-navy/45 transition-colors duration-200 hover:text-navy" data-untuk="csPassword" aria-label="Show password">
+                <svg data-mata="tutup" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.87 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.87 0"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg data-mata="buka" hidden width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.64 0 8.57 3.22 9.94 6.65a1 1 0 0 1 0 .7 10.9 10.9 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2.06 11.65a1 1 0 0 0 0 .7A10.75 10.75 0 0 0 12 19a9.7 9.7 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
+              </button>
+            </span>
+          </label>
+
+          <ul class="mt-3 flex flex-col gap-2.5 rounded-[10px] p-3" style="background:rgba(14,42,51,.04)">
+            <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="len" data-keadaan="kosong">
+              <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </span>
+              <span>At least 8 characters</span>
+            </li>
+            <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="upper" data-keadaan="kosong">
+              <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </span>
+              <span>Contains one uppercase letter</span>
+            </li>
+            <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="num" data-keadaan="kosong">
+              <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </span>
+              <span>Contains one number</span>
+            </li>
+            <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="spec" data-keadaan="kosong">
+              <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </span>
+              <span>Contains one special character</span>
+            </li>
+          </ul>
+
+          <label class="mt-4 block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Confirm Password</span>
+            <span class="relative block">
+              <input type="password" id="csConfirm" placeholder="••••••••" class="medan pr-12" autocomplete="new-password">
+              <button type="button" class="cs-mata absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-navy/45 transition-colors duration-200 hover:text-navy" data-untuk="csConfirm" aria-label="Show password">
+                <svg data-mata="tutup" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.87 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.87 0"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg data-mata="buka" hidden width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.64 0 8.57 3.22 9.94 6.65a1 1 0 0 1 0 .7 10.9 10.9 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2.06 11.65a1 1 0 0 0 0 .7A10.75 10.75 0 0 0 12 19a9.7 9.7 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
+              </button>
+            </span>
+          </label>
+          <p id="csConfirmNota" hidden class="mt-2 flex items-center gap-1.5 text-[12.5px]"></p>
+
+          <label class="mt-4 flex cursor-pointer items-start gap-2.5">
+            <input type="checkbox" id="csChkAccurate" class="mt-0.5 h-[17px] w-[17px] shrink-0 rounded-[5px] border border-navy/25 accent-teal">
+            <span class="text-[13.5px] leading-snug text-navy/75">I confirm this information is accurate and matches my LKM registration records</span>
+          </label>
+          <label class="mt-3 flex cursor-pointer items-start gap-2.5">
+            <input type="checkbox" id="csChkTerms" class="mt-0.5 h-[17px] w-[17px] shrink-0 rounded-[5px] border border-navy/25 accent-teal">
+            <span class="text-[13.5px] leading-snug text-navy/75">I agree to the Terms of Service and Privacy Policy</span>
+          </label>
+
+          <button type="submit" id="csSubmitBtn" disabled class="btn-utama mt-6 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">
+            <span data-btn="label">Verify and Continue</span>
+            <svg data-btn="spin" hidden class="putar" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>
+          </button>
+
+          <div class="my-5 flex items-center gap-4">
+            <span class="h-px flex-1 bg-navy/10"></span>
+            <span class="text-[12.5px] text-navy/45">or</span>
+            <span class="h-px flex-1 bg-navy/10"></span>
+          </div>
+
+          <button type="button" class="group flex h-[44px] w-full items-center justify-center gap-0 overflow-hidden rounded-full border border-navy/20 text-[14px] font-medium text-navy transition-colors duration-200 hover:border-navy/40 hover:bg-navy/[.03]">
+            <svg width="18" height="18" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84a10.13 10.13 0 0 1-4.4 6.65v5.52h7.11c4.16-3.83 6.57-9.47 6.57-16.18"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.3-9.07H4.34v5.7A22 22 0 0 0 24 46"/><path fill="#FBBC05" d="M11.7 28.18A13.2 13.2 0 0 1 11.01 24c0-1.45.25-2.86.69-4.18v-5.7H4.34A21.99 21.99 0 0 0 2 24c0 3.55.85 6.91 2.34 9.88z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.36 5.7c1.72-5.2 6.57-9.07 12.3-9.07"/></svg>
+            <span class="max-w-0 whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[160px] group-hover:pl-[10px] group-hover:opacity-100">Continue with Google</span>
+          </button>
+        </form>
+
+        <p class="mt-6 text-center text-[13.5px] text-navy/60">Already have an account? <a href="LoginPage.html" class="font-medium text-teal">Log in</a></p>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- SCREEN D2: LKM VERIFICATION RESULT -->
+<div id="screenLKM" hidden class="flex min-h-screen md:h-screen md:overflow-hidden">
+
+  <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
+    <div class="flex h-full flex-col p-8">
+      <a href="LandingPage.html" class="flex shrink-0 items-center gap-2.5">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
+           style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
+        <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
+          <img data-slot="lkm-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+          <span class="pointer-events-none absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: counselor at work</span>
+          <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
+        </div>
+        <div class="shrink-0 p-7">
+          <p id="lkmKiriTitle" class="max-w-[24ch] text-[22px] font-semibold leading-[1.2] tracking-tightest lg:text-[26px]" style="text-wrap:pretty">Bring your practice online.</p>
+          <p id="lkmKiriSub" class="mt-3 text-[14.5px] leading-relaxed text-cream/65">Join as a verified counselor and accept bookings on your own schedule — no need to build your own system.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-10 md:overflow-y-auto md:px-10">
+    <div class="my-auto w-full max-w-[420px]">
+      <div id="lkmRight" class="lkm-right">
+
+        <!-- STATE: checking — shown briefly after form submission -->
+        <div id="lkmChecking" class="lkm-state text-center">
+          <p class="mb-6 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">STATE: checking — shown briefly after form submission</p>
+          <div class="relative mx-auto grid h-14 w-14 place-items-center">
+            <svg class="lkm-ring-spin absolute inset-0" width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+              <circle cx="28" cy="28" r="24" stroke="rgba(15,107,125,.15)" stroke-width="4"/>
+              <path d="M28 4a24 24 0 0 1 24 24" stroke="#0F6B7D" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h1 class="mt-6 text-[24px] font-semibold leading-[1.15] tracking-tightest">Verifying your credentials</h1>
+          <p class="mx-auto mt-2.5 max-w-[34ch] text-[14px] leading-relaxed text-navy/55">Checking your registration against the LKM directory...</p>
+
+          <ul class="mx-auto mt-7 flex w-full max-w-[300px] flex-col gap-3 text-left">
+            <li class="lkm-step flex items-center gap-3 whitespace-nowrap text-[13.5px] text-navy/55" data-state="wait">
+              <span class="relative grid h-5 w-5 shrink-0 place-items-center" aria-hidden="true">
+                <svg class="lkm-i-wait" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(14,42,51,.3)" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                <svg class="lkm-i-active" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="rgba(217,143,74,.25)" stroke-width="2.5"/><path d="M12 3a9 9 0 0 1 9 9" stroke="#D98F4A" stroke-width="2.5" stroke-linecap="round"/></svg>
+                <svg class="lkm-i-done" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#0F6B7D"/><path d="m7 12.5 3.2 3.2L17 9" fill="none" stroke="#FAF8F5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span>Checking KB number</span>
+            </li>
+            <li class="lkm-step flex items-center gap-3 whitespace-nowrap text-[13.5px] text-navy/55" data-state="wait">
+              <span class="relative grid h-5 w-5 shrink-0 place-items-center" aria-hidden="true">
+                <svg class="lkm-i-wait" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(14,42,51,.3)" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                <svg class="lkm-i-active" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="rgba(217,143,74,.25)" stroke-width="2.5"/><path d="M12 3a9 9 0 0 1 9 9" stroke="#D98F4A" stroke-width="2.5" stroke-linecap="round"/></svg>
+                <svg class="lkm-i-done" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#0F6B7D"/><path d="m7 12.5 3.2 3.2L17 9" fill="none" stroke="#FAF8F5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span>Verifying practicing certificate</span>
+            </li>
+            <li class="lkm-step flex items-center gap-3 whitespace-nowrap text-[13.5px] text-navy/55" data-state="wait">
+              <span class="relative grid h-5 w-5 shrink-0 place-items-center" aria-hidden="true">
+                <svg class="lkm-i-wait" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(14,42,51,.3)" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                <svg class="lkm-i-active" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="rgba(217,143,74,.25)" stroke-width="2.5"/><path d="M12 3a9 9 0 0 1 9 9" stroke="#D98F4A" stroke-width="2.5" stroke-linecap="round"/></svg>
+                <svg class="lkm-i-done" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#0F6B7D"/><path d="m7 12.5 3.2 3.2L17 9" fill="none" stroke="#FAF8F5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span>Confirming registration status</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- STATE: verified — match found in LKM directory -->
+        <div id="lkmVerified" class="lkm-state text-center" hidden>
+          <p class="mb-6 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">STATE: verified — match found in LKM directory</p>
+          <span class="lkm-ikon-besar mx-auto grid h-14 w-14 place-items-center rounded-full" style="background:#0F6B7D;color:#FAF8F5">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+          </span>
+          <h1 class="mt-6 text-[26px] font-semibold leading-[1.15] tracking-tightest">Match found</h1>
+          <p class="mx-auto mt-2.5 max-w-[36ch] text-[14px] leading-relaxed text-navy/55">We found your registration in the LKM directory.</p>
+
+          <div class="mt-7 rounded-[14px] p-5 text-left" style="background:rgba(14,42,51,.045);border-left:3px solid #0F6B7D">
+            <div class="lkm-row flex items-center justify-between gap-3" style="--tunda:0s"><span class="whitespace-nowrap text-[12.5px] text-navy/50">Name</span><span class="whitespace-nowrap text-[13.5px] font-semibold text-navy">Ahmad bin Ismail</span></div>
+            <div class="lkm-row mt-2.5 flex items-center justify-between gap-3" style="--tunda:.08s"><span class="whitespace-nowrap text-[12.5px] text-navy/50">KB Number</span><span class="whitespace-nowrap text-[13.5px] font-semibold text-navy">KB08253</span></div>
+            <div class="lkm-row mt-2.5 flex items-center justify-between gap-3" style="--tunda:.16s"><span class="whitespace-nowrap text-[12.5px] text-navy/50">PA Number</span><span class="whitespace-nowrap text-[13.5px] font-semibold text-navy">PA07841</span></div>
+            <div class="lkm-row mt-2.5 flex items-center justify-between gap-3" style="--tunda:.24s"><span class="whitespace-nowrap text-[12.5px] text-navy/50">Registration status</span><span class="whitespace-nowrap text-[13.5px] font-semibold text-teal">Active</span></div>
+            <div class="lkm-row mt-2.5 flex items-center justify-between gap-3" style="--tunda:.32s"><span class="whitespace-nowrap text-[12.5px] text-navy/50">PA valid until</span><span class="whitespace-nowrap text-[13.5px] font-semibold text-navy">23 April 2028</span></div>
+          </div>
+          <p class="mt-3 text-[11.5px] leading-relaxed text-navy/45">This information is sourced from the LKM directory and will be used on your public profile.</p>
+
+          <button type="button" id="lkmContinueUpload" class="btn-utama mt-6 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Continue to document upload</button>
+        </div>
+
+        <!-- STATE: not verified — no match or mismatch found -->
+        <div id="lkmNotFound" class="lkm-state text-center" hidden>
+          <p class="mb-6 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">STATE: not verified — no match or mismatch found</p>
+          <span class="lkm-ikon-besar mx-auto grid h-14 w-14 place-items-center rounded-full" style="background:rgba(196,87,74,.1);color:#C4574A">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </span>
+          <h1 class="mt-6 text-[26px] font-semibold leading-[1.15] tracking-tightest">We couldn't verify your registration</h1>
+          <p class="mx-auto mt-2.5 max-w-[36ch] text-[14px] leading-relaxed text-navy/55">We couldn't find a matching record in the LKM directory.</p>
+
+          <div class="mt-6 rounded-xl p-4 text-left" style="background:rgba(196,87,74,.06);border-left:3px solid #C4574A">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.14em]" style="color:#C4574A">Possible reason</p>
+            <p class="mt-1.5 text-[13.5px] leading-relaxed text-navy">The name provided doesn't match our records for KB08253. Please check the spelling matches your official LKM registration exactly.</p>
+          </div>
+          <!-- Other reason variants for reference:
+            "No record found for this KB number."
+            "Your practicing certificate (PA) has expired."
+            "This KB number is already registered on MyKaunsel."
+          -->
+
+          <div class="mt-6 flex gap-3">
+            <button type="button" class="group flex-1 rounded-full border border-navy/25 px-6 py-3 text-[14px] font-medium text-navy transition-all duration-300 hover:-translate-y-0.5 hover:border-navy hover:bg-navy/5 hover:shadow-[0_10px_20px_-12px_rgba(14,42,51,.35)]">Try again</button>
+            <button type="button" class="group flex-1 rounded-full px-6 py-3 text-[14px] font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_-12px_rgba(74,125,255,.55)]" style="background:#4A7DFF" onmouseover="this.style.background='#3565E6'" onmouseout="this.style.background='#4A7DFF'">
+              <span class="inline-flex items-center gap-2.5">
+                Contact support
+                <span class="grid h-0 w-0 shrink-0 place-items-center overflow-hidden rounded-full bg-white text-[#3565E6] opacity-0 transition-all duration-300 group-hover:h-5 group-hover:w-5 group-hover:opacity-100" aria-hidden="true">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
+                </span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mt-10 rounded-xl border border-dashed border-navy/15 px-4 py-3 text-center text-[11.5px] leading-relaxed text-navy/45">
+        <span class="font-medium text-navy/60">Demo</span> — view state:
+        <a href="#lkm-checking" class="font-medium text-teal">checking</a> ·
+        <a href="#lkm-verified" class="font-medium text-teal">verified</a> ·
+        <a href="#lkm-notfound" class="font-medium text-teal">not verified</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- SCREEN D3: UPLOAD DOCUMENTS -->
+<div id="screenD3" hidden class="flex min-h-screen md:h-screen md:overflow-hidden">
+
+  <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
+    <div class="flex h-full flex-col p-8">
+      <a href="LandingPage.html" class="flex shrink-0 items-center gap-2.5">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
+           style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
+        <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
+          <img data-slot="upload-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+          <span class="pointer-events-none absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: document verification</span>
+          <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
+        </div>
+        <div class="shrink-0 p-7">
+          <p class="max-w-[24ch] text-[22px] font-semibold leading-[1.2] tracking-tightest lg:text-[26px]" style="text-wrap:pretty">Almost done.</p>
+          <p class="mt-3 text-[14.5px] leading-relaxed text-cream/65">Upload these documents so our team can complete your review.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-10 md:overflow-y-auto md:px-10">
+    <div class="my-auto w-full max-w-[460px]">
+
+      <a href="LandingPage.html" class="mb-8 flex items-center gap-2.5 md:hidden">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+
+      <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">Upload your documents</h1>
+      <p class="mt-2 text-[13.5px] leading-relaxed text-navy/60">Please upload clear, legible copies in PDF, JPG, or PNG format. Maximum 5MB per file.</p>
+
+      <div class="mt-5 flex items-start gap-2.5 rounded-[10px] p-3.5" style="background:rgba(14,42,51,.045)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <p class="text-[12.5px] leading-relaxed text-navy/65">All documents are reviewed by our team and kept confidential. They are only used to verify your professional registration.</p>
+      </div>
+
+      <form id="d3Form" class="mt-6 flex flex-col gap-4" novalidate>
+
+        <div class="uz" data-doc="cert" style="--tunda:0s">
+          <p class="mb-1 text-[13.5px] font-medium text-navy/80">Registered Counselor Certificate <span class="text-navy/40">(Sijil Pendaftaran Kaunselor)</span></p>
+          <p class="mb-2.5 text-[11.5px] text-navy/45">Your official KB registration certificate from LKM.</p>
+          <div class="uz-zone relative rounded-[14px] border-2 border-dashed p-8 text-center" style="border-color:rgba(14,42,51,.2); background:rgba(14,42,51,.02)" data-state="empty">
+            <input type="file" class="uz-input absolute inset-0 h-full w-full cursor-pointer opacity-0" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="uz-empty">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-navy/40" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+              <p class="mt-3 text-[13.5px] text-navy/55">Drag and drop your file here, or</p>
+              <span class="mt-3 inline-flex items-center whitespace-nowrap rounded-full border border-navy/25 px-4 py-2 text-[13px] font-medium text-navy">Browse files</span>
+              <p class="mt-3 text-[11px] text-navy/40">PDF, JPG or PNG · Max 5MB</p>
+            </div>
+            <div class="uz-uploading hidden text-left" style="position:relative;z-index:1">
+              <div class="flex items-center gap-3">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0E2A33" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 opacity-60" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <span class="uz-filename min-w-0 flex-1 truncate text-[13.5px] font-medium text-navy"></span>
+                <span class="uz-percent shrink-0 text-[12.5px] text-navy/50">0%</span>
+              </div>
+              <div class="mt-2.5 h-[3px] w-full overflow-hidden rounded-full bg-navy/10"><div class="uz-bar h-full bg-teal" style="width:0%"></div></div>
+            </div>
+            <div class="uz-done hidden text-left" style="position:relative;z-index:1">
+              <div class="flex items-center gap-3">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <div class="min-w-0 flex-1">
+                  <p class="uz-filename truncate text-[13.5px] font-medium text-navy"></p>
+                  <p class="uz-filesize text-[11.5px] text-navy/45"></p>
+                </div>
+                <svg class="uz-check shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <button type="button" class="uz-remove grid h-6 w-6 shrink-0 place-items-center rounded-full text-navy/40 hover:bg-navy/5 hover:text-navy" aria-label="Remove file">×</button>
+              </div>
+              <p class="mt-2 text-[11.5px] text-teal">Uploaded successfully</p>
+            </div>
+            <div class="uz-error hidden text-left" style="position:relative;z-index:1">
+              <div class="flex items-center gap-2 text-[13px]" style="color:#C4574A">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                <span class="uz-error-msg"></span>
+              </div>
+              <button type="button" class="uz-retry mt-1.5 text-[12.5px] font-medium" style="color:#C4574A">Try again</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="uz" data-doc="pa" style="--tunda:.08s">
+          <p class="mb-1 text-[13.5px] font-medium text-navy/80">Practicing Certificate <span class="text-navy/40">(Sijil Perakuan Amalan)</span></p>
+          <p class="mb-2.5 text-[11.5px] text-navy/45">Your current PA certificate showing validity dates.</p>
+          <div class="uz-zone relative rounded-[14px] border-2 border-dashed p-8 text-center" style="border-color:rgba(14,42,51,.2); background:rgba(14,42,51,.02)" data-state="empty">
+            <input type="file" class="uz-input absolute inset-0 h-full w-full cursor-pointer opacity-0" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="uz-empty">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-navy/40" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+              <p class="mt-3 text-[13.5px] text-navy/55">Drag and drop your file here, or</p>
+              <span class="mt-3 inline-flex items-center whitespace-nowrap rounded-full border border-navy/25 px-4 py-2 text-[13px] font-medium text-navy">Browse files</span>
+              <p class="mt-3 text-[11px] text-navy/40">PDF, JPG or PNG · Max 5MB</p>
+            </div>
+            <div class="uz-uploading hidden text-left" style="position:relative;z-index:1">
+              <div class="flex items-center gap-3">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0E2A33" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 opacity-60" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <span class="uz-filename min-w-0 flex-1 truncate text-[13.5px] font-medium text-navy"></span>
+                <span class="uz-percent shrink-0 text-[12.5px] text-navy/50">0%</span>
+              </div>
+              <div class="mt-2.5 h-[3px] w-full overflow-hidden rounded-full bg-navy/10"><div class="uz-bar h-full bg-teal" style="width:0%"></div></div>
+            </div>
+            <div class="uz-done hidden text-left" style="position:relative;z-index:1">
+              <div class="flex items-center gap-3">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <div class="min-w-0 flex-1">
+                  <p class="uz-filename truncate text-[13.5px] font-medium text-navy"></p>
+                  <p class="uz-filesize text-[11.5px] text-navy/45"></p>
+                </div>
+                <svg class="uz-check shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <button type="button" class="uz-remove grid h-6 w-6 shrink-0 place-items-center rounded-full text-navy/40 hover:bg-navy/5 hover:text-navy" aria-label="Remove file">×</button>
+              </div>
+              <p class="mt-2 text-[11.5px] text-teal">Uploaded successfully</p>
+            </div>
+            <div class="uz-error hidden text-left" style="position:relative;z-index:1">
+              <div class="flex items-center gap-2 text-[13px]" style="color:#C4574A">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                <span class="uz-error-msg"></span>
+              </div>
+              <button type="button" class="uz-retry mt-1.5 text-[12.5px] font-medium" style="color:#C4574A">Try again</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="uz" data-doc="ic" style="--tunda:.16s">
+          <p class="mb-1 text-[13.5px] font-medium text-navy/80">Identity Card (IC) or Passport</p>
+          <p class="mb-2.5 text-[11.5px] text-navy/45">Used to confirm your identity matches your LKM registration.</p>
+          <div class="uz-zone relative rounded-[14px] border-2 border-dashed p-8 text-center" style="border-color:rgba(14,42,51,.2); background:rgba(14,42,51,.02)" data-state="empty">
+            <input type="file" class="uz-input absolute inset-0 h-full w-full cursor-pointer opacity-0" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="uz-empty">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-navy/40" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+              <p class="mt-3 text-[13.5px] text-navy/55">Drag and drop your file here, or</p>
+              <span class="mt-3 inline-flex items-center whitespace-nowrap rounded-full border border-navy/25 px-4 py-2 text-[13px] font-medium text-navy">Browse files</span>
+              <p class="mt-3 text-[11px] text-navy/40">PDF, JPG or PNG · Max 5MB</p>
+            </div>
+            <div class="uz-uploading hidden text-left" style="position:relative;z-index:1">
+              <div class="flex items-center gap-3">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0E2A33" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 opacity-60" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <span class="uz-filename min-w-0 flex-1 truncate text-[13.5px] font-medium text-navy"></span>
+                <span class="uz-percent shrink-0 text-[12.5px] text-navy/50">0%</span>
+              </div>
+              <div class="mt-2.5 h-[3px] w-full overflow-hidden rounded-full bg-navy/10"><div class="uz-bar h-full bg-teal" style="width:0%"></div></div>
+            </div>
+            <div class="uz-done hidden text-left" style="position:relative;z-index:1">
+              <div class="flex items-center gap-3">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <div class="min-w-0 flex-1">
+                  <p class="uz-filename truncate text-[13.5px] font-medium text-navy"></p>
+                  <p class="uz-filesize text-[11.5px] text-navy/45"></p>
+                </div>
+                <svg class="uz-check shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <button type="button" class="uz-remove grid h-6 w-6 shrink-0 place-items-center rounded-full text-navy/40 hover:bg-navy/5 hover:text-navy" aria-label="Remove file">×</button>
+              </div>
+              <p class="mt-2 text-[11.5px] text-teal">Uploaded successfully</p>
+            </div>
+            <div class="uz-error hidden text-left" style="position:relative;z-index:1">
+              <div class="flex items-center gap-2 text-[13px]" style="color:#C4574A">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                <span class="uz-error-msg"></span>
+              </div>
+              <button type="button" class="uz-retry mt-1.5 text-[12.5px] font-medium" style="color:#C4574A">Try again</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="d3SubmitBtn" data-submit-btn disabled class="btn-utama mt-2 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF; opacity:.4">Submit for Review</button>
+        <button type="button" id="d3SaveLater" class="text-center text-[13.5px] font-medium text-teal">Save and finish later</button>
+      </form>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: Save your progress -->
+<div id="d3Modal" hidden class="fixed inset-0 z-50 grid place-items-center bg-navy/40 p-6" style="opacity:0; transition:opacity .2s ease">
+  <div id="d3ModalCard" class="w-full max-w-[380px] rounded-2xl bg-cream p-6" style="transform:scale(.95); transition:transform .25s cubic-bezier(.34,1.56,.64,1)">
+    <h2 class="text-[19px] font-semibold tracking-tightest">Save your progress?</h2>
+    <p class="mt-2.5 text-[13.5px] leading-relaxed text-navy/60">Your uploaded documents will be saved. You can come back to finish this step anytime from your dashboard.</p>
+    <div class="mt-6 flex gap-3">
+      <button type="button" id="d3ModalContinue" class="flex-1 rounded-full border border-navy/25 px-5 py-2.5 text-[13.5px] font-medium text-navy transition-all duration-200 hover:-translate-y-0.5 hover:border-navy hover:bg-navy/5">Continue uploading</button>
+      <button type="button" id="d3ModalSave" class="flex-1 rounded-full px-5 py-2.5 text-[13.5px] font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(74,125,255,.55)]" style="background:#4A7DFF" onmouseover="this.style.background='#3565E6'" onmouseout="this.style.background='#4A7DFF'">Save for later</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN D4: WAITING FOR APPROVAL -->
+<div id="screenD4" hidden data-screen-label="Pending Approval" class="relative flex min-h-screen flex-col overflow-hidden">
+  <img data-slot="waiting-approval-bg" alt="" class="absolute inset-0 h-full w-full object-cover">
+  <span class="pointer-events-none absolute inset-0" style="background:rgba(250,248,245,.62)"></span>
+  <span class="pointer-events-none absolute inset-x-0 top-[8%] px-10 text-center text-[11px] uppercase tracking-[0.2em] text-navy/25">IMAGE: soft abstract background</span>
+
+  <div class="relative z-10 flex items-start justify-between p-8">
+    <a href="LandingPage.html" class="flex items-center gap-2.5">
+      <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+      <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+    </a>
+    <a href="LoginPage.html" class="text-[13px] text-navy/50">Log out</a>
+  </div>
+
+  <div class="relative z-10 flex flex-1 flex-col items-center justify-center px-5 pb-10">
+    <div class="w-full max-w-[480px] rounded-2xl bg-cream p-8 text-center" style="box-shadow:0 30px 70px -22px rgba(14,42,51,.3)">
+
+    <!-- STATE: pending review — default state -->
+    <div id="d4Pending" class="wa-lapis w-full">
+      <span class="wa-ikon-denyut mx-auto grid h-16 w-16 place-items-center rounded-full" style="background:rgba(217,143,74,.10);color:#D98F4A">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3.5 2"/></svg>
+      </span>
+      <h1 class="mt-6 text-[28px] font-semibold leading-[1.15] tracking-tightest md:text-[32px]">Your application is under review</h1>
+      <p class="mx-auto mt-3 max-w-[38ch] text-[14.5px] leading-relaxed text-navy/60">We're reviewing your registration as a counselor. This usually takes 1-2 business days.</p>
+
+      <ul class="mt-7 flex flex-col gap-3 rounded-[14px] p-5 text-left" style="background:rgba(14,42,51,.04)">
+        <li class="wa-item flex items-center gap-3 text-[13.5px] text-navy/75" style="--tunda:0s">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+          LKM registration verified
+        </li>
+        <li class="wa-item flex items-center gap-3 text-[13.5px] text-navy/75" style="--tunda:0.1s">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+          Documents submitted
+        </li>
+        <li class="wa-item flex items-center gap-3 text-[13.5px] font-medium text-navy" style="--tunda:0.2s">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#D98F4A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3.5 2"/></svg>
+          Manual review by MyKaunsel team
+        </li>
+      </ul>
+
+      <p class="mt-5 text-[13px] leading-relaxed text-navy/50">We'll email you at <strong class="font-semibold text-navy/70">ahmad@example.com</strong> once a decision is made.</p>
+      <a href="#" class="mt-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-teal">Questions? Contact support <span aria-hidden="true">→</span></a>
+    </div>
+
+    <!-- STATE: approved — shown briefly before redirect -->
+    <div id="d4Approved" hidden class="wa-lapis w-full">
+      <p class="mb-6 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">STATE: approved — shown briefly before redirect</p>
+      <span class="wa-spring mx-auto grid h-16 w-16 place-items-center rounded-full" style="background:#0F6B7D;color:#FAF8F5">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 6 6L20 6"/></svg>
+      </span>
+      <h1 class="mt-6 text-[28px] font-semibold leading-[1.15] tracking-tightest">You're approved!</h1>
+      <p class="mx-auto mt-3 max-w-[38ch] text-[14.5px] leading-relaxed text-navy/60">Welcome to MyKaunsel. Your profile is now live and ready to accept bookings.</p>
+      <div class="mx-auto mt-6 h-[2px] w-full max-w-[220px] overflow-hidden rounded-full bg-navy/10">
+        <div id="d4Bar" class="h-full rounded-full" style="background:#0F6B7D;width:0%"></div>
+      </div>
+      <a href="#" class="btn-utama mt-7 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white transition-all duration-200 hover:-translate-y-0.5" style="background:#4A7DFF">Go to dashboard</a>
+    </div>
+
+    <!-- STATE: rejected — shown if application was declined -->
+    <div id="d4Rejected" hidden class="wa-lapis w-full">
+      <p class="mb-6 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">STATE: rejected — shown if application was declined</p>
+      <span class="mx-auto grid h-16 w-16 place-items-center rounded-full" style="background:rgba(196,87,74,.10);color:#C4574A">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+      </span>
+      <h1 class="mt-6 text-[28px] font-semibold leading-[1.15] tracking-tightest">Your application needs changes</h1>
+      <p class="mx-auto mt-3 max-w-[38ch] text-[14.5px] leading-relaxed text-navy/60">We couldn't approve your application at this time.</p>
+
+      <div class="mt-6 rounded-xl p-4 text-left" style="background:rgba(196,87,74,.06);border-left:3px solid #C4574A">
+        <p class="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style="color:#C4574A">Reason from our team</p>
+        <p class="mt-2 text-[13.5px] leading-relaxed text-navy">The uploaded practicing certificate doesn't match the validity dates in the LKM directory. Please upload a current certificate.</p>
+        <!-- Other reason variants for reference:
+          "The uploaded documents were unclear or illegible. Please re-upload clearer copies."
+          "We couldn't confirm your identity matches the LKM registration. Please contact support."
+        -->
+      </div>
+
+      <div class="mt-6 flex gap-3">
+        <button type="button" class="grid h-[44px] flex-1 place-items-center rounded-full border border-navy/20 text-[13.5px] font-medium text-navy transition-all duration-200 hover:-translate-y-0.5 hover:border-navy hover:bg-navy/5">Contact support</button>
+        <button type="button" id="d4Resubmit" class="btn-utama grid h-[44px] flex-1 place-items-center rounded-full text-[13.5px] font-medium text-white transition-all duration-200 hover:-translate-y-0.5" style="background:#4A7DFF">Re-upload documents</button>
+      </div>
+      <a href="LoginPage.html" class="mt-5 inline-flex items-center gap-1.5 text-[13px] text-navy/50"><span aria-hidden="true">←</span> Back to log in</a>
+    </div>
+
+    </div>
+
+    <div class="mt-6 w-full max-w-[480px] rounded-xl border border-dashed border-navy/20 bg-cream/80 px-4 py-3 text-left text-[11.5px] leading-relaxed text-navy/45">
+      <span class="font-medium text-navy/60">Demo</span> — view state:
+      <a href="#d4-pending" class="font-medium text-teal">pending</a> ·
+      <a href="#d4-approved" class="font-medium text-teal">approved</a> ·
+      <a href="#d4-rejected" class="font-medium text-teal">rejected</a>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN D5: RESUBMIT APPLICATION -->
+<div id="screenD5" hidden class="flex min-h-screen md:h-screen md:overflow-hidden">
+
+  <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
+    <div class="flex h-full flex-col p-8">
+      <a href="LandingPage.html" class="flex shrink-0 items-center gap-2.5">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+      <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
+           style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
+        <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
+          <img data-slot="resubmit-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+          <span class="pointer-events-none absolute inset-0 grid place-items-center px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: document review</span>
+          <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
+        </div>
+        <div class="shrink-0 p-7">
+          <p class="max-w-[24ch] text-[22px] font-semibold leading-[1.2] tracking-tightest lg:text-[26px]" style="text-wrap:pretty">Let's fix this together.</p>
+          <p class="mt-3 text-[14.5px] leading-relaxed text-cream/65">Update the flagged document and we'll take another look.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-10 md:overflow-y-auto md:px-10">
+    <div class="mesh-wrap" aria-hidden="true">
+      <div class="plume">
+        <div class="strand s1"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s2"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s3"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+        <div class="strand s4"><div class="strand-inner"></div><div class="strand-lines"></div></div>
+      </div>
+      <div class="mesh-veil"></div>
+    </div>
+
+    <div class="my-auto w-full max-w-[460px]" style="position:relative;z-index:1;">
+      <div id="d5Right">
+
+        <div id="d5Form" class="cs-lapis">
+          <a href="LandingPage.html" class="mb-8 flex items-center gap-2.5 md:hidden">
+            <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+            <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+          </a>
+
+          <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">Update your application</h1>
+          <p class="mt-2 text-[13.5px] leading-relaxed text-navy/60">We've highlighted what needs to be fixed below.</p>
+
+          <div class="mt-5 rounded-xl p-4" style="background:rgba(217,143,74,.08);border-left:3px solid #D98F4A">
+            <div class="flex items-start gap-2">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B5722F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <p class="whitespace-nowrap text-[10.5px] font-semibold uppercase tracking-[0.14em]" style="color:#B5722F">Why your application was flagged</p>
+            </div>
+            <p class="mt-2 text-[13.5px] leading-relaxed text-navy">The uploaded practicing certificate doesn't match the validity dates in the LKM directory. Please upload a current certificate.</p>
+          </div>
+
+          <form id="d5FormEl" class="mt-5 flex flex-col gap-4" novalidate>
+
+            <div class="uz" style="--tunda:0s">
+              <p class="mb-2.5 text-[13.5px] font-medium text-navy/80">Registered Counselor Certificate <span class="text-navy/40">(Sijil Pendaftaran Kaunselor)</span></p>
+              <div class="uz-locked flex items-center gap-3 text-left">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-[13.5px] font-medium text-navy">sijil-KB.pdf</p>
+                  <p class="text-[11.5px] text-teal">Verified — no action needed</p>
+                </div>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+              </div>
+            </div>
+
+            <div class="uz" data-doc="pa-resubmit" style="--tunda:.08s">
+              <div class="mb-2.5 flex items-start gap-2">
+                <p class="text-[13.5px] font-medium text-navy/80">Practicing Certificate <span class="text-navy/40">(Sijil Perakuan Amalan)</span></p>
+                <span class="shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold" style="background:rgba(217,143,74,.12);color:#B5722F">Needs update</span>
+              </div>
+              <div class="uz-zone relative rounded-[14px] border-2 border-dashed p-8 text-center" data-state="needsupdate" data-empty-state="needsupdate" style="border-color:#D98F4A;background:rgba(217,143,74,.04)">
+                <input type="file" class="uz-input absolute inset-0 h-full w-full cursor-pointer opacity-0" accept=".pdf,.jpg,.jpeg,.png">
+                <div class="uz-needsupdate">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#D98F4A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="mx-auto" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                  <p class="mt-3 text-[13.5px] font-medium text-navy/70">This document needs to be replaced</p>
+                  <span class="mt-3 inline-flex items-center whitespace-nowrap rounded-full border px-4 py-2 text-[13px] font-medium" style="border-color:#D98F4A;color:#B5722F">Upload new file</span>
+                  <p class="mt-3 text-[11px] text-navy/40">PDF, JPG or PNG · Max 5MB</p>
+                </div>
+                <div class="uz-uploading hidden text-left" style="position:relative;z-index:1">
+                  <div class="flex items-center gap-3">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0E2A33" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 opacity-60" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                    <span class="uz-filename min-w-0 flex-1 truncate text-[13.5px] font-medium text-navy"></span>
+                    <span class="uz-percent shrink-0 text-[12.5px] text-navy/50">0%</span>
+                  </div>
+                  <div class="mt-2.5 h-[3px] w-full overflow-hidden rounded-full bg-navy/10"><div class="uz-bar h-full bg-teal" style="width:0%"></div></div>
+                </div>
+                <div class="uz-done hidden text-left" style="position:relative;z-index:1">
+                  <div class="flex items-center gap-3">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                    <div class="min-w-0 flex-1">
+                      <p class="uz-filename truncate text-[13.5px] font-medium text-navy"></p>
+                      <p class="uz-filesize text-[11.5px] text-navy/45"></p>
+                    </div>
+                    <svg class="uz-check shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                    <button type="button" class="uz-remove grid h-6 w-6 shrink-0 place-items-center rounded-full text-navy/40 hover:bg-navy/5 hover:text-navy" aria-label="Remove file">×</button>
+                  </div>
+                  <p class="mt-2 text-[11.5px] text-teal">Uploaded successfully</p>
+                </div>
+                <div class="uz-error hidden text-left" style="position:relative;z-index:1">
+                  <div class="flex items-center gap-2 text-[13px]" style="color:#C4574A">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                    <span class="uz-error-msg"></span>
+                  </div>
+                  <button type="button" class="uz-retry mt-1.5 text-[12.5px] font-medium" style="color:#C4574A">Try again</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="uz" style="--tunda:.16s">
+              <p class="mb-2.5 text-[13.5px] font-medium text-navy/80">Identity Card (IC) or Passport</p>
+              <div class="uz-locked flex items-center gap-3 text-left">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-[13.5px] font-medium text-navy">ic-ahmad.pdf</p>
+                  <p class="text-[11.5px] text-teal">Verified — no action needed</p>
+                </div>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+              </div>
+            </div>
+
+            <button type="submit" id="d5SubmitBtn" data-submit-btn disabled class="btn-utama mt-2 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF; opacity:.4">Resubmit for Review</button>
+          </form>
+
+          <a href="#" id="d5Back" class="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-navy/55"><span aria-hidden="true">←</span> Back to application status</a>
+        </div>
+
+        <div id="d5Success" class="cs-lapis text-center" hidden>
+          <p class="mb-6 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">STATE: after resubmission — brief confirmation</p>
+          <span class="lkm-ikon-besar mx-auto grid h-14 w-14 place-items-center rounded-full" style="background:#0F6B7D;color:#FAF8F5">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+          </span>
+          <h1 class="mt-6 text-[26px] font-semibold leading-[1.15] tracking-tightest">Resubmitted successfully</h1>
+          <p class="mx-auto mt-2.5 max-w-[36ch] text-[14px] leading-relaxed text-navy/55">We've received your updated document and will review it again. This usually takes 1-2 business days.</p>
+          <button type="button" id="d5BackFromSuccess" class="btn-utama mt-6 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Back to application status</button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  var f = document.getElementById('borang');
+  var name = document.getElementById('csName');
+  var email = document.getElementById('csEmail');
+  var kb = document.getElementById('csKB');
+  var pa = document.getElementById('csPA');
+  var kbRalat = document.getElementById('csKBRalat');
+  var paRalat = document.getElementById('csPARalat');
+  var kbCheck = document.getElementById('csKBCheck');
+  var paCheck = document.getElementById('csPACheck');
+  var pw = document.getElementById('csPassword');
+  var confirm = document.getElementById('csConfirm');
+  var confirmNota = document.getElementById('csConfirmNota');
+  var chk1 = document.getElementById('csChkAccurate');
+  var chk2 = document.getElementById('csChkTerms');
+  var btn = document.getElementById('csSubmitBtn');
+  var lbl = btn.querySelector('[data-btn="label"]');
+  var spin = btn.querySelector('[data-btn="spin"]');
+  var syarat = [].slice.call(document.querySelectorAll('.rp-syarat'));
+
+  var uji = {
+    len: function(v){ return v.length >= 8; },
+    upper: function(v){ return /[A-Z]/.test(v); },
+    num: function(v){ return /[0-9]/.test(v); },
+    spec: function(v){ return /[^A-Za-z0-9]/.test(v); }
+  };
+
+  [].slice.call(document.querySelectorAll('.cs-mata')).forEach(function(b){
+    var medan = document.getElementById(b.getAttribute('data-untuk'));
+    var t = b.querySelector('[data-mata="tutup"]'), o = b.querySelector('[data-mata="buka"]');
+    b.addEventListener('click', function(){
+      var lihat = medan.type === 'password';
+      medan.type = lihat ? 'text' : 'password';
+      t.hidden = lihat; o.hidden = !lihat;
+      b.setAttribute('aria-label', lihat ? 'Hide password' : 'Show password');
+    });
+  });
+
+  function ujiFormat(v, prefix){ return new RegExp('^' + prefix + '\\d{5}$').test(v); }
+
+  function semakKB(){
+    var v = kb.value;
+    if (v.length === 0) { kb.removeAttribute('aria-invalid'); kb.style.borderColor = ''; kbRalat.hidden = true; kbCheck.classList.remove('is-shown'); }
+    else if (v.length < 7) { kb.removeAttribute('aria-invalid'); kb.style.borderColor = ''; kbRalat.hidden = true; kbCheck.classList.remove('is-shown'); }
+    else if (ujiFormat(v, 'KB')) { kb.removeAttribute('aria-invalid'); kb.style.borderColor = '#0F6B7D'; kbRalat.hidden = true; kbCheck.classList.add('is-shown'); }
+    else { kb.setAttribute('aria-invalid', 'true'); kb.style.borderColor = ''; kbRalat.hidden = false; kbCheck.classList.remove('is-shown'); }
+  }
+  function semakPA(){
+    var v = pa.value;
+    if (v.length === 0) { pa.removeAttribute('aria-invalid'); pa.style.borderColor = ''; paRalat.hidden = true; paCheck.classList.remove('is-shown'); }
+    else if (v.length < 7) { pa.removeAttribute('aria-invalid'); pa.style.borderColor = ''; paRalat.hidden = true; paCheck.classList.remove('is-shown'); }
+    else if (ujiFormat(v, 'PA')) { pa.removeAttribute('aria-invalid'); pa.style.borderColor = '#0F6B7D'; paRalat.hidden = true; paCheck.classList.add('is-shown'); }
+    else { pa.setAttribute('aria-invalid', 'true'); pa.style.borderColor = ''; paRalat.hidden = false; paCheck.classList.remove('is-shown'); }
+  }
+  function kbPaOK(){ return ujiFormat(kb.value, 'KB') && ujiFormat(pa.value, 'PA'); }
+
+  function semakKataLaluan(){
+    var v = pw.value, semuaOK = true;
+    syarat.forEach(function(li){
+      var k = li.getAttribute('data-syarat'), lulus = uji[k](v);
+      if (!lulus) semuaOK = false;
+      li.setAttribute('data-keadaan', v.length === 0 ? 'kosong' : (lulus ? 'ok' : 'gagal'));
+    });
+    return semuaOK;
+  }
+  function semakPadan(){
+    if (confirm.value.length === 0) { confirmNota.hidden = true; confirm.removeAttribute('aria-invalid'); return false; }
+    if (confirm.value === pw.value) {
+      confirmNota.hidden = false; confirmNota.style.color = '#0F6B7D';
+      confirmNota.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg> Passwords match';
+      confirm.removeAttribute('aria-invalid');
+      return true;
+    }
+    confirmNota.hidden = false; confirmNota.style.color = '#C4574A';
+    confirmNota.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Passwords don\'t match';
+    confirm.setAttribute('aria-invalid', 'true');
+    return false;
+  }
+
+  function semakBorang(){
+    var isi = name.value.trim().length > 0 && email.value.trim().length > 0;
+    btn.disabled = !(isi && kbPaOK() && semakKataLaluan() && semakPadan() && chk1.checked && chk2.checked);
+  }
+
+  [name, email].forEach(function(el){ el.addEventListener('input', semakBorang); });
+  kb.addEventListener('input', function(){ kb.value = kb.value.toUpperCase(); semakKB(); semakBorang(); });
+  pa.addEventListener('input', function(){ pa.value = pa.value.toUpperCase(); semakPA(); semakBorang(); });
+  pw.addEventListener('input', function(){ semakKataLaluan(); semakPadan(); semakBorang(); });
+  confirm.addEventListener('input', function(){ semakPadan(); semakBorang(); });
+  chk1.addEventListener('change', semakBorang);
+  chk2.addEventListener('change', semakBorang);
+
+  f.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (btn.disabled) return;
+    btn.disabled = true; lbl.hidden = true; spin.hidden = false;
+    setTimeout(function(){
+      lkmShow('checking');
+      runSteps(function(){
+        setTimeout(function(){ lkmShow('verified'); }, 500);
+      });
+    }, 900);
+  });
+})();
+
+(function(){
+  var d1Screen = document.getElementById('screenD1');
+  var lkmScreen = document.getElementById('screenLKM');
+  var lkmRight = document.getElementById('lkmRight');
+  var lkmKiriTitle = document.getElementById('lkmKiriTitle');
+  var lkmKiriSub = document.getElementById('lkmKiriSub');
+  var lkmStates = { checking: document.getElementById('lkmChecking'), verified: document.getElementById('lkmVerified'), notfound: document.getElementById('lkmNotFound') };
+  var kiriText = {
+    checking: { t: 'Bring your practice online.', s: 'Join as a verified counselor and accept bookings on your own schedule — no need to build your own system.' },
+    verified: { t: "You're verified.", s: 'One more step — we just need a few documents to confirm everything matches.' },
+    notfound: { t: "We couldn't verify this.", s: 'Double-check your details, or reach out if you believe this is an error.' }
+  };
+  var stepTimers = [];
+  function clearStepTimers(){ stepTimers.forEach(clearTimeout); stepTimers = []; }
+  function resetSteps(){ clearStepTimers(); [].slice.call(document.querySelectorAll('.lkm-step')).forEach(function(li){ li.setAttribute('data-state', 'wait'); }); }
+  window.runSteps = function(cb){
+    var steps = [].slice.call(document.querySelectorAll('.lkm-step'));
+    resetSteps();
+    steps.forEach(function(li, i){
+      stepTimers.push(setTimeout(function(){
+        li.setAttribute('data-state', 'active');
+        stepTimers.push(setTimeout(function(){
+          li.setAttribute('data-state', 'done');
+          if (i === steps.length - 1 && cb) cb();
+        }, 500));
+      }, i * 600));
+    });
+  };
+  window.lkmShow = function(state){
+    lkmRight.classList.add('is-fading');
+    setTimeout(function(){
+      d1Screen.hidden = true;
+      lkmScreen.hidden = false;
+      lkmKiriTitle.textContent = kiriText[state].t;
+      lkmKiriSub.textContent = kiriText[state].s;
+      Object.keys(lkmStates).forEach(function(k){ lkmStates[k].hidden = k !== state; });
+      lkmRight.classList.remove('is-fading');
+      if (state === 'checking') window.runSteps();
+    }, 180);
+  };
+  function route(){
+    var h = location.hash.replace('#', '');
+    var map = { 'lkm-checking': 'checking', 'lkm-verified': 'verified', 'lkm-notfound': 'notfound' };
+    if (!map[h]) return;
+    window.lkmShow(map[h]);
+  }
+  window.addEventListener('hashchange', route);
+  route();
+
+  document.getElementById('lkmContinueUpload').addEventListener('click', function(){
+    document.getElementById('screenLKM').hidden = true;
+    document.getElementById('screenD3').hidden = false;
+  });
+})();
+
+(function(){
+  var zones = [].slice.call(document.querySelectorAll('.uz-zone'));
+  var okTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+
+  function humanSize(bytes){
+    if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+  }
+  function hideAllStates(zone){
+    ['.uz-empty', '.uz-needsupdate', '.uz-uploading', '.uz-done', '.uz-error'].forEach(function(sel){
+      var el = zone.querySelector(sel);
+      if (el) el.classList.add('hidden');
+    });
+  }
+  function refreshSubmit(zone){
+    var form = zone.closest('form');
+    if (!form) return;
+    var btn = form.querySelector('[data-submit-btn]');
+    if (!btn) return;
+    var zs = [].slice.call(form.querySelectorAll('.uz-zone'));
+    var ok = zs.every(function(z){ return z.getAttribute('data-state') === 'done'; });
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? '1' : '.4';
+  }
+  function showEmpty(zone){
+    var st = zone.getAttribute('data-empty-state') || 'empty';
+    zone.setAttribute('data-state', st);
+    hideAllStates(zone);
+    var target = zone.querySelector(st === 'needsupdate' ? '.uz-needsupdate' : '.uz-empty');
+    if (target) target.classList.remove('hidden');
+    var check = zone.querySelector('.uz-check');
+    if (check) check.classList.remove('is-shown');
+    refreshSubmit(zone);
+  }
+  function showError(zone, msg){
+    zone.setAttribute('data-state', 'error');
+    hideAllStates(zone);
+    zone.querySelector('.uz-error').classList.remove('hidden');
+    zone.querySelector('.uz-error-msg').textContent = msg;
+    refreshSubmit(zone);
+  }
+  function showUploading(zone, file){
+    zone.setAttribute('data-state', 'uploading');
+    hideAllStates(zone);
+    zone.querySelector('.uz-uploading').classList.remove('hidden');
+    zone.querySelector('.uz-filename').textContent = file.name;
+    zone.querySelector('.uz-bar').style.width = '0%';
+    zone.querySelector('.uz-percent').textContent = '0%';
+  }
+  function showDone(zone, file){
+    zone.setAttribute('data-state', 'done');
+    hideAllStates(zone);
+    zone.querySelector('.uz-done').classList.remove('hidden');
+    zone.querySelectorAll('.uz-filename').forEach(function(el){ el.textContent = file.name; });
+    zone.querySelector('.uz-filesize').textContent = humanSize(file.size);
+    requestAnimationFrame(function(){ zone.querySelector('.uz-check').classList.add('is-shown'); });
+    refreshSubmit(zone);
+  }
+  function handleFile(zone, file){
+    if (file.size > 5 * 1024 * 1024) { showError(zone, 'File too large. Maximum size is 5MB.'); return; }
+    if (okTypes.indexOf(file.type) === -1) { showError(zone, 'Unsupported format. Please upload PDF, JPG, or PNG.'); return; }
+    showUploading(zone, file);
+    var pct = 0;
+    var timer = setInterval(function(){
+      pct = Math.min(100, pct + 8 + Math.random() * 12);
+      zone.querySelector('.uz-bar').style.width = pct + '%';
+      zone.querySelector('.uz-percent').textContent = Math.round(pct) + '%';
+      if (pct >= 100) { clearInterval(timer); setTimeout(function(){ showDone(zone, file); }, 200); }
+    }, 120);
+  }
+
+  zones.forEach(function(zone){
+    var input = zone.querySelector('.uz-input');
+    input.addEventListener('change', function(){
+      if (this.files && this.files[0]) handleFile(zone, this.files[0]);
+      this.value = '';
+    });
+    zone.addEventListener('dragover', function(e){
+      e.preventDefault();
+      if (zone.getAttribute('data-state') === 'empty' || zone.getAttribute('data-state') === 'error') zone.setAttribute('data-state', 'hover');
+    });
+    zone.addEventListener('dragleave', function(){
+      if (zone.getAttribute('data-state') === 'hover') zone.setAttribute('data-state', 'empty');
+    });
+    zone.addEventListener('drop', function(e){
+      e.preventDefault();
+      var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) handleFile(zone, file);
+    });
+    zone.querySelector('.uz-remove').addEventListener('click', function(e){ e.stopPropagation(); showEmpty(zone); });
+    zone.querySelector('.uz-retry').addEventListener('click', function(e){ e.stopPropagation(); showEmpty(zone); });
+  });
+
+  document.getElementById('d3Form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = document.getElementById('d3SubmitBtn');
+    if (btn.disabled) return;
+    document.getElementById('screenD3').hidden = true;
+    document.getElementById('screenD4').hidden = false;
+    d4Papar('pending');
+  });
+
+  var modal = document.getElementById('d3Modal');
+  function openModal(){ modal.hidden = false; void modal.offsetWidth; modal.classList.add('is-open'); }
+  function closeModal(){ modal.classList.remove('is-open'); setTimeout(function(){ modal.hidden = true; }, 200); }
+  document.getElementById('d3SaveLater').addEventListener('click', openModal);
+  document.getElementById('d3ModalContinue').addEventListener('click', closeModal);
+  document.getElementById('d3ModalSave').addEventListener('click', closeModal);
+  modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+
+  window.addEventListener('hashchange', function(){
+    if (location.hash.replace('#', '') === 'upload-documents') {
+      document.getElementById('screenD1').hidden = true;
+      document.getElementById('screenLKM').hidden = true;
+      document.getElementById('screenD3').hidden = false;
+    }
+  });
+  if (location.hash.replace('#', '') === 'upload-documents') {
+    document.getElementById('screenD1').hidden = true;
+    document.getElementById('screenD3').hidden = false;
+  }
+})();
+
+(function(){
+  var d4States = { pending: document.getElementById('d4Pending'), approved: document.getElementById('d4Approved'), rejected: document.getElementById('d4Rejected') };
+  var barTimer = null;
+  window.d4Papar = function(s){
+    Object.keys(d4States).forEach(function(k){ d4States[k].hidden = k !== s; });
+    var el = d4States[s];
+    el.classList.remove('wa-lapis'); void el.offsetWidth; el.classList.add('wa-lapis');
+    [].slice.call(el.querySelectorAll('.wa-item')).forEach(function(li){ li.style.animation = 'none'; void li.offsetWidth; li.style.animation = ''; });
+    clearTimeout(barTimer);
+    if (s === 'approved') {
+      var bar = document.getElementById('d4Bar');
+      bar.style.width = '0%';
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ bar.style.width = '100%'; }); });
+    }
+  };
+  function showD4(s){
+    document.getElementById('screenD1').hidden = true;
+    document.getElementById('screenLKM').hidden = true;
+    document.getElementById('screenD3').hidden = true;
+    document.getElementById('screenD4').hidden = false;
+    window.d4Papar(s);
+  }
+  window.addEventListener('hashchange', function(){
+    var h = location.hash.replace('#', '');
+    var map = { 'd4-pending': 'pending', 'd4-approved': 'approved', 'd4-rejected': 'rejected' };
+    if (map[h]) showD4(map[h]);
+  });
+  var initH = location.hash.replace('#', '');
+  var initMap = { 'd4-pending': 'pending', 'd4-approved': 'approved', 'd4-rejected': 'rejected' };
+  if (initMap[initH]) showD4(initMap[initH]);
+
+  document.getElementById('d4Resubmit').addEventListener('click', function(){
+    document.getElementById('screenD4').hidden = true;
+    document.getElementById('screenD5').hidden = false;
+  });
+  function backToD4(){
+    document.getElementById('screenD5').hidden = true;
+    showD4('pending');
+  }
+  document.getElementById('d5Back').addEventListener('click', function(e){ e.preventDefault(); backToD4(); });
+  document.getElementById('d5BackFromSuccess').addEventListener('click', backToD4);
+  document.getElementById('d5FormEl').addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = document.getElementById('d5SubmitBtn');
+    if (btn.disabled) return;
+    var right = document.getElementById('d5Right');
+    right.style.transition = 'opacity .4s ease';
+    right.style.opacity = '0';
+    setTimeout(function(){
+      document.getElementById('d5Form').hidden = true;
+      document.getElementById('d5Success').hidden = false;
+      right.style.opacity = '1';
+    }, 200);
+  });
+})();
+</script>
+</body>
+</html>

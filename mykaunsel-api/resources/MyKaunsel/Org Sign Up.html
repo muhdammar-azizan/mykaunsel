@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2048%2048%22%3E%3Cpath%20d%3D%22M5.5%2016a10%2010%200%200%201%2010-10h17a10%2010%200%200%201%2010%2010v10a10%2010%200%200%201-10%2010H16.5l-8%207v-7.7%22%20fill%3D%22none%22%20stroke%3D%22%230F6B7D%22%20stroke-width%3D%223.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M15%2020a5%205%200%200%201%205-5h8a5%205%200%200%201%205%205v1a5%205%200%200%201-5%205h-8a5%205%200%200%201-5-5z%22%20fill%3D%22%23D98F4A%22%2F%3E%3C%2Fsvg%3E">
+<title>Org Sign Up — MyKaunsel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: { navy: '#0E2A33', cream: '#FAF8F5', teal: '#0F6B7D', amber: '#D98F4A', ralat: '#C4574A' },
+      fontFamily: { sans: ['"Plus Jakarta Sans"', 'Helvetica', 'sans-serif'] },
+      letterSpacing: { tightest: '-0.035em' }
+    }
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  [hidden] { display: none !important; }
+  body { -webkit-font-smoothing: antialiased; background: #FAF8F5; }
+  a { color: inherit; }
+  a:hover { color: #0F6B7D; }
+  img:not([src]), img[src=""] { visibility: hidden; }
+
+  .medan { width: 100%; border-radius: 10px; background: #FAF8F5; padding: 11px 13px; font-size: 14px;
+    color: #0E2A33; border: 1px solid rgba(14,42,51,.15); outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease; }
+  .medan::placeholder { color: rgba(14,42,51,.35); }
+  .medan:not(:placeholder-shown) { border-color: rgba(14,42,51,.25); }
+  .medan:focus { border: 2px solid #0F6B7D; padding: 10px 12px; box-shadow: 0 0 0 4px rgba(15,107,125,.10); }
+  .medan[aria-invalid="true"] { border-color: #C4574A; }
+  .medan[aria-invalid="true"]:focus { border-color: #C4574A; box-shadow: 0 0 0 4px rgba(196,87,74,.10); }
+  select.medan { appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%230E2A33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="m6 9 6 6 6-6"/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; padding-right: 36px; }
+
+  .btn-utama { transition: background-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+  .btn-utama:hover:not(:disabled) { background: #3565E6; transform: translateY(-1px); }
+  .btn-utama:disabled { opacity: .4; cursor: default; }
+
+  .goyang { animation: goyang .3s ease-in-out 1; }
+  @keyframes goyang { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 50%{transform:translateX(6px)} 80%{transform:translateX(-3px)} }
+  .putar { animation: putar .7s linear infinite; }
+  @keyframes putar { to { transform: rotate(360deg); } }
+
+  .rp-syarat { transition: color .2s ease; }
+  .rp-ikon { transition: background-color .2s ease, border-color .2s ease; }
+  .rp-semak, .rp-silang { display: none; }
+  .rp-syarat[data-keadaan="ok"] { color: rgba(14,42,51,.75); }
+  .rp-syarat[data-keadaan="ok"] .rp-ikon { background: #0F6B7D; border-color: #0F6B7D; }
+  .rp-syarat[data-keadaan="ok"] .rp-semak { display: block; }
+  .rp-syarat[data-keadaan="gagal"] { color: #C4574A; }
+  .rp-syarat[data-keadaan="gagal"] .rp-ikon { background: #C4574A; border-color: #C4574A; }
+  .rp-syarat[data-keadaan="gagal"] .rp-silang { display: block; }
+
+  .masuk { animation: masuk .5s cubic-bezier(.32,.72,0,1) both; }
+  @keyframes masuk { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+  .step-panel { animation: masukStep .35s cubic-bezier(.32,.72,0,1) both; }
+  .step-panel.keluar { animation: keluarStep .25s ease both; }
+  @keyframes masukStep { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes keluarStep { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-8px); } }
+
+  .dot { width: 26px; height: 4px; border-radius: 999px; background: rgba(14,42,51,.15); transition: background-color .3s ease; }
+  .dot.selesai { background: #0F6B7D; }
+  .dot.semasa { background: #0E2A33; }
+
+  .org-pilih { position: relative; text-align: left; border-radius: 14px; border: 1px solid rgba(14,42,51,.12); background: #FAF8F5;
+    padding: 20px; transition: border-color .2s ease, background-color .2s ease, transform .2s ease, box-shadow .2s ease; cursor: pointer; }
+  .org-pilih:hover { border-color: rgba(14,42,51,.25); transform: translateY(-2px); box-shadow: 0 14px 32px -18px rgba(14,42,51,.22); }
+  .org-pilih[aria-pressed="true"] { border: 2px solid #4A7DFF; padding: 19px; background: rgba(74,125,255,.04); }
+  .org-radio { transition: background-color .2s ease, border-color .2s ease; }
+  .org-pilih[aria-pressed="true"] .org-radio { background: #4A7DFF; border-color: #4A7DFF; }
+  .org-semak { transform: scale(0); transition: transform .2s cubic-bezier(.34,1.56,.64,1); }
+  .org-pilih[aria-pressed="true"] .org-semak { transform: scale(1); }
+
+  .klinik-extra { overflow: hidden; transition: max-height .3s ease, opacity .3s ease, margin-top .3s ease; }
+  .klinik-extra[hidden] { display: block !important; max-height: 0; opacity: 0; margin-top: 0; pointer-events: none; }
+  .klinik-extra:not([hidden]) { max-height: 900px; opacity: 1; }
+
+  .ringkasan-baris { opacity: 0; transform: translateY(6px); animation: masuk .4s cubic-bezier(.32,.72,0,1) both; animation-delay: var(--tunda,0s); }
+
+  .domain-baris { animation: masukDomain .25s ease both; }
+  @keyframes masukDomain { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+  .domain-baris.keluar { animation: keluarDomain .2s ease both; }
+  @keyframes keluarDomain { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-8px); } }
+  .domain-lapis { transition: opacity .3s ease; }
+
+  .vd-masuk { animation: masuk .4s cubic-bezier(.32,.72,0,1) both; }
+  .vd-card { animation: masuk .45s cubic-bezier(.32,.72,0,1) both; animation-delay: var(--tunda,0s); transition: border-color .3s ease, background-color .3s ease; overflow: hidden; }
+  .vd-lencana { transition: background-color .3s ease, color .3s ease; }
+  .vd-putar { animation: putar 1s linear infinite; }
+  .vd-body { transition: max-height .4s ease-out, opacity .4s ease-out; overflow: hidden; }
+  .vd-tooltip { transition: opacity .15s ease; }
+  #vdModalBg { animation: masukModalBg .2s ease both; }
+  @keyframes masukModalBg { from { opacity: 0; } to { opacity: 1; } }
+  #vdModal { animation: masukModal .25s ease both; }
+  @keyframes masukModal { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: none; } }
+  .vd-it-panel { transition: max-height .25s ease, opacity .25s ease; overflow: hidden; }
+  .vd-dns-block { transition: opacity .22s ease; }
+  .vd-verified-row { transition: opacity .3s ease; }
+  .wa-lapis { animation: masuk .4s cubic-bezier(.32,.72,0,1) both; }
+  .wa-item { opacity: 0; transform: translateY(6px); animation: masuk .4s cubic-bezier(.32,.72,0,1) both; animation-delay: var(--tunda,0s); }
+  .wa-ikon-denyut { animation: waDenyut 3s ease-in-out infinite; }
+  @keyframes waDenyut { 0%,70%,100% { transform: scale(1); } 82% { transform: scale(1.08); } }
+  .wa-spring { animation: sampul .45s cubic-bezier(.34,1.56,.64,1) both; }
+  #waBar { transition: width 2s linear; }
+  .vd-check, .vd-it { transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+  .vd-check { background: #FAF8F5; color: #0F6B7D; border: 1px solid rgba(15,107,125,.35); }
+  .vd-it { background: #FAF8F5; color: #D98F4A; border: 1px solid rgba(217,143,74,.35); }
+  .vd-check:hover:not(:disabled) { background: #0F6B7D; color: #FAF8F5; border-color: #0F6B7D; transform: translateY(-2px); box-shadow: 0 10px 22px -10px rgba(15,107,125,.45); }
+  .vd-it:hover:not(:disabled) { background: #D98F4A; color: #FAF8F5; border-color: #D98F4A; transform: translateY(-2px); box-shadow: 0 10px 22px -10px rgba(217,143,74,.45); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .masuk, .step-panel, .ringkasan-baris, .domain-baris, .vd-masuk, .vd-card { animation: none !important; opacity: 1 !important; transform: none !important; }
+    .vd-putar { animation: none; }
+    .wa-lapis, .wa-item, .wa-spring { animation: none !important; opacity: 1 !important; transform: none !important; }
+    .wa-ikon-denyut { animation: none; }
+    .org-pilih:hover { transform: none; }
+    .goyang { animation: none; }
+    .vd-check:hover, .vd-it:hover { transform: none; }
+    .btn-utama:hover:not(:disabled) { transform: none; }
+  }
+</style>
+</head>
+<body class="font-sans text-navy antialiased">
+
+<div id="wizardRoot" class="flex min-h-screen md:h-screen md:overflow-hidden">
+
+  <!-- LEFT COLUMN — static -->
+  <aside class="hidden w-[45%] shrink-0 relative overflow-hidden md:block" style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%)">
+    <img data-slot="org-signup-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+    <span class="pointer-events-none absolute inset-x-0 top-[46%] px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: counseling office or team</span>
+    <span class="pointer-events-none absolute inset-0" style="background:linear-gradient(to bottom, rgba(14,42,51,.45) 0%, rgba(14,42,51,.25) 40%, rgba(14,42,51,.85) 82%, #08202A 100%)"></span>
+
+    <div class="relative flex h-full flex-col justify-between p-10 lg:p-12">
+      <a href="LandingPage.html" class="flex items-center gap-2.5">
+        <svg width="34" height="34" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#FAF8F5" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-cream">MyKaunsel</span>
+      </a>
+      <div class="max-w-[26ch]">
+        <p class="text-[24px] font-semibold leading-[1.2] tracking-tightest text-cream lg:text-[28px]" style="text-wrap:pretty">Bring verified counseling to your institution.</p>
+        <p class="mt-4 text-[15px] leading-relaxed text-cream/65">Manage counselors, availability, and bookings — all in one place, built for how counseling centers actually work.</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT COLUMN — scrollable -->
+  <main class="flex flex-1 flex-col items-center overflow-y-auto px-6 py-10 md:px-10">
+    <div class="masuk w-full max-w-[460px]">
+
+      <a href="LandingPage.html" class="mb-8 flex items-center gap-2.5 md:hidden">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+
+      <!-- Progress -->
+      <div class="mb-8">
+        <div id="dotsWrap" class="flex items-center gap-2">
+          <span class="dot" data-pos="1"></span>
+          <span class="dot" data-pos="2"></span>
+          <span class="dot" data-pos="3"></span>
+          <span class="dot" data-pos="4"></span>
+        </div>
+        <p id="stepLabel" class="mt-2.5 text-[12.5px] font-medium uppercase tracking-[0.1em] text-navy/45">Step 1 of 4 — Organization type</p>
+      </div>
+
+      <a href="LoginPage.html" class="mb-5 inline-flex items-center gap-1.5 text-[13px] text-navy/50 hover:text-navy"><span aria-hidden="true">←</span> Back to log in</a>
+
+      <!-- STEP 1 -->
+      <div id="step1" class="step-panel">
+        <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">What type of organization are you?</h1>
+        <p class="mt-2 text-[13.5px] leading-relaxed text-navy/60">This helps us set up the right access rules for your team.</p>
+
+        <div class="mt-6 flex flex-col gap-3">
+          <button type="button" class="org-pilih flex items-start gap-4" data-tipe="university" data-akses="closed" aria-pressed="false">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl" style="background:rgba(15,107,125,.10);color:#0F6B7D">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 20V8L12 2 2 8v12"/><path d="M6 20v-8h12v8"/><path d="M12 2v6"/></svg>
+            </span>
+            <span class="flex-1">
+              <span class="block text-[15px] font-semibold text-navy">University / Higher Education</span>
+              <span class="mt-1 block text-[13px] leading-relaxed text-navy/55">Only your students and staff can book your counselors.</span>
+            </span>
+            <span class="org-radio mt-1 grid h-[20px] w-[20px] shrink-0 place-items-center rounded-full border-2 border-navy/20" aria-hidden="true">
+              <svg class="org-semak" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+            </span>
+          </button>
+
+          <button type="button" class="org-pilih flex items-start gap-4" data-tipe="corporate" data-akses="closed" aria-pressed="false">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl" style="background:rgba(217,143,74,.12);color:#D98F4A">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 21v-4h6v4"/><path d="M9 8h.01M9 12h.01M15 8h.01M15 12h.01"/></svg>
+            </span>
+            <span class="flex-1">
+              <span class="block text-[15px] font-semibold text-navy">Company / Corporate</span>
+              <span class="mt-1 block text-[13px] leading-relaxed text-navy/55">Only your employees can book your counselors.</span>
+            </span>
+            <span class="org-radio mt-1 grid h-[20px] w-[20px] shrink-0 place-items-center rounded-full border-2 border-navy/20" aria-hidden="true">
+              <svg class="org-semak" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+            </span>
+          </button>
+
+          <button type="button" class="org-pilih flex items-start gap-4" data-tipe="clinic" data-akses="open" aria-pressed="false">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl" style="background:rgba(74,125,255,.10);color:#4A7DFF">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/><path d="M12 6v4M10 8h4"/></svg>
+            </span>
+            <span class="flex-1">
+              <span class="block text-[15px] font-semibold text-navy">Clinic / Private Practice</span>
+              <span class="mt-1 block text-[13px] leading-relaxed text-navy/55">Open to all MyKaunsel users, not limited to a member list.</span>
+            </span>
+            <span class="org-radio mt-1 grid h-[20px] w-[20px] shrink-0 place-items-center rounded-full border-2 border-navy/20" aria-hidden="true">
+              <svg class="org-semak" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+            </span>
+          </button>
+        </div>
+
+        <button type="button" id="s1Continue" disabled class="btn-utama mt-6 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Continue</button>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="step2" class="step-panel" hidden>
+        <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">Tell us about your organization</h1>
+        <p id="s2Sub" class="mt-2 text-[13.5px] leading-relaxed text-navy/60">This information appears to your members.</p>
+
+        <form id="form2" class="mt-6" novalidate>
+          <label class="block">
+            <span id="orgNameLabel" class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Organization Name</span>
+            <input type="text" id="orgName" placeholder="Universiti Malaysia Pahang Al-Sultan Abdullah" class="medan">
+          </label>
+
+          <label id="orgSizeWrap" class="mt-4 block">
+            <span id="orgSizeLabel" class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Organization Size</span>
+            <select id="orgSize" class="medan">
+              <option value="">Select a range</option>
+            </select>
+            <p class="mt-1.5 text-[11.5px] leading-relaxed text-navy/45">Used to recommend a subscription tier — you can change this later.</p>
+          </label>
+
+          <label id="ssmWrap" class="mt-4 block" hidden>
+            <span id="ssmLabel" class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Business Registration Number (SSM)</span>
+            <input type="text" id="ssm" placeholder="202501012345" class="medan" inputmode="numeric" maxlength="12">
+            <p id="ssmNota" class="mt-1.5 text-[11.5px] leading-relaxed text-navy/45">Required for companies. We verify this before approval.</p>
+            <p id="ssmRalat" hidden class="mt-1.5 text-[11.5px] leading-relaxed" style="color:#C4574A">Please enter a valid SSM registration number</p>
+          </label>
+
+          <div id="optLocation" class="mt-6" hidden>
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <span class="block text-[13.5px] font-medium text-navy/75">Primary Location <span class="font-normal text-navy/45">(Optional)</span></span>
+                <p class="mt-1 max-w-[30ch] text-[11.5px] leading-relaxed text-navy/50">Add your main campus or office location. You can add more branches later from your dashboard.</p>
+              </div>
+              <button type="button" id="optLocToggle" class="shrink-0 whitespace-nowrap text-[13px] font-medium text-teal">+ Add location</button>
+            </div>
+            <div id="optLocFields" class="klinik-extra" hidden>
+              <label class="mt-4 block">
+                <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Location Name</span>
+                <input type="text" id="optLocName" placeholder="Main Campus" class="medan">
+              </label>
+              <label class="mt-4 block">
+                <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Address</span>
+                <input type="text" id="optAddr1" placeholder="Address line" class="medan">
+              </label>
+              <div class="mt-3 grid grid-cols-2 gap-3">
+                <input type="text" id="optCity" placeholder="City" class="medan">
+                <select id="optState" class="medan">
+                  <option value="">State</option>
+                  <option>Johor</option><option>Kedah</option><option>Kelantan</option><option>Melaka</option>
+                  <option>Negeri Sembilan</option><option>Pahang</option><option>Perak</option><option>Perlis</option>
+                  <option>Pulau Pinang</option><option>Sabah</option><option>Sarawak</option><option>Selangor</option>
+                  <option>Terengganu</option><option>W.P. Kuala Lumpur</option><option>W.P. Labuan</option><option>W.P. Putrajaya</option>
+                </select>
+              </div>
+              <input type="text" id="optPostcode" placeholder="Postcode" class="medan mt-3">
+
+              <div id="optMapWrap" hidden class="mt-4">
+                <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Pin your location</span>
+                <p class="mb-2.5 text-[11.5px] leading-relaxed text-navy/45">Drag the pin to match your exact location.</p>
+                <div id="optMapCanvas" class="relative h-[220px] w-full cursor-grab overflow-hidden rounded-[14px] border border-navy/10" style="background:#E9E4DA">
+                  <svg width="100%" height="100%" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="600" height="220" fill="#EDE8DE"/>
+                    <g stroke="#D9D2C3" stroke-width="1">
+                      <path d="M0 40h600M0 90h600M0 140h600M0 190h600"/>
+                      <path d="M60 0v220M160 0v220M280 0v220M400 0v220M520 0v220"/>
+                    </g>
+                    <path d="M-20 130 C 100 90, 220 170, 340 110 S 560 60, 640 100" stroke="#CFE4E8" stroke-width="22" fill="none"/>
+                    <path d="M-20 130 C 100 90, 220 170, 340 110 S 560 60, 640 100" stroke="#B9D8DE" stroke-width="2" fill="none"/>
+                    <rect x="90" y="30" width="70" height="46" rx="4" fill="#DDD6C7"/>
+                    <rect x="250" y="150" width="90" height="55" rx="4" fill="#DDD6C7"/>
+                    <rect x="420" y="20" width="60" height="50" rx="4" fill="#DDD6C7"/>
+                    <rect x="30" y="160" width="55" height="40" rx="4" fill="#DDD6C7"/>
+                    <path d="M0 0h600v220h-600z" fill="none"/>
+                  </svg>
+                  <div id="optMapPin" class="absolute" style="left:50%;top:50%;transform:translate(-50%,-100%);touch-action:none">
+                    <svg width="34" height="46" viewBox="0 0 34 46" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 6px 8px rgba(14,42,51,.28))">
+                      <path d="M17 45C17 45 31 28.5 31 17C31 8.16 24.28 1 17 1C9.72 1 3 8.16 3 17C3 28.5 17 45 17 45Z" fill="#0F6B7D" stroke="#FAF8F5" stroke-width="2"/>
+                      <circle cx="17" cy="17" r="6.5" fill="#FAF8F5"/>
+                    </svg>
+                  </div>
+                  <div class="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-3 py-2 text-[10.5px] font-medium text-navy/40">
+                    <span>Drag pin to adjust</span>
+                    <span id="optMapCoords">3.1390° N, 101.6869° E</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="klinikExtra" class="klinik-extra" hidden>
+            <div>
+              <span class="block text-[13.5px] font-medium text-navy/75">Primary Location</span>
+              <p class="mt-1 max-w-[34ch] text-[11.5px] leading-relaxed text-navy/50">This is where clients will visit for in-person sessions. You can add more branches later from your dashboard.</p>
+            </div>
+            <label class="mt-4 block">
+              <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Location Name</span>
+              <input type="text" id="locName" placeholder="Klinik Kaunseling Damai — Jalan Tun Razak" class="medan">
+            </label>
+
+            <label class="mt-4 block">
+              <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Address</span>
+              <input type="text" id="addr1" placeholder="Address line" class="medan">
+            </label>
+            <div class="mt-3 grid grid-cols-2 gap-3">
+              <input type="text" id="city" placeholder="City" class="medan">
+              <select id="state" class="medan">
+                <option value="">State</option>
+                <option>Johor</option><option>Kedah</option><option>Kelantan</option><option>Melaka</option>
+                <option>Negeri Sembilan</option><option>Pahang</option><option>Perak</option><option>Perlis</option>
+                <option>Pulau Pinang</option><option>Sabah</option><option>Sarawak</option><option>Selangor</option>
+                <option>Terengganu</option><option>W.P. Kuala Lumpur</option><option>W.P. Labuan</option><option>W.P. Putrajaya</option>
+              </select>
+            </div>
+            <input type="text" id="postcode" placeholder="Postcode" class="medan mt-3">
+
+            <div id="mapWrap" hidden class="mt-4">
+              <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Pin your location</span>
+              <p class="mb-2.5 text-[11.5px] leading-relaxed text-navy/45">Drag the pin to match your exact location.</p>
+              <div id="mapCanvas" class="relative h-[220px] w-full cursor-grab overflow-hidden rounded-[14px] border border-navy/10" style="background:#E9E4DA">
+                <svg width="100%" height="100%" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="600" height="220" fill="#EDE8DE"/>
+                  <g stroke="#D9D2C3" stroke-width="1">
+                    <path d="M0 40h600M0 90h600M0 140h600M0 190h600"/>
+                    <path d="M60 0v220M160 0v220M280 0v220M400 0v220M520 0v220"/>
+                  </g>
+                  <path d="M-20 130 C 100 90, 220 170, 340 110 S 560 60, 640 100" stroke="#CFE4E8" stroke-width="22" fill="none"/>
+                  <path d="M-20 130 C 100 90, 220 170, 340 110 S 560 60, 640 100" stroke="#B9D8DE" stroke-width="2" fill="none"/>
+                  <rect x="90" y="30" width="70" height="46" rx="4" fill="#DDD6C7"/>
+                  <rect x="250" y="150" width="90" height="55" rx="4" fill="#DDD6C7"/>
+                  <rect x="420" y="20" width="60" height="50" rx="4" fill="#DDD6C7"/>
+                  <rect x="30" y="160" width="55" height="40" rx="4" fill="#DDD6C7"/>
+                  <path d="M0 0h600v220h-600z" fill="none"/>
+                </svg>
+                <div id="mapPin" class="absolute" style="left:50%;top:50%;transform:translate(-50%,-100%);touch-action:none">
+                  <svg width="34" height="46" viewBox="0 0 34 46" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 6px 8px rgba(14,42,51,.28))">
+                    <path d="M17 45C17 45 31 28.5 31 17C31 8.16 24.28 1 17 1C9.72 1 3 8.16 3 17C3 28.5 17 45 17 45Z" fill="#0F6B7D" stroke="#FAF8F5" stroke-width="2"/>
+                    <circle cx="17" cy="17" r="6.5" fill="#FAF8F5"/>
+                  </svg>
+                </div>
+                <div class="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-3 py-2 text-[10.5px] font-medium text-navy/40">
+                  <span>Drag pin to adjust</span>
+                  <span id="mapCoords">3.1390° N, 101.6869° E</span>
+                </div>
+              </div>
+            </div>
+
+            <span class="mt-4 mb-1.5 block text-[13.5px] font-medium text-navy/75">Upload Clinic Photos</span>
+            <div id="photoDrop" class="cursor-pointer rounded-[12px] border border-dashed border-navy/20 p-5 text-center transition-colors duration-200 hover:border-teal/50">
+              <svg width="22" height="22" class="mx-auto text-navy/35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+              <p class="mt-2 text-[13px] text-navy/55">Drag photos here or <span class="font-medium text-teal">click to upload</span></p>
+              <input type="file" id="photoInput" accept="image/*" multiple hidden>
+            </div>
+            <div id="photoThumbs" class="mt-3 flex flex-wrap gap-2.5"></div>
+            <p class="mt-1.5 text-[11.5px] leading-relaxed text-navy/45">Add at least one photo of your clinic. This helps clients recognize your location.</p>
+          </div>
+
+          <button type="submit" id="s2Continue" class="btn-utama mt-6 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Continue</button>
+        </form>
+        <button type="button" class="s-back mt-4 inline-flex items-center gap-1.5 text-[13.5px] text-navy/55" data-ke="1"><span aria-hidden="true">←</span> Back</button>
+      </div>
+
+      <!-- STEP 3 -->
+      <div id="step3" class="step-panel" hidden>
+        <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">Add your email domain</h1>
+        <p id="s3Sub" class="mt-2 text-[13.5px] leading-relaxed text-navy/60">This lets us automatically verify students and staff who sign up with your organization's email.</p>
+
+        <div class="mt-5 flex gap-2.5 rounded-[10px] bg-navy/[.04] p-3.5">
+          <svg width="15" height="15" class="mt-0.5 shrink-0 text-navy/45" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+          <p class="text-[12.5px] leading-relaxed text-navy/55">Members who sign up with an email ending in your domain will automatically join your organization with the right role.</p>
+        </div>
+
+        <label class="mt-5 flex cursor-pointer items-start gap-2.5">
+          <input type="checkbox" id="noDomainChk" class="mt-0.5 h-[17px] w-[17px] shrink-0 rounded-[5px] border border-navy/25 accent-teal">
+          <span class="text-[13.5px] leading-snug text-navy/75">I don't have an organization email domain — set up invite codes instead</span>
+        </label>
+
+        <div id="domainLapis" class="domain-lapis mt-4">
+          <div id="domainList" class="flex flex-col gap-3"></div>
+          <button type="button" id="addDomain" class="mt-3 text-[13.5px] font-medium text-teal">+ Add another domain</button>
+        </div>
+
+        <div id="noDomainNota" class="domain-lapis mt-4" hidden style="opacity:0">
+          <div class="rounded-[10px] p-3.5" style="background:rgba(14,42,51,.04)">
+            <p class="text-[13px] leading-relaxed text-navy/65">No problem. We'll set up invite codes for your members instead — you can configure this after your account is approved.</p>
+          </div>
+        </div>
+
+        <div class="mt-5 flex gap-2.5 rounded-[10px] p-3.5" style="background:rgba(217,143,74,.08)">
+          <svg width="15" height="15" class="mt-0.5 shrink-0" style="color:#D98F4A" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          <p class="text-[12.5px] leading-relaxed text-navy/60">We'll verify domain ownership after you submit this form. You'll receive instructions to confirm you control this domain.</p>
+        </div>
+
+        <button type="button" id="s3bContinue" data-siap="0" class="btn-utama mt-6 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF;opacity:.4">Continue</button>
+        <button type="button" class="s-back mt-4 inline-flex items-center gap-1.5 text-[13.5px] text-navy/55" data-ke="2"><span aria-hidden="true">←</span> Back</button>
+      </div>
+
+      <!-- STEP 4 -->
+      <div id="step4" class="step-panel" hidden>
+        <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">Set up your admin account</h1>
+        <p class="mt-2 text-[13.5px] leading-relaxed text-navy/60">You'll be the first administrator for this organization. You can invite more admins later.</p>
+
+        <form id="form3" class="mt-6" novalidate>
+          <label class="block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Full Name</span>
+            <input type="text" id="adminName" placeholder="Dr. Nur Syafiqah" class="medan">
+          </label>
+
+          <label class="mt-4 block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Job Title / Position</span>
+            <input type="text" id="adminTitle" placeholder="Head of Counseling Unit" class="medan">
+          </label>
+
+          <label class="mt-4 block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Work Email</span>
+            <input type="email" id="adminEmail" placeholder="name@yourorganization.edu.my" class="medan">
+            <p class="mt-1.5 text-[11.5px] leading-relaxed text-navy/45">Use your organization email if possible — this helps us verify your role faster.</p>
+          </label>
+
+          <label class="mt-4 block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Password</span>
+            <span class="relative block">
+              <input type="password" id="adminPass" placeholder="••••••••" class="medan pr-12" autocomplete="new-password">
+              <button type="button" class="mata-togol absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-navy/45 transition-colors duration-200 hover:text-navy" data-untuk="adminPass" aria-label="Show password">
+                <svg data-mata="tutup" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.87 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.87 0"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg data-mata="buka" hidden width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.64 0 8.57 3.22 9.94 6.65a1 1 0 0 1 0 .7 10.9 10.9 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2.06 11.65a1 1 0 0 0 0 .7A10.75 10.75 0 0 0 12 19a9.7 9.7 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
+              </button>
+            </span>
+          </label>
+          <ul class="mt-3 flex flex-col gap-2.5 rounded-[10px] p-3" style="background:rgba(14,42,51,.04)">
+            <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="len" data-keadaan="kosong">
+              <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </span><span>At least 8 characters</span>
+            </li>
+            <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="upper" data-keadaan="kosong">
+              <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </span><span>Contains one uppercase letter</span>
+            </li>
+            <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="num" data-keadaan="kosong">
+              <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </span><span>Contains one number</span>
+            </li>
+            <li class="rp-syarat flex items-center gap-2.5 text-[12.5px] text-navy/55" data-syarat="spec" data-keadaan="kosong">
+              <span class="rp-ikon grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full border border-navy/30" aria-hidden="true">
+                <svg class="rp-semak" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                <svg class="rp-silang" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </span><span>Contains one special character</span>
+            </li>
+          </ul>
+
+          <label class="mt-4 block">
+            <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">Confirm Password</span>
+            <span class="relative block">
+              <input type="password" id="adminConfirm" placeholder="••••••••" class="medan pr-12" autocomplete="new-password">
+              <button type="button" class="mata-togol absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-navy/45 transition-colors duration-200 hover:text-navy" data-untuk="adminConfirm" aria-label="Show password">
+                <svg data-mata="tutup" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.87 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.87 0"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg data-mata="buka" hidden width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.64 0 8.57 3.22 9.94 6.65a1 1 0 0 1 0 .7 10.9 10.9 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2.06 11.65a1 1 0 0 0 0 .7A10.75 10.75 0 0 0 12 19a9.7 9.7 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
+              </button>
+            </span>
+          </label>
+          <p id="confirmNota" hidden class="mt-2 flex items-center gap-1.5 text-[12.5px]"></p>
+
+          <label class="mt-4 flex cursor-pointer items-start gap-2.5">
+            <input type="checkbox" id="chkAuth" class="mt-0.5 h-[17px] w-[17px] shrink-0 rounded-[5px] border border-navy/25 accent-teal">
+            <span class="text-[13.5px] leading-snug text-navy/75">I confirm I am authorized to register this organization on behalf of <strong id="chkOrgName" class="font-semibold text-navy">Universiti Malaysia Pahang Al-Sultan Abdullah</strong></span>
+          </label>
+          <label class="mt-3 flex cursor-pointer items-start gap-2.5">
+            <input type="checkbox" id="chkTerms" class="mt-0.5 h-[17px] w-[17px] shrink-0 rounded-[5px] border border-navy/25 accent-teal">
+            <span class="text-[13.5px] leading-snug text-navy/75">I agree to the Terms of Service and Privacy Policy</span>
+          </label>
+
+          <!-- Summary -->
+          <div class="mt-6 rounded-xl p-4" style="background:rgba(14,42,51,.04)">
+            <div class="ringkasan-baris flex items-center justify-between gap-3" style="--tunda:0s">
+              <span class="text-[12.5px] text-navy/50">Organization type</span>
+              <span class="flex items-center gap-2 text-[13px] font-medium text-navy"><span id="sumType">—</span><button type="button" class="s-back text-[12px] font-medium text-teal" data-ke="1">Edit</button></span>
+            </div>
+            <div class="ringkasan-baris mt-2.5 flex items-center justify-between gap-3" style="--tunda:0.06s">
+              <span id="sumNameLabel" class="text-[12.5px] text-navy/50">Organization name</span>
+              <span class="flex items-center gap-2 text-[13px] font-medium text-navy"><span id="sumName">—</span><button type="button" class="s-back text-[12px] font-medium text-teal" data-ke="2">Edit</button></span>
+            </div>
+            <div class="ringkasan-baris mt-2.5 flex items-center justify-between gap-3" style="--tunda:0.12s">
+              <span class="text-[12.5px] text-navy/50">Access</span>
+              <span id="sumAkses" class="text-[13px] font-medium text-navy">—</span>
+            </div>
+            <div id="sumDomainRow" class="ringkasan-baris mt-2.5 flex items-center justify-between gap-3" style="--tunda:0.18s">
+              <span class="text-[12.5px] text-navy/50">Email domain</span>
+              <span class="flex items-center gap-2 text-[13px] font-medium text-navy"><span id="sumDomain">—</span><button type="button" class="s-back text-[12px] font-medium text-teal" data-ke="3">Edit</button></span>
+            </div>
+            <div id="sumLocationRow" class="ringkasan-baris mt-2.5 flex items-center justify-between gap-3" style="--tunda:0.18s" hidden>
+              <span class="text-[12.5px] text-navy/50">Primary location</span>
+              <span class="flex items-center gap-2 text-[13px] font-medium text-navy"><span id="sumLocation">—</span><button type="button" class="s-back text-[12px] font-medium text-teal" data-ke="2">Edit</button></span>
+            </div>
+            <div id="sumSsmRow" class="ringkasan-baris mt-2.5 flex items-center justify-between gap-3" style="--tunda:0.24s" hidden>
+              <span class="text-[12.5px] text-navy/50">Business registration</span>
+              <span class="flex items-center gap-2 text-[13px] font-medium text-navy"><span id="sumSsm">—</span><button type="button" class="s-back text-[12px] font-medium text-teal" data-ke="2">Edit</button></span>
+            </div>
+          </div>
+
+          <button type="submit" id="s3Submit" data-siap="0" class="btn-utama mt-6 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF;opacity:.4">
+            <span data-btn="label">Create Organization Account</span>
+            <svg data-btn="spin" hidden class="putar" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>
+          </button>
+        </form>
+        <button type="button" id="step4Back" class="s-back mt-4 inline-flex items-center gap-1.5 text-[13.5px] text-navy/55" data-ke="3"><span aria-hidden="true">←</span> Back</button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- SCREEN: VERIFY DOMAIN OWNERSHIP -->
+<div id="screenVerifyDomain" hidden class="flex min-h-screen md:h-screen md:overflow-hidden">
+
+  <aside class="hidden w-[45%] shrink-0 relative overflow-hidden md:block" style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%)">
+    <img data-slot="org-signup-visual" alt="" class="absolute inset-0 h-full w-full object-cover">
+    <span class="pointer-events-none absolute inset-x-0 top-[46%] px-10 text-center text-[11px] uppercase tracking-[0.2em] text-cream/25">IMAGE: counseling office or team</span>
+    <span class="pointer-events-none absolute inset-0" style="background:linear-gradient(to bottom, rgba(14,42,51,.45) 0%, rgba(14,42,51,.25) 40%, rgba(14,42,51,.85) 82%, #08202A 100%)"></span>
+
+    <div class="relative flex h-full flex-col justify-between p-10 lg:p-12">
+      <a href="LandingPage.html" class="flex items-center gap-2.5">
+        <svg width="34" height="34" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#FAF8F5" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-cream">MyKaunsel</span>
+      </a>
+      <div class="max-w-[26ch]">
+        <p class="text-[24px] font-semibold leading-[1.2] tracking-tightest text-cream lg:text-[28px]" style="text-wrap:pretty">Bring verified counseling to your institution.</p>
+        <p class="mt-4 text-[15px] leading-relaxed text-cream/65">Manage counselors, availability, and bookings — all in one place, built for how counseling centers actually work.</p>
+      </div>
+    </div>
+  </aside>
+
+  <main class="flex flex-1 flex-col items-center overflow-y-auto px-6 py-10 md:px-10">
+    <div class="masuk w-full max-w-[460px]">
+
+      <a href="LandingPage.html" class="mb-8 flex items-center gap-2.5 md:hidden">
+        <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="none" stroke="#FAF8F5" stroke-width="5" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+        <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+      </a>
+
+      <div class="mb-8">
+        <div class="flex items-center gap-2">
+          <span class="dot" data-pos="1" style="background:#0F6B7D"></span>
+          <span class="dot" data-pos="2" style="background:#0F6B7D"></span>
+          <span class="dot" data-pos="3" style="background:#0E2A33"></span>
+          <span class="dot" data-pos="4"></span>
+        </div>
+        <p class="mt-2.5 text-[12.5px] font-medium uppercase tracking-[0.1em] text-navy/45">Step 3 of 4 — Verify Domain</p>
+      </div>
+
+      <div class="text-left">
+        <h1 class="text-[24px] font-semibold leading-[1.15] tracking-tightest">Verify your domain</h1>
+        <p class="mt-2 max-w-[46ch] text-[13.5px] leading-relaxed text-navy/60">Add a DNS record to confirm you own this domain. This helps us keep your organization secure.</p>
+      </div>
+
+      <div id="domainCards" class="mt-7 flex flex-col gap-4"></div>
+
+      <div class="mt-7">
+        <p id="vdHint" class="mb-2.5 text-[12.5px] leading-relaxed text-navy/50">You can continue once all domains are verified — or skip this for now and verify later from your dashboard.</p>
+        <button type="button" id="vdContinue" data-siap="0" class="btn-utama grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF;opacity:.4">Continue</button>
+        <div class="mt-3 text-center">
+          <a href="#" id="vdSkip" class="text-[13px] font-medium text-teal">Skip for now, I'll verify later →</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Skip confirmation modal -->
+  <div id="vdModalWrap" hidden class="fixed inset-0 z-50 grid place-items-center p-6">
+    <div id="vdModalBg" class="absolute inset-0" style="background:rgba(14,42,51,.45)"></div>
+    <div id="vdModal" class="relative w-full max-w-[400px] rounded-2xl bg-cream p-7" style="box-shadow:0 30px 70px -20px rgba(14,42,51,.35)">
+      <h2 class="text-[19px] font-semibold tracking-tightest">Continue without verification?</h2>
+      <p class="mt-3 text-[13.5px] leading-relaxed text-navy/60">Your organization will be reviewed manually by our team, which may take longer. You can verify your domain anytime from your dashboard settings.</p>
+      <div class="mt-6 flex gap-3">
+        <button type="button" id="vdGoBack" class="grid h-[42px] flex-1 place-items-center rounded-full border border-navy/20 text-[13.5px] font-medium text-navy">Go back</button>
+        <button type="button" id="vdAnyway" class="btn-utama grid h-[42px] flex-1 place-items-center rounded-full text-[13.5px] font-medium text-white" style="background:#4A7DFF">Continue anyway</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: WAITING FOR APPROVAL -->
+<div id="screenWaitingApproval" hidden data-screen-label="Pending Approval" class="relative flex min-h-screen flex-col overflow-hidden">
+  <img data-slot="waiting-approval-bg" alt="" class="absolute inset-0 h-full w-full object-cover">
+  <span class="pointer-events-none absolute inset-0" style="background:rgba(250,248,245,.62)"></span>
+  <span class="pointer-events-none absolute inset-x-0 top-[8%] px-10 text-center text-[11px] uppercase tracking-[0.2em] text-navy/25">IMAGE: soft abstract background</span>
+
+  <div class="relative z-10 flex items-start justify-between p-8">
+    <a href="LandingPage.html" class="flex items-center gap-2.5">
+      <svg width="32" height="32" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path d="M5.5 16a10 10 0 0 1 10-10h17a10 10 0 0 1 10 10v10a10 10 0 0 1-10 10H16.5l-8 7v-7.7" fill="none" stroke="#0F6B7D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 20a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5z" fill="#D98F4A"/></svg>
+      <span class="text-[19px] font-semibold tracking-tightest text-navy"><span class="text-teal">My</span>Kaunsel</span>
+    </a>
+    <a href="LoginPage.html" class="text-[13px] text-navy/50">Log out</a>
+  </div>
+
+  <div class="relative z-10 flex flex-1 flex-col items-center justify-center px-5 pb-10">
+    <div class="w-full max-w-[480px] rounded-2xl bg-cream p-8 text-center" style="box-shadow:0 30px 70px -22px rgba(14,42,51,.3)">
+
+    <!-- STATE: pending review — default state -->
+    <div id="waPending" class="wa-lapis w-full">
+      <span class="wa-ikon-denyut mx-auto grid h-16 w-16 place-items-center rounded-full" style="background:rgba(217,143,74,.10);color:#D98F4A">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3.5 2"/></svg>
+      </span>
+      <h1 class="mt-6 text-[28px] font-semibold leading-[1.15] tracking-tightest md:text-[32px]">Your organization is under review</h1>
+      <p class="mx-auto mt-3 max-w-[38ch] text-[14.5px] leading-relaxed text-navy/60">We're reviewing your application for <strong id="waOrgName" class="font-semibold text-navy">umpsa</strong>. This usually takes 1-2 business days.</p>
+
+      <ul class="mt-7 flex flex-col gap-3 rounded-[14px] p-5 text-left" style="background:rgba(14,42,51,.04)">
+        <li class="wa-item flex items-center gap-3 text-[13.5px] text-navy/75" style="--tunda:0s">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+          Organization details submitted
+        </li>
+        <li id="waDomainItem" class="wa-item flex items-center gap-3 text-[13.5px] text-navy/75" style="--tunda:0.1s">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+          <span id="waDomainLabel">Domain verified</span>
+        </li>
+        <li class="wa-item flex items-center gap-3 text-[13.5px] font-medium text-navy" style="--tunda:0.2s">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#D98F4A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3.5 2"/></svg>
+          Manual review by MyKaunsel team
+        </li>
+      </ul>
+
+      <p id="waLocNote" hidden class="wa-item mt-4 flex items-start gap-2 text-left text-[12.5px] leading-relaxed text-navy/45" style="--tunda:0.3s">
+        <svg width="14" height="14" class="mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+        <span>Don't forget to add your location once you're approved — this helps members find in-person sessions.</span>
+      </p>
+
+      <p class="mt-5 text-[13px] leading-relaxed text-navy/50">We'll email you at <strong class="font-semibold text-navy/70">admin@umpsa.edu.my</strong> once a decision is made.</p>
+      <a href="#" class="mt-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-teal">Questions? Contact support <span aria-hidden="true">→</span></a>
+    </div>
+
+    <!-- STATE: approved — shown briefly before redirect to dashboard -->
+    <div id="waApproved" hidden class="wa-lapis w-full">
+      <p class="mb-6 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">State: approved \u2014 shown briefly before redirect to dashboard</p>
+      <span class="wa-spring mx-auto grid h-16 w-16 place-items-center rounded-full" style="background:#0F6B7D;color:#FAF8F5">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 6 6L20 6"/></svg>
+      </span>
+      <h1 class="mt-6 text-[28px] font-semibold leading-[1.15] tracking-tightest">You're approved!</h1>
+      <p class="mx-auto mt-3 max-w-[38ch] text-[14.5px] leading-relaxed text-navy/60">Welcome to MyKaunsel. Your organization is now active and ready to use.</p>
+      <div class="mx-auto mt-6 h-[2px] w-full max-w-[220px] overflow-hidden rounded-full bg-navy/10">
+        <div id="waBar" class="h-full rounded-full" style="background:#0F6B7D;width:0%"></div>
+      </div>
+      <a href="#" class="btn-utama mt-7 grid h-[46px] w-full place-items-center rounded-full text-[14px] font-medium text-white" style="background:#4A7DFF">Go to dashboard</a>
+    </div>
+
+    <!-- STATE: rejected — shown if application was declined -->
+    <div id="waRejected" hidden class="wa-lapis w-full">
+      <p class="mb-6 text-[10.5px] uppercase tracking-[0.16em] text-navy/35">State: rejected \u2014 shown if application was declined</p>
+      <span class="mx-auto grid h-16 w-16 place-items-center rounded-full" style="background:rgba(196,87,74,.10);color:#C4574A">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+      </span>
+      <h1 class="mt-6 text-[28px] font-semibold leading-[1.15] tracking-tightest">Your application needs changes</h1>
+      <p class="mx-auto mt-3 max-w-[38ch] text-[14.5px] leading-relaxed text-navy/60">We couldn't approve your organization at this time.</p>
+
+      <div class="mt-6 rounded-xl p-4 text-left" style="background:rgba(196,87,74,.06);border-left:3px solid #C4574A">
+        <p class="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style="color:#C4574A">Reason from our team</p>
+        <p class="mt-2 text-[13.5px] leading-relaxed text-navy">We couldn't verify that umpsa.edu.my is an authorized institution domain. Please provide additional documentation or contact support.</p>
+      </div>
+
+      <div class="mt-6 flex gap-3">
+        <button type="button" class="grid h-[44px] flex-1 place-items-center rounded-full border border-navy/20 text-[13.5px] font-medium text-navy transition-all duration-200 hover:-translate-y-0.5 hover:border-navy hover:bg-navy/5">Contact support</button>
+        <button type="button" class="btn-utama grid h-[44px] flex-1 place-items-center rounded-full text-[13.5px] font-medium text-white transition-all duration-200 hover:-translate-y-0.5" style="background:#4A7DFF">Edit and resubmit</button>
+      </div>
+      <a href="LoginPage.html" class="mt-5 inline-flex items-center gap-1.5 text-[13px] text-navy/50"><span aria-hidden="true">←</span> Back to log in</a>
+    </div>
+
+    </div>
+
+    <div class="mt-6 w-full max-w-[480px] rounded-xl border border-dashed border-navy/20 bg-cream/80 px-4 py-3 text-left text-[11.5px] leading-relaxed text-navy/45">
+      <span class="font-medium text-navy/60">Demo</span> — view state:
+      <a href="#wa-pending" class="font-medium text-teal">pending</a> ·
+      <a href="#wa-approved" class="font-medium text-teal">approved</a> ·
+      <a href="#wa-rejected" class="font-medium text-teal">rejected</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var data = { tipe: null, akses: null, nama: '', ukuran: '', addr1: '', city: '', state: '', postcode: '', locName: '', domains: [], noDomain: false, foto: [] };
+  var langkahSemasa = 1;
+  var urutanPenuh = [1,2,3,4];
+  var urutanKlinik = [1,2,4];
+  var urutan = urutanPenuh;
+  var labelPenuh = ['Organization type', 'Organization info', 'Verify domain', 'Admin account'];
+  var labelKlinik = ['Organization type', 'Clinic info', 'Admin account'];
+  var labelAktif = labelPenuh;
+
+  function start(){
+    var dotsWrap = document.getElementById('dotsWrap');
+    var label = document.getElementById('stepLabel');
+    var panels = { 1: document.getElementById('step1'), 2: document.getElementById('step2'), 3: document.getElementById('step3'), 4: document.getElementById('step4') };
+
+    function bangunDots(){
+      dotsWrap.innerHTML = urutan.map(function(_, i){ return '<span class="dot" data-pos="' + (i + 1) + '"></span>'; }).join('');
+    }
+
+    function papar(n){
+      var pos = urutan.indexOf(n) + 1;
+      [].slice.call(dotsWrap.querySelectorAll('.dot')).forEach(function(d){
+        var i = +d.getAttribute('data-pos');
+        d.classList.remove('selesai','semasa');
+        if (i < pos) d.classList.add('selesai'); else if (i === pos) d.classList.add('semasa');
+      });
+      label.textContent = 'Step ' + pos + ' of ' + urutan.length + ' — ' + labelAktif[pos - 1];
+    }
+
+    function tukar(n){
+      var lama = panels[langkahSemasa];
+      lama.classList.add('keluar');
+      setTimeout(function(){
+        lama.hidden = true; lama.classList.remove('keluar');
+        langkahSemasa = n;
+        var baru = panels[n];
+        baru.hidden = false;
+        baru.style.animation = 'none'; void baru.offsetWidth; baru.style.animation = '';
+        papar(n);
+        window.scrollTo(0,0);
+        if (n === 4) {
+          document.getElementById('step4Back').setAttribute('data-ke', data.tipe === 'clinic' ? '2' : '3');
+          kemasKiniRingkasan();
+        }
+      }, 220);
+    }
+
+    // STEP 1
+    var kad = [].slice.call(document.querySelectorAll('.org-pilih'));
+    var s1Btn = document.getElementById('s1Continue');
+    kad.forEach(function(el){
+      el.addEventListener('click', function(){
+        kad.forEach(function(o){ o.setAttribute('aria-pressed', o === el ? 'true' : 'false'); });
+        data.tipe = el.getAttribute('data-tipe');
+        data.akses = el.getAttribute('data-akses');
+        s1Btn.disabled = false;
+      });
+    });
+    s1Btn.addEventListener('click', function(){
+      var isKlinik = data.tipe === 'clinic';
+      var isCorp = data.tipe === 'corporate';
+      document.getElementById('orgSizeWrap').hidden = isKlinik;
+      document.getElementById('klinikExtra').hidden = !isKlinik;
+      document.getElementById('ssmWrap').hidden = isKlinik;
+      document.getElementById('optLocation').hidden = isKlinik;
+      resetOptLocation();
+      document.getElementById('ssmLabel').textContent = isCorp ? 'Business Registration Number (SSM)' : 'Business Registration Number (SSM) (optional)';
+      document.getElementById('ssmNota').textContent = isCorp
+        ? 'Required for companies. We verify this before approval.'
+        : 'If your institution is registered with SSM, adding this speeds up approval. Public universities registered under the Ministry of Higher Education can skip this.';
+      document.getElementById('ssm').value = '';
+      document.getElementById('ssmRalat').hidden = true;
+      document.getElementById('orgNameLabel').textContent = isKlinik ? 'Clinic Name' : (isCorp ? 'Organization Name' : 'Organization Name');
+      document.getElementById('orgName').placeholder = isKlinik ? 'Klinik Kaunseling Damai' : 'Universiti Malaysia Pahang Al-Sultan Abdullah';
+      if (isKlinik) initMap();
+      document.getElementById('s2Sub').textContent = isKlinik
+        ? 'This information appears publicly on your counselor listings.'
+        : 'This information appears to your members.';
+      document.getElementById('orgSizeLabel').textContent = isCorp ? 'Company Size' : 'Organization Size';
+      var unit = isCorp ? 'employees' : 'members';
+      var orgSize = document.getElementById('orgSize');
+      orgSize.innerHTML = '<option value="">Select a range</option>' +
+        ['1–50','51–200','201–1,000','1,000–5,000','5,000+'].map(function(r){ return '<option>' + r + ' ' + unit + '</option>'; }).join('');
+      document.getElementById('s3Sub').textContent = isCorp
+        ? "This lets us automatically verify employees who sign up with your organization's email."
+        : "This lets us automatically verify students and staff who sign up with your organization's email.";
+      rolOptions = isCorp ? ['Employee','Manager','Counselor'] : ['Student','Staff','Counselor'];
+      [].slice.call(domainList.querySelectorAll('.domain-rol')).forEach(function(sel){
+        var semasa = sel.value;
+        sel.innerHTML = rolOptions.map(function(r){ return '<option' + (r === semasa ? ' selected' : '') + '>' + r + '</option>'; }).join('');
+        if (sel.value !== semasa) sel.selectedIndex = 0;
+      });
+      urutan = isKlinik ? urutanKlinik : urutanPenuh;
+      labelAktif = isKlinik ? labelKlinik : labelPenuh;
+      bangunDots();
+      tukar(2);
+    });
+
+    // MAP (clinic location pin)
+    var mapInited = false;
+    function initMap(){
+      if (mapInited) return;
+      mapInited = true;
+      var addr = document.getElementById('addr1');
+      var postcode = document.getElementById('postcode');
+      var wrap = document.getElementById('mapWrap');
+      wireMap(addr, postcode, wrap, 'mapCanvas', 'mapPin', 'mapCoords');
+    }
+
+    var optMapInited = false;
+    function initOptMap(){
+      if (optMapInited) return;
+      optMapInited = true;
+      var addr = document.getElementById('optAddr1');
+      var postcode = document.getElementById('optPostcode');
+      var wrap = document.getElementById('optMapWrap');
+      wireMap(addr, postcode, wrap, 'optMapCanvas', 'optMapPin', 'optMapCoords');
+    }
+
+    function wireMap(addr, postcode, wrap, canvasId, pinId, coordsId){
+      if (!addr || !postcode || !wrap) return;
+      function semakAlamat(){
+        var isi = addr.value.trim().length > 2 && postcode.value.trim().length > 3;
+        if (isi && wrap.hidden) { wrap.hidden = false; wrap.classList.add('vd-masuk'); }
+        else if (!isi) { wrap.hidden = true; }
+      }
+      addr.addEventListener('input', semakAlamat);
+      postcode.addEventListener('input', semakAlamat);
+
+      var canvas = document.getElementById(canvasId);
+      var pin = document.getElementById(pinId);
+      var coordsEl = document.getElementById(coordsId);
+      var baseLat = 3.1390, baseLng = 101.6869;
+      function letak(x, y){
+        var r = canvas.getBoundingClientRect();
+        x = Math.max(0, Math.min(r.width, x));
+        y = Math.max(0, Math.min(r.height, y));
+        pin.style.left = x + 'px';
+        pin.style.top = y + 'px';
+        pin.style.transform = 'translate(-50%,-100%)';
+        var lat = baseLat + (r.height / 2 - y) * 0.00006;
+        var lng = baseLng + (x - r.width / 2) * 0.00006;
+        coordsEl.textContent = lat.toFixed(4) + '° N, ' + lng.toFixed(4) + '° E';
+      }
+      var seret = false;
+      function mula(e){ seret = true; canvas.style.cursor = 'grabbing'; gerak(e); }
+      function gerak(e){
+        if (!seret) return;
+        var r = canvas.getBoundingClientRect();
+        var pt = e.touches ? e.touches[0] : e;
+        letak(pt.clientX - r.left, pt.clientY - r.top);
+      }
+      function henti(){ seret = false; canvas.style.cursor = 'grab'; }
+      canvas.addEventListener('mousedown', mula);
+      window.addEventListener('mousemove', gerak);
+      window.addEventListener('mouseup', henti);
+      canvas.addEventListener('touchstart', mula, { passive: true });
+      window.addEventListener('touchmove', gerak, { passive: true });
+      window.addEventListener('touchend', henti);
+      canvas.addEventListener('click', function(e){
+        var r = canvas.getBoundingClientRect();
+        letak(e.clientX - r.left, e.clientY - r.top);
+      });
+    }
+
+    // STEP 2 — optional location (university/corporate)
+    var optLocToggle = document.getElementById('optLocToggle');
+    var optLocFields = document.getElementById('optLocFields');
+    function resetOptLocation(){
+      optLocFields.hidden = true;
+      optLocToggle.textContent = '+ Add location';
+      optLocToggle.className = 'shrink-0 whitespace-nowrap text-[13px] font-medium text-teal';
+      ['optLocName','optAddr1','optCity','optPostcode'].forEach(function(id){ document.getElementById(id).value = ''; });
+      document.getElementById('optState').value = '';
+      document.getElementById('optMapWrap').hidden = true;
+    }
+    optLocToggle.addEventListener('click', function(){
+      var expanded = !optLocFields.hidden;
+      if (expanded) {
+        optLocFields.hidden = true;
+        optLocToggle.textContent = '+ Add location';
+        optLocToggle.className = 'shrink-0 whitespace-nowrap text-[13px] font-medium text-teal';
+      } else {
+        optLocFields.hidden = false;
+        optLocToggle.textContent = 'Skip this step';
+        optLocToggle.className = 'shrink-0 whitespace-nowrap text-[12.5px] text-navy/45';
+        initOptMap();
+      }
+    });
+
+    var photoInput = document.getElementById('photoInput');
+    var photoDrop = document.getElementById('photoDrop');
+    var photoThumbs = document.getElementById('photoThumbs');
+    var fotoFail = [];
+
+    function renderThumbs(){
+      photoThumbs.innerHTML = '';
+      fotoFail.forEach(function(f, i){
+        var url = URL.createObjectURL(f);
+        var el = document.createElement('div');
+        el.className = 'relative h-16 w-16 overflow-hidden rounded-[8px] border border-navy/10';
+        el.innerHTML = '<img src="' + url + '" class="h-full w-full object-cover">' +
+          '<button type="button" data-i="' + i + '" class="foto-buang absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-navy/70 text-cream" aria-label="Remove photo">' +
+          '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>';
+        photoThumbs.appendChild(el);
+      });
+      [].slice.call(photoThumbs.querySelectorAll('.foto-buang')).forEach(function(b){
+        b.addEventListener('click', function(){ fotoFail.splice(+b.getAttribute('data-i'), 1); renderThumbs(); });
+      });
+    }
+    photoDrop.addEventListener('click', function(){ photoInput.click(); });
+    photoDrop.addEventListener('dragover', function(e){ e.preventDefault(); });
+    photoDrop.addEventListener('drop', function(e){
+      e.preventDefault();
+      fotoFail = fotoFail.concat([].slice.call(e.dataTransfer.files));
+      renderThumbs();
+    });
+    photoInput.addEventListener('change', function(){
+      fotoFail = fotoFail.concat([].slice.call(photoInput.files));
+      renderThumbs();
+      photoInput.value = '';
+    });
+
+    document.getElementById('form2').addEventListener('submit', function(e){
+      e.preventDefault();
+      var isKlinik = data.tipe === 'clinic';
+      var nama = document.getElementById('orgName');
+      if (nama.value.trim().length < 2) {
+        nama.setAttribute('aria-invalid','true');
+        nama.classList.remove('goyang'); void nama.offsetWidth; nama.classList.add('goyang');
+        return;
+      }
+      nama.removeAttribute('aria-invalid');
+
+      var isCorp = data.tipe === 'corporate';
+      var ssm = document.getElementById('ssm');
+      var ssmRalat = document.getElementById('ssmRalat');
+      var ssmOk = /^\d{12}$/.test(ssm.value.trim());
+      if (!isKlinik && ((isCorp && !ssmOk) || (!isCorp && ssm.value.trim().length > 0 && !ssmOk))) {
+        ssm.setAttribute('aria-invalid','true');
+        ssmRalat.hidden = false;
+        ssm.classList.remove('goyang'); void ssm.offsetWidth; ssm.classList.add('goyang');
+        return;
+      }
+      ssm.removeAttribute('aria-invalid');
+      ssmRalat.hidden = true;
+      data.ssm = ssm.value.trim();
+
+      data.nama = nama.value.trim();
+      data.ukuran = document.getElementById('orgSize').value;
+
+      if (isKlinik) {
+        var locName = document.getElementById('locName');
+        var addr1 = document.getElementById('addr1');
+        var city = document.getElementById('city');
+        var state = document.getElementById('state');
+        var postcode = document.getElementById('postcode');
+        var wajib = [locName, addr1, city, postcode];
+        var semuaOK = true;
+        var adaKosong = false;
+        wajib.concat([state]).forEach(function(el){
+          var kosong = el.value.trim().length === 0;
+          if (kosong) { semuaOK = false; adaKosong = true; el.setAttribute('aria-invalid','true'); el.classList.remove('goyang'); void el.offsetWidth; el.classList.add('goyang'); }
+          else { el.removeAttribute('aria-invalid'); }
+        });
+        if (fotoFail.length === 0) semuaOK = false;
+        if (!semuaOK) {
+          if (fotoFail.length === 0 && !adaKosong) { photoDrop.classList.remove('goyang'); void photoDrop.offsetWidth; photoDrop.classList.add('goyang'); }
+          return;
+        }
+        data.locName = locName.value.trim();
+        data.addr1 = addr1.value.trim();
+        data.city = city.value.trim();
+        data.state = state.value;
+        data.postcode = postcode.value.trim();
+        data.foto = fotoFail;
+        data.hasLocation = true;
+        tukar(4);
+        return;
+      }
+      if (!optLocFields.hidden) {
+        data.locName = document.getElementById('optLocName').value.trim();
+        data.addr1 = document.getElementById('optAddr1').value.trim();
+        data.city = document.getElementById('optCity').value.trim();
+        data.state = document.getElementById('optState').value;
+        data.postcode = document.getElementById('optPostcode').value.trim();
+        data.hasLocation = !!(data.city || data.state || data.locName);
+      } else {
+        data.locName = ''; data.addr1 = ''; data.city = ''; data.state = ''; data.postcode = '';
+        data.hasLocation = false;
+      }
+      tukar(3);
+    });
+
+    // STEP 3 — domain
+    var domainList = document.getElementById('domainList');
+    var addDomainBtn = document.getElementById('addDomain');
+    var noDomainChk = document.getElementById('noDomainChk');
+    var domainLapis = document.getElementById('domainLapis');
+    var noDomainNota = document.getElementById('noDomainNota');
+    var s3bBtn = document.getElementById('s3bContinue');
+    var contohDomain = ['adab.umpsa.edu.my', 'fkee.umpsa.edu.my', 'fkm.umpsa.edu.my'];
+    var contohIdx = 0;
+    var rolOptions = ['Student','Staff','Counselor'];
+    function buatBarisDomain(wajib, placeholder, rolLalai){
+      var baris = document.createElement('div');
+      baris.className = 'domain-baris flex items-center gap-2.5';
+      var rolHtml = rolOptions.map(function(r){ return '<option' + (r === rolLalai ? ' selected' : '') + '>' + r + '</option>'; }).join('');
+      baris.innerHTML =
+        '<span class="relative flex-1"><span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] text-navy/35">@</span><input type="text" placeholder="' + placeholder + '" class="medan domain-input w-full" style="padding-left:30px"></span>' +
+        '<select class="medan domain-rol" style="width:132px">' + rolHtml + '</select>' +
+        (wajib ? '' : '<button type="button" class="domain-buang grid h-9 w-9 shrink-0 place-items-center rounded-lg text-navy/40 hover:text-ralat" aria-label="Remove domain">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>');
+      baris.querySelector('.domain-input').addEventListener('input', semakDomain);
+      if (!wajib) baris.querySelector('.domain-buang').addEventListener('click', function(){
+        baris.classList.add('keluar');
+        setTimeout(function(){ baris.remove(); semakDomain(); }, 180);
+      });
+      return baris;
+    }
+    domainList.appendChild(buatBarisDomain(true, 'umpsa.edu.my', rolOptions[0]));
+
+    addDomainBtn.addEventListener('click', function(){
+      var p = contohDomain[contohIdx % contohDomain.length]; contohIdx++;
+      domainList.appendChild(buatBarisDomain(false, p, rolOptions[0]));
+    });
+
+    function semakDomain(){
+      var isi = [].slice.call(domainList.querySelectorAll('.domain-input')).some(function(i){ return i.value.trim().length > 2; });
+      var siap = isi || data.noDomain;
+      s3bBtn.dataset.siap = siap ? '1' : '0';
+      s3bBtn.style.opacity = siap ? '1' : '.4';
+    }
+
+    noDomainChk.addEventListener('change', function(){
+      data.noDomain = noDomainChk.checked;
+      if (data.noDomain) {
+        domainLapis.style.opacity = '0';
+        setTimeout(function(){
+          domainLapis.hidden = true;
+          noDomainNota.hidden = false;
+          requestAnimationFrame(function(){ noDomainNota.style.opacity = '1'; });
+        }, 200);
+      } else {
+        noDomainNota.style.opacity = '0';
+        setTimeout(function(){
+          noDomainNota.hidden = true;
+          domainLapis.hidden = false;
+          requestAnimationFrame(function(){ domainLapis.style.opacity = '1'; });
+        }, 200);
+      }
+      semakDomain();
+    });
+
+    s3bBtn.addEventListener('click', function(){
+      if (s3bBtn.dataset.siap !== '1') {
+        [].slice.call(domainList.querySelectorAll('.domain-input')).forEach(function(i){
+          if (i.value.trim().length <= 2) { i.setAttribute('aria-invalid', 'true'); i.classList.remove('goyang'); void i.offsetWidth; i.classList.add('goyang'); }
+        });
+        return;
+      }
+      data.domains = [].slice.call(domainList.querySelectorAll('.domain-baris')).map(function(b){
+        return { domain: b.querySelector('.domain-input').value.trim(), rol: b.querySelector('.domain-rol').value };
+      }).filter(function(d){ return d.domain.length > 2; });
+      tukar(4);
+    });
+
+    // Back links
+    [].slice.call(document.querySelectorAll('.s-back')).forEach(function(b){
+      b.addEventListener('click', function(){ tukar(+b.getAttribute('data-ke')); });
+    });
+
+    // STEP 3 — password toggles
+    [].slice.call(document.querySelectorAll('.mata-togol')).forEach(function(b){
+      var medan = document.getElementById(b.getAttribute('data-untuk'));
+      var t = b.querySelector('[data-mata="tutup"]'), o = b.querySelector('[data-mata="buka"]');
+      b.addEventListener('click', function(){
+        var lihat = medan.type === 'password';
+        medan.type = lihat ? 'text' : 'password';
+        t.hidden = lihat; o.hidden = !lihat;
+      });
+    });
+
+    var pass = document.getElementById('adminPass');
+    var confirm = document.getElementById('adminConfirm');
+    var syarat = [].slice.call(document.querySelectorAll('.rp-syarat'));
+    var nota = document.getElementById('confirmNota');
+    var chkAuth = document.getElementById('chkAuth');
+    var chkTerms = document.getElementById('chkTerms');
+    var s3Btn = document.getElementById('s3Submit');
+    var nameEl = document.getElementById('adminName');
+    var titleEl = document.getElementById('adminTitle');
+    var emailEl = document.getElementById('adminEmail');
+    var tundaConfirm = null;
+    var uji = {
+      len: function(v){ return v.length >= 8; },
+      upper: function(v){ return /[A-Z]/.test(v); },
+      num: function(v){ return /[0-9]/.test(v); },
+      spec: function(v){ return /[^A-Za-z0-9]/.test(v); }
+    };
+
+    function semakPass(){
+      var v = pass.value, semuaOK = true;
+      syarat.forEach(function(li){
+        var k = li.getAttribute('data-syarat'), lulus = uji[k](v);
+        if (!lulus) semuaOK = false;
+        li.setAttribute('data-keadaan', v.length === 0 ? 'kosong' : (lulus ? 'ok' : 'gagal'));
+      });
+      return semuaOK;
+    }
+    function semakConfirm(lambat){
+      if (confirm.value.length === 0) { nota.hidden = true; confirm.removeAttribute('aria-invalid'); return false; }
+      if (confirm.value === pass.value) {
+        nota.hidden = false; nota.style.color = '#0F6B7D';
+        nota.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg> Passwords match';
+        confirm.removeAttribute('aria-invalid');
+        return true;
+      }
+      if (!lambat) {
+        nota.hidden = false; nota.style.color = 'rgba(14,42,51,.55)'; nota.textContent = 'Keep typing...';
+        return false;
+      }
+      nota.hidden = false; nota.style.color = '#C4574A';
+      nota.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Passwords don\'t match';
+      confirm.setAttribute('aria-invalid','true');
+      return false;
+    }
+    function semakSemua(){
+      var passOK = semakPass();
+      var confirmOK = confirm.value.length > 0 && confirm.value === pass.value;
+      var ok = passOK && confirmOK && nameEl.value.trim().length > 1 && titleEl.value.trim().length > 1
+        && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value.trim()) && chkAuth.checked && chkTerms.checked;
+      s3Btn.dataset.siap = ok ? '1' : '0';
+      s3Btn.style.opacity = ok ? '1' : '.4';
+    }
+    pass.addEventListener('input', function(){ semakPass(); semakConfirm(false); semakSemua(); });
+    confirm.addEventListener('input', function(){
+      semakConfirm(false); semakSemua();
+      clearTimeout(tundaConfirm);
+      tundaConfirm = setTimeout(function(){ semakConfirm(true); }, 400);
+    });
+    [nameEl, titleEl, emailEl].forEach(function(el){ el.addEventListener('input', semakSemua); });
+    [chkAuth, chkTerms].forEach(function(el){ el.addEventListener('change', semakSemua); });
+
+    function kemasKiniRingkasan(){
+      var labelTipe = { university: 'University / Higher Education', corporate: 'Company / Corporate', clinic: 'Clinic / Private Practice' };
+      var isKlinik = data.tipe === 'clinic';
+      document.getElementById('sumType').textContent = labelTipe[data.tipe] || '—';
+      document.getElementById('sumNameLabel').textContent = isKlinik ? 'Clinic name' : 'Organization name';
+      document.getElementById('sumName').textContent = data.nama || '—';
+      document.getElementById('sumAkses').textContent = data.akses === 'open' ? 'Open to all platform users' : 'Members only';
+      document.getElementById('chkOrgName').textContent = data.nama || 'this organization';
+      document.getElementById('sumDomainRow').hidden = isKlinik;
+      document.getElementById('sumLocationRow').hidden = !data.hasLocation;
+      document.getElementById('sumSsmRow').hidden = isKlinik || !data.ssm;
+      document.getElementById('sumSsm').textContent = data.ssm || '—';
+      if (data.hasLocation) {
+        document.getElementById('sumLocation').textContent = [data.city, data.state].filter(Boolean).join(', ') || '—';
+      }
+      if (!isKlinik) {
+        document.getElementById('sumDomain').textContent = (data.domains.length && !data.noDomain)
+          ? data.domains.map(function(d){ return d.domain; }).join(', ')
+          : 'Invite codes';
+      }
+    }
+
+    document.getElementById('form3').addEventListener('submit', function(e){
+      e.preventDefault();
+      if (s3Btn.dataset.siap !== '1') {
+        [pass, confirm, nameEl, titleEl, emailEl].forEach(function(el){
+          if (!el.value.trim()) { el.setAttribute('aria-invalid', 'true'); el.classList.remove('goyang'); void el.offsetWidth; el.classList.add('goyang'); }
+        });
+        [chkAuth, chkTerms].forEach(function(chk){
+          if (!chk.checked) {
+            var wrap = chk.closest('label');
+            wrap.classList.remove('goyang'); void wrap.offsetWidth; wrap.classList.add('goyang');
+          }
+        });
+        return;
+      }
+      var lbl = s3Btn.querySelector('[data-btn="label"]'), spin = s3Btn.querySelector('[data-btn="spin"]');
+      s3Btn.disabled = true; s3Btn.style.opacity = '1'; lbl.hidden = true; spin.hidden = false;
+      setTimeout(function(){
+        document.getElementById('wizardRoot').hidden = true;
+        var isKlinik = data.tipe === 'clinic';
+        var domainNames = (data.domains || []).map(function(d){ return d.domain; });
+        if (isKlinik || data.noDomain || domainNames.length === 0) {
+          document.getElementById('screenWaitingApproval').hidden = false;
+        } else {
+          bukaVerifyDomain(domainNames);
+        }
+      }, 900);
+    });
+
+    function bukaVerifyDomain(domainNames){
+      var wrap = document.getElementById('screenVerifyDomain');
+      var cards = document.getElementById('domainCards');
+      wrap.hidden = false;
+      cards.innerHTML = '';
+      domainNames.forEach(function(dom, i){
+        var status = i === domainNames.length - 1 && domainNames.length > 1 ? 'verified' : 'pending';
+        var token = 'mykaunsel-verify=' + Math.random().toString(16).slice(2, 16);
+        var card = document.createElement('div');
+        card.className = 'vd-card rounded-2xl border border-navy/12 bg-cream p-7';
+        card.setAttribute('data-status', status);
+        card.style.setProperty('--tunda', (i * 0.1) + 's');
+        card.innerHTML = vdCardHtml(dom, token, status);
+        cards.appendChild(card);
+        vdWireCard(card);
+      });
+      vdSemakSemua();
+    }
+
+    function vdLencanaHtml(status){
+      var map = {
+        pending: { bg: 'rgba(217,143,74,.12)', fg: '#D98F4A', label: 'Pending verification', icon: '' },
+        checking: { bg: 'rgba(74,125,255,.12)', fg: '#4A7DFF', label: 'Checking...', icon: '<svg class="vd-putar" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>' },
+        verified: { bg: 'rgba(15,107,125,.12)', fg: '#0F6B7D', label: 'Verified', icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>' },
+        failed: { bg: 'rgba(196,87,74,.12)', fg: '#C4574A', label: 'Not found yet', icon: '' }
+      };
+      var s = map[status];
+      return '<span class="vd-lencana inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-medium" style="background:' + s.bg + ';color:' + s.fg + '">' + s.icon + s.label + '</span>';
+    }
+
+    function vdCardHtml(dom, token, status){
+      var verifiedRow = '<p class="vd-verified-row flex items-center gap-1.5 text-[13.5px] font-medium" style="color:#0F6B7D" ' + (status === 'verified' ? '' : 'hidden') + '><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg> Verified on 15 Aug 2026</p>';
+      return '<div class="flex items-center justify-between gap-3">' +
+          '<span class="text-[18px] font-semibold text-navy">' + dom + '</span>' +
+          '<span class="vd-lencana-slot">' + vdLencanaHtml(status) + '</span>' +
+        '</div>' +
+        '<div class="vd-body mt-5" style="' + (status === 'verified' ? 'max-height:60px' : 'max-height:600px') + '">' +
+          verifiedRow +
+          '<div class="vd-dns-block" ' + (status === 'verified' ? 'hidden' : '') + '>' +
+            '<div class="rounded-[10px] p-5" style="background:#EDEDED">' +
+              '<p class="text-[10.5px] uppercase tracking-[0.16em] text-navy/45">Add this TXT record to your DNS</p>' +
+              '<div class="mt-3 grid gap-1.5 font-mono text-[13px] text-navy" style="grid-template-columns:60px 1fr">' +
+                '<span class="text-navy/45">Type</span><span>TXT</span>' +
+                '<span class="text-navy/45">Name</span><span>@</span>' +
+                '<span class="text-navy/45">Value</span><span class="flex items-center gap-2 break-all"><span class="vd-token">' + token + '</span>' +
+                  '<span class="relative"><button type="button" class="vd-copy text-navy/50 hover:text-navy" aria-label="Copy value"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>' +
+                  '<span class="vd-tooltip pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 rounded-md bg-navy px-2 py-1 text-[11px] text-cream opacity-0">Copied!</span></span></span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="mt-4 flex flex-col gap-2 sm:flex-row">' +
+              '<button type="button" class="vd-check flex h-[40px] flex-1 items-center justify-center gap-1.5 rounded-full text-[13px] font-medium"><span class="vd-check-label">Check now</span></button>' +
+              '<button type="button" class="vd-it flex h-[40px] flex-1 items-center justify-center gap-1.5 rounded-full text-[13px] font-medium">' +
+                '<svg width="14" height="14" class="shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="m3 7 8.24 5.5a1.4 1.4 0 0 0 1.52 0L21 7"/></svg><span>Send instructions to IT</span></button>' +
+            '</div>' +
+            '<div class="vd-it-panel mt-3" style="max-height:0;opacity:0">' +
+              '<div class="flex gap-2">' +
+                '<input type="email" placeholder="it@yourorganization.edu.my" class="medan vd-it-email flex-1">' +
+                '<button type="button" class="vd-it-send rounded-full px-4 text-[13px] font-medium text-white" style="background:#4A7DFF">Send</button>' +
+              '</div>' +
+              '<p class="vd-it-sent mt-2 hidden items-center gap-1.5 text-[12.5px] font-medium" style="color:#0F6B7D"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg> Instructions sent</p>' +
+            '</div>' +
+          '</div>' +
+          '<p class="vd-note mt-4 text-[11px] leading-relaxed text-navy/45" ' + (status === 'verified' ? 'hidden' : '') + '>DNS changes can take a few hours to appear. We\'ll check automatically every 30 minutes and notify you by email once verified.</p>' +
+        '</div>';
+    }
+
+    function vdSetStatus(card, status){
+      card.setAttribute('data-status', status);
+      card.querySelector('.vd-lencana-slot').innerHTML = vdLencanaHtml(status);
+      if (status === 'verified') {
+        card.style.borderColor = 'rgba(15,107,125,.5)';
+        card.style.background = 'rgba(15,107,125,.03)';
+        var dnsBlock = card.querySelector('.vd-dns-block');
+        var verifiedRow = card.querySelector('.vd-verified-row');
+        var body = card.querySelector('.vd-body');
+        dnsBlock.style.opacity = '0';
+        setTimeout(function(){
+          dnsBlock.hidden = true;
+          card.querySelector('.vd-note').hidden = true;
+          body.style.maxHeight = '60px';
+          verifiedRow.hidden = false;
+          verifiedRow.style.opacity = '0';
+          setTimeout(function(){ verifiedRow.style.opacity = '1'; }, 20);
+        }, 220);
+      }
+      vdSemakSemua();
+    }
+
+    function vdWireCard(card){
+      var checkBtn = card.querySelector('.vd-check');
+      checkBtn.addEventListener('click', function(){
+        vdSetStatus(card, 'checking');
+        checkBtn.disabled = true;
+        setTimeout(function(){
+          checkBtn.disabled = false;
+          vdSetStatus(card, 'verified');
+        }, 1600);
+      });
+      var copyBtn = card.querySelector('.vd-copy');
+      copyBtn.addEventListener('click', function(){
+        var val = card.querySelector('.vd-token').textContent;
+        if (navigator.clipboard) navigator.clipboard.writeText(val).catch(function(){});
+        var tip = card.querySelector('.vd-tooltip');
+        tip.style.opacity = '1';
+        setTimeout(function(){ tip.style.opacity = '0'; }, 1500);
+      });
+      var itBtn = card.querySelector('.vd-it');
+      var itPanel = card.querySelector('.vd-it-panel');
+      itBtn.addEventListener('click', function(){
+        var open = itPanel.style.maxHeight !== '0px';
+        itPanel.style.maxHeight = open ? '0' : '120px';
+        itPanel.style.opacity = open ? '0' : '1';
+      });
+      card.querySelector('.vd-it-send').addEventListener('click', function(){
+        var email = card.querySelector('.vd-it-email');
+        if (!email.value.trim()) { email.classList.remove('goyang'); void email.offsetWidth; email.classList.add('goyang'); return; }
+        var sent = card.querySelector('.vd-it-sent');
+        sent.classList.remove('hidden'); sent.classList.add('flex');
+        sent.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg> Instructions sent to ' + email.value.trim();
+        setTimeout(function(){
+          itPanel.style.maxHeight = '0'; itPanel.style.opacity = '0';
+          sent.classList.add('hidden'); sent.classList.remove('flex');
+          email.value = '';
+        }, 3000);
+      });
+    }
+
+    function vdSemakSemua(){
+      var cards = [].slice.call(document.querySelectorAll('.vd-card'));
+      var semuaOK = cards.length > 0 && cards.every(function(c){ return c.getAttribute('data-status') === 'verified'; });
+      var btn = document.getElementById('vdContinue');
+      var hint = document.getElementById('vdHint');
+      btn.dataset.siap = semuaOK ? '1' : '0';
+      btn.style.opacity = semuaOK ? '1' : '.4';
+      hint.hidden = semuaOK;
+      document.getElementById('vdSkip').closest('div').hidden = semuaOK;
+    }
+
+    document.getElementById('vdContinue').addEventListener('click', function(){
+      if (this.dataset.siap !== '1') return;
+      document.getElementById('screenVerifyDomain').hidden = true;
+      document.getElementById('screenWaitingApproval').hidden = false;
+    });
+    document.getElementById('vdSkip').addEventListener('click', function(e){
+      e.preventDefault();
+      document.getElementById('vdModalWrap').hidden = false;
+    });
+    document.getElementById('vdGoBack').addEventListener('click', function(){
+      document.getElementById('vdModalWrap').hidden = true;
+    });
+    document.getElementById('vdAnyway').addEventListener('click', function(){
+      document.getElementById('vdModalWrap').hidden = true;
+      document.getElementById('screenVerifyDomain').hidden = true;
+      document.getElementById('screenWaitingApproval').hidden = false;
+    });
+
+    bangunDots();
+    papar(1);
+
+    // Waiting for Approval — demo state switcher
+    var waStates = { pending: document.getElementById('waPending'), approved: document.getElementById('waApproved'), rejected: document.getElementById('waRejected') };
+    var waBarTimer = null;
+    function waPapar(s){
+      Object.keys(waStates).forEach(function(k){ waStates[k].hidden = k !== s; });
+      var el = waStates[s];
+      el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+      clearTimeout(waBarTimer);
+      if (s === 'approved') {
+        var bar = document.getElementById('waBar');
+        bar.style.width = '0%';
+        requestAnimationFrame(function(){ bar.style.width = '100%'; });
+      }
+      if (s === 'pending') {
+        document.getElementById('waOrgName').textContent = data.nama || 'your organization';
+        var skipped = data.noDomain === true;
+        document.getElementById('waDomainLabel').textContent = skipped ? 'Domain verification skipped' : 'Domain verified';
+        var icon = document.getElementById('waDomainItem').querySelector('svg');
+        if (skipped) {
+          icon.outerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#D98F4A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3.5 2"/></svg>';
+        }
+        document.getElementById('waLocNote').hidden = !(data.tipe !== 'clinic' && !data.hasLocation);
+      }
+    }
+    window.addEventListener('hashchange', function(){
+      var h = location.hash.replace('#', '');
+      if (['wa-approved','wa-rejected','wa-pending'].indexOf(h) < 0) return;
+      document.getElementById('wizardRoot').hidden = true;
+      document.getElementById('screenVerifyDomain').hidden = true;
+      document.getElementById('screenWaitingApproval').hidden = false;
+      waPapar(h.replace('wa-',''));
+    });
+    if (['wa-approved','wa-rejected','wa-pending'].indexOf(location.hash.replace('#','')) >= 0) {
+      document.getElementById('wizardRoot').hidden = true;
+      document.getElementById('screenWaitingApproval').hidden = false;
+      waPapar(location.hash.replace('#wa-',''));
+    } else {
+      waPapar('pending');
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
+
+</body>
+</html>
