@@ -47,7 +47,7 @@ class OrgDomainVerificationController extends Controller
     {
         $this->ensureOrgAdmin($request, $organization);
 
-        return redirect()->route('organizations.signup.submitted', $organization);
+        return redirect()->route('organizations.signup.waiting-approval', $organization);
     }
 
     private function ensureOrgAdmin(Request $request, Organization $organization): void

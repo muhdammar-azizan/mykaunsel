@@ -95,7 +95,7 @@ class OrgSignupController extends Controller
             return redirect()->route('organizations.signup.verify-domain', $organization);
         }
 
-        return redirect()->route('organizations.signup.submitted', $organization);
+        return redirect()->route('organizations.signup.waiting-approval', $organization);
     }
 
     private function storeLocation(Request $request, Organization $organization, bool $isClinic, array $data): void
@@ -130,10 +130,5 @@ class OrgSignupController extends Controller
                 ]);
             }
         }
-    }
-
-    public function submitted(Organization $organization)
-    {
-        return view('organizations.signup.submitted', compact('organization'));
     }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\Counselor\CounselorSignupController;
 use App\Http\Controllers\CounselorSearchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\Organization\OrgApprovalStatusController;
 use App\Http\Controllers\Organization\OrgCounselorController;
 use App\Http\Controllers\Organization\OrgDashboardController;
 use App\Http\Controllers\Organization\OrgDomainVerificationController;
@@ -42,11 +43,11 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/organizations/signup/{organization}/submitted', [OrgSignupController::class, 'submitted'])->name('organizations.signup.submitted');
-
     Route::get('/organizations/{organization}/verify-domain', [OrgDomainVerificationController::class, 'show'])->name('organizations.signup.verify-domain');
     Route::post('/organizations/{organization}/verify-domain/continue', [OrgDomainVerificationController::class, 'continue'])->name('organizations.signup.verify-domain.continue');
     Route::post('/organizations/{organization}/domains/{domain}/check', [OrgDomainVerificationController::class, 'check'])->name('organizations.signup.verify-domain.check');
+
+    Route::get('/organizations/{organization}/waiting-approval', [OrgApprovalStatusController::class, 'show'])->name('organizations.signup.waiting-approval');
 });
 
 Route::middleware('auth')->group(function () {

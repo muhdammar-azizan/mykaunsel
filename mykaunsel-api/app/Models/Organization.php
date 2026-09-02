@@ -20,6 +20,7 @@ class Organization extends Model
         'ssm_number',
         'access_model',
         'subscription_status',
+        'rejection_reason',
         'subscription_tier',
         'subscription_ends_at',
         'allow_counselor_freelance',
