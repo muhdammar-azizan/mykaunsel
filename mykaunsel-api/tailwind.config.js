@@ -11,8 +11,18 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                navy: '#0E2A33',
+                cream: '#FAF8F5',
+                teal: '#0F6B7D',
+                amber: '#D98F4A',
+                ralat: '#C4574A',
+            },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['"Plus Jakarta Sans"', ...defaultTheme.fontFamily.sans],
+            },
+            letterSpacing: {
+                tightest: '-0.035em',
             },
         },
     },

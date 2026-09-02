@@ -40,9 +40,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/organization-suspended', function () {
         return view('auth.organization-suspended');
     })->name('organization.suspended');
+
+    // Preview-only routes: not yet wired into the real verification.verify
+    // redirect flow (see docs/design-conversion notes). New route names,
+    // not part of the original spec — flagged for review.
+    Route::get('/verify-email/success', function () {
+        return view('auth.verify-email-success');
+    })->name('verification.success');
+
+    Route::get('/verify-email/expired', function () {
+        return view('auth.verify-email-expired');
+    })->name('verification.expired');
 });
 
-Route::middleware(['auth', 'org.context', 'membership.active'])->group(function () {
+Route::middleware(['auth', 'verified', 'org.context', 'membership.active'])->group(function () {
     Route::prefix('org')->name('org.')->middleware('role:org_admin')->group(function () {
         Route::get('/dashboard', [OrgDashboardController::class, 'index'])->name('dashboard');
         Route::get('/counselors', [OrgCounselorController::class, 'index'])->name('counselors');
