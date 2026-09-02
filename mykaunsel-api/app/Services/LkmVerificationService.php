@@ -45,6 +45,38 @@ class LkmVerificationService
         return CounselorProfile::where('kb_number', $kbNumber)->exists();
     }
 
+    /**
+     * Returns a specific, human-readable reason the given details failed
+     * verification, or null if they would pass. Checked in priority order
+     * so the counselor sees the single most relevant problem first.
+     */
+    public function verificationFailureReason(string $kbNumber, string $paNumber, string $fullName): ?string
+    {
+        $record = LkmDirectorySnapshot::where('kb_number', $kbNumber)->first();
+
+        if (! $record) {
+            return 'No record found for this KB number.';
+        }
+
+        if ($this->isAlreadyRegistered($kbNumber)) {
+            return 'This KB number is already registered on MyKaunsel.';
+        }
+
+        if (! $this->namesMatch($record->full_name, $fullName)) {
+            return "The name provided doesn't match our records for {$kbNumber}. Please check the spelling matches your official LKM registration exactly.";
+        }
+
+        if ($record->pa_number !== $paNumber) {
+            return "The PA number provided doesn't match our records for {$kbNumber}.";
+        }
+
+        if ($record->status !== self::ACTIVE_STATUS || ! $this->recordHasValidPa($record)) {
+            return 'Your practicing certificate (PA) has expired.';
+        }
+
+        return null;
+    }
+
     private function recordHasValidPa(LkmDirectorySnapshot $record): bool
     {
         return $record->pa_valid_until->greaterThanOrEqualTo(now()->startOfDay());

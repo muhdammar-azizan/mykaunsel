@@ -4,8 +4,10 @@ use App\Http\Controllers\Auth\AccountTypeController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ContextSelectionController;
+use App\Http\Controllers\Counselor\CounselorApprovalStatusController;
 use App\Http\Controllers\Counselor\CounselorAppointmentController;
 use App\Http\Controllers\Counselor\CounselorDashboardController;
+use App\Http\Controllers\Counselor\CounselorDocumentController;
 use App\Http\Controllers\Counselor\CounselorPlannerController;
 use App\Http\Controllers\Counselor\CounselorProfileController;
 use App\Http\Controllers\Counselor\CounselorSignupController;
@@ -40,6 +42,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/organizations/signup', [OrgSignupController::class, 'store'])->name('organizations.signup.store');
 
     Route::get('/counselors/signup', [CounselorSignupController::class, 'create'])->name('counselors.signup.create');
+    Route::post('/counselors/signup', [CounselorSignupController::class, 'store'])->name('counselors.signup.store');
 });
 
 Route::middleware('auth')->group(function () {
@@ -48,6 +51,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/organizations/{organization}/domains/{domain}/check', [OrgDomainVerificationController::class, 'check'])->name('organizations.signup.verify-domain.check');
 
     Route::get('/organizations/{organization}/waiting-approval', [OrgApprovalStatusController::class, 'show'])->name('organizations.signup.waiting-approval');
+
+    Route::get('/counselors/signup/verified', [CounselorSignupController::class, 'verified'])->name('counselors.signup.verified');
+
+    Route::get('/counselors/signup/documents', [CounselorDocumentController::class, 'create'])->name('counselors.signup.documents');
+    Route::post('/counselors/signup/documents', [CounselorDocumentController::class, 'store'])->name('counselors.signup.documents.store');
+
+    Route::get('/counselors/signup/waiting-approval', [CounselorApprovalStatusController::class, 'show'])->name('counselors.signup.waiting-approval');
 });
 
 Route::middleware('auth')->group(function () {
