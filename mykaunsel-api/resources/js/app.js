@@ -84,9 +84,13 @@ window.MyKaunselLocationPicker = function (config) {
         }
 
         map = L.map(canvas, { zoomControl: true }).setView(startCenter, startZoom);
+        // Plain OpenStreetMap tiles: the only fully free, no-API-key option
+        // with reliable, complete coverage of Malaysia. CARTO's free anonymous
+        // tiles now require a key, and ESRI's free street tiles have real
+        // gaps in Malaysian coverage — both were tried and ruled out.
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
         }).addTo(map);
 
         marker = L.marker(startCenter, { icon: teardropIcon(), draggable: true }).addTo(map);
@@ -116,8 +120,15 @@ window.MyKaunselLocationPicker = function (config) {
         }
     }
 
-    function geocodeQuery(query, zoom) {
-        return fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=my&q=' + encodeURIComponent(query))
+    function geocodeStructured(params, zoom) {
+        var query = new URLSearchParams(Object.assign({
+            format: 'json',
+            limit: '1',
+            countrycodes: 'my',
+            country: 'Malaysia',
+        }, params));
+
+        return fetch('https://nominatim.openstreetmap.org/search?' + query.toString())
             .then(function (r) { return r.json(); })
             .then(function (results) {
                 if (results && results[0]) {
@@ -135,24 +146,43 @@ window.MyKaunselLocationPicker = function (config) {
     function geocode() {
         if (!map) return;
 
-        var street = addr.value.trim();
+        var fullAddr = addr.value.trim();
         var city = cityEl ? cityEl.value.trim() : '';
         var state = stateEl ? stateEl.value : '';
         var postcodeVal = postcode.value.trim();
 
-        // Nominatim (free OSM geocoding) often can't resolve a specific
-        // house/unit number, but usually knows the street or at least the
-        // city — so we try from most to least specific and stop at the
-        // first real match, rather than giving up entirely.
-        var attempts = [
-            { query: [street, city, state, postcodeVal, 'Malaysia'].filter(Boolean).join(', '), zoom: 17 },
-            { query: [street, city, state, 'Malaysia'].filter(Boolean).join(', '), zoom: 16 },
-            { query: [city, state, 'Malaysia'].filter(Boolean).join(', '), zoom: 14 },
-        ];
+        // Malaysian addresses are usually typed as "<unit/house>, <street>,
+        // <neighbourhood>" — Nominatim's structured search (separate
+        // street/city/state fields) matches far more reliably than cramming
+        // everything into one free-text string, but a leading house/unit
+        // number in the street field alone usually breaks the match, so we
+        // also try the address with that first segment dropped.
+        var segments = fullAddr.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        var withoutHouseNumber = segments.length > 1 ? segments.slice(1).join(', ') : null;
+        var streetNameOnly = segments.length > 1 ? segments[1] : null;
+
+        var attempts = [];
+        if (fullAddr) {
+            attempts.push({ params: { street: fullAddr, city: city, state: state, postalcode: postcodeVal }, zoom: 17 });
+        }
+        if (withoutHouseNumber) {
+            attempts.push({ params: { street: withoutHouseNumber, city: city, state: state }, zoom: 16 });
+        }
+        if (streetNameOnly && streetNameOnly !== withoutHouseNumber) {
+            attempts.push({ params: { street: streetNameOnly, city: city, state: state }, zoom: 16 });
+        }
+        if (postcodeVal) {
+            // A Malaysian postcode centroid is usually a fairly tight local
+            // area — a much better fallback than the whole city.
+            attempts.push({ params: { postalcode: postcodeVal }, zoom: 14 });
+        }
+        if (city || state) {
+            attempts.push({ params: { city: city, state: state }, zoom: 13 });
+        }
 
         (function tryNext(i) {
-            if (i >= attempts.length || !attempts[i].query) return;
-            geocodeQuery(attempts[i].query, attempts[i].zoom).then(function (found) {
+            if (i >= attempts.length) return;
+            geocodeStructured(attempts[i].params, attempts[i].zoom).then(function (found) {
                 if (!found) tryNext(i + 1);
             });
         })(0);
