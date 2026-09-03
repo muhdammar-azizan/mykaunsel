@@ -266,6 +266,21 @@
                 <div id="domainList" class="flex flex-col gap-3"></div>
                 <button type="button" id="addDomain" class="mt-3 text-[13.5px] font-medium text-teal">{{ __('+ Add another domain') }}</button>
                 @error('domains')<p class="mt-2 text-[11.5px]" style="color:#C4574A">{{ $message }}</p>@enderror
+                @php
+                    // Per-row failures (e.g. "this domain is already registered")
+                    // land under keys like domains.0.domain, not the plain
+                    // "domains" key the block above checks — surface those too,
+                    // deduped, so a rejected domain doesn't silently bounce the
+                    // user back to this step with no explanation.
+                    $domainRowErrors = collect($errors->keys())
+                        ->filter(fn ($k) => str_starts_with($k, 'domains.'))
+                        ->flatMap(fn ($k) => $errors->get($k))
+                        ->unique()
+                        ->values();
+                @endphp
+                @foreach ($domainRowErrors as $domainRowError)
+                    <p class="mt-2 text-[11.5px]" style="color:#C4574A">{{ $domainRowError }}</p>
+                @endforeach
             </div>
 
             <div id="noDomainNota" class="domain-lapis mt-4" @unless (old('no_domain')) hidden style="opacity:0" @endunless>
@@ -643,14 +658,21 @@
                 var contohDomain = ['adab.umpsa.edu.my', 'fkee.umpsa.edu.my', 'fkm.umpsa.edu.my'];
                 var contohIdx = 0;
                 var rolOptions = ['Student', 'Staff', 'Counselor'];
+                var domainRowIndex = 0;
 
+                // PHP pairs "domains[][domain]" and "domains[][role]" as two
+                // INDEPENDENT auto-incrementing arrays when they're separate
+                // field names — not as one row per pair — which silently
+                // scrambled every domain/role pairing. Each row needs its
+                // own explicit, stable numeric index instead.
                 function buatBarisDomain(wajib, placeholder, rolLalai, domainValue) {
+                    var idx = domainRowIndex++;
                     var baris = document.createElement('div');
                     baris.className = 'domain-baris flex items-center gap-2.5';
                     var rolHtml = rolOptions.map(function (r) { return '<option' + (r === rolLalai ? ' selected' : '') + '>' + r + '</option>'; }).join('');
                     baris.innerHTML =
-                        '<span class="relative flex-1"><span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] text-navy/35">@</span><input type="text" name="domains[][domain]" value="' + (domainValue || '') + '" placeholder="' + placeholder + '" class="medan domain-input w-full" style="padding-left:30px"></span>' +
-                        '<select name="domains[][role]" class="medan domain-rol" style="width:132px">' + rolHtml + '</select>' +
+                        '<span class="relative flex-1"><span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] text-navy/35">@</span><input type="text" name="domains[' + idx + '][domain]" value="' + (domainValue || '') + '" placeholder="' + placeholder + '" class="medan domain-input w-full" style="padding-left:30px"></span>' +
+                        '<select name="domains[' + idx + '][role]" class="medan domain-rol" style="width:132px">' + rolHtml + '</select>' +
                         (wajib ? '' : '<button type="button" class="domain-buang grid h-9 w-9 shrink-0 place-items-center rounded-lg text-navy/40 hover:text-ralat" aria-label="Remove domain">' +
                             '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>');
                     baris.querySelector('.domain-input').addEventListener('input', semakDomain);
@@ -681,8 +703,20 @@
                     s3bBtn.style.opacity = siap ? '1' : '.4';
                 }
 
+                // A `hidden` wrapper only hides fields visually — the browser
+                // still submits them, so an empty leftover domain row was
+                // sneaking into the request and failing validation even
+                // after checking "no domain". Disabling them is what
+                // actually excludes them from the form submission.
+                function setDomainFieldsDisabled(disabled) {
+                    [].slice.call(domainList.querySelectorAll('input, select')).forEach(function (el) {
+                        el.disabled = disabled;
+                    });
+                }
+
                 noDomainChk.addEventListener('change', function () {
                     if (noDomainChk.checked) {
+                        setDomainFieldsDisabled(true);
                         domainLapis.style.opacity = '0';
                         setTimeout(function () {
                             domainLapis.hidden = true;
@@ -690,6 +724,7 @@
                             requestAnimationFrame(function () { noDomainNota.style.opacity = '1'; });
                         }, 200);
                     } else {
+                        setDomainFieldsDisabled(false);
                         noDomainNota.style.opacity = '0';
                         setTimeout(function () {
                             noDomainNota.hidden = true;
@@ -699,6 +734,8 @@
                     }
                     semakDomain();
                 });
+
+                if (noDomainChk.checked) setDomainFieldsDisabled(true);
 
                 s3bBtn.addEventListener('click', function () {
                     if (s3bBtn.dataset.siap !== '1') {

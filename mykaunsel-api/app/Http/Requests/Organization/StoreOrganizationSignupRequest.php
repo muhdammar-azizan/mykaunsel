@@ -13,6 +13,35 @@ class StoreOrganizationSignupRequest extends FormRequest
         return true;
     }
 
+    /**
+     * HTML forms submit empty optional fields as "" rather than null, but
+     * Laravel's `nullable` rule only skips other rules (regex, numeric,
+     * between, ...) when the value is actually null — so an empty string
+     * still fails them. Normalize empty strings to null here so `nullable`
+     * behaves as intended everywhere below.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'ssm_number' => $this->filled('ssm_number') ? $this->input('ssm_number') : null,
+            'location' => $this->normalizeEmptyStrings($this->input('location', [])),
+            'opt_location' => $this->normalizeEmptyStrings($this->input('opt_location', [])),
+            // The first domain row always exists in the DOM (even when
+            // hidden behind "no domain"), so a blank leftover row shouldn't
+            // be treated as an incomplete entry — only rows the user
+            // actually typed a domain into count.
+            'domains' => collect($this->input('domains', []))
+                ->filter(fn ($row) => filled($row['domain'] ?? null))
+                ->values()
+                ->all(),
+        ]);
+    }
+
+    private function normalizeEmptyStrings(array $data): array
+    {
+        return array_map(static fn ($value) => $value === '' ? null : $value, $data);
+    }
+
     public function rules(): array
     {
         $isClinic = $this->input('org_type') === 'clinic';
@@ -48,7 +77,18 @@ class StoreOrganizationSignupRequest extends FormRequest
 
             'no_domain' => ['nullable', 'boolean'],
             'domains' => ['nullable', 'array'],
-            'domains.*.domain' => ['required_with:domains.*.role', 'string', 'max:255'],
+            // `org_domains.domain` has a DB-level unique constraint (a domain
+            // can only belong to one org), and two rows in the same
+            // submission can also repeat a domain — without checking both
+            // here, a duplicate reaches the insert unvalidated and crashes
+            // with a raw PDO exception instead of a normal form error.
+            'domains.*.domain' => [
+                'required_with:domains.*.role',
+                'string',
+                'max:255',
+                'distinct:ignore_case',
+                Rule::unique('org_domains', 'domain'),
+            ],
             'domains.*.role' => ['required_with:domains.*.domain', 'string'],
 
             'admin_name' => ['required', 'string', 'min:2', 'max:255'],
@@ -58,6 +98,14 @@ class StoreOrganizationSignupRequest extends FormRequest
 
             'confirm_authorized' => ['accepted'],
             'confirm_terms' => ['accepted'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'domains.*.domain.unique' => 'This domain is already registered to another organization.',
+            'domains.*.domain.distinct' => 'Each domain can only be listed once.',
         ];
     }
 }
