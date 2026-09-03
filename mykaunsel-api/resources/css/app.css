@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet location-picker: strip the default divIcon box so our custom
+   teardrop SVG pin renders on its own, and round the map container. */
+.mk-map-pin {
+    background: transparent !important;
+    border: none !important;
+}
+.leaflet-container {
+    border-radius: 14px;
+    font-family: inherit;
+}
+
 /* ==========================================================================
    Shared auth-layout styles (from Claude Design exports)
    Used across the two-column auth screens (login, verify email, signup, etc.)

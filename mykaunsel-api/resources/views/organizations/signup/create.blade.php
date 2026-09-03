@@ -185,26 +185,11 @@
 
                         <div id="optMapWrap" hidden class="mt-4">
                             <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">{{ __('Pin your location') }}</span>
-                            <p class="mb-2.5 text-[11.5px] leading-relaxed text-navy/45">{{ __('Drag the pin to match your exact location.') }}</p>
-                            <div id="optMapCanvas" class="relative h-[220px] w-full cursor-grab overflow-hidden rounded-[14px] border border-navy/10" style="background:#E9E4DA">
-                                <svg width="100%" height="100%" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-                                    <rect width="600" height="220" fill="#EDE8DE"/>
-                                    <g stroke="#D9D2C3" stroke-width="1"><path d="M0 40h600M0 90h600M0 140h600M0 190h600"/><path d="M60 0v220M160 0v220M280 0v220M400 0v220M520 0v220"/></g>
-                                    <path d="M-20 130 C 100 90, 220 170, 340 110 S 560 60, 640 100" stroke="#CFE4E8" stroke-width="22" fill="none"/>
-                                    <path d="M-20 130 C 100 90, 220 170, 340 110 S 560 60, 640 100" stroke="#B9D8DE" stroke-width="2" fill="none"/>
-                                    <rect x="90" y="30" width="70" height="46" rx="4" fill="#DDD6C7"/><rect x="250" y="150" width="90" height="55" rx="4" fill="#DDD6C7"/>
-                                    <rect x="420" y="20" width="60" height="50" rx="4" fill="#DDD6C7"/><rect x="30" y="160" width="55" height="40" rx="4" fill="#DDD6C7"/>
-                                </svg>
-                                <div id="optMapPin" class="absolute" style="left:50%;top:50%;transform:translate(-50%,-100%);touch-action:none">
-                                    <svg width="34" height="46" viewBox="0 0 34 46" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 6px 8px rgba(14,42,51,.28))">
-                                        <path d="M17 45C17 45 31 28.5 31 17C31 8.16 24.28 1 17 1C9.72 1 3 8.16 3 17C3 28.5 17 45 17 45Z" fill="#0F6B7D" stroke="#FAF8F5" stroke-width="2"/>
-                                        <circle cx="17" cy="17" r="6.5" fill="#FAF8F5"/>
-                                    </svg>
-                                </div>
-                                <div class="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-3 py-2 text-[10.5px] font-medium text-navy/40">
-                                    <span>{{ __('Drag pin to adjust') }}</span>
-                                    <span id="optMapCoords">3.1390° N, 101.6869° E</span>
-                                </div>
+                            <p class="mb-2.5 text-[11.5px] leading-relaxed text-navy/45">{{ __('We placed the pin near your address — drag it to match your exact location.') }}</p>
+                            <div id="optMapCanvas" class="relative h-[220px] w-full overflow-hidden rounded-[14px] border border-navy/10"></div>
+                            <div class="mt-2 flex items-center justify-between text-[10.5px] font-medium text-navy/40">
+                                <span>{{ __('Drag pin, or click the map, to adjust') }}</span>
+                                <span id="optMapCoords">3.1390° N, 101.6869° E</span>
                             </div>
                         </div>
                     </div>
@@ -238,26 +223,11 @@
 
                     <div id="mapWrap" hidden class="mt-4">
                         <span class="mb-1.5 block text-[13.5px] font-medium text-navy/75">{{ __('Pin your location') }}</span>
-                        <p class="mb-2.5 text-[11.5px] leading-relaxed text-navy/45">{{ __('Drag the pin to match your exact location.') }}</p>
-                        <div id="mapCanvas" class="relative h-[220px] w-full cursor-grab overflow-hidden rounded-[14px] border border-navy/10" style="background:#E9E4DA">
-                            <svg width="100%" height="100%" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-                                <rect width="600" height="220" fill="#EDE8DE"/>
-                                <g stroke="#D9D2C3" stroke-width="1"><path d="M0 40h600M0 90h600M0 140h600M0 190h600"/><path d="M60 0v220M160 0v220M280 0v220M400 0v220M520 0v220"/></g>
-                                <path d="M-20 130 C 100 90, 220 170, 340 110 S 560 60, 640 100" stroke="#CFE4E8" stroke-width="22" fill="none"/>
-                                <path d="M-20 130 C 100 90, 220 170, 340 110 S 560 60, 640 100" stroke="#B9D8DE" stroke-width="2" fill="none"/>
-                                <rect x="90" y="30" width="70" height="46" rx="4" fill="#DDD6C7"/><rect x="250" y="150" width="90" height="55" rx="4" fill="#DDD6C7"/>
-                                <rect x="420" y="20" width="60" height="50" rx="4" fill="#DDD6C7"/><rect x="30" y="160" width="55" height="40" rx="4" fill="#DDD6C7"/>
-                            </svg>
-                            <div id="mapPin" class="absolute" style="left:50%;top:50%;transform:translate(-50%,-100%);touch-action:none">
-                                <svg width="34" height="46" viewBox="0 0 34 46" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 6px 8px rgba(14,42,51,.28))">
-                                    <path d="M17 45C17 45 31 28.5 31 17C31 8.16 24.28 1 17 1C9.72 1 3 8.16 3 17C3 28.5 17 45 17 45Z" fill="#0F6B7D" stroke="#FAF8F5" stroke-width="2"/>
-                                    <circle cx="17" cy="17" r="6.5" fill="#FAF8F5"/>
-                                </svg>
-                            </div>
-                            <div class="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-3 py-2 text-[10.5px] font-medium text-navy/40">
-                                <span>{{ __('Drag pin to adjust') }}</span>
-                                <span id="mapCoords">3.1390° N, 101.6869° E</span>
-                            </div>
+                        <p class="mb-2.5 text-[11.5px] leading-relaxed text-navy/45">{{ __('We placed the pin near your address — drag it to match your exact location.') }}</p>
+                        <div id="mapCanvas" class="relative h-[220px] w-full overflow-hidden rounded-[14px] border border-navy/10"></div>
+                        <div class="mt-2 flex items-center justify-between text-[10.5px] font-medium text-navy/40">
+                            <span>{{ __('Drag pin, or click the map, to adjust') }}</span>
+                            <span id="mapCoords">3.1390° N, 101.6869° E</span>
                         </div>
                     </div>
 
@@ -548,67 +518,23 @@
                     tukar(2);
                 });
 
-                // MAP (drag pin)
+                // MAP (real Leaflet + OpenStreetMap, with address geocoding)
                 var mapInited = false;
                 function initMap() {
                     if (mapInited) return;
                     mapInited = true;
-                    wireMap(document.getElementById('addr1'), document.getElementById('postcode'), document.getElementById('mapWrap'), 'mapCanvas', 'mapPin', 'mapCoords', 'lat', 'lng');
+                    window.MyKaunselLocationPicker({
+                        addrId: 'addr1', postcodeId: 'postcode', cityId: 'city', stateId: 'state',
+                        wrapId: 'mapWrap', canvasId: 'mapCanvas', coordsId: 'mapCoords', latId: 'lat', lngId: 'lng',
+                    });
                 }
                 var optMapInited = false;
                 function initOptMap() {
                     if (optMapInited) return;
                     optMapInited = true;
-                    wireMap(document.getElementById('optAddr1'), document.getElementById('optPostcode'), document.getElementById('optMapWrap'), 'optMapCanvas', 'optMapPin', 'optMapCoords', 'optLat', 'optLng');
-                }
-                function wireMap(addr, postcode, wrap, canvasId, pinId, coordsId, latId, lngId) {
-                    if (!addr || !postcode || !wrap) return;
-                    function semakAlamat() {
-                        var isi = addr.value.trim().length > 2 && postcode.value.trim().length > 3;
-                        if (isi && wrap.hidden) { wrap.hidden = false; wrap.classList.add('vd-masuk'); }
-                        else if (!isi) { wrap.hidden = true; }
-                    }
-                    addr.addEventListener('input', semakAlamat);
-                    postcode.addEventListener('input', semakAlamat);
-
-                    var canvas = document.getElementById(canvasId);
-                    var pin = document.getElementById(pinId);
-                    var coordsEl = document.getElementById(coordsId);
-                    var latInput = document.getElementById(latId);
-                    var lngInput = document.getElementById(lngId);
-                    var baseLat = 3.1390, baseLng = 101.6869;
-                    function letak(x, y) {
-                        var r = canvas.getBoundingClientRect();
-                        x = Math.max(0, Math.min(r.width, x));
-                        y = Math.max(0, Math.min(r.height, y));
-                        pin.style.left = x + 'px';
-                        pin.style.top = y + 'px';
-                        pin.style.transform = 'translate(-50%,-100%)';
-                        var lat = baseLat + (r.height / 2 - y) * 0.00006;
-                        var lng = baseLng + (x - r.width / 2) * 0.00006;
-                        coordsEl.textContent = lat.toFixed(4) + '° N, ' + lng.toFixed(4) + '° E';
-                        latInput.value = lat.toFixed(6);
-                        lngInput.value = lng.toFixed(6);
-                    }
-                    letak(300, 110);
-                    var seret = false;
-                    function mula(e) { seret = true; canvas.style.cursor = 'grabbing'; gerak(e); }
-                    function gerak(e) {
-                        if (!seret) return;
-                        var r = canvas.getBoundingClientRect();
-                        var pt = e.touches ? e.touches[0] : e;
-                        letak(pt.clientX - r.left, pt.clientY - r.top);
-                    }
-                    function henti() { seret = false; canvas.style.cursor = 'grab'; }
-                    canvas.addEventListener('mousedown', mula);
-                    window.addEventListener('mousemove', gerak);
-                    window.addEventListener('mouseup', henti);
-                    canvas.addEventListener('touchstart', mula, { passive: true });
-                    window.addEventListener('touchmove', gerak, { passive: true });
-                    window.addEventListener('touchend', henti);
-                    canvas.addEventListener('click', function (e) {
-                        var r = canvas.getBoundingClientRect();
-                        letak(e.clientX - r.left, e.clientY - r.top);
+                    window.MyKaunselLocationPicker({
+                        addrId: 'optAddr1', postcodeId: 'optPostcode', cityId: 'optCity', stateId: 'optState',
+                        wrapId: 'optMapWrap', canvasId: 'optMapCanvas', coordsId: 'optMapCoords', latId: 'optLat', lngId: 'optLng',
                     });
                 }
 
