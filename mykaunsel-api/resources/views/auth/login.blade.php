@@ -69,9 +69,9 @@
                 <span class="h-px flex-1 bg-navy/12"></span>
             </div>
 
-            <button type="button" disabled title="{{ __('Coming soon') }}" class="group flex h-[44px] w-full items-center justify-center gap-0 overflow-hidden rounded-full border border-navy/20 bg-white text-[14px] font-medium text-navy/50 cursor-not-allowed">
+            <button type="button" title="{{ __('Coming soon') }}" class="group flex h-[44px] w-full items-center justify-center gap-0 overflow-hidden rounded-full border border-navy/20 bg-white text-[14px] font-medium text-navy transition-colors duration-200 hover:border-navy/40 hover:bg-navy/[.03]">
                 <svg width="18" height="18" viewBox="0 0 48 48" class="shrink-0" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84a10.13 10.13 0 0 1-4.4 6.65v5.52h7.11c4.16-3.83 6.57-9.47 6.57-16.18"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.3-9.07H4.34v5.7A22 22 0 0 0 24 46"/><path fill="#FBBC05" d="M11.7 28.18A13.2 13.2 0 0 1 11.01 24c0-1.45.25-2.86.69-4.18v-5.7H4.34A21.99 21.99 0 0 0 2 24c0 3.55.85 6.91 2.34 9.88z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.36 5.7c1.72-5.2 6.57-9.07 12.3-9.07"/></svg>
-                <span class="pl-[10px]">{{ __('Continue with Google') }}</span>
+                <span class="max-w-0 whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[160px] group-hover:pl-[10px] group-hover:opacity-100">{{ __('Continue with Google') }}</span>
             </button>
         </form>
 
