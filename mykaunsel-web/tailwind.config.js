@@ -17,6 +17,13 @@ export default {
                 teal: '#0F6B7D',
                 amber: '#D98F4A',
                 ralat: '#C4574A',
+                brand: {
+                    blue: '#0A4F88',
+                    yellow: '#E3AF39',
+                    red: '#D62839',
+                    ink: '#1B2A4E',
+                    deep: '#073A66',
+                },
             },
             fontFamily: {
                 sans: ['"Plus Jakarta Sans"', ...defaultTheme.fontFamily.sans],

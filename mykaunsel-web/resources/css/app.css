@@ -18,6 +18,7 @@
    Used across the two-column auth screens (login, verify email, signup, etc.)
    ========================================================================== */
 @layer components {
+    [x-cloak],
     [hidden] {
         display: none !important;
     }
