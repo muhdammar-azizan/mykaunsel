@@ -24,6 +24,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'avatar_path',
+        'pending_email',
+        'timezone',
+        'notification_preferences',
     ];
 
     /**
@@ -34,6 +38,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -46,7 +52,27 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'notification_preferences' => 'array',
+            'last_login_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted',
         ];
+    }
+
+    /**
+     * Whether this user wants the given email notification (defaults come from config/account.php).
+     */
+    public function wantsNotification(string $key): bool
+    {
+        $stored = $this->notification_preferences[$key] ?? null;
+
+        return (bool) ($stored ?? config("account.notifications.{$key}.default", false));
+    }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class, 'actor_user_id');
     }
 
     public function memberships(): HasMany
