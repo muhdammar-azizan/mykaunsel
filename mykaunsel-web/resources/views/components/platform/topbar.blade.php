@@ -19,8 +19,14 @@
     </div>
 
     <div class="flex items-center gap-2">
-        <button type="button" aria-label="Search" class="grid h-10 w-10 place-items-center rounded-full border border-white/25 text-white transition hover:bg-white/10">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <button type="button" aria-label="Search" class="group relative grid h-10 w-10 place-items-center rounded-full border border-brand-ink/10 bg-cream text-brand-ink shadow-[0_2px_6px_-2px_rgba(14,42,51,.25)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_16px_-6px_rgba(14,42,51,.35)]">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <span role="tooltip" class="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-brand-ink px-2.5 py-1 text-[12px] font-medium text-white opacity-0 shadow-lg transition duration-150 group-hover:translate-y-0 group-hover:opacity-100">Search</span>
+        </button>
+        <button type="button" aria-label="Notifications" class="group relative grid h-10 w-10 place-items-center rounded-full border border-brand-ink/10 bg-cream text-brand-ink shadow-[0_2px_6px_-2px_rgba(14,42,51,.25)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_16px_-6px_rgba(14,42,51,.35)]">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 4-2 5-2 7h16c0-2-2-3-2-7z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
+            <span class="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-cream bg-brand-red"></span>
+            <span role="tooltip" class="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-brand-ink px-2.5 py-1 text-[12px] font-medium text-white opacity-0 shadow-lg transition duration-150 group-hover:translate-y-0 group-hover:opacity-100">Notifications</span>
         </button>
         <x-platform.user-menu />
     </div>

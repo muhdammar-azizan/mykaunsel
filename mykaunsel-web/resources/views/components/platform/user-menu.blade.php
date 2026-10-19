@@ -1,6 +1,7 @@
 <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-    <button type="button" class="grid h-10 w-10 place-items-center rounded-full transition hover:ring-2 hover:ring-white/30" aria-label="Account menu" @click="open = !open" aria-haspopup="true" :aria-expanded="open">
+    <button type="button" class="group relative grid h-10 w-10 place-items-center rounded-full transition hover:ring-2 hover:ring-white/30" aria-label="Account menu" @click="open = !open" aria-haspopup="true" :aria-expanded="open">
         <span class="grid h-10 w-10 place-items-center rounded-full bg-brand-yellow text-[13px] font-bold text-brand-ink">{{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
+        <span role="tooltip" x-show="!open" class="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-brand-ink px-2.5 py-1 text-[12px] font-medium text-white opacity-0 shadow-lg transition duration-150 group-hover:translate-y-0 group-hover:opacity-100">Account</span>
     </button>
     <div x-show="open" x-cloak x-transition.origin.top.right
          class="absolute right-0 top-[52px] w-60 rounded-2xl bg-cream p-2 shadow-[0_20px_44px_-14px_rgba(14,42,51,.4)]">
