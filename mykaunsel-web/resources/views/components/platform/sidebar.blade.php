@@ -12,7 +12,7 @@
                 @endif
                 <div x-show="open" class="flex flex-col gap-0.5">
                     @foreach ($section['items'] as $item)
-                        <x-platform.nav-link :route="$item['route']" :icon="$item['icon']">{{ $item['label'] }}</x-platform.nav-link>
+                        <x-platform.nav-link :route="$item['route']" :icon="$item['icon']" :child="(bool) $section['group']">{{ $item['label'] }}</x-platform.nav-link>
                     @endforeach
                 </div>
             </div>
