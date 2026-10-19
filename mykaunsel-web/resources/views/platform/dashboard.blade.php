@@ -17,18 +17,18 @@
         ['label' => 'Bookings this month', 'value' => $stats['bookings'], 'color' => 'ink'],
     ];
 
-    $pill = 'inline-flex min-h-[44px] items-center gap-2 rounded-full border border-brand-ink/15 bg-cream px-5 text-[13px] font-semibold shadow-sm transition hover:-translate-y-0.5 hover:shadow-md';
+    $suggestions = [
+        ['label' => 'Review organizations', 'prompt' => 'organizations pending over 5 days', 'icon' => 'M3 4h18v17H3zM3 9h18M9 4v17'],
+        ['label' => 'Review counselors', 'prompt' => 'counselors with expiring PA', 'icon' => 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M17 11l2 2 4-4M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
+        ['label' => 'View complaints', 'prompt' => 'active complaints this week', 'icon' => 'M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'],
+        ['label' => 'Audit log', 'prompt' => 'audit log entries from this month', 'icon' => 'M9 12h6M9 16h6M9 8h6M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'],
+        ['label' => 'LKM directory', 'prompt' => 'counselors in the LKM directory', 'icon' => 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'],
+    ];
 @endphp
 
 <x-platform-layout title="Dashboard">
 
-    <x-platform.page-header :title="$greeting.', '.$firstName" subtitle="Here's what's happening across the platform today" center>
-        <div class="mt-6 flex flex-wrap justify-center gap-2.5" role="group" aria-label="Quick actions">
-            <a href="{{ route('platform.organizations') }}" class="{{ $pill }}">Review organizations</a>
-            <a href="{{ route('platform.counselors') }}" class="{{ $pill }}">Review counselors</a>
-            <a href="{{ route('platform.complaints') }}" class="{{ $pill }}">View complaints</a>
-        </div>
-    </x-platform.page-header>
+    <x-platform.ai-hero :title="$greeting.', '.$firstName" subtitle="Here's what's happening across the platform today" :suggestions="$suggestions" />
 
     <section class="mt-10" aria-labelledby="attention-heading">
         <h2 id="attention-heading" class="text-[16px] font-bold">Needs your attention</h2>
