@@ -58,6 +58,15 @@ class PlatformDashboardTest extends TestCase
             ->assertSee('Universiti Contoh');
     }
 
+    public function test_generic_dashboard_redirects_platform_admin_to_platform_dashboard(): void
+    {
+        [$admin, $session] = $this->platformAdminSession();
+
+        $this->actingAs($admin)->withSession($session)
+            ->get(route('dashboard'))
+            ->assertRedirect(route('platform.dashboard'));
+    }
+
     public function test_non_platform_admin_is_forbidden(): void
     {
         [$admin] = $this->platformAdminSession();
