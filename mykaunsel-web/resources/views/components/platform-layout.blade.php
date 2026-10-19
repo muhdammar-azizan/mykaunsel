@@ -15,7 +15,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-brand-deep font-sans text-brand-ink antialiased" x-data="{ menuOpen: false }">
+<body class="bg-[#0F69B0] bg-[linear-gradient(135deg,#0A4F88_0%,#1469B0_50%,#3A92D0_100%)] bg-fixed font-sans text-brand-ink antialiased" x-data="{ menuOpen: false }">
 
     <x-platform.topbar />
 
