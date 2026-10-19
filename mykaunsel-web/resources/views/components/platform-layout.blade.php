@@ -20,7 +20,7 @@
     <x-platform.topbar />
 
     {{-- One joined light panel: sidebar + content share the same surface and the same rounded outer corners. --}}
-    <div class="mx-2.5 mb-2.5 flex min-h-[calc(100vh-82px)] overflow-hidden rounded-[28px] bg-[#F4F5F7]">
+    <div class="mx-2.5 mb-2.5 flex min-h-[calc(100vh-82px)] overflow-hidden rounded-[28px] bg-[#F5F5F6]">
         <x-platform.sidebar />
 
         <main class="min-w-0 flex-1 px-5 pb-12 pt-8 md:px-10">
