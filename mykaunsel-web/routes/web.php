@@ -26,6 +26,7 @@ use App\Http\Controllers\Platform\AccountController;
 use App\Http\Controllers\Platform\AccountEmailController;
 use App\Http\Controllers\Platform\AccountNotificationController;
 use App\Http\Controllers\Platform\AccountSecurityController;
+use App\Http\Controllers\Platform\AccountTwoFactorController;
 use App\Http\Controllers\Platform\PlatformComplaintController;
 use App\Http\Controllers\Platform\PlatformCounselorController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
@@ -123,7 +124,15 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active'])->gro
             Route::put('/security/password', [AccountSecurityController::class, 'updatePassword'])->middleware('throttle:5,1')->name('account.security.password');
             Route::post('/security/sessions/revoke', [AccountSecurityController::class, 'revokeOtherSessions'])->middleware('throttle:5,1')->name('account.security.sessions.revoke');
 
-            Route::get('/notifications',[AccountNotificationController::class, 'show'])->name('account.notifications');
+            Route::prefix('/security/two-factor')->middleware('throttle:10,1')->group(function () {
+                Route::post('/begin', [AccountTwoFactorController::class, 'begin'])->name('account.two-factor.begin');
+                Route::post('/confirm', [AccountTwoFactorController::class, 'confirm'])->name('account.two-factor.confirm');
+                Route::post('/cancel', [AccountTwoFactorController::class, 'cancel'])->name('account.two-factor.cancel');
+                Route::post('/recovery-codes', [AccountTwoFactorController::class, 'regenerateRecoveryCodes'])->name('account.two-factor.recovery');
+                Route::post('/disable', [AccountTwoFactorController::class, 'disable'])->name('account.two-factor.disable');
+            });
+
+            Route::get('/notifications', [AccountNotificationController::class, 'show'])->name('account.notifications');
             Route::patch('/notifications', [AccountNotificationController::class, 'update'])->middleware('throttle:60,1')->name('account.notifications.update');
 
             Route::post('/avatar',[AccountAvatarController::class, 'store'])->middleware('throttle:10,1')->name('account.avatar.store');

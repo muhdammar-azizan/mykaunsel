@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,6 +32,24 @@ class LoginRequest extends FormRequest
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ];
+    }
+
+    /**
+     * When the credentials are valid AND the account has two-factor on, return that user
+     * WITHOUT signing them in — the controller then sends them to the code challenge.
+     * Returns null in every other case (including wrong credentials, handled by authenticate()).
+     */
+    public function twoFactorUser(): ?User
+    {
+        $this->ensureIsNotRateLimited();
+
+        $user = User::where('email', $this->string('email'))->first();
+
+        if ($user && $user->hasTwoFactorEnabled() && Auth::validate($this->only('email', 'password'))) {
+            return $user;
+        }
+
+        return null;
     }
 
     /**

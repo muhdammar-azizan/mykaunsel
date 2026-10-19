@@ -22,6 +22,8 @@ return [
         'password_changed' => 'Password changed',
         'email_change_requested' => 'Email change requested',
         'email_changed' => 'Email address changed',
+        'two_factor_failed' => 'Failed two-factor attempt',
+        'recovery_code_used' => 'Recovery code used to sign in',
         'two_factor_enabled' => 'Two-factor authentication turned on',
         'two_factor_disabled' => 'Two-factor authentication turned off',
         'recovery_codes_regenerated' => 'Recovery codes regenerated',

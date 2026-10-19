@@ -72,6 +72,24 @@ class User extends Authenticatable implements MustVerifyEmail
         return (bool) ($stored ?? config("account.notifications.{$key}.default", false));
     }
 
+    /** 2FA is on only after the user has proved they can generate a code. */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+    }
+
+    /** A secret exists but setup was not confirmed yet. */
+    public function hasPendingTwoFactor(): bool
+    {
+        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at === null;
+    }
+
+    /** @return array<int, string> HMAC hashes of the unused recovery codes */
+    public function recoveryCodeHashes(): array
+    {
+        return json_decode($this->two_factor_recovery_codes ?? '[]', true) ?: [];
+    }
+
     /** Public URL of the profile photo, or null when the user has none. */
     public function getAvatarUrlAttribute(): ?string
     {

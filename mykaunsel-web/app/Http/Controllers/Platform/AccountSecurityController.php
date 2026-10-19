@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Services\TwoFactorAuthenticator;
 use App\Support\UserAgent;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -15,7 +16,7 @@ use Illuminate\View\View;
 
 class AccountSecurityController extends Controller
 {
-    public function show(Request $request): View
+    public function show(Request $request, TwoFactorAuthenticator $twoFactor): View
     {
         $user = $request->user();
         $timezone = $user->display_timezone;
@@ -57,7 +58,24 @@ class AccountSecurityController extends Controller
                 'ago' => $log->created_at->diffForHumans(),
             ]);
 
+        $secret = $user->two_factor_secret;
+        $twoFactorState = [
+            'enabled' => $user->hasTwoFactorEnabled(),
+            'pending' => $user->hasPendingTwoFactor(),
+            'enabled_at' => $user->two_factor_confirmed_at?->timezone($timezone)->format('j M Y'),
+            'remaining_codes' => count($user->recoveryCodeHashes()),
+            'recovery_codes' => session('recovery_codes'),
+            'qr' => null,
+            'manual_key' => null,
+        ];
+
+        if ($user->hasPendingTwoFactor()) {
+            $twoFactorState['qr'] = $twoFactor->qrSvg($twoFactor->otpauthUrl($user, $secret));
+            $twoFactorState['manual_key'] = $twoFactor->manualKey($secret);
+        }
+
         return view('platform.account.security', [
+            'twoFactor' => $twoFactorState,
             'user' => $user,
             'sessions' => $sessions,
             'driverIsDatabase' => $driverIsDatabase,

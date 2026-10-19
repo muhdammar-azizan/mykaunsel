@@ -111,12 +111,7 @@
                     @endif
                 </x-platform.panel>
 
-                <x-platform.panel title="Two-factor authentication">
-                    <div class="mt-3 flex items-center justify-between gap-4">
-                        <p class="text-[13px] text-brand-ink/60">Add a second step at sign-in using an authenticator app.</p>
-                        <span class="shrink-0 rounded-full bg-brand-ink/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-ink/55">Soon</span>
-                    </div>
-                </x-platform.panel>
+                @include('platform.account.partials.two-factor')
 
                 <x-platform.panel title="Recent security activity" id="activity">
                     <ul class="mt-4 space-y-0.5">

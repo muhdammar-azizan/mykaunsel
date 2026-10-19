@@ -24,6 +24,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Two-factor accounts: password is correct but they are NOT signed in until the code is verified.
+        if ($user = $request->twoFactorUser()) {
+            TwoFactorChallengeController::begin($request, $user);
+
+            return redirect()->route('two-factor.challenge');
+        }
+
         $request->authenticate();
 
         $request->session()->regenerate();
