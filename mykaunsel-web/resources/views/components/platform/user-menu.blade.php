@@ -1,7 +1,6 @@
 <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-    <button type="button" class="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 text-white hover:bg-white/10" @click="open = !open" aria-haspopup="true" :aria-expanded="open">
+    <button type="button" class="grid h-10 w-10 place-items-center rounded-full transition hover:ring-2 hover:ring-white/30" aria-label="Account menu" @click="open = !open" aria-haspopup="true" :aria-expanded="open">
         <span class="grid h-10 w-10 place-items-center rounded-full bg-brand-yellow text-[13px] font-bold text-brand-ink">{{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
-        <span class="hidden text-[13px] font-semibold sm:block">{{ auth()->user()->name }}</span>
     </button>
     <div x-show="open" x-cloak x-transition.origin.top.right
          class="absolute right-0 top-[52px] w-60 rounded-2xl bg-cream p-2 shadow-[0_20px_44px_-14px_rgba(14,42,51,.4)]">
