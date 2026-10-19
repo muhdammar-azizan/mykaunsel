@@ -207,7 +207,8 @@ class ProfileTabTest extends TestCase
         // Tampered signature
         $this->as($admin)->get($url.'x')->assertForbidden();
 
-        // Link opened by someone else's session
+        // Link opened by someone else's session (fresh browser session, as in real life)
+        $this->flushSession();
         $otherAdmin = $this->admin(['name' => 'Second Admin']);
         $this->as($otherAdmin)->get($url)->assertForbidden();
 

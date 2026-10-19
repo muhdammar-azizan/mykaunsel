@@ -11,6 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Lets "log out other devices" actually invalidate those sessions after a password change.
+        $middleware->authenticateSessions();
+
         $middleware->alias([
             'org.context' => \App\Http\Middleware\EnsureOrgContext::class,
             'membership.active' => \App\Http\Middleware\CheckMembershipStatus::class,

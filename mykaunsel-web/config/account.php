@@ -15,6 +15,19 @@ return [
     // Minutes the "confirm your new email" link stays valid.
     'email_verification_minutes' => 60,
 
+    // audit_logs actions shown in "Recent security activity" (action => label).
+    'security_events' => [
+        'login' => 'Signed in',
+        'login_failed' => 'Failed sign-in attempt',
+        'password_changed' => 'Password changed',
+        'email_change_requested' => 'Email change requested',
+        'email_changed' => 'Email address changed',
+        'two_factor_enabled' => 'Two-factor authentication turned on',
+        'two_factor_disabled' => 'Two-factor authentication turned off',
+        'recovery_codes_regenerated' => 'Recovery codes regenerated',
+        'other_sessions_revoked' => 'Signed out other sessions',
+    ],
+
     'notifications' => [
         'new_organization_application' => [
             'label' => 'New organization application',
