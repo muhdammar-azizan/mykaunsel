@@ -4,10 +4,10 @@
     $firstName = \Illuminate\Support\Str::of(auth()->user()->name)->before(' ');
 
     $cards = [
-        ['label' => 'Pending organizations', 'count' => $counts['pending_orgs'], 'route' => 'platform.organizations', 'color' => 'blue', 'icon' => 'M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18zM6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2M10 6h4M10 10h4M10 14h4'],
-        ['label' => 'Pending counselors', 'count' => $counts['pending_counselors'], 'route' => 'platform.counselors', 'color' => 'yellow', 'icon' => 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M17 11l2 2 4-4M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
-        ['label' => 'Active complaints', 'count' => $counts['active_complaints'], 'route' => 'platform.complaints', 'color' => 'red', 'icon' => 'M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'],
-        ['label' => 'Skipped DNS verification', 'count' => $counts['skipped_dns'], 'route' => 'platform.organizations', 'color' => 'ink', 'icon' => 'M20 13c0 5-3.5 7.5-7.5 8.5a1.2 1.2 0 0 1-1 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.79 17 5 19 5a1 1 0 0 1 1 1zM9 12l2 2 4-4'],
+        ['label' => 'Pending organizations', 'count' => $counts['pending_orgs'], 'route' => 'platform.organizations', 'color' => 'blue', 'image' => 'images/attention/orgs.jpg', 'hint' => 'Organizations waiting for your approval.'],
+        ['label' => 'Pending counselors', 'count' => $counts['pending_counselors'], 'route' => 'platform.counselors', 'color' => 'yellow', 'image' => 'images/attention/counselors.jpg', 'hint' => 'Counselor credentials to verify.'],
+        ['label' => 'Active complaints', 'count' => $counts['active_complaints'], 'route' => 'platform.complaints', 'color' => 'red', 'image' => 'images/attention/complaints.jpg', 'hint' => 'Open complaints that need a response.'],
+        ['label' => 'Skipped DNS verification', 'count' => $counts['skipped_dns'], 'route' => 'platform.organizations', 'color' => 'ink', 'image' => 'images/attention/dns.jpg', 'hint' => 'Domains not technically verified yet.'],
     ];
 
     $statTiles = [
@@ -31,10 +31,13 @@
     <x-platform.ai-hero :title="$greeting.', '.$firstName" subtitle="Here's what's happening across the platform today" :suggestions="$suggestions" />
 
     <section class="mt-10" aria-labelledby="attention-heading">
-        <h2 id="attention-heading" class="text-[16px] font-bold">Needs your attention</h2>
+        <h2 id="attention-heading" class="flex items-center gap-2.5 text-[18px] font-bold">
+            Needs your attention
+            <span class="grid h-[22px] min-w-[22px] place-items-center rounded-full bg-brand-blue px-1.5 text-[11px] font-bold text-white">{{ array_sum($counts) }}</span>
+        </h2>
         <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             @foreach ($cards as $card)
-                <x-platform.attention-card :label="$card['label']" :count="$card['count']" :route="$card['route']" :icon="$card['icon']" :color="$card['color']" />
+                <x-platform.attention-card :label="$card['label']" :count="$card['count']" :route="$card['route']" :image="$card['image']" :hint="$card['hint']" :color="$card['color']" />
             @endforeach
         </div>
     </section>
