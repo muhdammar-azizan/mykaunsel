@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -68,6 +70,30 @@ class User extends Authenticatable implements MustVerifyEmail
         $stored = $this->notification_preferences[$key] ?? null;
 
         return (bool) ($stored ?? config("account.notifications.{$key}.default", false));
+    }
+
+    /** Public URL of the profile photo, or null when the user has none. */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar_path
+            ? Storage::disk(config('account.avatar_disk'))->url($this->avatar_path)
+            : null;
+    }
+
+    /** Timezone used to display times; falls back to the platform default. */
+    public function getDisplayTimezoneAttribute(): string
+    {
+        return $this->timezone ?: config('account.default_timezone');
+    }
+
+    /** Up to two initials taken from the name, e.g. "Ammar Azizan" => "AA". */
+    public function getInitialsAttribute(): string
+    {
+        return collect(preg_split('/\s+/', trim($this->name)))
+            ->filter()
+            ->take(2)
+            ->map(fn ($part) => Str::upper(mb_substr($part, 0, 1)))
+            ->implode('') ?: '?';
     }
 
     public function auditLogs(): HasMany
