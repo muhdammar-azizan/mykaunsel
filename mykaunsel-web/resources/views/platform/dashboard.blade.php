@@ -10,11 +10,11 @@
         ['label' => 'Skipped DNS verification', 'count' => $counts['skipped_dns'], 'route' => 'platform.organizations', 'color' => 'ink', 'image' => 'images/attention/dns.jpg', 'hint' => 'Domains not technically verified yet.'],
     ];
 
-    $statTiles = [
-        ['label' => 'Organizations', 'value' => $stats['organizations'], 'color' => 'blue'],
-        ['label' => 'Counselors', 'value' => $stats['counselors'], 'color' => 'yellow'],
-        ['label' => 'Active members', 'value' => $stats['members'], 'color' => 'red'],
-        ['label' => 'Bookings this month', 'value' => $stats['bookings'], 'color' => 'ink'],
+    $donut = [
+        ['label' => 'Active members', 'value' => $stats['members'], 'color' => '#0A4F88'],
+        ['label' => 'Bookings this month', 'value' => $stats['bookings'], 'color' => '#3A92D0'],
+        ['label' => 'Counselors', 'value' => $stats['counselors'], 'color' => '#E3AF39'],
+        ['label' => 'Organizations', 'value' => $stats['organizations'], 'color' => '#D62839'],
     ];
 
     $suggestions = [
@@ -62,10 +62,9 @@
         </x-platform.panel>
 
         <x-platform.panel title="Platform stats">
-            <div class="mt-4 grid grid-cols-2 gap-3">
-                @foreach ($statTiles as $tile)
-                    <x-platform.stat-tile :label="$tile['label']" :value="$tile['value']" :color="$tile['color']" />
-                @endforeach
+            <p class="text-[12px] text-brand-ink/50">This month</p>
+            <div class="mt-5">
+                <x-platform.stats-donut :segments="$donut" />
             </div>
         </x-platform.panel>
     </div>
