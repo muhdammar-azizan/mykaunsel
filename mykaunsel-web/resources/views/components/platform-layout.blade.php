@@ -15,7 +15,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#0F69B0] bg-[linear-gradient(135deg,#3A92D0_0%,#1469B0_50%,#0A4F88_100%)] flex h-screen flex-col overflow-hidden font-sans text-brand-ink antialiased" x-data="{ menuOpen: false }">
+<body class="bg-[#0F69B0] bg-[linear-gradient(135deg,#3A92D0_0%,#1469B0_50%,#0A4F88_100%)] flex h-screen flex-col overflow-hidden font-sans text-brand-ink antialiased" x-data="{ menuOpen: false, searchOpen: false }">
 
     <x-platform.topbar />
 
@@ -27,5 +27,6 @@
             {{ $slot }}
         </main>
     </div>
+    <x-platform.search-palette />
 </body>
 </html>
