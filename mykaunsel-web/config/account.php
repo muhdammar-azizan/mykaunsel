@@ -16,9 +16,25 @@ return [
     'email_verification_minutes' => 60,
 
     'notifications' => [
-        'new_organization_application' => ['label' => 'New organization application', 'default' => true],
-        'new_counselor_application' => ['label' => 'New counselor application', 'default' => true],
-        'escalated_complaint' => ['label' => 'Escalated complaint', 'default' => true],
-        'weekly_summary' => ['label' => 'Weekly platform summary', 'default' => true],
+        'new_organization_application' => [
+            'label' => 'New organization application',
+            'description' => 'Email me when an organization registers and is waiting for approval.',
+            'default' => true,
+        ],
+        'new_counselor_application' => [
+            'label' => 'New counselor application',
+            'description' => 'Email me when a counselor submits credentials for verification.',
+            'default' => true,
+        ],
+        'escalated_complaint' => [
+            'label' => 'Escalated complaint',
+            'description' => 'Email me when a complaint is escalated to the platform.',
+            'default' => true,
+        ],
+        'weekly_summary' => [
+            'label' => 'Weekly platform summary',
+            'description' => 'A weekly email with pending approvals, complaints and platform totals.',
+            'default' => true,
+        ],
     ],
 ];

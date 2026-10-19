@@ -24,6 +24,7 @@ use App\Http\Controllers\Organization\OrgSignupController;
 use App\Http\Controllers\Platform\AccountAvatarController;
 use App\Http\Controllers\Platform\AccountController;
 use App\Http\Controllers\Platform\AccountEmailController;
+use App\Http\Controllers\Platform\AccountNotificationController;
 use App\Http\Controllers\Platform\PlatformComplaintController;
 use App\Http\Controllers\Platform\PlatformCounselorController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
@@ -117,7 +118,10 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active'])->gro
             Route::get('/', [AccountController::class, 'show'])->name('account');
             Route::patch('/', [AccountController::class, 'update'])->name('account.update');
 
-            Route::post('/avatar', [AccountAvatarController::class, 'store'])->middleware('throttle:10,1')->name('account.avatar.store');
+            Route::get('/notifications', [AccountNotificationController::class, 'show'])->name('account.notifications');
+            Route::patch('/notifications', [AccountNotificationController::class, 'update'])->middleware('throttle:60,1')->name('account.notifications.update');
+
+            Route::post('/avatar',[AccountAvatarController::class, 'store'])->middleware('throttle:10,1')->name('account.avatar.store');
             Route::delete('/avatar', [AccountAvatarController::class, 'destroy'])->name('account.avatar.destroy');
 
             Route::post('/email', [AccountEmailController::class, 'store'])->middleware('throttle:5,1')->name('account.email.store');

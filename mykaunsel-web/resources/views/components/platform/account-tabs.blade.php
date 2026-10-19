@@ -5,7 +5,7 @@
     $tabs = [
         'profile' => ['label' => 'Profile', 'route' => 'platform.account'],
         'security' => ['label' => 'Security', 'route' => null],
-        'notifications' => ['label' => 'Notifications', 'route' => null],
+        'notifications' => ['label' => 'Notifications', 'route' => 'platform.account.notifications'],
     ];
 @endphp
 
