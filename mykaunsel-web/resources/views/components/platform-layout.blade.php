@@ -23,7 +23,7 @@
     <div class="mx-2.5 mb-2.5 flex min-h-0 flex-1 overflow-hidden rounded-[28px] bg-[#F5F5F6]">
         <x-platform.sidebar />
 
-        <main class="min-w-0 flex-1 overflow-y-auto px-5 pb-12 pt-8 md:px-10">
+        <main class="min-w-0 flex-1 overflow-y-auto scroll-subtle px-5 pb-12 pt-8 md:px-10">
             {{ $slot }}
         </main>
     </div>

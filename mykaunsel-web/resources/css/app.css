@@ -141,3 +141,11 @@
 @keyframes sway-s4 { 0%,100% { transform: translate(-50%,-50%) rotate(-22deg) scale(1); } 50% { transform: translate(-26%,-74%) rotate(-44deg) scale(1.35); } }
 @keyframes goyang { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 50%{transform:translateX(6px)} 80%{transform:translateX(-3px)} }
 @keyframes putar { to { transform: rotate(360deg); } }
+
+/* Slim scrollbar that stays invisible until the area is hovered. */
+.scroll-subtle { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.scroll-subtle:hover { scrollbar-color: rgba(14, 42, 51, .28) transparent; }
+.scroll-subtle::-webkit-scrollbar { width: 6px; }
+.scroll-subtle::-webkit-scrollbar-track { background: transparent; }
+.scroll-subtle::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
+.scroll-subtle:hover::-webkit-scrollbar-thumb { background: rgba(14, 42, 51, .28); }

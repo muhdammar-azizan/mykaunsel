@@ -9,8 +9,8 @@
 @if ($soon)
     <span class="{{ $base }} cursor-not-allowed text-brand-ink/45" title="Coming soon" aria-disabled="true">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="{{ $icon }}"/></svg>
-        <span class="flex-1">{{ $slot }}</span>
-        <span class="rounded-full bg-brand-ink/10 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-brand-ink/55">Soon</span>
+        <span class="flex-1 whitespace-nowrap">{{ $slot }}</span>
+        <span class="shrink-0 rounded-full bg-brand-ink/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-brand-ink/55">Soon</span>
     </span>
 @else
     <a href="{{ route($route) }}"

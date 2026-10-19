@@ -1,5 +1,5 @@
 {{-- Desktop: transparent, part of the same light panel as the content. Mobile: slide-in drawer. --}}
-<aside class="fixed inset-y-0 left-0 z-30 w-[248px] -translate-x-full overflow-y-auto bg-[#E9E9EB] px-3 pb-6 pt-[88px] shadow-2xl transition-transform md:static md:z-auto md:block md:translate-x-0 md:bg-[#E9E9EB] md:pt-4 md:shadow-none"
+<aside class="fixed inset-y-0 left-0 z-30 w-[264px] -translate-x-full overflow-y-auto scroll-subtle bg-[#E9E9EB] px-3 pb-6 pt-[88px] shadow-2xl transition-transform md:static md:z-auto md:block md:translate-x-0 md:bg-[#E9E9EB] md:pt-4 md:shadow-none"
        :class="menuOpen ? 'translate-x-0' : ''">
     <nav class="flex flex-col gap-0.5" aria-label="Platform admin">
         @foreach (config('platform-nav') as $section)
