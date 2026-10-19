@@ -19,10 +19,11 @@
 
     <x-platform.topbar />
 
-    <div class="flex">
+    {{-- One joined light panel: sidebar + content share the same surface and the same rounded outer corners. --}}
+    <div class="mx-2.5 mb-2.5 flex min-h-[calc(100vh-82px)] overflow-hidden rounded-[28px] bg-[#F4F5F7]">
         <x-platform.sidebar />
 
-        <main class="m-2.5 min-h-[calc(100vh-112px)] min-w-0 flex-1 rounded-[28px] bg-white px-5 pb-12 pt-8 shadow-[0_24px_60px_-20px_rgba(0,0,0,.4)] md:ml-0 md:px-10">
+        <main class="min-w-0 flex-1 px-5 pb-12 pt-8 md:px-10">
             {{ $slot }}
         </main>
     </div>
