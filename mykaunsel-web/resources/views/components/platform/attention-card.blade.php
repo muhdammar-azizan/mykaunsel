@@ -14,15 +14,18 @@
    class="group relative flex min-h-[260px] overflow-hidden rounded-[28px] bg-gradient-to-br {{ $tint['bg'] }} p-6 shadow-[0_2px_10px_-2px_rgba(14,42,51,.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-16px_rgba(14,42,51,.3)]">
 
     <img src="{{ asset($image) }}" alt="" loading="lazy"
-         class="pointer-events-none absolute inset-y-0 right-0 h-full w-[62%] object-cover opacity-90 transition duration-500 [mask-image:linear-gradient(to_right,transparent,#000_55%)] group-hover:scale-105">
+         class="pointer-events-none absolute inset-y-0 right-0 h-full w-[52%] object-cover opacity-90 transition duration-500 [mask-image:linear-gradient(to_right,transparent,#000_70%)] group-hover:scale-105">
 
-    <div class="relative z-10 flex w-[62%] flex-col">
-        <span class="flex items-center gap-2 text-[13px] font-semibold text-brand-ink/70">
+    {{-- Solid white backing behind the text so it never fights with the photo. --}}
+    <div class="pointer-events-none absolute inset-y-0 left-0 w-[62%] bg-gradient-to-r from-white from-60% to-transparent"></div>
+
+    <div class="relative z-10 flex w-[58%] flex-col">
+        <span class="flex items-center gap-2 text-[13px] font-semibold text-brand-ink">
             <span class="h-2 w-2 rounded-full {{ $tint['dot'] }}"></span>{{ $label }}
         </span>
         <span class="mt-2 text-[44px] font-extrabold leading-none tracking-tightest {{ $tint['num'] }}">{{ $count }}</span>
         @if ($hint)
-            <p class="mt-3 text-[13px] leading-snug text-brand-ink/60">{{ $hint }}</p>
+            <p class="mt-3 text-[13px] leading-snug text-brand-ink/75">{{ $hint }}</p>
         @endif
         <span class="mt-auto inline-flex w-fit items-center gap-1 rounded-full border border-brand-ink/15 bg-white px-4 py-2 text-[13px] font-semibold shadow-sm transition group-hover:border-brand-ink group-hover:bg-brand-ink group-hover:text-white">
             {{ $cta }}
