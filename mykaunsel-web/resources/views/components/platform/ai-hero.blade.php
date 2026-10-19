@@ -6,9 +6,28 @@
         timer: null,
         i: 0,
         prompts: @js(collect($suggestions)->pluck('prompt')->map(fn ($p) => \Illuminate\Support\Str::ucfirst($p))->all() ?: [$placeholder]),
+        shown: '',
         init() {
-            setInterval(() => { if (!this.q) this.i = (this.i + 1) % this.prompts.length; }, 3200);
+            // Typewriter: type a prompt, pause, erase it, move to the next one.
+            const tick = () => {
+                const full = this.prompts[this.i];
+                if (this.q) return setTimeout(tick, 400);
+                if (!this.erasing && this.shown.length < full.length) {
+                    this.shown = full.slice(0, this.shown.length + 1);
+                    return setTimeout(tick, 55);
+                }
+                if (!this.erasing) { this.erasing = true; return setTimeout(tick, 1800); }
+                if (this.shown.length > 0) {
+                    this.shown = this.shown.slice(0, -1);
+                    return setTimeout(tick, 25);
+                }
+                this.erasing = false;
+                this.i = (this.i + 1) % this.prompts.length;
+                setTimeout(tick, 350);
+            };
+            tick();
         },
+        erasing: false,
         type(text) {
             clearTimeout(this.timer);
             this.q = '';
@@ -36,17 +55,9 @@
             <div class="relative h-full flex-1">
                 <input id="ai-ask" x-ref="input" x-model="q" type="text" aria-label="{{ $placeholder }}"
                        class="h-full w-full border-0 bg-transparent p-0 text-[13px] focus:outline-none focus:ring-0">
-                <template x-for="(p, idx) in prompts" :key="idx">
-                    <span x-show="i === idx && !q" aria-hidden="true"
-                          x-transition:enter="transition duration-500 ease-out"
-                          x-transition:enter-start="translate-y-3 opacity-0"
-                          x-transition:enter-end="translate-y-0 opacity-100"
-                          x-transition:leave="transition duration-300 ease-in"
-                          x-transition:leave-start="translate-y-0 opacity-100"
-                          x-transition:leave-end="-translate-y-3 opacity-0"
-                          class="pointer-events-none absolute inset-0 flex items-center text-left text-[13px] text-brand-ink/45"
-                          x-text="p"></span>
-                </template>
+                <span x-show="!q" aria-hidden="true" class="pointer-events-none absolute inset-0 flex items-center text-left text-[13px] text-brand-ink/45">
+                    <span x-text="shown"></span><span class="ml-px inline-block h-[15px] w-px animate-pulse bg-brand-ink/50"></span>
+                </span>
             </div>
             <button type="button" aria-label="Attach" class="grid h-9 w-9 shrink-0 place-items-center rounded-full text-brand-ink transition hover:bg-brand-ink/5">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
