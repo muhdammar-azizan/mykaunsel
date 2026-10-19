@@ -15,15 +15,15 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#0F69B0] bg-[linear-gradient(135deg,#3A92D0_0%,#1469B0_50%,#0A4F88_100%)] bg-fixed font-sans text-brand-ink antialiased" x-data="{ menuOpen: false }">
+<body class="bg-[#0F69B0] bg-[linear-gradient(135deg,#3A92D0_0%,#1469B0_50%,#0A4F88_100%)] flex h-screen flex-col overflow-hidden font-sans text-brand-ink antialiased" x-data="{ menuOpen: false }">
 
     <x-platform.topbar />
 
     {{-- One joined light panel: sidebar + content share the same surface and the same rounded outer corners. --}}
-    <div class="mx-2.5 mb-2.5 flex min-h-[calc(100vh-82px)] overflow-hidden rounded-[28px] bg-[#F5F5F6]">
+    <div class="mx-2.5 mb-2.5 flex min-h-0 flex-1 overflow-hidden rounded-[28px] bg-[#F5F5F6]">
         <x-platform.sidebar />
 
-        <main class="min-w-0 flex-1 px-5 pb-12 pt-8 md:px-10">
+        <main class="min-w-0 flex-1 overflow-y-auto px-5 pb-12 pt-8 md:px-10">
             {{ $slot }}
         </main>
     </div>
