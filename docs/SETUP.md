@@ -15,10 +15,10 @@ git clone <url-repo>
 cd mykaunsel
 ```
 
-## 2. Setup Backend Laravel (`mykaunsel-api`)
+## 2. Setup Backend Laravel (`mykaunsel-web`)
 
 ```bash
-cd mykaunsel-api
+cd mykaunsel-web
 composer install
 cp .env.example .env
 php artisan key:generate

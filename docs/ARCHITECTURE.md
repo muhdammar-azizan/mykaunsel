@@ -24,7 +24,7 @@ context) ditentukan semasa sesi log masuk melalui pemilih konteks.
 
 ```
 mykaunsel/
-├── mykaunsel-api/      Projek Laravel (backend + portal web)
+├── mykaunsel-web/      Projek Laravel (backend + portal web)
 ├── mykaunsel-app/      Aplikasi Flutter (kosong buat masa ini)
 ├── docs/                Dokumentasi projek
 ├── README.md
@@ -32,7 +32,7 @@ mykaunsel/
 └── .gitignore
 ```
 
-### `mykaunsel-api/app/`
+### `mykaunsel-web/app/`
 
 | Folder | Fungsi |
 |---|---|
@@ -49,7 +49,7 @@ mykaunsel/
 | `Console/Commands` | Tugas berjadual (scheduled tasks) |
 | `Enums` | PHP Enum untuk nilai tetap yang digunakan merentasi aplikasi |
 
-### `mykaunsel-api/resources/views/`
+### `mykaunsel-web/resources/views/`
 
 | Folder | Fungsi |
 |---|---|
