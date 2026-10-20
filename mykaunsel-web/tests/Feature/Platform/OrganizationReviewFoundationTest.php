@@ -138,11 +138,13 @@ class OrganizationReviewFoundationTest extends TestCase
         $this->assertSame(1, $org->submission_count);
     }
 
-    public function test_review_seeder_creates_the_six_sample_cases(): void
+    public function test_review_seeder_creates_the_sample_cases_and_can_run_twice(): void
     {
         $this->seed(OrganizationReviewSeeder::class);
+        $this->seed(OrganizationReviewSeeder::class); // second run must not duplicate or crash
 
-        $this->assertSame(6, Organization::count());
+        $this->assertSame(7, Organization::count());
+        $this->assertSame(1, Organization::where('subscription_status', OrgStatus::Rejected)->count());
         $this->assertSame(5, Organization::where('subscription_status', OrgStatus::Pending)->count());
         $this->assertSame(1, Organization::where('subscription_status', OrgStatus::Suspended)->count());
 

@@ -55,7 +55,7 @@ class PlatformDashboardController extends Controller
                 (clone $pendingOrgs)->oldest()->limit(5)->get()->map(fn ($org) => [
                     'kind' => 'organization',
                     'text' => $org->name.' — organization awaiting approval',
-                    'days' => (int) $org->created_at->diffInDays(now()),
+                    'days' => $org->waitingDays(),
                     'url' => route('platform.organizations'),
                 ])
             )

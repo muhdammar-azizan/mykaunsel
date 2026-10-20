@@ -2,13 +2,106 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Enums\MembershipRole;
+use App\Enums\MembershipStatus;
+use App\Enums\OrgStatus;
+use App\Enums\OrgType;
 use App\Http\Controllers\Controller;
+use App\Models\Organization;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class PlatformOrganizationController extends Controller
 {
+    private const TABS = ['pending', 'skipped', 'approved', 'rejected'];
+
+    private const SORTS = ['oldest', 'newest', 'name'];
+
+    private const PER_PAGE = 10;
+
     public function index(Request $request)
     {
-        return view('platform.organizations');
+        // Unknown values fall back to the defaults instead of erroring on a hand-edited URL.
+        $tab = in_array($request->query('tab'), self::TABS, true) ? $request->query('tab') : 'pending';
+        $type = in_array($request->query('type'), ['university', 'corporate', 'clinic'], true) ? $request->query('type') : null;
+        $search = $this->cleanSearch($request->query('q'));
+        $isWaitingTab = in_array($tab, ['pending', 'skipped'], true);
+        $sort = in_array($request->query('sort'), self::SORTS, true)
+            ? $request->query('sort')
+            : ($isWaitingTab ? 'oldest' : 'newest');
+
+        // Search + type filter apply to every tab, so the tab counts match what each tab would show.
+        $filtered = fn (): Builder => Organization::query()
+            ->applicants()
+            ->when($type, fn ($q) => $q->where('org_type', $type))
+            ->when($search !== '', fn ($q) => $this->search($q, $search));
+
+        $counts = [
+            'pending' => $filtered()->awaitingReview()->count(),
+            'skipped' => $filtered()->skippedVerification()->count(),
+            'approved' => $filtered()->whereIn('subscription_status', $this->approvedStatuses())->count(),
+            'rejected' => $filtered()->where('subscription_status', OrgStatus::Rejected->value)->count(),
+        ];
+
+        $query = match ($tab) {
+            'pending' => $filtered()->awaitingReview()
+                ->with(['orgDomains', 'registrant.user']),
+            'skipped' => $filtered()->skippedVerification()
+                ->with(['orgDomains', 'registrant.user']),
+            'approved' => $filtered()->whereIn('subscription_status', $this->approvedStatuses())
+                ->withCount(['memberships as members_count' => fn ($q) => $q
+                    ->where('status', MembershipStatus::Active->value)
+                    ->whereIn('role', [MembershipRole::Student->value, MembershipRole::Staff->value, MembershipRole::Employee->value]),
+                ]),
+            'rejected' => $filtered()->where('subscription_status', OrgStatus::Rejected->value)
+                ->with('reviewer'),
+        };
+
+        // Waiting tabs sort by when the application came in; the others by when it was decided.
+        $dateColumn = $isWaitingTab ? 'COALESCE(submitted_at, created_at)' : 'COALESCE(reviewed_at, created_at)';
+
+        match ($sort) {
+            'name' => $query->orderBy('name'),
+            'newest' => $query->orderByRaw("$dateColumn desc"),
+            default => $query->orderByRaw("$dateColumn asc"),
+        };
+
+        $organizations = $query->orderBy('id')->paginate(self::PER_PAGE)->withQueryString();
+
+        return view('platform.organizations.index', [
+            'tab' => $tab,
+            'counts' => $counts,
+            'organizations' => $organizations,
+            'search' => $search,
+            'type' => $type,
+            'sort' => $sort,
+            'types' => collect(OrgType::cases())->reject(fn (OrgType $t) => $t === OrgType::Platform),
+            'filtering' => $search !== '' || $type !== null,
+        ]);
+    }
+
+    /** @return array<int, string> */
+    private function approvedStatuses(): array
+    {
+        return [OrgStatus::Active->value, OrgStatus::Suspended->value];
+    }
+
+    /** Trim, cap the length and drop LIKE wildcards so users can't craft expensive patterns. */
+    private function cleanSearch(mixed $value): string
+    {
+        $value = is_string($value) ? $value : '';
+
+        return trim(mb_substr(preg_replace('/[%_\\\\]/', '', $value), 0, 100));
+    }
+
+    /** Match the organization name or the registering admin's email. */
+    private function search(Builder $query, string $term): Builder
+    {
+        return $query->where(function (Builder $q) use ($term) {
+            $q->where('name', 'like', "%{$term}%")
+                ->orWhereHas('memberships', fn ($m) => $m
+                    ->where('role', MembershipRole::OrgAdmin->value)
+                    ->whereHas('user', fn ($u) => $u->where('email', 'like', "%{$term}%")));
+        });
     }
 }

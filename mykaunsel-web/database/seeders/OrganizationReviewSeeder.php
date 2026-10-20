@@ -23,10 +23,30 @@ use Illuminate\Support\Facades\Hash;
  */
 class OrganizationReviewSeeder extends Seeder
 {
+    /** Safe to run again: each group is skipped when its first organization already exists. */
     public function run(): void
     {
         $platformAdmin = User::whereHas('memberships', fn ($q) => $q->where('role', MembershipRole::PlatformAdmin))->first();
 
+        if (! Organization::where('name', 'Universiti Teknologi Contoh')->exists()) {
+            $this->seedWaitingAndSuspended($platformAdmin);
+        }
+
+        if (! Organization::where('name', 'Syarikat Ditolak Enterprise')->exists()) {
+            $this->application('Syarikat Ditolak Enterprise', OrgType::Corporate, [
+                'estimated_size' => '10 - 50',
+                'join_method' => JoinMethod::InviteCode,
+                'subscription_status' => OrgStatus::Rejected,
+                'rejection_reason' => 'We could not verify this company. The SSM certificate provided is expired.',
+                'reviewed_by' => $platformAdmin?->id,
+                'reviewed_at' => now()->subDays(12),
+                'submitted_at' => now()->subDays(15),
+            ], 'Encik Razak Ali', 'razak@ditolak.com.my', 'Director');
+        }
+    }
+
+    private function seedWaitingAndSuspended(?User $platformAdmin): void
+    {
         // 1. University, DNS verified — waiting 2 days
         $uni = $this->application('Universiti Teknologi Contoh', OrgType::University, [
             'estimated_size' => '5,000 - 20,000',

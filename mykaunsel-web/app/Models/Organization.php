@@ -4,13 +4,16 @@ namespace App\Models;
 
 use App\Enums\AccessModel;
 use App\Enums\JoinMethod;
+use App\Enums\MembershipRole;
 use App\Enums\OrgStatus;
 use App\Enums\OrgType;
 use App\Exceptions\InvalidOrgTransition;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
 
 class Organization extends Model
@@ -119,6 +122,64 @@ class Organization extends Model
     public function orgAllowedMembers(): HasMany
     {
         return $this->hasMany(OrgAllowedMember::class, 'org_id');
+    }
+
+    /** The admin who registered the organization (its first org_admin). */
+    public function registrant(): HasOne
+    {
+        return $this->hasOne(Membership::class, 'org_id')
+            ->where('role', MembershipRole::OrgAdmin->value)
+            ->oldestOfMany();
+    }
+
+    /** Every real customer organization (the Platform itself is never reviewed). */
+    public function scopeApplicants(Builder $query): Builder
+    {
+        return $query->where('org_type', '!=', OrgType::Platform->value);
+    }
+
+    /** Pending, and every domain (if any) is verified — a normal review. */
+    public function scopeAwaitingReview(Builder $query): Builder
+    {
+        return $query->where('subscription_status', OrgStatus::Pending->value)
+            ->whereDoesntHave('orgDomains', fn ($q) => $q->where('dns_verified', false));
+    }
+
+    /** Pending, but at least one domain is not DNS-verified — needs a manual check. */
+    public function scopeSkippedVerification(Builder $query): Builder
+    {
+        return $query->where('subscription_status', OrgStatus::Pending->value)
+            ->whereHas('orgDomains', fn ($q) => $q->where('dns_verified', false));
+    }
+
+    /** Whole days since the application was submitted. */
+    public function waitingDays(): int
+    {
+        return (int) ($this->submitted_at ?? $this->created_at)->diffInDays(now());
+    }
+
+    /** 'ok' → under 5 days, 'amber' → 5+ days, 'red' → 8+ days. */
+    public function waitingTone(): string
+    {
+        $days = $this->waitingDays();
+
+        return $days >= 8 ? 'red' : ($days >= 5 ? 'amber' : 'ok');
+    }
+
+    /** 'not_applicable' (clinic / no domain), 'verified' (all domains), or 'skipped' (some not verified). Needs orgDomains. */
+    public function domainCheckState(): string
+    {
+        if ($this->org_type === OrgType::Clinic || $this->orgDomains->isEmpty()) {
+            return 'not_applicable';
+        }
+
+        return $this->orgDomains->every(fn ($d) => $d->dns_verified) ? 'verified' : 'skipped';
+    }
+
+    /** SSM is required for Corporate and Clinic, optional for University. */
+    public function requiresSsm(): bool
+    {
+        return $this->org_type !== OrgType::University;
     }
 
     public function isOpen(): bool
