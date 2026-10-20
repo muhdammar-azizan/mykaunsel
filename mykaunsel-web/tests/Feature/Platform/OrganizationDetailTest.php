@@ -112,7 +112,8 @@ class OrganizationDetailTest extends TestCase
             ->assertOk()
             ->assertSee('Needs a manual check')
             ->assertSee('0 of 1 verified')
-            ->assertSee('Skipped')
+            ->assertSee('Pending')
+            ->assertSee('Auto-checks until')
             ->assertSee('3 checks');
     }
 

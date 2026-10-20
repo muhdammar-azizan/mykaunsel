@@ -65,7 +65,7 @@ class OrganizationTimeline
                 $events->push([
                     'at' => $log->created_at,
                     'title' => $title,
-                    'detail' => $log->metadata['reason'] ?? null,
+                    'detail' => $log->metadata['reason'] ?? $log->metadata['summary'] ?? null,
                     'actor' => $log->actor?->name ?? ($log->actor_user_id ? 'Deleted user' : 'System'),
                     'tone' => $tone,
                 ]);

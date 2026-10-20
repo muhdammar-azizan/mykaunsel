@@ -32,6 +32,7 @@ use App\Http\Controllers\Platform\PlatformCounselorController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
 use App\Http\Controllers\Platform\PlatformOrganizationController;
 use App\Http\Controllers\Platform\PlatformOrganizationDecisionController;
+use App\Http\Controllers\Platform\PlatformOrganizationDnsController;
 use App\Http\Controllers\Platform\PlatformOrganizationReviewController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -119,6 +120,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active'])->gro
         Route::post('/organizations/{organization}/reject', [PlatformOrganizationDecisionController::class, 'reject'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.reject');
         Route::patch('/organizations/{organization}/checklist', [PlatformOrganizationReviewController::class, 'checklist'])->whereNumber('organization')->middleware('throttle:120,1')->name('organizations.checklist');
         Route::post('/organizations/{organization}/notes', [PlatformOrganizationReviewController::class, 'storeNote'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.notes.store');
+        Route::post('/organizations/{organization}/dns/check', [PlatformOrganizationDnsController::class, 'check'])->whereNumber('organization')->middleware('throttle:20,1')->name('organizations.dns.check');
+        Route::post('/organizations/{organization}/dns/remind', [PlatformOrganizationDnsController::class, 'remind'])->whereNumber('organization')->middleware('throttle:20,1')->name('organizations.dns.remind');
         Route::get('/counselors', [PlatformCounselorController::class, 'index'])->name('counselors');
         Route::get('/complaints', [PlatformComplaintController::class, 'index'])->name('complaints');
 

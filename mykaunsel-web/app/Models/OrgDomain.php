@@ -22,6 +22,7 @@ class OrgDomain extends Model
         'verified_at',
         'last_checked_at',
         'check_attempts',
+        'dns_check_expired_at',
     ];
 
     protected function casts(): array
@@ -33,6 +34,7 @@ class OrgDomain extends Model
             'verified_at' => 'datetime',
             'last_checked_at' => 'datetime',
             'check_attempts' => 'integer',
+            'dns_check_expired_at' => 'datetime',
         ];
     }
 

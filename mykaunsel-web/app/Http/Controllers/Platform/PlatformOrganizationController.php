@@ -111,6 +111,10 @@ class PlatformOrganizationController extends Controller
         ])->values();
 
         return view('platform.organizations.show', [
+            'dns' => $organization->orgDomains->mapWithKeys(fn ($d) => [$d->id => [
+                'state' => $domains->state($d),
+                'window_ends' => $domains->windowEndsAt($d),
+            ]]),
             'checklist' => $checklist,
             'notes' => $organization->reviewNotes()->with('author')->latest()->latest('id')->get(),
             'timeline' => $timeline->for($organization),

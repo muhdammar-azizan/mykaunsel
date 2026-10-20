@@ -212,7 +212,7 @@
 
         {{-- Domain verification (not shown for clinics) --}}
         @unless ($isClinic)
-            <x-platform.panel title="Domain verification" class="lg:col-span-2">
+            <x-platform.panel id="domains" title="Domain verification" class="scroll-mt-6 lg:col-span-2">
                 @if ($org->orgDomains->isEmpty())
                     <p class="mt-2 text-[13.5px] text-brand-ink/60">No domain was claimed. Members join with an invite code instead.</p>
                 @else
@@ -232,10 +232,15 @@
                                 <td class="px-4 py-3 text-[13.5px] capitalize">{{ str_replace('_', ' ', $domain->default_role->value) }}</td>
                                 <td class="px-4 py-3 text-[13.5px] capitalize">{{ $domain->match_type->value }}</td>
                                 <td class="px-4 py-3">
-                                    @if ($domain->dns_verified)
+                                    @php $dnsState = $dns[$domain->id]['state']; @endphp
+                                    @if ($dnsState === 'verified')
                                         <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11.5px] font-bold text-emerald-700">Verified</span>
+                                    @elseif ($dnsState === 'pending')
+                                        <span class="inline-flex rounded-full bg-brand-yellow/20 px-2.5 py-0.5 text-[11.5px] font-bold text-[#8A6210]">Pending</span>
+                                        <span class="mt-0.5 block text-[11px] text-brand-ink/45">Auto-checks until {{ $dns[$domain->id]['window_ends']->format('j M') }}</span>
                                     @else
-                                        <span class="inline-flex rounded-full bg-brand-yellow/20 px-2.5 py-0.5 text-[11.5px] font-bold text-[#8A6210]">Skipped</span>
+                                        <span class="inline-flex rounded-full bg-brand-red/10 px-2.5 py-0.5 text-[11.5px] font-bold text-brand-red">Expired</span>
+                                        <span class="mt-0.5 block text-[11px] text-brand-ink/45">Auto-checks stopped</span>
                                     @endif
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-[13px] text-brand-ink/65">
@@ -250,15 +255,24 @@
                         @endforeach
                     </x-platform.table>
 
-                    {{-- Actions arrive with the DNS phase. --}}
-                    <div class="mt-4 flex flex-wrap gap-2">
-                        @foreach (['Check DNS now', 'Send reminder email'] as $action)
-                            <span class="inline-flex cursor-not-allowed items-center gap-2 rounded-full border border-brand-ink/10 px-4 py-1.5 text-[13px] font-semibold text-brand-ink/40" title="Coming soon">
-                                {{ $action }}
-                                <span class="rounded-full bg-brand-ink/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide">Soon</span>
-                            </span>
-                        @endforeach
-                    </div>
+                    @if ($verifiedCount < $org->orgDomains->count() && in_array($org->subscription_status, [\App\Enums\OrgStatus::Pending, \App\Enums\OrgStatus::Active], true))
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <form method="POST" action="{{ route('platform.organizations.dns.check', $org) }}" x-data="{ busy: false }" @submit="busy = true">
+                                @csrf
+                                <button type="submit" :disabled="busy"
+                                        class="inline-flex min-h-[38px] items-center rounded-full bg-brand-blue px-5 text-[13px] font-semibold text-white transition hover:bg-brand-deep disabled:cursor-wait disabled:opacity-60">
+                                    <span x-show="!busy">Check DNS now</span><span x-show="busy" x-cloak>Checking…</span>
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('platform.organizations.dns.remind', $org) }}" x-data="{ busy: false }" @submit="busy = true">
+                                @csrf
+                                <button type="submit" :disabled="busy"
+                                        class="inline-flex min-h-[38px] items-center rounded-full border border-brand-ink/20 px-5 text-[13px] font-semibold transition hover:bg-brand-ink/5 disabled:cursor-wait disabled:opacity-60">
+                                    <span x-show="!busy">Send reminder email</span><span x-show="busy" x-cloak>Sending…</span>
+                                </button>
+                            </form>
+                        </div>
+                    @endif
                 @endif
             </x-platform.panel>
         @endunless
