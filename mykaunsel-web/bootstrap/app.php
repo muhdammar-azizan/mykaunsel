@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'membership.active' => \App\Http\Middleware\CheckMembershipStatus::class,
             'role' => \App\Http\Middleware\RequireRole::class,
             'org.status' => \App\Http\Middleware\CheckOrgStatus::class,
+            'legacy.account' => \App\Http\Middleware\LegacyAccountGuard::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

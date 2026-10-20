@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Services\SessionManager;
 use App\Services\TwoFactorAuthenticator;
 use App\Support\UserAgent;
 use Carbon\Carbon;
@@ -83,7 +84,7 @@ class AccountSecurityController extends Controller
         ]);
     }
 
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(Request $request, SessionManager $sessions): RedirectResponse
     {
         $data = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
@@ -98,7 +99,7 @@ class AccountSecurityController extends Controller
 
         // Sign out every OTHER device; this session stays signed in (AuthenticateSession keeps it in sync).
         Auth::logoutOtherDevices($data['password']);
-        $this->forgetOtherSessions($request);
+        $sessions->forgetOthers($request);
 
         AuditLog::record('password_changed', $user);
 
@@ -106,35 +107,20 @@ class AccountSecurityController extends Controller
             ->with('status', 'Password updated. Other devices were signed out.');
     }
 
-    public function revokeOtherSessions(Request $request): RedirectResponse
+    public function revokeOtherSessions(Request $request, SessionManager $sessions): RedirectResponse
     {
         $data = $request->validateWithBag('revokeSessions', [
             'current_password' => ['required', 'current_password'],
         ], ['current_password.current_password' => 'That password is not correct.']);
 
-        $count = $this->otherSessionsQuery($request)->count();
+        $count = $sessions->countOthers($request);
 
         Auth::logoutOtherDevices($data['current_password']);
-        $this->forgetOtherSessions($request);
+        $sessions->forgetOthers($request);
 
         AuditLog::record('other_sessions_revoked', $request->user(), ['sessions' => $count]);
 
         return redirect()->route('platform.account.security')
             ->with('status', $count ? "Signed out {$count} other ".str('session')->plural($count).'.' : 'There were no other sessions.');
-    }
-
-    private function otherSessionsQuery(Request $request)
-    {
-        return DB::table('sessions')
-            ->where('user_id', $request->user()->id)
-            ->where('id', '!=', $request->session()->getId());
-    }
-
-    /** Remove stored session rows right away so the list is correct without waiting for those devices to make a request. */
-    private function forgetOtherSessions(Request $request): void
-    {
-        if (config('session.driver') === 'database') {
-            $this->otherSessionsQuery($request)->delete();
-        }
     }
 }

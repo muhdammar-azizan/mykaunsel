@@ -151,9 +151,12 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active'])->gro
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/feed', [FeedController::class, 'index'])->name('feed.index');
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Original Breeze account endpoints. Platform Admin accounts are locked out of them (see LegacyAccountGuard).
+    Route::middleware('legacy.account')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 });
 
 require __DIR__.'/auth.php';
