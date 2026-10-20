@@ -57,7 +57,49 @@
         </div>
     @endif
 
-    <div class="mt-6 grid gap-5 lg:grid-cols-2">
+    @if (session('error'))
+        <div class="mt-4 rounded-2xl border border-brand-red/25 bg-brand-red/[.06] px-5 py-3 text-[13.5px] font-semibold text-brand-red" role="alert">{{ session('error') }}</div>
+    @endif
+
+    {{-- Decision --}}
+    <x-platform.panel class="mt-5">
+        @if ($org->subscription_status === \App\Enums\OrgStatus::Pending)
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-[14px] font-bold">Decision</h2>
+                    <p class="mt-0.5 text-[13px] text-brand-ink/60">Approving activates the organization. Rejecting sends your reason to the applicant.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" x-data @click="$dispatch('open-modal', 'reject-org')"
+                            class="inline-flex min-h-[42px] items-center rounded-full border border-brand-red/40 px-5 text-[13.5px] font-semibold text-brand-red transition hover:bg-brand-red hover:text-white">Reject</button>
+                    <button type="button" x-data @click="$dispatch('open-modal', 'approve-org')"
+                            class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep">Approve</button>
+                </div>
+            </div>
+        @else
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-[14px] font-bold">Decision</h2>
+                    <p class="mt-0.5 text-[13px] text-brand-ink/60">
+                        @if ($org->subscription_status === \App\Enums\OrgStatus::Rejected)
+                            Rejected
+                        @else
+                            Approved
+                        @endif
+                        @if ($org->reviewed_at) on {{ $org->reviewed_at->format('j M Y, g:i A') }} @endif
+                        @if ($org->reviewer) by {{ $org->reviewer->name }} @endif
+                        — this application is closed.
+                    </p>
+                </div>
+                <div class="flex gap-2 opacity-50">
+                    <span class="inline-flex min-h-[42px] cursor-not-allowed items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold">Reject</span>
+                    <span class="inline-flex min-h-[42px] cursor-not-allowed items-center rounded-full bg-brand-ink/20 px-6 text-[13.5px] font-semibold">Approve</span>
+                </div>
+            </div>
+        @endif
+    </x-platform.panel>
+
+    <div class="mt-5 grid gap-5 lg:grid-cols-2">
         {{-- Organization info --}}
         <x-platform.panel title="Organization info">
             <dl class="mt-2 divide-y divide-brand-ink/[.07]">
@@ -236,4 +278,73 @@
             @endif
         </x-platform.panel>
     </div>
+
+    @if ($org->subscription_status === \App\Enums\OrgStatus::Pending)
+        @php
+            $unverified = $org->orgDomains->where('dns_verified', false)->count();
+            $templates = [
+                'SSM number' => 'We could not verify your SSM registration number. Please check it and apply again.',
+                'Domain' => 'We could not verify ownership of your domain. Please complete the DNS verification and apply again.',
+                'Authority' => 'We could not confirm that you are authorised to register this organization. Please apply again with a work email or supporting document.',
+                'Photos' => 'The premises photos are missing or unclear. Please upload clear photos of the clinic and apply again.',
+            ];
+        @endphp
+
+        {{-- Approve --}}
+        <x-modal name="approve-org" maxWidth="lg" focusable>
+            <form method="POST" action="{{ route('platform.organizations.approve', $org) }}" x-data="{ busy: false }" @submit="busy = true" class="p-6">
+                @csrf
+                <h2 class="text-[18px] font-extrabold tracking-tight">Approve {{ $org->name }}?</h2>
+                <p class="mt-1 text-[13px] text-brand-ink/60">This is what happens next:</p>
+
+                <ul class="mt-4 space-y-2.5 text-[13.5px] leading-snug">
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> The organization becomes <strong>Active</strong>.</li>
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> {{ $registrant ? $registrant->name.' ('.$registrant->email.')' : 'The admin' }} is emailed and can manage the organization.</li>
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> The decision is saved in the audit log under your name.</li>
+                    @if ($unverified > 0)
+                        <li class="flex gap-2.5 text-[#6B4C0C]"><span class="mt-0.5">!</span> {{ $unverified }} {{ \Illuminate\Support\Str::plural('domain', $unverified) }} not DNS-verified — members will not be matched by email domain until verified.</li>
+                    @endif
+                </ul>
+
+                <div class="mt-6 flex justify-end gap-2">
+                    <button type="button" @click="$dispatch('close-modal', 'approve-org')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
+                    <button type="submit" :disabled="busy" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50">
+                        <span x-show="!busy">Approve organization</span><span x-show="busy" x-cloak>Approving…</span>
+                    </button>
+                </div>
+            </form>
+        </x-modal>
+
+        {{-- Reject --}}
+        <x-modal name="reject-org" maxWidth="lg" :show="$errors->has('reason')" focusable>
+            <form method="POST" action="{{ route('platform.organizations.reject', $org) }}" x-data="{ busy: false, reason: @js(old('reason', '')) }" @submit="busy = true" class="p-6">
+                @csrf
+                <h2 class="text-[18px] font-extrabold tracking-tight">Reject {{ $org->name }}?</h2>
+                <p class="mt-1 text-[13px] text-brand-ink/60">The reason below is <strong>sent to the applicant</strong> by email.</p>
+
+                <div class="mt-4 flex flex-wrap gap-2" aria-label="Quick reasons">
+                    @foreach ($templates as $label => $text)
+                        <button type="button" @click="reason = @js($text)"
+                                class="rounded-full border border-brand-ink/15 px-3 py-1 text-[12px] font-semibold text-brand-ink/70 transition hover:border-brand-blue hover:text-brand-blue">{{ $label }}</button>
+                    @endforeach
+                </div>
+
+                <label for="reject-reason" class="mt-4 block text-[12.5px] font-semibold text-brand-ink/70">Reason</label>
+                <textarea id="reject-reason" name="reason" x-model="reason" rows="5" maxlength="1000" required
+                          class="mt-1.5 block w-full rounded-xl border border-brand-ink/15 px-4 py-2.5 text-[14px] focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                          placeholder="Tell the applicant what to fix."></textarea>
+                @error('reason')<p class="mt-1.5 text-[12.5px] font-semibold text-brand-red">{{ $message }}</p>@enderror
+                <p class="mt-1 text-right text-[11.5px] text-brand-ink/45"><span x-text="reason.length">0</span>/1000</p>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <button type="button" @click="$dispatch('close-modal', 'reject-org')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
+                    <button type="submit" :disabled="busy || reason.trim().length < 10" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-red px-6 text-[13.5px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40">
+                        <span x-show="!busy">Reject application</span><span x-show="busy" x-cloak>Rejecting…</span>
+                    </button>
+                </div>
+            </form>
+        </x-modal>
+    @endif
+
+    <x-platform.toast />
 </x-platform-layout>

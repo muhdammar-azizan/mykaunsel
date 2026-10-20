@@ -31,6 +31,7 @@ use App\Http\Controllers\Platform\PlatformComplaintController;
 use App\Http\Controllers\Platform\PlatformCounselorController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
 use App\Http\Controllers\Platform\PlatformOrganizationController;
+use App\Http\Controllers\Platform\PlatformOrganizationDecisionController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -113,6 +114,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active'])->gro
         Route::get('/dashboard', [PlatformDashboardController::class, 'index'])->name('dashboard');
         Route::get('/organizations', [PlatformOrganizationController::class, 'index'])->name('organizations');
         Route::get('/organizations/{organization}', [PlatformOrganizationController::class, 'show'])->whereNumber('organization')->name('organizations.show');
+        Route::post('/organizations/{organization}/approve', [PlatformOrganizationDecisionController::class, 'approve'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.approve');
+        Route::post('/organizations/{organization}/reject', [PlatformOrganizationDecisionController::class, 'reject'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.reject');
         Route::get('/counselors', [PlatformCounselorController::class, 'index'])->name('counselors');
         Route::get('/complaints', [PlatformComplaintController::class, 'index'])->name('complaints');
 
