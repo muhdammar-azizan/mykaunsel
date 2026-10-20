@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Enums\ComplaintStatus;
 use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
 use App\Enums\OrgStatus;
 use App\Enums\OrgType;
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\Complaint;
+use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\DomainVerificationService;
@@ -111,6 +115,9 @@ class PlatformOrganizationController extends Controller
         ])->values();
 
         return view('platform.organizations.show', [
+            'overview' => in_array($organization->subscription_status, [OrgStatus::Active, OrgStatus::Suspended], true)
+                ? $this->overview($organization)
+                : null,
             'dns' => $organization->orgDomains->mapWithKeys(fn ($d) => [$d->id => [
                 'state' => $domains->state($d),
                 'window_ends' => $domains->windowEndsAt($d),
@@ -123,6 +130,24 @@ class PlatformOrganizationController extends Controller
             'registrantTitle' => $organization->registrant?->title,
             'emailMatch' => $emailMatch,
         ]);
+    }
+
+    /** Numbers for the "managing an approved organization" cards. */
+    private function overview(Organization $organization): array
+    {
+        $active = fn ($q) => $q->where('org_id', $organization->id)->where('status', MembershipStatus::Active->value);
+
+        $complaints = Complaint::whereHas('booking', fn ($q) => $q->where('org_id', $organization->id));
+
+        return [
+            'members' => Membership::where($active)
+                ->whereIn('role', [MembershipRole::Student->value, MembershipRole::Staff->value, MembershipRole::Employee->value])->count(),
+            'counselors' => Membership::where($active)->where('role', MembershipRole::Counselor->value)->count(),
+            'sessions_this_month' => Booking::where('org_id', $organization->id)->where('created_at', '>=', now()->startOfMonth())->count(),
+            'approved_at' => $organization->reviewed_at ?? $organization->created_at,
+            'complaints_total' => (clone $complaints)->count(),
+            'complaints_open' => (clone $complaints)->whereIn('status', [ComplaintStatus::Open->value, ComplaintStatus::UnderReview->value])->count(),
+        ];
     }
 
     /** @return array<int, string> */

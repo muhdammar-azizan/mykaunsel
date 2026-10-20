@@ -76,6 +76,27 @@
                             class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep">Approve</button>
                 </div>
             </div>
+        @elseif (in_array($org->subscription_status, [\App\Enums\OrgStatus::Active, \App\Enums\OrgStatus::Suspended], true))
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-[14px] font-bold">Manage organization</h2>
+                    <p class="mt-0.5 text-[13px] text-brand-ink/60">
+                        @if ($org->subscription_status === \App\Enums\OrgStatus::Active)
+                            @if ($org->reviewer) Approved by {{ $org->reviewer->name }}. @endif
+                            Suspending blocks every member and counselor from this organization. Nothing is deleted.
+                        @else
+                            Suspended{{ $org->suspended_at ? ' on '.$org->suspended_at->format('j M Y') : '' }}. Reactivating restores access straight away.
+                        @endif
+                    </p>
+                </div>
+                @if ($org->subscription_status === \App\Enums\OrgStatus::Active)
+                    <button type="button" x-data @click="$dispatch('open-modal', 'suspend-org')"
+                            class="inline-flex min-h-[42px] items-center rounded-full border border-brand-red/40 px-5 text-[13.5px] font-semibold text-brand-red transition hover:bg-brand-red hover:text-white">Suspend organization</button>
+                @else
+                    <button type="button" x-data @click="$dispatch('open-modal', 'reactivate-org')"
+                            class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep">Reactivate organization</button>
+                @endif
+            </div>
         @else
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
@@ -98,6 +119,55 @@
             </div>
         @endif
     </x-platform.panel>
+
+    {{-- Approved organizations: overview, subscription and complaints --}}
+    @if ($overview)
+        <section class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Overview">
+            @foreach ([
+                ['Members', number_format($overview['members']), 'Students, staff and employees'],
+                ['Counselors', number_format($overview['counselors']), 'Active in this organization'],
+                ['Sessions this month', number_format($overview['sessions_this_month']), 'Booked since '.now()->startOfMonth()->format('j M')],
+                ['Approved', $overview['approved_at']->format('j M Y'), $overview['approved_at']->diffForHumans()],
+            ] as [$label, $value, $hint])
+                <div class="rounded-2xl border border-brand-ink/10 bg-white px-5 py-4">
+                    <p class="text-[12.5px] font-medium text-brand-ink/55">{{ $label }}</p>
+                    <p class="mt-1 text-[24px] font-extrabold leading-none tracking-tightest">{{ $value }}</p>
+                    <p class="mt-1.5 text-[12px] text-brand-ink/45">{{ $hint }}</p>
+                </div>
+            @endforeach
+        </section>
+
+        <div class="mt-5 grid gap-5 lg:grid-cols-2">
+            <x-platform.panel title="Subscription">
+                <dl class="mt-2 divide-y divide-brand-ink/[.07]">
+                    <x-platform.detail-row label="Tier">
+                        @if ($org->subscription_tier)
+                            {{ $org->subscription_tier }}
+                        @else
+                            <span class="inline-flex rounded-full bg-brand-ink/10 px-2.5 py-0.5 text-[11.5px] font-bold text-brand-ink/65">Not set</span>
+                        @endif
+                    </x-platform.detail-row>
+                    @if ($org->subscription_ends_at)
+                        <x-platform.detail-row label="Ends">{{ $org->subscription_ends_at->format('j M Y') }}</x-platform.detail-row>
+                    @endif
+                </dl>
+                <p class="mt-2 text-[12.5px] text-brand-ink/50">Plans can be assigned here once Pricing is ready.</p>
+            </x-platform.panel>
+
+            <x-platform.panel title="Complaints">
+                <dl class="mt-2 divide-y divide-brand-ink/[.07]">
+                    <x-platform.detail-row label="Open or under review">
+                        <span class="{{ $overview['complaints_open'] > 0 ? 'text-brand-red' : '' }}">{{ $overview['complaints_open'] }}</span>
+                    </x-platform.detail-row>
+                    <x-platform.detail-row label="All time">{{ $overview['complaints_total'] }}</x-platform.detail-row>
+                </dl>
+                <a href="{{ route('platform.complaints', ['organization' => $org->id]) }}" class="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-blue hover:underline">
+                    View complaints involving this organization
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                </a>
+            </x-platform.panel>
+        </div>
+    @endif
 
     {{-- Review checklist: shared reference for all Platform Admins, never blocks a decision. --}}
     @php $checklistOpen = $org->subscription_status === \App\Enums\OrgStatus::Pending; @endphp
@@ -225,7 +295,8 @@
                         </div>
                     @endif
 
-                    <x-platform.table :headings="['Domain', 'Default role', 'Match', 'DNS status', 'Last checked']">
+                    @php $canReverify = $org->subscription_status === \App\Enums\OrgStatus::Active; @endphp
+                    <x-platform.table :headings="$canReverify ? ['Domain', 'Default role', 'Match', 'DNS status', 'Last checked', ''] : ['Domain', 'Default role', 'Match', 'DNS status', 'Last checked']">
                         @foreach ($org->orgDomains as $domain)
                             <tr class="border-t border-brand-ink/[.07]">
                                 <td class="px-4 py-3 text-[14px] font-semibold">{{ $domain->domain }}</td>
@@ -251,6 +322,15 @@
                                         Never checked
                                     @endif
                                 </td>
+                                @if ($canReverify)
+                                    <td class="px-4 py-3 text-right">
+                                        <form method="POST" action="{{ route('platform.organizations.dns.check', $org) }}">
+                                            @csrf
+                                            <input type="hidden" name="domain" value="{{ $domain->id }}">
+                                            <button type="submit" class="text-[12.5px] font-semibold text-brand-blue hover:underline">Re-verify</button>
+                                        </form>
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </x-platform.table>
@@ -480,6 +560,56 @@
                     <button type="button" @click="$dispatch('close-modal', 'reject-org')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
                     <button type="submit" :disabled="busy || reason.trim().length < 10" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-red px-6 text-[13.5px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40">
                         <span x-show="!busy">Reject application</span><span x-show="busy" x-cloak>Rejecting…</span>
+                    </button>
+                </div>
+            </form>
+        </x-modal>
+    @endif
+
+    @if ($org->subscription_status === \App\Enums\OrgStatus::Active)
+        {{-- Suspend --}}
+        <x-modal name="suspend-org" maxWidth="lg" :show="$errors->suspend->has('reason')" focusable>
+            <form method="POST" action="{{ route('platform.organizations.suspend', $org) }}" x-data="{ busy: false, reason: @js(old('reason', '')) }" @submit="busy = true" class="p-6">
+                @csrf
+                <h2 class="text-[18px] font-extrabold tracking-tight">Suspend {{ $org->name }}?</h2>
+
+                <ul class="mt-4 space-y-2.5 text-[13.5px] leading-snug">
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-brand-red">!</span> All <strong>{{ number_format($overview['members']) }}</strong> members and <strong>{{ number_format($overview['counselors']) }}</strong> counselors lose access to this organization right away.</li>
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> All data is kept. Nothing is deleted.</li>
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> You can reactivate it at any time.</li>
+                </ul>
+
+                <label for="suspend-reason" class="mt-4 block text-[12.5px] font-semibold text-brand-ink/70">Reason (kept in the audit log)</label>
+                <textarea id="suspend-reason" name="reason" x-model="reason" rows="4" maxlength="1000" required
+                          class="mt-1.5 block w-full rounded-xl border border-brand-ink/15 px-4 py-2.5 text-[14px] focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                          placeholder="Why is this organization being suspended?"></textarea>
+                @error('reason', 'suspend')<p class="mt-1.5 text-[12.5px] font-semibold text-brand-red">{{ $message }}</p>@enderror
+                <p class="mt-1 text-right text-[11.5px] text-brand-ink/45"><span x-text="reason.length">0</span>/1000</p>
+
+                <div class="mt-4 flex justify-end gap-2">
+                    <button type="button" @click="$dispatch('close-modal', 'suspend-org')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
+                    <button type="submit" :disabled="busy || reason.trim().length < 10" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-red px-6 text-[13.5px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40">
+                        <span x-show="!busy">Suspend organization</span><span x-show="busy" x-cloak>Suspending…</span>
+                    </button>
+                </div>
+            </form>
+        </x-modal>
+    @endif
+
+    @if ($org->subscription_status === \App\Enums\OrgStatus::Suspended)
+        {{-- Reactivate --}}
+        <x-modal name="reactivate-org" maxWidth="lg" focusable>
+            <form method="POST" action="{{ route('platform.organizations.reactivate', $org) }}" x-data="{ busy: false }" @submit="busy = true" class="p-6">
+                @csrf
+                <h2 class="text-[18px] font-extrabold tracking-tight">Reactivate {{ $org->name }}?</h2>
+                <ul class="mt-4 space-y-2.5 text-[13.5px] leading-snug">
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> Members and counselors can use this organization again straight away.</li>
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> The suspension reason stays in the audit log.</li>
+                </ul>
+                <div class="mt-6 flex justify-end gap-2">
+                    <button type="button" @click="$dispatch('close-modal', 'reactivate-org')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
+                    <button type="submit" :disabled="busy" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50">
+                        <span x-show="!busy">Reactivate</span><span x-show="busy" x-cloak>Reactivating…</span>
                     </button>
                 </div>
             </form>

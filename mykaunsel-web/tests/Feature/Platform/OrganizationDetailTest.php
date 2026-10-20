@@ -61,10 +61,12 @@ class OrganizationDetailTest extends TestCase
     {
         $this->seed(OrganizationReviewSeeder::class);
         $org = $this->named('Universiti Teknologi Contoh');
-        $orgAdmin = $org->registrant->user;
+        $otherOrg = Organization::create(['name' => 'Org Aktif Lain', 'org_type' => OrgType::Corporate, 'access_model' => AccessModel::Closed, 'subscription_status' => OrgStatus::Active]);
+        $orgAdmin = User::factory()->create();
+        Membership::create(['user_id' => $orgAdmin->id, 'org_id' => $otherOrg->id, 'role' => MembershipRole::OrgAdmin, 'status' => MembershipStatus::Active, 'joined_at' => now()]);
 
         $this->flushSession();
-        $this->actingAs($orgAdmin)->withSession(['current_org_id' => $org->id, 'current_role' => 'org_admin'])
+        $this->actingAs($orgAdmin)->withSession(['current_org_id' => $otherOrg->id, 'current_role' => 'org_admin'])
             ->get(route('platform.organizations.show', $org))->assertForbidden();
     }
 

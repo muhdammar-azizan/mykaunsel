@@ -3,4 +3,5 @@
     <p class="text-sm text-gray-600">
         {{ __('Organisasi ini telah disekat. Sila hubungi pasukan sokongan MyKaunsel untuk maklumat lanjut.') }}
     </p>
+    <a href="{{ route('context.select') }}" class="mt-4 inline-block text-sm font-semibold text-gray-700 underline">{{ __('Pilih organisasi lain') }}</a>
 </x-auth-layout>

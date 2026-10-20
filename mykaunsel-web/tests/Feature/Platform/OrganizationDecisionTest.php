@@ -202,15 +202,22 @@ class OrganizationDecisionTest extends TestCase
     {
         Notification::fake();
         $org = $this->pending();
-        $orgAdmin = $org->registrant->user;
-
         $this->post(route('platform.organizations.approve', $org))->assertRedirect();
 
+        // An admin of a different, active organization reaches the role check and is refused.
+        $other = Organization::create(['name' => 'Org Lain', 'org_type' => OrgType::Corporate, 'access_model' => AccessModel::Closed, 'subscription_status' => OrgStatus::Active]);
+        $orgAdmin = User::factory()->create();
+        Membership::create(['user_id' => $orgAdmin->id, 'org_id' => $other->id, 'role' => MembershipRole::OrgAdmin, 'status' => MembershipStatus::Active, 'joined_at' => now()]);
+        $orgSession = ['current_org_id' => $other->id, 'current_role' => 'org_admin'];
+
         $this->flushSession();
-        $this->actingAs($orgAdmin)->withSession(['current_org_id' => $org->id, 'current_role' => 'org_admin'])
-            ->post(route('platform.organizations.approve', $org))->assertForbidden();
-        $this->actingAs($orgAdmin)->withSession(['current_org_id' => $org->id, 'current_role' => 'org_admin'])
-            ->post(route('platform.organizations.reject', $org), ['reason' => 'Saya lulus sendiri'])->assertForbidden();
+        $this->actingAs($orgAdmin)->withSession($orgSession)->post(route('platform.organizations.approve', $org))->assertForbidden();
+        $this->actingAs($orgAdmin)->withSession($orgSession)->post(route('platform.organizations.reject', $org), ['reason' => 'Saya lulus sendiri'])->assertForbidden();
+
+        $this->flushSession();
+        // The applicant's own admin can't use the app (or these routes) until the organization is approved.
+        $this->actingAs($org->registrant->user)->withSession(['current_org_id' => $org->id, 'current_role' => 'org_admin'])
+            ->post(route('platform.organizations.approve', $org))->assertRedirect(route('organization.pending'));
 
         $this->assertSame(OrgStatus::Pending, $org->fresh()->subscription_status);
     }
@@ -237,8 +244,8 @@ class OrganizationDecisionTest extends TestCase
         $this->as($this->admin)->get(route('platform.organizations.show', $org))
             ->assertDontSee('Approve organization')
             ->assertDontSee('Reject application')
-            ->assertSee('this application is closed')
-            ->assertSee('Admin Satu');
+            ->assertSee('Manage organization')
+            ->assertSee('Approved by Admin Satu');
     }
 
     public function test_approve_modal_warns_about_unverified_domains(): void

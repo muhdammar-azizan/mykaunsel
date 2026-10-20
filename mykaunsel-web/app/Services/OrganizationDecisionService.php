@@ -46,6 +46,36 @@ class OrganizationDecisionService
         $this->notify($organization, new OrganizationRejected($organization, $reason));
     }
 
+    /**
+     * Suspend an active organization. Everyone in it loses access immediately (see CheckOrgStatus); nothing is deleted.
+     *
+     * @throws InvalidOrgTransition when it is no longer active
+     */
+    public function suspend(Organization $organization, User $reviewer, string $reason): void
+    {
+        $organization->transitionTo(OrgStatus::Suspended, [
+            'suspension_reason' => $reason,
+            'suspended_at' => now(),
+        ], OrgStatus::Active);
+
+        AuditLog::record('organization_suspended', $organization, ['name' => $organization->name, 'reason' => $reason], $reviewer);
+    }
+
+    /**
+     * Bring a suspended organization back. Access returns right away; the old reason stays in the audit log.
+     *
+     * @throws InvalidOrgTransition when it is no longer suspended
+     */
+    public function reactivate(Organization $organization, User $reviewer): void
+    {
+        $organization->transitionTo(OrgStatus::Active, [
+            'suspension_reason' => null,
+            'suspended_at' => null,
+        ], OrgStatus::Suspended);
+
+        AuditLog::record('organization_reactivated', $organization, ['name' => $organization->name], $reviewer);
+    }
+
     private function notify(Organization $organization, object $notification): void
     {
         $registrant = $organization->registrant()->with('user')->first()?->user;

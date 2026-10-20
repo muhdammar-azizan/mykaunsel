@@ -19,31 +19,54 @@ class PlatformOrganizationDnsController extends Controller
     /** At most one reminder email per organization in this many hours. */
     private const REMINDER_COOLDOWN_HOURS = 6;
 
+    /**
+     * Check DNS now. Without `domain` it checks every unverified domain; with `domain` it re-verifies that one
+     * (even if it was verified before — a record that has since been removed un-verifies the domain).
+     */
     public function check(Request $request, Organization $organization, DomainVerificationService $service): RedirectResponse
     {
         if ($blocked = $this->refuse($organization)) {
             return $blocked;
         }
 
-        $unverified = $organization->orgDomains()->where('dns_verified', false)->get();
+        $only = $request->input('domain');
 
-        if ($unverified->isEmpty()) {
-            return $this->back($organization)->with('error', 'Every domain is already verified.');
+        if ($only !== null) {
+            $targets = $organization->orgDomains()->whereKey($only)->get();
+            abort_if($targets->isEmpty(), 404);
+        } else {
+            $targets = $organization->orgDomains()->where('dns_verified', false)->get();
+
+            if ($targets->isEmpty()) {
+                return $this->back($organization)->with('error', 'Every domain is already verified.');
+            }
         }
 
         $nowVerified = 0;
-        foreach ($unverified as $domain) {
+        $lapsed = [];
+        foreach ($targets as $domain) {
+            $wasVerified = $domain->dns_verified;
+
             if (! $domain->verification_token) {
                 $service->generateToken($domain);
             }
 
             if ($service->checkDns($domain)) {
                 $nowVerified++;
+            } elseif ($wasVerified) {
+                $lapsed[] = $domain->domain;
             }
         }
 
-        $summary = "{$nowVerified} of {$unverified->count()} verified";
+        $summary = "{$nowVerified} of {$targets->count()} verified";
+        if ($lapsed) {
+            $summary .= '; no longer verified: '.implode(', ', $lapsed);
+        }
         AuditLog::record('organization_dns_checked', $organization, ['summary' => $summary]);
+
+        if ($lapsed) {
+            return $this->back($organization)->with('error', 'DNS record missing: '.implode(', ', $lapsed).' is no longer verified, so it stops matching members.');
+        }
 
         return $this->back($organization)->with(
             $nowVerified > 0 ? 'status' : 'error',

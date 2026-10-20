@@ -146,10 +146,12 @@ class OrganizationDnsTest extends TestCase
     {
         Notification::fake();
         $org = $this->skipped();
-        $orgAdmin = $org->registrant->user;
+        $otherOrg = Organization::create(['name' => 'Org Aktif Lain', 'org_type' => OrgType::Corporate, 'access_model' => AccessModel::Closed, 'subscription_status' => OrgStatus::Active]);
+        $orgAdmin = User::factory()->create();
+        Membership::create(['user_id' => $orgAdmin->id, 'org_id' => $otherOrg->id, 'role' => MembershipRole::OrgAdmin, 'status' => MembershipStatus::Active, 'joined_at' => now()]);
 
         $this->flushSession();
-        $orgSession = ['current_org_id' => $org->id, 'current_role' => 'org_admin'];
+        $orgSession = ['current_org_id' => $otherOrg->id, 'current_role' => 'org_admin'];
         $this->actingAs($orgAdmin)->withSession($orgSession)->post(route('platform.organizations.dns.check', $org))->assertForbidden();
         $this->actingAs($orgAdmin)->withSession($orgSession)->post(route('platform.organizations.dns.remind', $org))->assertForbidden();
 

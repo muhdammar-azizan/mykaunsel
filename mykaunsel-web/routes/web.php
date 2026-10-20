@@ -97,7 +97,7 @@ Route::middleware('auth')->group(function () {
     })->name('verification.expired');
 });
 
-Route::middleware(['auth', 'verified', 'org.context', 'membership.active'])->group(function () {
+Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.status'])->group(function () {
     Route::prefix('org')->name('org.')->middleware('role:org_admin')->group(function () {
         Route::get('/dashboard', [OrgDashboardController::class, 'index'])->name('dashboard');
         Route::get('/counselors', [OrgCounselorController::class, 'index'])->name('counselors');
@@ -118,6 +118,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active'])->gro
         Route::get('/organizations/{organization}', [PlatformOrganizationController::class, 'show'])->whereNumber('organization')->name('organizations.show');
         Route::post('/organizations/{organization}/approve', [PlatformOrganizationDecisionController::class, 'approve'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.approve');
         Route::post('/organizations/{organization}/reject', [PlatformOrganizationDecisionController::class, 'reject'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.reject');
+        Route::post('/organizations/{organization}/suspend', [PlatformOrganizationDecisionController::class, 'suspend'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.suspend');
+        Route::post('/organizations/{organization}/reactivate', [PlatformOrganizationDecisionController::class, 'reactivate'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.reactivate');
         Route::patch('/organizations/{organization}/checklist', [PlatformOrganizationReviewController::class, 'checklist'])->whereNumber('organization')->middleware('throttle:120,1')->name('organizations.checklist');
         Route::post('/organizations/{organization}/notes', [PlatformOrganizationReviewController::class, 'storeNote'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.notes.store');
         Route::post('/organizations/{organization}/dns/check', [PlatformOrganizationDnsController::class, 'check'])->whereNumber('organization')->middleware('throttle:20,1')->name('organizations.dns.check');
