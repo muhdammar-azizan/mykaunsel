@@ -54,7 +54,9 @@ class OrgSignupController extends Controller
                 'ssm_number' => $data['ssm_number'] ?? null,
                 'access_model' => $data['access_model'],
                 'subscription_status' => OrgStatus::Pending,
-                'subscription_tier' => $data['org_size'] ?? null,
+                'estimated_size' => $data['org_size'] ?? null,
+                'submitted_at' => now(),
+                'authority_confirmed_at' => now(),
                 'join_method' => $isClinic ? null : ($noDomain ? JoinMethod::InviteCode : JoinMethod::Domain),
             ]);
 
