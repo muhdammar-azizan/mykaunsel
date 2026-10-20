@@ -99,6 +99,71 @@
         @endif
     </x-platform.panel>
 
+    {{-- Review checklist: shared reference for all Platform Admins, never blocks a decision. --}}
+    @php $checklistOpen = $org->subscription_status === \App\Enums\OrgStatus::Pending; @endphp
+    <x-platform.panel class="mt-5">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 class="text-[14px] font-bold">Review checklist</h2>
+            <p class="text-[12.5px] text-brand-ink/55">
+                {{ $checklistOpen ? 'Saves automatically and is shared with other admins. For reference only — it does not block approval.' : 'Closed — this application has been decided.' }}
+            </p>
+        </div>
+
+        <ul class="mt-3 grid gap-2 sm:grid-cols-2">
+            @foreach ($checklist as $item)
+                <li x-data="{
+                        on: @js($item['checked']),
+                        by: @js($item['by']),
+                        at: @js($item['at']),
+                        state: 'idle',
+                        timer: null,
+                        async toggle() {
+                            const next = !this.on;
+                            const prev = { on: this.on, by: this.by, at: this.at };
+                            this.on = next;
+                            this.state = 'saving';
+                            clearTimeout(this.timer);
+                            try {
+                                const res = await fetch(@js(route('platform.organizations.checklist', $org)), {
+                                    method: 'PATCH',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                    },
+                                    body: JSON.stringify({ key: @js($item['key']), checked: next }),
+                                });
+                                if (!res.ok) throw new Error('save failed');
+                                const data = await res.json();
+                                this.by = data.by;
+                                this.at = data.at;
+                                this.state = 'saved';
+                            } catch (e) {
+                                Object.assign(this, prev);
+                                this.state = 'error';
+                            }
+                            this.timer = setTimeout(() => this.state = 'idle', 2200);
+                        },
+                    }">
+                    <label class="flex items-start gap-3 rounded-xl border px-4 py-3 transition {{ $checklistOpen ? 'cursor-pointer hover:border-brand-blue/40' : 'cursor-default opacity-70' }}"
+                           :class="on ? 'border-brand-blue/30 bg-brand-blue/[.04]' : 'border-brand-ink/10 bg-white'">
+                        <input type="checkbox" class="mt-0.5 h-[18px] w-[18px] rounded-[5px] border-brand-ink/30 text-brand-blue focus:ring-brand-blue"
+                               :checked="on" @change="toggle()" @disabled(! $checklistOpen)>
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-[14px] font-semibold">{{ $item['label'] }}</span>
+                            <span class="block text-[12px] text-brand-ink/50">{{ $item['hint'] }}</span>
+                            <span x-show="on && by" x-cloak class="mt-1 block text-[11.5px] text-brand-blue">Checked by <span x-text="by"></span> · <span x-text="at"></span></span>
+                            <span class="mt-1 block text-[11.5px]" aria-live="polite">
+                                <span x-show="state === 'saving'" x-cloak class="text-brand-ink/45">Saving…</span>
+                                <span x-show="state === 'error'" x-cloak class="font-semibold text-brand-red">Couldn't save — try again</span>
+                            </span>
+                        </span>
+                    </label>
+                </li>
+            @endforeach
+        </ul>
+    </x-platform.panel>
+
     <div class="mt-5 grid gap-5 lg:grid-cols-2">
         {{-- Organization info --}}
         <x-platform.panel title="Organization info">
@@ -276,6 +341,67 @@
             @else
                 <p class="mt-2 text-[13.5px] text-brand-ink/60">No admin account found for this organization.</p>
             @endif
+        </x-platform.panel>
+    </div>
+
+    <div class="mt-5 grid gap-5 lg:grid-cols-2">
+        {{-- Internal notes --}}
+        <x-platform.panel id="notes" title="Internal notes" class="scroll-mt-6">
+            <p class="mt-0.5 text-[12.5px] text-brand-ink/55">Only Platform Admins can see these. The applicant never does.</p>
+
+            <form method="POST" action="{{ route('platform.organizations.notes.store', $org) }}" class="mt-3" x-data="{ body: @js(old('body', '')), busy: false }" @submit="busy = true">
+                @csrf
+                <label for="note-body" class="sr-only">New note</label>
+                <textarea id="note-body" name="body" x-model="body" rows="3" maxlength="2000" required
+                          placeholder="e.g. Called the registrar — confirmed the domain belongs to them."
+                          class="block w-full rounded-xl border border-brand-ink/15 px-4 py-2.5 text-[14px] focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"></textarea>
+                @error('body', 'note')<p class="mt-1.5 text-[12.5px] font-semibold text-brand-red">{{ $message }}</p>@enderror
+                <div class="mt-2 flex justify-end">
+                    <button type="submit" :disabled="busy || body.trim().length === 0"
+                            class="inline-flex min-h-[38px] items-center rounded-full bg-brand-blue px-5 text-[13px] font-semibold text-white transition hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-40">Add note</button>
+                </div>
+            </form>
+
+            @if ($notes->isEmpty())
+                <p class="mt-4 rounded-xl bg-brand-ink/[.04] px-4 py-5 text-center text-[13px] text-brand-ink/50">No notes yet.</p>
+            @else
+                <ul class="mt-4 space-y-3">
+                    @foreach ($notes as $note)
+                        <li class="rounded-xl border border-brand-ink/10 bg-cream px-4 py-3">
+                            <p class="whitespace-pre-line break-words text-[13.5px] leading-relaxed">{{ $note->body }}</p>
+                            <p class="mt-2 text-[11.5px] text-brand-ink/50" title="{{ $note->created_at->format('j M Y, g:i A') }}">
+                                {{ $note->author?->name ?? 'Deleted user' }} · {{ $note->created_at->diffForHumans() }}
+                            </p>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-platform.panel>
+
+        {{-- Activity timeline --}}
+        <x-platform.panel title="Activity">
+            <ol class="mt-3 space-y-0">
+                @foreach ($timeline as $event)
+                    @php
+                        $dot = ['good' => 'bg-emerald-500', 'bad' => 'bg-brand-red', 'info' => 'bg-brand-blue', 'neutral' => 'bg-brand-ink/35'][$event['tone']];
+                    @endphp
+                    <li class="relative flex gap-3 pb-5 last:pb-0">
+                        @unless ($loop->last)
+                            <span class="absolute left-[5px] top-4 h-full w-px bg-brand-ink/10" aria-hidden="true"></span>
+                        @endunless
+                        <span class="relative mt-1.5 h-[11px] w-[11px] shrink-0 rounded-full ring-4 ring-white {{ $dot }}"></span>
+                        <div class="min-w-0">
+                            <p class="text-[13.5px] font-semibold">{{ $event['title'] }}</p>
+                            @if ($event['detail'])
+                                <p class="mt-0.5 break-words text-[12.5px] text-brand-ink/65">{{ $event['detail'] }}</p>
+                            @endif
+                            <p class="mt-0.5 text-[11.5px] text-brand-ink/50" title="{{ $event['at']->format('j M Y, g:i A') }}">
+                                {{ $event['actor'] }} · {{ $event['at']->format('j M Y, g:i A') }}
+                            </p>
+                        </div>
+                    </li>
+                @endforeach
+            </ol>
         </x-platform.panel>
     </div>
 

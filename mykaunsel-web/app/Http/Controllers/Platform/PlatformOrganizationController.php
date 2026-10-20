@@ -8,7 +8,10 @@ use App\Enums\OrgStatus;
 use App\Enums\OrgType;
 use App\Http\Controllers\Controller;
 use App\Models\Organization;
+use App\Models\User;
 use App\Services\DomainVerificationService;
+use App\Services\OrganizationTimeline;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -81,7 +84,7 @@ class PlatformOrganizationController extends Controller
         ]);
     }
 
-    public function show(Organization $organization, DomainVerificationService $domains)
+    public function show(Organization $organization, DomainVerificationService $domains, OrganizationTimeline $timeline)
     {
         abort_if($organization->org_type === OrgType::Platform, 404);
 
@@ -95,7 +98,22 @@ class PlatformOrganizationController extends Controller
             $emailMatch = $organization->orgDomains->first(fn ($d) => $domains->matchesEmail($registrant->email, $d));
         }
 
+        // Checklist boxes, with who ticked them.
+        $saved = $organization->review_checklist ?? [];
+        $names = User::whereIn('id', collect($saved)->pluck('by')->filter())->pluck('name', 'id');
+        $checklist = collect(Organization::REVIEW_CHECKLIST)->map(fn ($item, $key) => [
+            'key' => $key,
+            'label' => $item[0],
+            'hint' => $item[1],
+            'checked' => isset($saved[$key]),
+            'by' => isset($saved[$key]) ? ($names[$saved[$key]['by']] ?? 'Unknown') : null,
+            'at' => isset($saved[$key]) ? Carbon::parse($saved[$key]['at'])->diffForHumans() : null,
+        ])->values();
+
         return view('platform.organizations.show', [
+            'checklist' => $checklist,
+            'notes' => $organization->reviewNotes()->with('author')->latest()->latest('id')->get(),
+            'timeline' => $timeline->for($organization),
             'organization' => $organization,
             'registrant' => $registrant,
             'registrantTitle' => $organization->registrant?->title,

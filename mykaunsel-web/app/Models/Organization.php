@@ -20,6 +20,14 @@ class Organization extends Model
 {
     use HasFactory;
 
+    /** The reviewers' reference checklist: key => [label, hint]. Never blocks a decision. */
+    public const REVIEW_CHECKLIST = [
+        'name_matches' => ['Name matches', 'The organization name matches its registration or website.'],
+        'domain_valid' => ['Domain valid', 'The claimed domain belongs to this organization.'],
+        'ssm_valid' => ['SSM valid', 'The SSM number checks out on the SSM website.'],
+        'admin_authorised' => ['Admin authorised', 'The registering admin can act for this organization.'],
+    ];
+
     protected $fillable = [
         'name',
         'org_type',

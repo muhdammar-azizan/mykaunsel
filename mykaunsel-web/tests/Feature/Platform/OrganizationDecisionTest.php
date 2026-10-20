@@ -106,7 +106,7 @@ class OrganizationDecisionTest extends TestCase
         $this->assertSame('SSM number does not match.', $org->rejection_reason);
         $this->assertSame($this->admin->id, $org->reviewed_by);
 
-        $log = AuditLog::where('action', 'organization_rejected')->firstOrFail();
+        $log = AuditLog::where('action', 'organization_rejected')->where('target_id', $org->id)->firstOrFail();
         $this->assertSame('SSM number does not match.', $log->metadata['reason']);
 
         Notification::assertSentTo($registrant, OrganizationRejected::class, function ($n) use ($registrant) {
@@ -128,7 +128,7 @@ class OrganizationDecisionTest extends TestCase
         }
 
         $this->assertSame(OrgStatus::Pending, $org->fresh()->subscription_status);
-        $this->assertDatabaseMissing('audit_logs', ['action' => 'organization_rejected']);
+        $this->assertDatabaseMissing('audit_logs', ['action' => 'organization_rejected', 'target_id' => $org->id]);
         Notification::assertNothingSent();
     }
 
@@ -151,7 +151,7 @@ class OrganizationDecisionTest extends TestCase
         $this->assertSame(OrgStatus::Active, $org->subscription_status);
         $this->assertSame($other->id, $org->reviewed_by);
         $this->assertNull($org->rejection_reason);
-        $this->assertSame(1, AuditLog::whereIn('action', ['organization_approved', 'organization_rejected'])->count());
+        $this->assertSame(1, AuditLog::whereIn('action', ['organization_approved', 'organization_rejected'])->where('target_id', $org->id)->count());
         Notification::assertSentTimes(OrganizationApproved::class, 1);
         Notification::assertNotSentTo($org->registrant->user, OrganizationRejected::class);
     }
