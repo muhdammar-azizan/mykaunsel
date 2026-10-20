@@ -8,6 +8,7 @@ use App\Enums\OrgStatus;
 use App\Enums\OrgType;
 use App\Http\Controllers\Controller;
 use App\Models\Organization;
+use App\Services\DomainVerificationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -77,6 +78,28 @@ class PlatformOrganizationController extends Controller
             'sort' => $sort,
             'types' => collect(OrgType::cases())->reject(fn (OrgType $t) => $t === OrgType::Platform),
             'filtering' => $search !== '' || $type !== null,
+        ]);
+    }
+
+    public function show(Organization $organization, DomainVerificationService $domains)
+    {
+        abort_if($organization->org_type === OrgType::Platform, 404);
+
+        $organization->load(['orgDomains', 'registrant.user', 'primaryLocation.locationPhotos', 'reviewer']);
+
+        $registrant = $organization->registrant?->user;
+
+        // Does the registering admin's email belong to a domain the organization claims?
+        $emailMatch = null;
+        if ($registrant && $organization->orgDomains->isNotEmpty()) {
+            $emailMatch = $organization->orgDomains->first(fn ($d) => $domains->matchesEmail($registrant->email, $d));
+        }
+
+        return view('platform.organizations.show', [
+            'organization' => $organization,
+            'registrant' => $registrant,
+            'registrantTitle' => $organization->registrant?->title,
+            'emailMatch' => $emailMatch,
         ]);
     }
 

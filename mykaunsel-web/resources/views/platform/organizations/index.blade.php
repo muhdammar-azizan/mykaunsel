@@ -117,9 +117,7 @@
                         </td>
                         <td class="whitespace-nowrap px-4 py-3.5 text-[13px] text-brand-ink/65">{{ ($organization->reviewed_at ?? $organization->created_at)->format('j M Y') }}</td>
                         <td class="px-4 py-3.5 text-right">
-                            <span class="inline-flex cursor-not-allowed items-center gap-1.5 text-[12px] font-semibold text-brand-ink/40" title="Coming soon">
-                                Manage <span class="rounded-full bg-brand-ink/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide">Soon</span>
-                            </span>
+                            <a href="{{ route('platform.organizations.show', $organization) }}" class="text-[13px] font-semibold text-brand-blue hover:underline">View details</a>
                         </td>
                     </tr>
                 @endforeach
@@ -136,6 +134,7 @@
                             <p class="text-[12.5px] text-brand-ink/55">
                                 {{ ($organization->reviewed_at ?? $organization->updated_at)->format('j M Y') }}
                                 · by {{ $organization->reviewer?->name ?? 'Unknown' }}
+                                · <a href="{{ route('platform.organizations.show', $organization) }}" class="font-semibold text-brand-blue hover:underline">View details</a>
                             </p>
                         </div>
                         <p class="mt-3 rounded-xl bg-brand-red/[.06] px-4 py-3 text-[13.5px] leading-relaxed text-brand-ink/80">

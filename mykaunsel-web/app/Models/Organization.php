@@ -124,6 +124,20 @@ class Organization extends Model
         return $this->hasMany(OrgAllowedMember::class, 'org_id');
     }
 
+    /** The main practice location given at signup (clinics must have one; others may). */
+    public function primaryLocation(): HasOne
+    {
+        return $this->hasOne(PracticeLocation::class, 'owner_id')
+            ->where('owner_type', 'organization')
+            ->where('is_primary', true);
+    }
+
+    /** True when the SSM number is exactly 12 digits. */
+    public function hasValidSsmFormat(): bool
+    {
+        return preg_match('/^\d{12}$/', (string) $this->ssm_number) === 1;
+    }
+
     /** The admin who registered the organization (its first org_admin). */
     public function registrant(): HasOne
     {

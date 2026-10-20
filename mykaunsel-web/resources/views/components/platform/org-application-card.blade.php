@@ -48,10 +48,9 @@
             <x-platform.org-check label="Admin authority" :state="$authority[0]" :text="$authority[1]" />
         </div>
 
-        {{-- The detail page arrives in the next phase. --}}
-        <span class="inline-flex cursor-not-allowed items-center gap-2 rounded-full border border-brand-ink/10 px-4 py-1.5 text-[13px] font-semibold text-brand-ink/40" title="Coming soon">
-            Review
-            <span class="rounded-full bg-brand-ink/10 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide">Soon</span>
-        </span>
+        <a href="{{ route('platform.organizations.show', $org) }}"
+           class="inline-flex items-center gap-1 rounded-full border border-brand-ink/15 bg-white px-4 py-1.5 text-[13px] font-semibold shadow-sm transition hover:border-brand-ink hover:bg-brand-ink hover:text-white">
+            Review <span aria-hidden="true">→</span>
+        </a>
     </div>
 </article>

@@ -112,6 +112,7 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active'])->gro
     Route::prefix('platform')->name('platform.')->middleware('role:platform_admin')->group(function () {
         Route::get('/dashboard', [PlatformDashboardController::class, 'index'])->name('dashboard');
         Route::get('/organizations', [PlatformOrganizationController::class, 'index'])->name('organizations');
+        Route::get('/organizations/{organization}', [PlatformOrganizationController::class, 'show'])->whereNumber('organization')->name('organizations.show');
         Route::get('/counselors', [PlatformCounselorController::class, 'index'])->name('counselors');
         Route::get('/complaints', [PlatformComplaintController::class, 'index'])->name('complaints');
 
