@@ -15,6 +15,7 @@ use App\Models\OrgDomain;
 use App\Models\Organization;
 use App\Models\PracticeLocation;
 use App\Models\User;
+use App\Services\PlatformAdminNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,7 @@ class OrgSignupController extends Controller
         return view('organizations.signup.create');
     }
 
-    public function store(StoreOrganizationSignupRequest $request)
+    public function store(StoreOrganizationSignupRequest $request, PlatformAdminNotifier $notifier)
     {
         $data = $request->validated();
         $isClinic = $data['org_type'] === 'clinic';
@@ -92,6 +93,9 @@ class OrgSignupController extends Controller
 
             return $organization;
         });
+
+        // After the commit, so a mail problem can never undo or block the signup.
+        $notifier->newOrganizationApplication($organization);
 
         if (! $isClinic && ! $noDomain) {
             return redirect()->route('organizations.signup.verify-domain', $organization);
