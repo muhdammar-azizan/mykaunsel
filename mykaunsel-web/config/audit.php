@@ -151,4 +151,9 @@ return [
     // Failed sign-ins written per IP per minute. More than this are counted but not stored,
     // so a password-guessing attack cannot flood the table.
     'login_failed_per_ip_per_minute' => 10,
+
+    // Audit Log page
+    'per_page_options' => [25, 50, 100],
+    'export_max_rows' => 10000,
+    'export_chunk' => 500,
 ];

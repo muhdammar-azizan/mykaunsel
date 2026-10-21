@@ -9,6 +9,7 @@ use App\Enums\OrgStatus;
 use App\Enums\OrgType;
 use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\Complaint;
 use App\Models\CounselorProfile;
@@ -71,26 +72,17 @@ class PlatformDashboardController extends Controller
             ->take(6)
             ->values();
 
-        $recentApprovals = collect()
-            ->merge(
-                (clone $realOrgs)->where('subscription_status', OrgStatus::Active->value)
-                    ->latest('updated_at')->limit(5)->get()->map(fn ($org) => [
-                        'name' => $org->name,
-                        'type' => 'Organization',
-                        'date' => $org->updated_at,
-                    ])
-            )
-            ->merge(
-                CounselorProfile::where('verification_status', VerificationStatus::Approved->value)
-                    ->with('user')->latest('updated_at')->limit(5)->get()->map(fn ($profile) => [
-                        'name' => $profile->user->name ?? 'Unknown',
-                        'type' => 'Counselor',
-                        'date' => $profile->updated_at,
-                    ])
-            )
-            ->sortByDesc('date')
-            ->take(5)
-            ->values();
+        // One source of truth: approvals are read from the audit log (nothing is back-filled for approvals made before it existed).
+        $recentApprovals = AuditLog::query()
+            ->whereIn('action', ['organization.approved', 'counselor.approved'])
+            ->orderByDesc('created_at')->orderByDesc('id')
+            ->limit(5)
+            ->get()
+            ->map(fn (AuditLog $log) => [
+                'name' => $log->target_name ?? ('#'.$log->target_id),
+                'type' => $log->action === 'counselor.approved' ? 'Counselor' : 'Organization',
+                'date' => $log->created_at->copy()->timezone($request->user()->display_timezone),
+            ]);
 
         return view('platform.dashboard', compact('counts', 'stats', 'attention', 'recentApprovals'));
     }

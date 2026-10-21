@@ -33,7 +33,8 @@ class AuditLogger
      * Record one event.
      *
      * @param  User|'system'|null  $actor  null = whoever is signed in (or "system" outside a web request)
-     * @param  array{organization_id?: int|null, target_name?: string|null, target_type?: string, target_id?: int|null, at?: CarbonInterface}  $options
+     * @param  array{organization_id?: int|null, target_name?: string|null, target_type?: string, target_id?: int|null, at?: CarbonInterface, ip?: string|null, user_agent?: string|null, request_id?: string, actor_type?: 'guest'}  $options
+     *                                                                                                                                                                                                  `at`, `ip`, `user_agent`, `request_id` and `actor_type` override what is read from the request — meant for seeders and tests only.
      */
     public function log(string $action, ?Model $target = null, array $metadata = [], User|string|null $actor = null, array $options = []): AuditLog
     {
@@ -45,7 +46,7 @@ class AuditLogger
         }
 
         $category = $definition['category'];
-        [$actorType, $user] = $this->resolveActor($actor);
+        [$actorType, $user] = ($options['actor_type'] ?? null) === 'guest' ? ['guest', null] : $this->resolveActor($actor);
 
         $role = $user ? $this->roleOf($user, $category) : null;
         $isStaff = $role !== null && $this->roleCountsAsStaff($role, $category);
@@ -60,10 +61,12 @@ class AuditLogger
             'action' => $action,
             'category' => $category,
             'metadata' => ($clean = AuditMetadata::sanitize($metadata)) ?: null,
-            'ip' => $web ? request()->ip() : null,
+            'ip' => array_key_exists('ip', $options) ? $options['ip'] : ($web ? request()->ip() : null),
             // Sign-in noise from non-staff keeps only user id + IP.
-            'user_agent' => $web && ! ($category === 'auth' && ! $isStaff) ? Str::limit((string) request()->userAgent(), 255, '') : null,
-            'request_id' => $this->context->requestId(),
+            'user_agent' => array_key_exists('user_agent', $options)
+                ? $options['user_agent']
+                : ($web && ! ($category === 'auth' && ! $isStaff) ? Str::limit((string) request()->userAgent(), 255, '') : null),
+            'request_id' => $options['request_id'] ?? $this->context->requestId(),
         ];
 
         $row += $this->targetColumns($target, $options, $category);

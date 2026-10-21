@@ -69,8 +69,12 @@
         </x-platform.panel>
     </div>
 
-    <x-platform.panel title="Recent approvals" class="mt-6">
-        <x-platform.table :headings="['Name', 'Type', 'Date']" empty="No approvals yet.">
+    <x-platform.panel class="mt-6">
+        <div class="flex items-center justify-between gap-3">
+            <h2 class="text-[14px] font-bold">Recent approvals</h2>
+            <a href="{{ route('platform.audit-log', ['q' => 'approved']) }}" class="text-[13px] font-semibold text-brand-blue hover:underline">View all in Audit Log →</a>
+        </div>
+        <x-platform.table :headings="['Name', 'Type', 'Date']" empty="No approvals recorded yet. They appear here as they are made.">
             @foreach ($recentApprovals as $row)
                 <tr class="border-t border-brand-ink/[.07]">
                     <td class="px-4 py-3 text-[13px] font-medium">{{ $row['name'] }}</td>

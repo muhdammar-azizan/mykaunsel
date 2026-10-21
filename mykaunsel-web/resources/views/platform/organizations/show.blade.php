@@ -473,7 +473,11 @@
         </x-platform.panel>
 
         {{-- Activity timeline --}}
-        <x-platform.panel title="Activity">
+        <x-platform.panel>
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="text-[14px] font-bold">Activity</h2>
+                <a href="{{ route('platform.audit-log', ['organization' => $org->id]) }}" class="text-[13px] font-semibold text-brand-blue hover:underline">View full history →</a>
+            </div>
             <ol class="mt-3 space-y-0">
                 @foreach ($timeline as $event)
                     @php

@@ -5,6 +5,7 @@
             ['label' => 'Account settings', 'url' => route('platform.account'), 'icon' => 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 3.5-6 8-6s8 2 8 6'],
             ['label' => 'Security', 'url' => route('platform.account.security'), 'icon' => 'M20 13c0 5-3.5 7.5-7.5 8.5a1.2 1.2 0 0 1-1 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.79 17 5 19 5a1 1 0 0 1 1 1z'],
             ['label' => 'Account activity', 'url' => route('platform.account.security').'#activity', 'icon' => 'M22 12h-4l-3 9L9 3l-3 9H2'],
+            ['label' => 'Audit log', 'url' => route('platform.audit-log'), 'icon' => 'M9 12h6M9 16h6M9 8h6M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'],
             ['label' => 'Notification settings', 'url' => route('platform.account.notifications'), 'icon' => 'M18 8a6 6 0 1 0-12 0c0 4-2 5-2 7h16c0-2-2-3-2-7zM9.5 19a2.5 2.5 0 0 0 5 0'],
             ['label' => 'Language', 'value' => 'English', 'icon' => 'M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6'],
         ],

@@ -69,3 +69,19 @@ Seeded entries (`OrganizationReviewSeeder`, later the Audit Log seeder) are fake
 ## Events not yet recorded
 
 Only events from pages that exist are recorded today (organizations, account security, sign-in, DNS). Counselors, LKM, complaints, moderation, settings, pricing, admin invites, organization-admin member actions and the system jobs (booking-request expiry, chat purge, PA-expiry suspension) are already in the catalogue; each page adds its `Audit::log()` calls when it is built.
+
+## The Audit Log page (Platform Admin → Audit Log)
+
+`/platform/audit-log` — platform_admin only (everyone else gets 403). Read-only.
+
+- **Filters** (`App\Support\AuditLogFilters`): search (admin name, target name, action key), category, action, admin (incl. "System"), target type, organization, date (Today / 7 days / 30 days / Custom), "Include sign-in activity", rows per page. All validated on the server; invalid values are ignored and explained in a banner. Everything is in the URL, so a filtered view can be bookmarked or linked to, e.g. `?organization=12` (used by the "View full history" link on the organization page).
+- **Dates are days in the admin's timezone** (Account → Profile), converted to UTC for the query. Times are displayed in that timezone, with UTC in the tooltip and the drawer.
+- **Sign-in activity** (`auth` category) is hidden unless the toggle is on (or `category=auth`).
+- **Drawer:** `GET /platform/audit-log/{id}` returns JSON (the table is server-rendered; only the drawer loads over fetch, with a skeleton). `#entry-42` in the URL opens entry 42. Shows before/after changes, reason, IP, user agent, request id and the other entries of the same request.
+- **Export:** `GET /platform/audit-log/export` with the same filters. Counts first and refuses over `audit.export_max_rows` (10,000) *before* anything downloads; otherwise streams CSV in chunks (UTF-8 BOM for Excel), cells that could run as formulas (`= + - @`, tab, CR) get a leading `'`. File name `audit-log_YYYYMMDD_HHmm.csv` (admin timezone). Rate limited (5 a minute). The export is itself logged (`audit.exported`, with the filters and row count) and is not part of its own file.
+- **Links:** sidebar and avatar menu, Dashboard "View all in Audit Log →" (the Recent Approvals widget now reads `organization.approved` / `counselor.approved` from this table), organization page "View full history →".
+- **Colour classes** for the action badges live in `AuditEntryPresenter`; `tailwind.config.js` scans `app/Support` so they are built.
+
+Sample data: `php artisan db:seed --class=AuditLogSeeder` (about 120 made-up entries, marked "Sample data" in the drawer; safe to run twice).
+
+Not covered by automated tests: the drawer's JavaScript (open/close, focus handling, hash links, copy button). The JSON it reads, and every server-side behaviour, is tested.

@@ -27,6 +27,7 @@ use App\Http\Controllers\Platform\AccountEmailController;
 use App\Http\Controllers\Platform\AccountNotificationController;
 use App\Http\Controllers\Platform\AccountSecurityController;
 use App\Http\Controllers\Platform\AccountTwoFactorController;
+use App\Http\Controllers\Platform\PlatformAuditLogController;
 use App\Http\Controllers\Platform\PlatformComplaintController;
 use App\Http\Controllers\Platform\PlatformCounselorController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
@@ -126,6 +127,11 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/organizations/{organization}/dns/remind', [PlatformOrganizationDnsController::class, 'remind'])->whereNumber('organization')->middleware('throttle:20,1')->name('organizations.dns.remind');
         Route::get('/counselors', [PlatformCounselorController::class, 'index'])->name('counselors');
         Route::get('/complaints', [PlatformComplaintController::class, 'index'])->name('complaints');
+
+        // Audit Log (read-only). The export route comes first so "export" is never read as an entry id.
+        Route::get('/audit-log', [PlatformAuditLogController::class, 'index'])->name('audit-log');
+        Route::get('/audit-log/export', [PlatformAuditLogController::class, 'export'])->middleware('throttle:5,1')->name('audit-log.export');
+        Route::get('/audit-log/{entry}', [PlatformAuditLogController::class, 'show'])->whereNumber('entry')->name('audit-log.show');
 
         // Account (Settings > Account). Always acts on the signed-in user, never on an id from the URL.
         Route::prefix('account')->group(function () {

@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             LkmSnapshotSeeder::class,
             CounselorSeeder::class,
             UserSeeder::class,
+            AuditLogSeeder::class,
         ]);
     }
 }
