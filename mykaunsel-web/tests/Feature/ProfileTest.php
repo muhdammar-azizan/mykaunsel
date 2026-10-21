@@ -96,7 +96,7 @@ class ProfileTest extends TestCase
         $user->refresh();
         $this->assertSame('new@example.com', $user->email);
         $this->assertNull($user->email_verified_at);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'email_changed', 'actor_user_id' => $user->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.email_changed', 'actor_user_id' => $user->id]);
     }
 
     public function test_user_can_delete_their_account(): void

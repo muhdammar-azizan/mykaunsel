@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Account;
 
-use App\Models\AuditLog;
+use App\Facades\Audit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -29,11 +29,11 @@ class AccountFoundationTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $log = AuditLog::record('password_changed', $user, ['note' => 'ok']);
+        $log = Audit::log('account.password_changed', $user, ['note' => 'ok']);
 
         $this->assertSame($user->id, $log->actor_user_id);
-        $this->assertSame('password_changed', $log->action);
-        $this->assertSame(User::class, $log->target_type);
+        $this->assertSame('account.password_changed', $log->action);
+        $this->assertSame('user', $log->target_type);
         $this->assertSame(['note' => 'ok'], $log->metadata);
         $this->assertDatabaseCount('audit_logs', 1);
     }

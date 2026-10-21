@@ -14,13 +14,14 @@ class OrganizationTimeline
 {
     /** audit action => [title, tone]. Unknown actions are left out on purpose. */
     private const ACTIONS = [
-        'organization_approved' => ['Approved', 'good'],
-        'organization_rejected' => ['Rejected', 'bad'],
-        'organization_note_added' => ['Internal note added', 'neutral'],
-        'organization_suspended' => ['Suspended', 'bad'],
-        'organization_reactivated' => ['Reactivated', 'good'],
-        'organization_dns_checked' => ['DNS checked', 'neutral'],
-        'organization_dns_reminder_sent' => ['DNS reminder emailed', 'neutral'],
+        'organization.approved' => ['Approved', 'good'],
+        'organization.rejected' => ['Rejected', 'bad'],
+        'organization.note_added' => ['Internal note added', 'neutral'],
+        'organization.suspended' => ['Suspended', 'bad'],
+        'organization.reactivated' => ['Reactivated', 'good'],
+        'organization.dns_checked' => ['DNS checked', 'neutral'],
+        'organization.dns_reminder_sent' => ['DNS reminder emailed', 'neutral'],
+        'organization.dns_verified' => ['Domain verified', 'good'],
     ];
 
     /** @return Collection<int, array{at: \Illuminate\Support\Carbon, title: string, detail: ?string, actor: string, tone: string, seq: int}> */
@@ -42,7 +43,22 @@ class OrganizationTimeline
             'tone' => 'info',
         ]);
 
+        $logs = AuditLog::query()
+            ->with('actor')
+            ->where('target_type', 'organization')
+            ->where('target_id', $organization->id)
+            ->whereIn('action', array_keys(self::ACTIONS))
+            ->orderBy('id')
+            ->get();
+
+        // Domains verified before the audit log existed (or by the applicant) have no audit entry: show them from the domain row.
+        $verifiedInLog = $logs->where('action', 'organization.dns_verified')->map(fn ($l) => $l->metadata['domain'] ?? null)->filter()->all();
+
         foreach ($organization->orgDomains->whereNotNull('verified_at') as $domain) {
+            if (in_array($domain->domain, $verifiedInLog, true)) {
+                continue;
+            }
+
             $events->push([
                 'at' => $domain->verified_at,
                 'title' => 'Domain verified',
@@ -52,24 +68,17 @@ class OrganizationTimeline
             ]);
         }
 
-        AuditLog::query()
-            ->with('actor')
-            ->where('target_type', Organization::class)
-            ->where('target_id', $organization->id)
-            ->whereIn('action', array_keys(self::ACTIONS))
-            ->orderBy('id')
-            ->get()
-            ->each(function (AuditLog $log) use ($events) {
-                [$title, $tone] = self::ACTIONS[$log->action];
+        $logs->each(function (AuditLog $log) use ($events) {
+            [$title, $tone] = self::ACTIONS[$log->action];
 
-                $events->push([
-                    'at' => $log->created_at,
-                    'title' => $title,
-                    'detail' => $log->metadata['reason'] ?? $log->metadata['summary'] ?? null,
-                    'actor' => $log->actor?->name ?? ($log->actor_user_id ? 'Deleted user' : 'System'),
-                    'tone' => $tone,
-                ]);
-            });
+            $events->push([
+                'at' => $log->created_at,
+                'title' => $title,
+                'detail' => $log->metadata['reason'] ?? $log->metadata['summary'] ?? ($log->action === 'organization.dns_verified' ? ($log->metadata['domain'] ?? null) : null),
+                'actor' => $log->isSystem() ? 'System' : ($log->actor_name ?? $log->actor?->name ?? ($log->actor_user_id ? 'Deleted user' : 'Unknown')),
+                'tone' => $tone,
+            ]);
+        });
 
         // Newest first; events in the same second keep the order they happened in (later ones first).
         return $events

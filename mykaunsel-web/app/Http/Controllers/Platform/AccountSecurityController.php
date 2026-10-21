@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Facades\Audit;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Services\SessionManager;
@@ -101,7 +102,7 @@ class AccountSecurityController extends Controller
         Auth::logoutOtherDevices($data['password']);
         $sessions->forgetOthers($request);
 
-        AuditLog::record('password_changed', $user);
+        Audit::log('account.password_changed', $user);
 
         return redirect()->route('platform.account.security')
             ->with('status', 'Password updated. Other devices were signed out.');
@@ -118,7 +119,7 @@ class AccountSecurityController extends Controller
         Auth::logoutOtherDevices($data['current_password']);
         $sessions->forgetOthers($request);
 
-        AuditLog::record('other_sessions_revoked', $request->user(), ['sessions' => $count]);
+        Audit::log('account.other_sessions_revoked', $request->user(), ['sessions' => $count]);
 
         return redirect()->route('platform.account.security')
             ->with('status', $count ? "Signed out {$count} other ".str('session')->plural($count).'.' : 'There were no other sessions.');

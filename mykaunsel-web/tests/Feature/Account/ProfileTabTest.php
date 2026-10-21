@@ -130,7 +130,7 @@ class ProfileTabTest extends TestCase
         $this->assertNotSame($first, $second);
         Storage::disk('public')->assertMissing($first);
         Storage::disk('public')->assertExists($second);
-        $this->assertSame(2, AuditLog::where('action', 'avatar_changed')->count());
+        $this->assertSame(2, AuditLog::where('action', 'account.avatar_changed')->count());
     }
 
     public function test_avatar_rejects_wrong_type_and_oversize(): void
@@ -186,7 +186,7 @@ class ProfileTabTest extends TestCase
         $this->assertSame('new@example.com', $admin->pending_email);
         Notification::assertSentOnDemand(VerifyNewEmailAddress::class);
         Notification::assertSentTo($admin, EmailChangeRequested::class);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'email_change_requested', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.email_change_requested', 'actor_user_id' => $admin->id]);
 
         $url = URL::temporarySignedRoute('platform.account.email.verify', now()->addHour(), ['user' => $admin->id, 'hash' => sha1('new@example.com')]);
         $this->as($admin)->get($url)->assertRedirect(route('platform.account'))->assertSessionHas('status');
@@ -194,7 +194,7 @@ class ProfileTabTest extends TestCase
         $admin->refresh();
         $this->assertSame('new@example.com', $admin->email);
         $this->assertNull($admin->pending_email);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'email_changed', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.email_changed', 'actor_user_id' => $admin->id]);
     }
 
     public function test_email_verification_link_needs_valid_signature_and_owner(): void

@@ -133,7 +133,7 @@ class TwoFactorTest extends TestCase
         $this->assertCount(8, $codes);
         $this->assertCount(8, $admin->recoveryCodeHashes());
         $this->assertNotContains($codes[0], $admin->recoveryCodeHashes(), 'recovery codes must be stored hashed, not in plain text');
-        $this->assertDatabaseHas('audit_logs', ['action' => 'two_factor_enabled', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.two_factor_enabled', 'actor_user_id' => $admin->id]);
 
         // The first page load after enabling shows the codes; any later load must not.
         $this->as($admin)->get(route('platform.account.security'))->assertOk()->assertSee($codes[0])->assertSee('Save your recovery codes');
@@ -162,20 +162,20 @@ class TwoFactorTest extends TestCase
         $this->post('/login', ['email' => $admin->email, 'password' => self::PASSWORD])
             ->assertRedirect(route('two-factor.challenge'));
         $this->assertGuest();
-        $this->assertDatabaseMissing('audit_logs', ['action' => 'login', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseMissing('audit_logs', ['action' => 'auth.login', 'actor_user_id' => $admin->id]);
 
         $this->get(route('two-factor.challenge'))->assertOk()->assertSee('Two-factor authentication');
 
         // Wrong code
         $this->post(route('two-factor.challenge.store'), ['code' => '123456'])->assertSessionHasErrors('code');
         $this->assertGuest();
-        $this->assertDatabaseHas('audit_logs', ['action' => 'two_factor_failed', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.two_factor_failed', 'actor_user_id' => $admin->id]);
 
         // Right code
         $this->post(route('two-factor.challenge.store'), ['code' => $this->nextCode($secret)])
             ->assertRedirect();
         $this->assertAuthenticatedAs($admin);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'login', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'auth.login', 'actor_user_id' => $admin->id]);
         $this->assertNotNull($admin->fresh()->last_login_at);
     }
 
@@ -218,7 +218,7 @@ class TwoFactorTest extends TestCase
         $this->post(route('two-factor.challenge.store'), ['recovery_code' => $codes[0]])->assertRedirect();
         $this->assertAuthenticatedAs($admin);
         $this->assertCount(7, $admin->fresh()->recoveryCodeHashes());
-        $this->assertDatabaseHas('audit_logs', ['action' => 'recovery_code_used', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.recovery_code_used', 'actor_user_id' => $admin->id]);
 
         // same code again (new sign-in) is refused
         $this->post('/logout');
@@ -265,7 +265,7 @@ class TwoFactorTest extends TestCase
 
         $this->assertNotSame($before, $admin->fresh()->recoveryCodeHashes());
         $this->assertCount(8, $admin->fresh()->recoveryCodeHashes());
-        $this->assertDatabaseHas('audit_logs', ['action' => 'recovery_codes_regenerated', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.recovery_codes_regenerated', 'actor_user_id' => $admin->id]);
         $this->assertFalse(app(TwoFactorAuthenticator::class)->consumeRecoveryCode($admin->fresh(), $old[0]), 'old codes must stop working');
     }
 
@@ -284,7 +284,7 @@ class TwoFactorTest extends TestCase
         $this->assertFalse($admin->hasTwoFactorEnabled());
         $this->assertNull($admin->two_factor_secret);
         $this->assertNull($admin->two_factor_recovery_codes);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'two_factor_disabled', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.two_factor_disabled', 'actor_user_id' => $admin->id]);
 
         // login no longer asks for a code
         $this->flushSession();

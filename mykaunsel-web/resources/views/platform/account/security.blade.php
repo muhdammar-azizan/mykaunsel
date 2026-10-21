@@ -5,8 +5,8 @@
     $ghost = 'inline-flex min-h-[42px] items-center justify-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5';
     $otherSessions = $sessions->where('current', false)->count();
     $dot = [
-        'login' => 'bg-brand-blue', 'login_failed' => 'bg-brand-red', 'password_changed' => 'bg-brand-yellow',
-        'other_sessions_revoked' => 'bg-brand-yellow', 'email_change_requested' => 'bg-brand-ink/40', 'email_changed' => 'bg-brand-yellow',
+        'auth.login' => 'bg-brand-blue', 'auth.login_failed' => 'bg-brand-red', 'account.password_changed' => 'bg-brand-yellow',
+        'account.other_sessions_revoked' => 'bg-brand-yellow', 'account.email_change_requested' => 'bg-brand-ink/40', 'account.email_changed' => 'bg-brand-yellow',
     ];
 @endphp
 

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Facades\Audit;
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
 use App\Services\SessionManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,7 +30,7 @@ class PasswordController extends Controller
         Auth::logoutOtherDevices($validated['password']);
         $sessions->forgetOthers($request);
 
-        AuditLog::record('password_changed', $user);
+        Audit::log('account.password_changed', $user);
 
         return back()->with('status', 'password-updated');
     }

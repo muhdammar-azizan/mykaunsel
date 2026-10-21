@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Facades\Audit;
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -38,7 +38,7 @@ class AccountAvatarController extends Controller
             $disk->delete($old);
         }
 
-        AuditLog::record('avatar_changed', $user, ['change' => 'uploaded']);
+        Audit::log('account.avatar_changed', $user, ['change' => 'uploaded']);
 
         return redirect()->route('platform.account')->with('status', 'Photo updated.');
     }
@@ -51,7 +51,7 @@ class AccountAvatarController extends Controller
             Storage::disk(config('account.avatar_disk'))->delete($user->avatar_path);
             $user->forceFill(['avatar_path' => null])->save();
 
-            AuditLog::record('avatar_changed', $user, ['change' => 'removed']);
+            Audit::log('account.avatar_changed', $user, ['change' => 'removed']);
         }
 
         return redirect()->route('platform.account')->with('status', 'Photo removed.');

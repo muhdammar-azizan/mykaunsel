@@ -17,17 +17,17 @@ return [
 
     // audit_logs actions shown in "Recent security activity" (action => label).
     'security_events' => [
-        'login' => 'Signed in',
-        'login_failed' => 'Failed sign-in attempt',
-        'password_changed' => 'Password changed',
-        'email_change_requested' => 'Email change requested',
-        'email_changed' => 'Email address changed',
-        'two_factor_failed' => 'Failed two-factor attempt',
-        'recovery_code_used' => 'Recovery code used to sign in',
-        'two_factor_enabled' => 'Two-factor authentication turned on',
-        'two_factor_disabled' => 'Two-factor authentication turned off',
-        'recovery_codes_regenerated' => 'Recovery codes regenerated',
-        'other_sessions_revoked' => 'Signed out other sessions',
+        'auth.login' => 'Signed in',
+        'auth.login_failed' => 'Failed sign-in attempt',
+        'account.password_changed' => 'Password changed',
+        'account.email_change_requested' => 'Email change requested',
+        'account.email_changed' => 'Email address changed',
+        'account.two_factor_failed' => 'Failed two-factor attempt',
+        'account.recovery_code_used' => 'Recovery code used to sign in',
+        'account.two_factor_enabled' => 'Two-factor authentication turned on',
+        'account.two_factor_disabled' => 'Two-factor authentication turned off',
+        'account.recovery_codes_regenerated' => 'Recovery codes regenerated',
+        'account.other_sessions_revoked' => 'Signed out other sessions',
     ],
 
     'notifications' => [

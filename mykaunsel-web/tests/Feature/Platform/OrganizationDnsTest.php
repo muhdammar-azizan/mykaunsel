@@ -96,7 +96,7 @@ class OrganizationDnsTest extends TestCase
         $this->assertTrue($domain->dns_verified);
         $this->assertNotNull($domain->verified_at);
         $this->assertSame(4, $domain->check_attempts);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'organization_dns_checked', 'actor_user_id' => $this->admin->id, 'target_id' => $org->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'organization.dns_checked', 'actor_user_id' => $this->admin->id, 'target_id' => $org->id]);
 
         // It now counts as a normal pending review, not a "skipped" one.
         $this->assertSame(0, Organization::skippedVerification()->count());
@@ -178,7 +178,7 @@ class OrganizationDnsTest extends TestCase
                 && str_contains($text, $token)
                 && $mail->actionUrl === route('organizations.signup.verify-domain', $org);
         });
-        $this->assertDatabaseHas('audit_logs', ['action' => 'organization_dns_reminder_sent', 'target_id' => $org->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'organization.dns_reminder_sent', 'target_id' => $org->id]);
     }
 
     public function test_reminders_are_rate_limited_per_organization(): void

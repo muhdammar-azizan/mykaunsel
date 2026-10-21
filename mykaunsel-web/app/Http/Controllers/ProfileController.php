@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Audit;
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,7 +38,7 @@ class ProfileController extends Controller
         $user->save();
 
         if ($emailChanged) {
-            AuditLog::record('email_changed', $user);
+            Audit::log('account.email_changed', $user);
             $user->sendEmailVerificationNotification();
         }
 

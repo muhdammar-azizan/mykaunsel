@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Facades\Audit;
 use App\Enums\OrgStatus;
 use App\Enums\OrgType;
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
 use App\Models\OrgReviewNote;
 use App\Models\Organization;
 use Illuminate\Http\JsonResponse;
@@ -75,13 +75,16 @@ class PlatformOrganizationReviewController extends Controller
             'body.required' => 'Write something before adding the note.',
         ]);
 
-        $note = OrgReviewNote::create([
-            'org_id' => $organization->id,
-            'user_id' => $request->user()->id,
-            'body' => trim($data['body']),
-        ]);
+        // The note and its audit entry succeed or fail together.
+        DB::transaction(function () use ($organization, $request, $data) {
+            $note = OrgReviewNote::create([
+                'org_id' => $organization->id,
+                'user_id' => $request->user()->id,
+                'body' => trim($data['body']),
+            ]);
 
-        AuditLog::record('organization_note_added', $organization, ['note_id' => $note->id]);
+            Audit::log('organization.note_added', $organization, ['note_id' => $note->id]);
+        });
 
         return redirect()->to(route('platform.organizations.show', $organization).'#notes')
             ->with('status', 'Note added.');

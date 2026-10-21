@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Facades\Audit;
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
 use App\Services\TwoFactorAuthenticator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,7 +56,7 @@ class AccountTwoFactorController extends Controller
         $user->forceFill(['two_factor_confirmed_at' => now()])->save();
         $codes = $this->twoFactor->issueRecoveryCodes($user);
 
-        AuditLog::record('two_factor_enabled', $user);
+        Audit::log('account.two_factor_enabled', $user);
 
         return $this->done('Two-factor authentication is on.')->with('recovery_codes', $codes);
     }
@@ -84,7 +84,7 @@ class AccountTwoFactorController extends Controller
 
         $codes = $this->twoFactor->issueRecoveryCodes($user);
 
-        AuditLog::record('recovery_codes_regenerated', $user);
+        Audit::log('account.recovery_codes_regenerated', $user);
 
         return $this->done('New recovery codes generated. The old ones no longer work.')->with('recovery_codes', $codes);
     }
@@ -102,7 +102,7 @@ class AccountTwoFactorController extends Controller
             $this->clear($user);
 
             if ($wasEnabled) {
-                AuditLog::record('two_factor_disabled', $user);
+                Audit::log('account.two_factor_disabled', $user);
             }
         }
 

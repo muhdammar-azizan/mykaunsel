@@ -71,7 +71,7 @@ class LegacyAccountGuardTest extends TestCase
             ->assertForbidden();
 
         $this->assertTrue(Hash::check('password', $admin->fresh()->password));
-        $this->assertDatabaseMissing('audit_logs', ['action' => 'password_changed']);
+        $this->assertDatabaseMissing('audit_logs', ['action' => 'account.password_changed']);
     }
 
     public function test_platform_admin_cannot_delete_the_account_through_the_old_endpoint(): void

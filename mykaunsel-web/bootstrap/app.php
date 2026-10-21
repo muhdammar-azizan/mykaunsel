@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Lets "log out other devices" actually invalidate those sessions after a password change.
         $middleware->authenticateSessions();
 
+        // Every request gets an id (X-Request-Id) that groups the audit entries written during it.
+        $middleware->append(\App\Http\Middleware\AssignRequestId::class);
+
         $middleware->alias([
             'org.context' => \App\Http\Middleware\EnsureOrgContext::class,
             'membership.active' => \App\Http\Middleware\CheckMembershipStatus::class,

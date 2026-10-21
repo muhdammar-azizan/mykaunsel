@@ -22,11 +22,21 @@ class DomainVerificationService
         return $token;
     }
 
+    /** Look the record up in DNS. Network only — touches no table, so call it OUTSIDE any database transaction. */
+    public function probeDns(OrgDomain $orgDomain): bool
+    {
+        return $orgDomain->verification_token !== null && $this->tokenPresentInDns($orgDomain);
+    }
+
+    /** Lookup + save in one go (fine when no audit entry has to share the transaction). */
     public function checkDns(OrgDomain $orgDomain): bool
     {
-        $verified = $orgDomain->verification_token !== null
-            && $this->tokenPresentInDns($orgDomain);
+        return $this->applyCheckResult($orgDomain, $this->probeDns($orgDomain));
+    }
 
+    /** Save the outcome of a lookup. Database only — safe inside the transaction that also writes the audit entry. */
+    public function applyCheckResult(OrgDomain $orgDomain, bool $verified): bool
+    {
         $orgDomain->update([
             'dns_verified' => $verified,
             'verified_at' => $verified ? now() : $orgDomain->verified_at,

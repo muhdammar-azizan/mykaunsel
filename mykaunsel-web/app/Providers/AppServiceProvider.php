@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use App\Models\AuditLog;
-use App\Models\User;
+use App\Listeners\RecordAuthActivity;
+use App\Services\AuditLogger;
+use App\Support\AuditContext;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
@@ -17,7 +18,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // One request id / system flag per request (or per console run), shared by every audit entry.
+        $this->app->singleton(AuditContext::class);
+        $this->app->singleton(AuditLogger::class);
     }
 
     /**
@@ -27,18 +30,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Password::defaults(fn () => Password::min(8)->mixedCase()->numbers()->symbols());
 
-        // Security trail for "Recent security activity". Never includes credentials, and a
-        // failure to write the log must never block a sign-in.
-        Event::listen(Login::class, function (Login $event) {
-            if ($event->user instanceof User) {
-                rescue(fn () => AuditLog::record('login', $event->user, [], $event->user), report: true);
-            }
-        });
-
-        Event::listen(Failed::class, function (Failed $event) {
-            if ($event->user instanceof User) {
-                rescue(fn () => AuditLog::record('login_failed', $event->user, [], $event->user), report: true);
-            }
-        });
+        // Sign-in trail. Best-effort: a failure to write never blocks a sign-in, but it is reported.
+        Event::listen(Login::class, [RecordAuthActivity::class, 'onLogin']);
+        Event::listen(Failed::class, [RecordAuthActivity::class, 'onFailed']);
     }
 }

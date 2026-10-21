@@ -90,9 +90,9 @@ class PlatformOrganizationDecisionController extends Controller
 
         // Whoever made the most recent status change (approve / reject / suspend / reactivate).
         $last = AuditLog::with('actor')
-            ->where('target_type', Organization::class)
+            ->where('target_type', 'organization')
             ->where('target_id', $organization->id)
-            ->whereIn('action', ['organization_approved', 'organization_rejected', 'organization_suspended', 'organization_reactivated'])
+            ->whereIn('action', ['organization.approved', 'organization.rejected', 'organization.suspended', 'organization.reactivated'])
             ->latest('id')
             ->first();
 

@@ -24,7 +24,7 @@ class PasswordUpdateTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertTrue(Hash::check(self::NEW, $user->refresh()->password));
-        $this->assertDatabaseHas('audit_logs', ['action' => 'password_changed', 'actor_user_id' => $user->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.password_changed', 'actor_user_id' => $user->id]);
     }
 
     public function test_updating_the_password_signs_out_other_devices_only(): void

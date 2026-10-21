@@ -9,7 +9,7 @@ use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
 use App\Enums\OrgStatus;
 use App\Enums\OrgType;
-use App\Models\AuditLog;
+use App\Facades\Audit;
 use App\Models\LocationPhoto;
 use App\Models\Membership;
 use App\Models\OrgDomain;
@@ -18,6 +18,7 @@ use App\Models\Organization;
 use App\Models\PracticeLocation;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -44,7 +45,7 @@ class OrganizationReviewSeeder extends Seeder
                 'reviewed_at' => now()->subDays(12),
                 'submitted_at' => now()->subDays(15),
             ], 'Encik Razak Ali', 'razak@ditolak.com.my', 'Director');
-            $this->audit('organization_rejected', $rejected, $platformAdmin, now()->subDays(12), ['reason' => $rejected->rejection_reason]);
+            $this->audit('organization.rejected', $rejected, $platformAdmin, now()->subDays(12), ['reason' => $rejected->rejection_reason]);
         }
     }
 
@@ -64,7 +65,7 @@ class OrganizationReviewSeeder extends Seeder
                 'domain_valid' => ['by' => $platformAdmin->id, 'at' => now()->subHours(5)->toIso8601String()],
             ]]);
             $note = OrgReviewNote::create(['org_id' => $uni->id, 'user_id' => $platformAdmin->id, 'body' => 'Both domains verified. Still need to confirm the registrar is the right contact.']);
-            $this->audit('organization_note_added', $uni, $platformAdmin, $note->created_at, ['note_id' => $note->id]);
+            $this->audit('organization.note_added', $uni, $platformAdmin, $note->created_at, ['note_id' => $note->id]);
         }
 
         // 2. University that skipped DNS — waiting 6 days (amber)
@@ -118,7 +119,7 @@ class OrganizationReviewSeeder extends Seeder
             'reviewed_at' => now()->subDays(5),
             'submitted_at' => now()->subDays(3),
         ], 'Cik Nurul Huda', 'huda@hantarsemula.com.my', 'Operations Manager');
-        $this->audit('organization_rejected', $resubmitted, $platformAdmin, now()->subDays(5), ['reason' => $resubmitted->rejection_reason]);
+        $this->audit('organization.rejected', $resubmitted, $platformAdmin, now()->subDays(5), ['reason' => $resubmitted->rejection_reason]);
 
         // 6. Suspended organization
         $suspended = $this->application('Pusat Kaunseling Digantung', OrgType::Clinic, [
@@ -131,21 +132,14 @@ class OrganizationReviewSeeder extends Seeder
             'reviewed_at' => now()->subMonths(2),
             'submitted_at' => now()->subMonths(3),
         ], 'Encik Zulkifli Hassan', 'zul@pusatdigantung.com', 'Owner');
-        $this->audit('organization_approved', $suspended, $platformAdmin, now()->subMonths(2));
-        $this->audit('organization_suspended', $suspended, $platformAdmin, now()->subDays(4), ['reason' => $suspended->suspension_reason]);
+        $this->audit('organization.approved', $suspended, $platformAdmin, now()->subMonths(2));
+        $this->audit('organization.suspended', $suspended, $platformAdmin, now()->subDays(4), ['reason' => $suspended->suspension_reason]);
     }
 
-    /** Writes a past audit entry so the Activity timeline has history to show. */
+    /** Writes a past audit entry (marked as seeded sample data) so the Activity timeline has history to show. */
     private function audit(string $action, Organization $organization, ?User $actor, $at, array $metadata = []): void
     {
-        AuditLog::forceCreate([
-            'actor_user_id' => $actor?->id,
-            'action' => $action,
-            'target_type' => Organization::class,
-            'target_id' => $organization->id,
-            'metadata' => $metadata ?: null,
-            'created_at' => $at,
-        ]);
+        Audit::log($action, $organization, $metadata + ['seeded' => true], $actor ?? 'system', ['at' => Carbon::parse($at)]);
     }
 
     /** Creates the organization plus its registering admin (with the authority confirmation recorded). */

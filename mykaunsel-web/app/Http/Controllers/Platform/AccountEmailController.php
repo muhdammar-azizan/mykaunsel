@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Facades\Audit;
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
 use App\Models\User;
 use App\Notifications\EmailChangeRequested;
 use App\Notifications\VerifyNewEmailAddress;
@@ -50,7 +50,7 @@ class AccountEmailController extends Controller
         Notification::route('mail', $new)->notify(new VerifyNewEmailAddress($url, $minutes));
         $user->notify(new EmailChangeRequested($this->mask($new)));
 
-        AuditLog::record('email_change_requested', $user, ['new_email_domain' => substr(strrchr($new, '@'), 1)]);
+        Audit::log('account.email_change_requested', $user, ['new_email_domain' => substr(strrchr($new, '@'), 1)]);
 
         return redirect()->route('platform.account')
             ->with('status', "Verification link sent to {$new}. Your current email stays active until you confirm it.");
@@ -81,7 +81,7 @@ class AccountEmailController extends Controller
             'email_verified_at' => now(),
         ])->save();
 
-        AuditLog::record('email_changed', $account, ['previous_email_domain' => substr(strrchr($old, '@'), 1)]);
+        Audit::log('account.email_changed', $account, ['previous_email_domain' => substr(strrchr($old, '@'), 1)]);
 
         return redirect()->route('platform.account')->with('status', 'Your email address has been updated.');
     }

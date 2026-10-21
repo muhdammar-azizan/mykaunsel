@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Facades\Audit;
 use App\Http\Controllers\Controller;
-use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\TwoFactorAuthenticator;
 use Illuminate\Http\RedirectResponse;
@@ -66,7 +66,7 @@ class TwoFactorChallengeController extends Controller
 
         if (! $valid) {
             RateLimiter::hit($key, 60);
-            AuditLog::record('two_factor_failed', $user, [], $user);
+            Audit::log('account.two_factor_failed', $user, [], $user);
 
             throw ValidationException::withMessages([
                 $usingRecovery ? 'recovery_code' : 'code' => $usingRecovery
@@ -85,7 +85,7 @@ class TwoFactorChallengeController extends Controller
         $user->forceFill(['last_login_at' => now(), 'last_login_ip' => $request->ip()])->saveQuietly();
 
         if ($usingRecovery) {
-            AuditLog::record('recovery_code_used', $user, ['remaining' => count($user->recoveryCodeHashes())], $user);
+            Audit::log('account.recovery_code_used', $user, ['remaining' => count($user->recoveryCodeHashes())], $user);
         }
 
         return redirect()->intended(route('dashboard', absolute: false));

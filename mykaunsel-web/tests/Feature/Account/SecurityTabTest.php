@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Account;
 
+use App\Facades\Audit;
 use App\Enums\AccessModel;
 use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
 use App\Enums\OrgStatus;
 use App\Enums\OrgType;
-use App\Models\AuditLog;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
@@ -124,7 +124,7 @@ class SecurityTabTest extends TestCase
         $this->assertTrue(Hash::check(self::NEW, $admin->fresh()->password));
         $this->assertDatabaseMissing('sessions', ['id' => 'other-device-1']);
         $this->assertDatabaseHas('sessions', ['id' => 'someone-elses']);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'password_changed', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.password_changed', 'actor_user_id' => $admin->id]);
         $this->assertTrue(Hash::check(self::OLD, $other->fresh()->password), 'another admin must not be affected');
     }
 
@@ -175,7 +175,7 @@ class SecurityTabTest extends TestCase
         $this->assertDatabaseMissing('sessions', ['id' => 'laptop']);
         $this->assertDatabaseMissing('sessions', ['id' => 'phone']);
         $this->assertDatabaseHas('sessions', ['id' => 'theirs']);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'other_sessions_revoked', 'actor_user_id' => $admin->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'account.other_sessions_revoked', 'actor_user_id' => $admin->id]);
     }
 
     public function test_recent_activity_lists_only_this_admins_security_events(): void
@@ -183,10 +183,10 @@ class SecurityTabTest extends TestCase
         $admin = $this->admin();
         $other = $this->admin('Second Admin');
 
-        AuditLog::record('password_changed', $admin, [], $admin);
-        AuditLog::record('login_failed', $admin, [], $admin);
-        AuditLog::record('avatar_changed', $admin, ['change' => 'uploaded'], $admin);
-        AuditLog::record('email_changed', $other, [], $other);
+        Audit::log('account.password_changed', $admin, [], $admin);
+        Audit::log('auth.login_failed', $admin, [], $admin);
+        Audit::log('account.avatar_changed', $admin, ['change' => 'uploaded'], $admin);
+        Audit::log('account.email_changed', $other, [], $other);
 
         $this->as($admin)->get(route('platform.account.security'))
             ->assertOk()
@@ -200,7 +200,7 @@ class SecurityTabTest extends TestCase
     {
         $admin = $this->admin();
         foreach (range(1, 14) as $i) {
-            AuditLog::record('password_changed', $admin, [], $admin);
+            Audit::log('account.password_changed', $admin, [], $admin);
         }
 
         $response = $this->as($admin)->get(route('platform.account.security'))->assertOk();
@@ -213,10 +213,10 @@ class SecurityTabTest extends TestCase
         $user = User::factory()->create(['password' => self::OLD]);
 
         $this->post('/login', ['email' => $user->email, 'password' => 'wrong-password']);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'login_failed', 'actor_user_id' => $user->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'auth.login_failed', 'actor_user_id' => $user->id]);
 
         $this->post('/login', ['email' => $user->email, 'password' => self::OLD]);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'login', 'actor_user_id' => $user->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'auth.login', 'actor_user_id' => $user->id]);
     }
 
     public function test_non_platform_admin_cannot_reach_security_endpoints(): void

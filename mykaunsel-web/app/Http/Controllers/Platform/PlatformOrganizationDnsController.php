@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Facades\Audit;
 use App\Enums\OrgStatus;
 use App\Enums\OrgType;
 use App\Http\Controllers\Controller;
@@ -11,6 +12,7 @@ use App\Notifications\DomainVerificationReminder;
 use App\Services\DomainVerificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /** Platform Admin actions on an organization's domains: check now, and remind the applicant. */
@@ -42,27 +44,46 @@ class PlatformOrganizationDnsController extends Controller
             }
         }
 
-        $nowVerified = 0;
-        $lapsed = [];
+        // 1. Network lookups first, outside any transaction (a slow DNS server must not hold a database lock).
+        $found = [];
         foreach ($targets as $domain) {
-            $wasVerified = $domain->dns_verified;
-
             if (! $domain->verification_token) {
                 $service->generateToken($domain);
             }
 
-            if ($service->checkDns($domain)) {
-                $nowVerified++;
-            } elseif ($wasVerified) {
-                $lapsed[] = $domain->domain;
-            }
+            $found[$domain->id] = $service->probeDns($domain);
         }
 
+        // 2. Save the results and the audit entry together.
+        $nowVerified = 0;
+        $lapsed = [];
+        $perDomain = [];
+
+        DB::transaction(function () use ($targets, $found, $service, $organization, &$nowVerified, &$lapsed, &$perDomain) {
+            foreach ($targets as $domain) {
+                $wasVerified = $domain->dns_verified;
+                $service->applyCheckResult($domain, $found[$domain->id]);
+
+                if ($found[$domain->id]) {
+                    $nowVerified++;
+                    $perDomain[$domain->domain] = 'verified';
+                } else {
+                    $perDomain[$domain->domain] = $wasVerified ? 'no longer verified' : 'not found';
+                    if ($wasVerified) {
+                        $lapsed[] = $domain->domain;
+                    }
+                }
+            }
+
+            $summary = "{$nowVerified} of {$targets->count()} verified";
+            if ($lapsed) {
+                $summary .= '; no longer verified: '.implode(', ', $lapsed);
+            }
+
+            Audit::log('organization.dns_checked', $organization, ['summary' => $summary, 'domains' => $perDomain]);
+        });
+
         $summary = "{$nowVerified} of {$targets->count()} verified";
-        if ($lapsed) {
-            $summary .= '; no longer verified: '.implode(', ', $lapsed);
-        }
-        AuditLog::record('organization_dns_checked', $organization, ['summary' => $summary]);
 
         if ($lapsed) {
             return $this->back($organization)->with('error', 'DNS record missing: '.implode(', ', $lapsed).' is no longer verified, so it stops matching members.');
@@ -92,8 +113,8 @@ class PlatformOrganizationDnsController extends Controller
             return $this->back($organization)->with('error', 'This organization has no admin to email.');
         }
 
-        $lastSent = AuditLog::where('action', 'organization_dns_reminder_sent')
-            ->where('target_type', Organization::class)
+        $lastSent = AuditLog::where('action', 'organization.dns_reminder_sent')
+            ->where('target_type', 'organization')
             ->where('target_id', $organization->id)
             ->latest('created_at')
             ->value('created_at');
@@ -116,7 +137,7 @@ class PlatformOrganizationDnsController extends Controller
             return $this->back($organization)->with('error', 'The reminder could not be sent. Please try again.');
         }
 
-        AuditLog::record('organization_dns_reminder_sent', $organization, ['summary' => "Emailed {$registrant->email}"]);
+        Audit::log('organization.dns_reminder_sent', $organization, ['summary' => "Emailed {$registrant->email}"]);
 
         return $this->back($organization)->with('status', "Reminder emailed to {$registrant->email}.");
     }

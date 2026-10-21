@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Platform;
 
+use App\Facades\Audit;
 use App\Enums\AccessModel;
 use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
 use App\Enums\OrgStatus;
 use App\Enums\OrgType;
-use App\Models\AuditLog;
 use App\Models\Membership;
 use App\Models\OrgReviewNote;
 use App\Models\Organization;
@@ -169,7 +169,7 @@ class OrganizationReviewToolsTest extends TestCase
         $note = OrgReviewNote::where('org_id', $org->id)->firstOrFail();
         $this->assertSame('Telefon pemohon untuk minta SSM.', $note->body);
         $this->assertSame($this->admin->id, $note->user_id);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'organization_note_added', 'actor_user_id' => $this->admin->id, 'target_id' => $org->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'organization.note_added', 'actor_user_id' => $this->admin->id, 'target_id' => $org->id]);
 
         $this->as($this->admin)->get(route('platform.organizations.show', $org))
             ->assertSee('Telefon pemohon untuk minta SSM.')
@@ -244,7 +244,7 @@ class OrganizationReviewToolsTest extends TestCase
         $mine = Organization::where('name', 'Kolej Universiti Skip DNS')->first();
         $other = Organization::where('name', 'Universiti Teknologi Contoh')->first();
 
-        AuditLog::record('organization_note_added', $other, ['note_id' => 1], $this->admin);
+        Audit::log('organization.note_added', $other, ['note_id' => 1], $this->admin);
 
         $titles = app(OrganizationTimeline::class)->for($mine)->pluck('title')->all();
         $this->assertNotContains('Internal note added', $titles);

@@ -91,7 +91,7 @@ class OrganizationManageTest extends TestCase
         }
 
         $this->assertSame(OrgStatus::Active, $org->fresh()->subscription_status);
-        $this->assertDatabaseMissing('audit_logs', ['action' => 'organization_suspended']);
+        $this->assertDatabaseMissing('audit_logs', ['action' => 'organization.suspended']);
     }
 
     public function test_suspending_saves_reason_time_and_audit_and_keeps_the_original_approval(): void
@@ -108,7 +108,7 @@ class OrganizationManageTest extends TestCase
         $this->assertSame('Aduan berulang tentang amalan tidak sah.', $org->suspension_reason);
         $this->assertNotNull($org->suspended_at);
         $this->assertSame($this->admin->id, $org->reviewed_by, 'approval details are untouched');
-        $this->assertDatabaseHas('audit_logs', ['action' => 'organization_suspended', 'actor_user_id' => $this->admin->id, 'target_id' => $org->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'organization.suspended', 'actor_user_id' => $this->admin->id, 'target_id' => $org->id]);
         $this->assertNotNull($member->fresh(), 'no data is deleted');
         $this->assertSame(1, Membership::where('org_id', $org->id)->where('user_id', $member->id)->count());
     }
@@ -124,7 +124,7 @@ class OrganizationManageTest extends TestCase
         $this->assertSame(OrgStatus::Active, $org->subscription_status);
         $this->assertNull($org->suspension_reason);
         $this->assertNull($org->suspended_at);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'organization_reactivated', 'target_id' => $org->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'organization.reactivated', 'target_id' => $org->id]);
     }
 
     public function test_only_the_right_state_can_be_suspended_or_reactivated(): void
@@ -341,7 +341,7 @@ class OrganizationManageTest extends TestCase
 
         $this->assertFalse($domain->fresh()->dns_verified);
         $this->assertNull($service->verifiedDomainFor('ali@aktif.edu.my'), 'the lapsed domain no longer matches members');
-        $this->assertDatabaseHas('audit_logs', ['action' => 'organization_dns_checked', 'target_id' => $org->id]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'organization.dns_checked', 'target_id' => $org->id]);
     }
 
     public function test_a_domain_of_another_organization_cannot_be_reverified_through_this_one(): void
