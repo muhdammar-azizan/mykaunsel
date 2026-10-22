@@ -6,6 +6,7 @@ use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Counselor\StoreCounselorDocumentsRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CounselorDocumentController extends Controller
 {
@@ -28,11 +29,18 @@ class CounselorDocumentController extends Controller
         $profile = $request->user()->counselorProfile;
         abort_unless($profile, 404);
 
+        $disk = config('counselors.documents_disk');
         $updates = [];
+        $replaced = [];
 
         foreach (self::DOCUMENT_FIELDS as $inputKey => $column) {
             if ($request->hasFile($inputKey)) {
-                $updates[$column] = $request->file($inputKey)->store('counselor-documents', 'public');
+                // Private disk, random file name. Nothing here is ever reachable by a public URL.
+                $updates[$column] = $request->file($inputKey)->store('', $disk);
+
+                if (filled($profile->{$column})) {
+                    $replaced[] = $profile->{$column};
+                }
             }
         }
 
@@ -43,6 +51,9 @@ class CounselorDocumentController extends Controller
 
         if ($updates !== []) {
             $profile->update($updates);
+
+            // The new copies are saved; drop the files they replace.
+            Storage::disk($disk)->delete($replaced);
         }
 
         return redirect()->route('counselors.signup.waiting-approval');

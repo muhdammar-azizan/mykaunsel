@@ -60,6 +60,8 @@ return [
         'counselor.suspended' => ['category' => 'counselors', 'badge' => 'suspended', 'label' => 'Counselor suspended'],
         'counselor.reactivated' => ['category' => 'counselors', 'badge' => 'reactivated', 'label' => 'Counselor reactivated'],
         'counselor.note_added' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Internal note added'],
+        // Written by the (not yet built) scheduled PA-expiry check — always the "system" actor.
+        'counselor.pa_expired_suspended' => ['category' => 'counselors', 'badge' => 'suspended', 'label' => 'Suspended automatically: practising certificate expired'],
 
         // LKM records
         'lkm.record_created' => ['category' => 'lkm', 'badge' => 'created', 'label' => 'LKM record added'],
@@ -115,7 +117,6 @@ return [
         // Scheduled / queued jobs — the actor is always "system"
         'system.booking_requests_expired' => ['category' => 'system', 'badge' => 'system', 'label' => 'Booking requests expired'],
         'system.chat_purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Chat data purged'],
-        'system.pa_expiry_suspension' => ['category' => 'system', 'badge' => 'system', 'label' => 'Suspended after practising-certificate expiry'],
 
         // The audit log itself
         'audit.exported' => ['category' => 'audit', 'badge' => 'exported', 'label' => 'Audit log exported'],

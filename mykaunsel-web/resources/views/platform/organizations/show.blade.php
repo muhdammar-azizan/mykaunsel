@@ -170,69 +170,10 @@
     @endif
 
     {{-- Review checklist: shared reference for all Platform Admins, never blocks a decision. --}}
-    @php $checklistOpen = $org->subscription_status === \App\Enums\OrgStatus::Pending; @endphp
-    <x-platform.panel class="mt-5">
-        <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 class="text-[14px] font-bold">Review checklist</h2>
-            <p class="text-[12.5px] text-brand-ink/55">
-                {{ $checklistOpen ? 'Saves automatically and is shared with other admins. For reference only — it does not block approval.' : 'Closed — this application has been decided.' }}
-            </p>
-        </div>
-
-        <ul class="mt-3 grid gap-2 sm:grid-cols-2">
-            @foreach ($checklist as $item)
-                <li x-data="{
-                        on: @js($item['checked']),
-                        by: @js($item['by']),
-                        at: @js($item['at']),
-                        state: 'idle',
-                        timer: null,
-                        async toggle() {
-                            const next = !this.on;
-                            const prev = { on: this.on, by: this.by, at: this.at };
-                            this.on = next;
-                            this.state = 'saving';
-                            clearTimeout(this.timer);
-                            try {
-                                const res = await fetch(@js(route('platform.organizations.checklist', $org)), {
-                                    method: 'PATCH',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                                    },
-                                    body: JSON.stringify({ key: @js($item['key']), checked: next }),
-                                });
-                                if (!res.ok) throw new Error('save failed');
-                                const data = await res.json();
-                                this.by = data.by;
-                                this.at = data.at;
-                                this.state = 'saved';
-                            } catch (e) {
-                                Object.assign(this, prev);
-                                this.state = 'error';
-                            }
-                            this.timer = setTimeout(() => this.state = 'idle', 2200);
-                        },
-                    }">
-                    <label class="flex items-start gap-3 rounded-xl border px-4 py-3 transition {{ $checklistOpen ? 'cursor-pointer hover:border-brand-blue/40' : 'cursor-default opacity-70' }}"
-                           :class="on ? 'border-brand-blue/30 bg-brand-blue/[.04]' : 'border-brand-ink/10 bg-white'">
-                        <input type="checkbox" class="mt-0.5 h-[18px] w-[18px] rounded-[5px] border-brand-ink/30 text-brand-blue focus:ring-brand-blue"
-                               :checked="on" @change="toggle()" @disabled(! $checklistOpen)>
-                        <span class="min-w-0 flex-1">
-                            <span class="block text-[14px] font-semibold">{{ $item['label'] }}</span>
-                            <span class="block text-[12px] text-brand-ink/50">{{ $item['hint'] }}</span>
-                            <span x-show="on && by" x-cloak class="mt-1 block text-[11.5px] text-brand-blue">Checked by <span x-text="by"></span> · <span x-text="at"></span></span>
-                            <span class="mt-1 block text-[11.5px]" aria-live="polite">
-                                <span x-show="state === 'saving'" x-cloak class="text-brand-ink/45">Saving…</span>
-                                <span x-show="state === 'error'" x-cloak class="font-semibold text-brand-red">Couldn't save — try again</span>
-                            </span>
-                        </span>
-                    </label>
-                </li>
-            @endforeach
-        </ul>
-    </x-platform.panel>
+    <x-platform.review-checklist class="mt-5"
+        :items="$checklist"
+        :open="$org->subscription_status === \App\Enums\OrgStatus::Pending"
+        :endpoint="route('platform.organizations.checklist', $org)" />
 
     <div class="mt-5 grid gap-5 lg:grid-cols-2">
         {{-- Organization info --}}
@@ -440,67 +381,12 @@
 
     <div class="mt-5 grid gap-5 lg:grid-cols-2">
         {{-- Internal notes --}}
-        <x-platform.panel id="notes" title="Internal notes" class="scroll-mt-6">
-            <p class="mt-0.5 text-[12.5px] text-brand-ink/55">Only Platform Admins can see these. The applicant never does.</p>
-
-            <form method="POST" action="{{ route('platform.organizations.notes.store', $org) }}" class="mt-3" x-data="{ body: @js(old('body', '')), busy: false }" @submit="busy = true">
-                @csrf
-                <label for="note-body" class="sr-only">New note</label>
-                <textarea id="note-body" name="body" x-model="body" rows="3" maxlength="2000" required
-                          placeholder="e.g. Called the registrar — confirmed the domain belongs to them."
-                          class="block w-full rounded-xl border border-brand-ink/15 px-4 py-2.5 text-[14px] focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"></textarea>
-                @error('body', 'note')<p class="mt-1.5 text-[12.5px] font-semibold text-brand-red">{{ $message }}</p>@enderror
-                <div class="mt-2 flex justify-end">
-                    <button type="submit" :disabled="busy || body.trim().length === 0"
-                            class="inline-flex min-h-[38px] items-center rounded-full bg-brand-blue px-5 text-[13px] font-semibold text-white transition hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-40">Add note</button>
-                </div>
-            </form>
-
-            @if ($notes->isEmpty())
-                <p class="mt-4 rounded-xl bg-brand-ink/[.04] px-4 py-5 text-center text-[13px] text-brand-ink/50">No notes yet.</p>
-            @else
-                <ul class="mt-4 space-y-3">
-                    @foreach ($notes as $note)
-                        <li class="rounded-xl border border-brand-ink/10 bg-cream px-4 py-3">
-                            <p class="whitespace-pre-line break-words text-[13.5px] leading-relaxed">{{ $note->body }}</p>
-                            <p class="mt-2 text-[11.5px] text-brand-ink/50" title="{{ $note->created_at->format('j M Y, g:i A') }}">
-                                {{ $note->author?->name ?? 'Deleted user' }} · {{ $note->created_at->diffForHumans() }}
-                            </p>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </x-platform.panel>
+        <x-platform.review-notes :notes="$notes"
+            :action="route('platform.organizations.notes.store', $org)"
+            placeholder="e.g. Called the registrar — confirmed the domain belongs to them." />
 
         {{-- Activity timeline --}}
-        <x-platform.panel>
-            <div class="flex items-center justify-between gap-3">
-                <h2 class="text-[14px] font-bold">Activity</h2>
-                <a href="{{ route('platform.audit-log', ['organization' => $org->id]) }}" class="text-[13px] font-semibold text-brand-blue hover:underline">View full history →</a>
-            </div>
-            <ol class="mt-3 space-y-0">
-                @foreach ($timeline as $event)
-                    @php
-                        $dot = ['good' => 'bg-emerald-500', 'bad' => 'bg-brand-red', 'info' => 'bg-brand-blue', 'neutral' => 'bg-brand-ink/35'][$event['tone']];
-                    @endphp
-                    <li class="relative flex gap-3 pb-5 last:pb-0">
-                        @unless ($loop->last)
-                            <span class="absolute left-[5px] top-4 h-full w-px bg-brand-ink/10" aria-hidden="true"></span>
-                        @endunless
-                        <span class="relative mt-1.5 h-[11px] w-[11px] shrink-0 rounded-full ring-4 ring-white {{ $dot }}"></span>
-                        <div class="min-w-0">
-                            <p class="text-[13.5px] font-semibold">{{ $event['title'] }}</p>
-                            @if ($event['detail'])
-                                <p class="mt-0.5 break-words text-[12.5px] text-brand-ink/65">{{ $event['detail'] }}</p>
-                            @endif
-                            <p class="mt-0.5 text-[11.5px] text-brand-ink/50" title="{{ $event['at']->format('j M Y, g:i A') }}">
-                                {{ $event['actor'] }} · {{ $event['at']->format('j M Y, g:i A') }}
-                            </p>
-                        </div>
-                    </li>
-                @endforeach
-            </ol>
-        </x-platform.panel>
+        <x-platform.activity-timeline :timeline="$timeline" :history-url="route('platform.audit-log', ['organization' => $org->id])" />
     </div>
 
     @if ($org->subscription_status === \App\Enums\OrgStatus::Pending)
@@ -515,109 +401,52 @@
         @endphp
 
         {{-- Approve --}}
-        <x-modal name="approve-org" maxWidth="lg" focusable>
-            <form method="POST" action="{{ route('platform.organizations.approve', $org) }}" x-data="{ busy: false }" @submit="busy = true" class="p-6">
-                @csrf
-                <h2 class="text-[18px] font-extrabold tracking-tight">Approve {{ $org->name }}?</h2>
-                <p class="mt-1 text-[13px] text-brand-ink/60">This is what happens next:</p>
+        <x-platform.confirm-modal name="approve-org" :action="route('platform.organizations.approve', $org)"
+            :title="'Approve '.$org->name.'?'" submit-label="Approve organization" busy-label="Approving…">
+            <p class="mt-1 text-[13px] text-brand-ink/60">This is what happens next:</p>
 
-                <ul class="mt-4 space-y-2.5 text-[13.5px] leading-snug">
-                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> The organization becomes <strong>Active</strong>.</li>
-                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> {{ $registrant ? $registrant->name.' ('.$registrant->email.')' : 'The admin' }} is emailed and can manage the organization.</li>
-                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> The decision is saved in the audit log under your name.</li>
-                    @if ($unverified > 0)
-                        <li class="flex gap-2.5 text-[#6B4C0C]"><span class="mt-0.5">!</span> {{ $unverified }} {{ \Illuminate\Support\Str::plural('domain', $unverified) }} not DNS-verified — members will not be matched by email domain until verified.</li>
-                    @endif
-                </ul>
-
-                <div class="mt-6 flex justify-end gap-2">
-                    <button type="button" @click="$dispatch('close-modal', 'approve-org')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
-                    <button type="submit" :disabled="busy" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50">
-                        <span x-show="!busy">Approve organization</span><span x-show="busy" x-cloak>Approving…</span>
-                    </button>
-                </div>
-            </form>
-        </x-modal>
+            <ul class="mt-4 space-y-2.5 text-[13.5px] leading-snug">
+                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> The organization becomes <strong>Active</strong>.</li>
+                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> {{ $registrant ? $registrant->name.' ('.$registrant->email.')' : 'The admin' }} is emailed and can manage the organization.</li>
+                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> The decision is saved in the audit log under your name.</li>
+                @if ($unverified > 0)
+                    <li class="flex gap-2.5 text-[#6B4C0C]"><span class="mt-0.5">!</span> {{ $unverified }} {{ \Illuminate\Support\Str::plural('domain', $unverified) }} not DNS-verified — members will not be matched by email domain until verified.</li>
+                @endif
+            </ul>
+        </x-platform.confirm-modal>
 
         {{-- Reject --}}
-        <x-modal name="reject-org" maxWidth="lg" :show="$errors->has('reason')" focusable>
-            <form method="POST" action="{{ route('platform.organizations.reject', $org) }}" x-data="{ busy: false, reason: @js(old('reason', '')) }" @submit="busy = true" class="p-6">
-                @csrf
-                <h2 class="text-[18px] font-extrabold tracking-tight">Reject {{ $org->name }}?</h2>
-                <p class="mt-1 text-[13px] text-brand-ink/60">The reason below is <strong>sent to the applicant</strong> by email.</p>
-
-                <div class="mt-4 flex flex-wrap gap-2" aria-label="Quick reasons">
-                    @foreach ($templates as $label => $text)
-                        <button type="button" @click="reason = @js($text)"
-                                class="rounded-full border border-brand-ink/15 px-3 py-1 text-[12px] font-semibold text-brand-ink/70 transition hover:border-brand-blue hover:text-brand-blue">{{ $label }}</button>
-                    @endforeach
-                </div>
-
-                <label for="reject-reason" class="mt-4 block text-[12.5px] font-semibold text-brand-ink/70">Reason</label>
-                <textarea id="reject-reason" name="reason" x-model="reason" rows="5" maxlength="1000" required
-                          class="mt-1.5 block w-full rounded-xl border border-brand-ink/15 px-4 py-2.5 text-[14px] focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
-                          placeholder="Tell the applicant what to fix."></textarea>
-                @error('reason')<p class="mt-1.5 text-[12.5px] font-semibold text-brand-red">{{ $message }}</p>@enderror
-                <p class="mt-1 text-right text-[11.5px] text-brand-ink/45"><span x-text="reason.length">0</span>/1000</p>
-
-                <div class="mt-4 flex justify-end gap-2">
-                    <button type="button" @click="$dispatch('close-modal', 'reject-org')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
-                    <button type="submit" :disabled="busy || reason.trim().length < 10" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-red px-6 text-[13.5px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40">
-                        <span x-show="!busy">Reject application</span><span x-show="busy" x-cloak>Rejecting…</span>
-                    </button>
-                </div>
-            </form>
-        </x-modal>
+        <x-platform.reason-modal name="reject-org" :action="route('platform.organizations.reject', $org)"
+            :title="'Reject '.$org->name.'?'" textarea-id="reject-reason" :rows="5"
+            placeholder="Tell the applicant what to fix." :templates="$templates"
+            submit-label="Reject application" busy-label="Rejecting…">
+            <p class="mt-1 text-[13px] text-brand-ink/60">The reason below is <strong>sent to the applicant</strong> by email.</p>
+        </x-platform.reason-modal>
     @endif
 
     @if ($org->subscription_status === \App\Enums\OrgStatus::Active)
         {{-- Suspend --}}
-        <x-modal name="suspend-org" maxWidth="lg" :show="$errors->suspend->has('reason')" focusable>
-            <form method="POST" action="{{ route('platform.organizations.suspend', $org) }}" x-data="{ busy: false, reason: @js(old('reason', '')) }" @submit="busy = true" class="p-6">
-                @csrf
-                <h2 class="text-[18px] font-extrabold tracking-tight">Suspend {{ $org->name }}?</h2>
-
-                <ul class="mt-4 space-y-2.5 text-[13.5px] leading-snug">
-                    <li class="flex gap-2.5"><span class="mt-0.5 text-brand-red">!</span> All <strong>{{ number_format($overview['members']) }}</strong> members and <strong>{{ number_format($overview['counselors']) }}</strong> counselors lose access to this organization right away.</li>
-                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> All data is kept. Nothing is deleted.</li>
-                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> You can reactivate it at any time.</li>
-                </ul>
-
-                <label for="suspend-reason" class="mt-4 block text-[12.5px] font-semibold text-brand-ink/70">Reason (kept in the audit log)</label>
-                <textarea id="suspend-reason" name="reason" x-model="reason" rows="4" maxlength="1000" required
-                          class="mt-1.5 block w-full rounded-xl border border-brand-ink/15 px-4 py-2.5 text-[14px] focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
-                          placeholder="Why is this organization being suspended?"></textarea>
-                @error('reason', 'suspend')<p class="mt-1.5 text-[12.5px] font-semibold text-brand-red">{{ $message }}</p>@enderror
-                <p class="mt-1 text-right text-[11.5px] text-brand-ink/45"><span x-text="reason.length">0</span>/1000</p>
-
-                <div class="mt-4 flex justify-end gap-2">
-                    <button type="button" @click="$dispatch('close-modal', 'suspend-org')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
-                    <button type="submit" :disabled="busy || reason.trim().length < 10" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-red px-6 text-[13.5px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40">
-                        <span x-show="!busy">Suspend organization</span><span x-show="busy" x-cloak>Suspending…</span>
-                    </button>
-                </div>
-            </form>
-        </x-modal>
+        <x-platform.reason-modal name="suspend-org" :action="route('platform.organizations.suspend', $org)" bag="suspend"
+            :title="'Suspend '.$org->name.'?'" textarea-id="suspend-reason" :rows="4"
+            label="Reason (kept in the audit log)" placeholder="Why is this organization being suspended?"
+            submit-label="Suspend organization" busy-label="Suspending…">
+            <ul class="mt-4 space-y-2.5 text-[13.5px] leading-snug">
+                <li class="flex gap-2.5"><span class="mt-0.5 text-brand-red">!</span> All <strong>{{ number_format($overview['members']) }}</strong> members and <strong>{{ number_format($overview['counselors']) }}</strong> counselors lose access to this organization right away.</li>
+                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> All data is kept. Nothing is deleted.</li>
+                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> You can reactivate it at any time.</li>
+            </ul>
+        </x-platform.reason-modal>
     @endif
 
     @if ($org->subscription_status === \App\Enums\OrgStatus::Suspended)
         {{-- Reactivate --}}
-        <x-modal name="reactivate-org" maxWidth="lg" focusable>
-            <form method="POST" action="{{ route('platform.organizations.reactivate', $org) }}" x-data="{ busy: false }" @submit="busy = true" class="p-6">
-                @csrf
-                <h2 class="text-[18px] font-extrabold tracking-tight">Reactivate {{ $org->name }}?</h2>
-                <ul class="mt-4 space-y-2.5 text-[13.5px] leading-snug">
-                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> Members and counselors can use this organization again straight away.</li>
-                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> The suspension reason stays in the audit log.</li>
-                </ul>
-                <div class="mt-6 flex justify-end gap-2">
-                    <button type="button" @click="$dispatch('close-modal', 'reactivate-org')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
-                    <button type="submit" :disabled="busy" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50">
-                        <span x-show="!busy">Reactivate</span><span x-show="busy" x-cloak>Reactivating…</span>
-                    </button>
-                </div>
-            </form>
-        </x-modal>
+        <x-platform.confirm-modal name="reactivate-org" :action="route('platform.organizations.reactivate', $org)"
+            :title="'Reactivate '.$org->name.'?'" submit-label="Reactivate" busy-label="Reactivating…">
+            <ul class="mt-4 space-y-2.5 text-[13.5px] leading-snug">
+                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> Members and counselors can use this organization again straight away.</li>
+                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> The suspension reason stays in the audit log.</li>
+            </ul>
+        </x-platform.confirm-modal>
     @endif
 
     <x-platform.toast />

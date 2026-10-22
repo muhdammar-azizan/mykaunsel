@@ -268,14 +268,14 @@ class AuditLogSeeder extends Seeder
             ['system.booking_requests_expired', ['count' => 1]],
             ['system.chat_purged', ['sessions' => 36, 'older_than_days' => 30]],
             ['system.chat_purged', ['sessions' => 12, 'older_than_days' => 30]],
-            ['system.pa_expiry_suspension', ['counselor_id' => 23, 'reason' => 'Practising certificate expired on 2026-08-31.']],
+            ['counselor.pa_expired_suspended', ['counselor_id' => 23, 'reason' => 'Practising certificate expired on 2026-08-31.']],
             ['system.booking_requests_expired', ['count' => 7]],
             ['system.chat_purged', ['sessions' => 51, 'older_than_days' => 30]],
-            ['system.pa_expiry_suspension', ['counselor_id' => 26, 'reason' => 'Practising certificate expired on 2026-09-15.']],
+            ['counselor.pa_expired_suspended', ['counselor_id' => 26, 'reason' => 'Practising certificate expired on 2026-09-15.']],
         ];
 
         foreach ($jobs as [$action, $meta]) {
-            $this->log($action, null, $meta, 'system', $this->when(), $action === 'system.pa_expiry_suspension'
+            $this->log($action, null, $meta, 'system', $this->when(), $action === 'counselor.pa_expired_suspended'
                 ? ['target_type' => 'counselor', 'target_id' => $meta['counselor_id'], 'target_name' => 'Dr. Priya Nair'] : []);
         }
 

@@ -47,6 +47,16 @@ return [
             'report' => false,
         ],
 
+        // Counselor KB / PA / ID documents: NEVER public. Files get random names and are only ever served through
+        // signed, platform-admin-only routes (see App\Http\Controllers\Platform for the viewer).
+        'counselor_documents' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/counselor-documents'),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

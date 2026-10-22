@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CounselorProfile;
 use App\Models\LkmDirectorySnapshot;
+use App\Support\PaValidity;
 use Illuminate\Support\Str;
 
 class LkmVerificationService
@@ -79,7 +80,7 @@ class LkmVerificationService
 
     private function recordHasValidPa(LkmDirectorySnapshot $record): bool
     {
-        return $record->pa_valid_until->greaterThanOrEqualTo(now()->startOfDay());
+        return PaValidity::isValid($record->pa_valid_until);
     }
 
     private function namesMatch(string $a, string $b): bool

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\VerificationStatus;
 use App\Enums\VerificationType;
+use App\Support\PaValidity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -67,9 +68,10 @@ class CounselorProfile extends Model
         return $this->verification_status === VerificationStatus::Approved;
     }
 
+    /** Valid for the whole of the "valid until" day (see PaValidity). */
     public function isPaValid(): bool
     {
-        return $this->pa_valid_until?->isFuture() ?? false;
+        return PaValidity::isValid($this->pa_valid_until);
     }
 
     public function isExpired(): bool
