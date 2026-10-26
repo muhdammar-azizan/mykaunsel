@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Lets "log out other devices" actually invalidate those sessions after a password change.
         $middleware->authenticateSessions();
 
+        // The one-click opt-out (List-Unsubscribe-Post) is sent by the mail program, which has no CSRF token. The link itself is
+        // signed with a secret key, so nobody can opt someone else out without having been sent the link.
+        $middleware->validateCsrfTokens(except: ['waitlist/unsubscribe/*']);
+
         // Every request gets an id (X-Request-Id) that groups the audit entries written during it.
         $middleware->append(\App\Http\Middleware\AssignRequestId::class);
 
@@ -45,5 +49,14 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Errors on /api/* are JSON (401, 403, 422, 429…), never a redirect or an HTML page.
+        // A waitlist form left open until its session expired: back to the page with a friendly line, not a 419 error page.
+        // (Laravel has already turned the expired-token error into an HTTP 419 error by the time this runs.)
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, $request) {
+            if ($e->getStatusCode() === 419 && $request->routeIs('waitlist.store')) {
+                return redirect($request->route('type') === 'counselor' ? route('counselors.signup.create') : route('organizations.signup.create'))
+                    ->with('waitlist_error', 'That page was open for too long. Please try again.');
+            }
+        });
+
         $exceptions->shouldRenderJsonWhen(fn ($request, $e) => $request->is('api/*') || $request->expectsJson());
     })->create();

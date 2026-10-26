@@ -11,6 +11,10 @@ Close sign-ups, switch maintenance mode on, and edit the wording people see. The
 - **Wording is a template the admin can edit** (plain text, 10–500 characters, shown with line breaks, never as HTML): one message for "sign-up closed" (`{role}` becomes organization / counselor / individual, or "account" when everything is closed) and one for maintenance. "Use the original wording" restores the default (in `config/platform-settings.php`).
 - Closing / maintenance ask for a confirmation (no reason needed). Opening is immediate. Every switch sends the state it wants, so a double-click or two admins never flips it back; an already-reached state shows "nothing changed" and writes no audit entry.
 
+## Waitlist
+
+While Organization or Counselor sign-up is closed, people can leave an email address to hear when it reopens; the section is on this page. Individuals have none (they use the app). It has its own document: `WAITLIST.md` (what is stored, the opt-out, "Notify all" rules, retention, the secret `WAITLIST_HMAC_KEY`).
+
 ## The individual sign-up form on the web is switched off
 
 Setting: `REGISTRATION_WEB_INDIVIDUAL_ENABLED` in `.env` → `config('registration.web_individual_enabled')` (`config/registration.php`). **Default and production: `false`.** It is `true` only on a developer's own machine (the local `.env`, so test users can be made through the form) and in the tests (`phpunit.xml`).

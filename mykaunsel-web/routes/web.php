@@ -51,6 +51,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// A placeholder until the real Privacy Policy is written (the waitlist consent line links here).
+Route::view('/privacy', 'privacy')->name('privacy');
+
+// Waitlist for closed sign-ups (Organization and Counselor): the form on the "sign-up closed" page, and the opt-out link in the
+// email. Opting out works even during maintenance and is never blocked by a closed sign-up. See docs/WAITLIST.md.
+Route::post('/waitlist/{type}', [\App\Http\Controllers\WaitlistController::class, 'store'])
+    ->whereIn('type', ['organization', 'counselor'])->name('waitlist.store');
+Route::get('/waitlist/unsubscribe/{type}/{hash}/{signature}', [\App\Http\Controllers\WaitlistController::class, 'confirm'])
+    ->whereIn('type', ['organization', 'counselor'])->where(['hash' => '[a-f0-9]{64}', 'signature' => '[a-f0-9]{64}'])->name('waitlist.unsubscribe');
+Route::post('/waitlist/unsubscribe/{type}/{hash}/{signature}', [\App\Http\Controllers\WaitlistController::class, 'optOut'])
+    ->whereIn('type', ['organization', 'counselor'])->where(['hash' => '[a-f0-9]{64}', 'signature' => '[a-f0-9]{64}'])->middleware('throttle:30,1')->name('waitlist.unsubscribe.store');
+
 // Opens from the confirmation email sent to someone who signed up in the mobile app (signed link; no web sign-in needed).
 Route::get('/email/verify-app/{id}/{hash}', \App\Http\Controllers\Auth\VerifyAppEmailController::class)
     ->whereNumber('id')->middleware(['signed', 'throttle:6,1'])->name('verification.app');
@@ -211,6 +223,10 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/registration/all', [PlatformRegistrationController::class, 'toggleAll'])->middleware('throttle:20,1')->name('registration.all');
         Route::post('/registration/maintenance', [PlatformRegistrationController::class, 'maintenance'])->middleware('throttle:20,1')->name('registration.maintenance');
         Route::put('/registration/maintenance/reopen', [PlatformRegistrationController::class, 'reopenTimeUpdate'])->middleware('throttle:20,1')->name('registration.maintenance.reopen');
+        // Waitlist of the closed sign-ups: notify everyone once after reopening, remove one address, export. Never individuals.
+        Route::post('/registration/waitlist/{type}/notify', [\App\Http\Controllers\Platform\PlatformWaitlistController::class, 'notify'])->whereIn('type', ['organization', 'counselor'])->middleware('throttle:10,1')->name('registration.waitlist.notify');
+        Route::get('/registration/waitlist/{type}/export', [\App\Http\Controllers\Platform\PlatformWaitlistController::class, 'export'])->whereIn('type', ['organization', 'counselor'])->middleware('throttle:10,1')->name('registration.waitlist.export');
+        Route::delete('/registration/waitlist/entries/{entry}', [\App\Http\Controllers\Platform\PlatformWaitlistController::class, 'remove'])->whereNumber('entry')->middleware('throttle:60,1')->name('registration.waitlist.remove');
         Route::put('/registration/messages', [PlatformRegistrationController::class, 'messages'])->middleware('throttle:20,1')->name('registration.messages');
         Route::post('/registration/{role}', [PlatformRegistrationController::class, 'toggle'])->where('role', '[a-z]+')->middleware('throttle:20,1')->name('registration.toggle');
 

@@ -64,6 +64,7 @@ class AuditLogSeeder extends Seeder
         $this->accountAndAuth();
         $this->system();
         $this->edgeCases();
+        $this->waitlist();
     }
 
     // ---- people ----------------------------------------------------------------------------
@@ -303,6 +304,16 @@ class AuditLogSeeder extends Seeder
     // ---- helpers ---------------------------------------------------------------------------
 
     /** Write one sample entry through the real logger. */
+    /** The waitlist of closed sign-ups: counts and record ids only, never an address. (Last, so it does not shift the other sample data.) */
+    private function waitlist(): void
+    {
+        $this->log('waitlist.notified', null, ['type' => 'organization', 'sent' => 12, 'failed' => 0], $this->pick($this->admins));
+        $this->log('waitlist.notified', null, ['type' => 'counselor', 'sent' => 7, 'failed' => 1], $this->pick($this->admins));
+        $this->log('waitlist.exported', null, ['type' => 'organization', 'count' => 19], $this->pick($this->admins));
+        $this->log('waitlist.entry_removed', null, ['entry_id' => 41, 'type' => 'counselor'], $this->pick($this->admins));
+        $this->log('waitlist.purged', null, ['notified' => 9, 'waiting' => 2], 'system');
+    }
+
     private function log(string $action, $target, array $metadata, User|string|null $actor, ?Carbon $at = null, array $options = []): void
     {
         $this->n++;

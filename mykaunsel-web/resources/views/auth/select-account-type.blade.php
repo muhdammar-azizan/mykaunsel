@@ -49,6 +49,20 @@
         </button>
     </div>
 
+    {{-- A kind of sign-up that is closed can offer to tell people when it reopens (the same answer for everyone who submits). --}}
+    @if (session('waitlist_status'))
+        <p class="mx-auto mt-8 max-w-[480px] rounded-xl bg-emerald-50 px-4 py-3 text-center text-[13.5px] text-emerald-800" role="status">{{ session('waitlist_status') }}</p>
+    @elseif (! empty($waitlistTypes))
+        <div class="mx-auto mt-8 max-w-[480px]">
+            @if (session('waitlist_error'))
+                <p class="rounded-xl bg-amber/10 px-4 py-3 text-[13.5px] text-navy/80" role="alert">{{ session('waitlist_error') }}</p>
+            @endif
+            @foreach ($waitlistTypes as $waitlistType)
+                <x-waitlist-form :type="$waitlistType" />
+            @endforeach
+        </div>
+    @endif
+
     <div class="mt-12 flex flex-col items-center gap-5">
         <button type="button" id="btnTeruskan" disabled
                 class="btn-utama grid h-[46px] w-[200px] place-items-center rounded-full text-[14px] font-medium text-white"

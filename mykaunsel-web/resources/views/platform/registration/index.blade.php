@@ -114,6 +114,9 @@
                             <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11.5px] font-bold {{ $pill($status[$role]) }}"><span class="h-1.5 w-1.5 rounded-full bg-current"></span>{{ $status[$role] ? 'Open' : 'Closed' }}</span>
                         </div>
                         <p class="mt-0.5 max-w-[60ch] text-[12.5px] text-brand-ink/55">{{ $info['hint'] }}</p>
+                        @if ($waitlist['enabled'] && isset($waitlist['counts'][$role]))
+                            <a href="{{ route('platform.registration', ['waitlist' => $role]) }}#waitlist" class="mt-1 inline-block text-[12.5px] font-semibold text-brand-blue hover:underline">{{ $waitlist['counts'][$role]['waiting'] }} waiting on the waitlist</a>
+                        @endif
                     </div>
                     @if ($status[$role])
                         <button type="button" x-data @click="$dispatch('open-modal', 'close-{{ $role }}')" class="inline-flex min-h-[38px] items-center rounded-full border border-brand-red/40 px-5 text-[13px] font-semibold text-brand-red transition hover:bg-brand-red hover:text-white">Close</button>
@@ -128,6 +131,9 @@
             @endforeach
         </ul>
     </x-platform.panel>
+
+    {{-- Waitlist (Organizations and Counselors only) --}}
+    @include('platform.registration._waitlist')
 
     {{-- Wording --}}
     <x-platform.panel class="mt-5" title="What people are told">

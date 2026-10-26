@@ -40,6 +40,8 @@ return [
         'context.select', 'context.store',
         // The app asks this first, to show the maintenance / closed-sign-up message instead of a plain error.
         'api.v1.status',
+        // Opting out of the waitlist emails always works.
+        'waitlist.unsubscribe', 'waitlist.unsubscribe.store',
     ],
 
     // Right after signing in everybody is sent to /dashboard, before any role has been chosen. For a person who holds an

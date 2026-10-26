@@ -17,6 +17,9 @@ Schedule::command('counselors:purge-documents')->dailyAt('02:30')->withoutOverla
 // Maintenance mode with a reopen time switches itself off when the time arrives (checked every minute).
 Schedule::command('maintenance:reopen-due')->everyMinute()->withoutOverlapping();
 
+// Waitlist addresses are deleted 30 days after they were notified (365 days if never): see config/waitlist.php.
+Schedule::command('waitlist:purge')->dailyAt('03:00')->withoutOverlapping();
+
 // Evidence of LKM review requests is deleted 30 days after the decision: see config/lkm.php.
 Schedule::command('lkm:purge-review-evidence')->dailyAt('02:45')->withoutOverlapping();
 

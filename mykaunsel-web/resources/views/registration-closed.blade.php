@@ -5,6 +5,18 @@
         </span>
         <h1 class="mt-5 text-[22px] font-semibold tracking-tight">{{ __('Sign-up is closed for now') }}</h1>
         <p class="mt-3 whitespace-pre-line break-words text-[14.5px] leading-relaxed text-navy/65">{{ $message }}</p>
+        {{-- The waitlist: for Organization and Counselor sign-up only (never individuals). The same answer for everyone who submits. --}}
+        @if (session('waitlist_status'))
+            <p class="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-800" role="status">{{ session('waitlist_status') }}</p>
+        @elseif (! empty($waitlistTypes))
+            @if (session('waitlist_error'))
+                <p class="mt-6 rounded-xl bg-amber/10 px-4 py-3 text-[13.5px] text-navy/80" role="alert">{{ session('waitlist_error') }}</p>
+            @endif
+            @foreach ($waitlistTypes as $waitlistType)
+                <x-waitlist-form :type="$waitlistType" />
+            @endforeach
+        @endif
+
         <p class="mt-6 text-[13.5px] text-navy/55">
             {{ __('Already have an account?') }}
             <a href="{{ route('login') }}" class="font-medium text-teal">{{ __('Log in') }}</a>

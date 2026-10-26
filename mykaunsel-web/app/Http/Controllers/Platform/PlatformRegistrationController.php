@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Platform;
 
 use App\Http\Controllers\Controller;
+use App\Models\WaitlistEntry;
 use App\Services\PlatformSettings;
+use App\Services\WaitlistService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,13 +19,35 @@ class PlatformRegistrationController extends Controller
     /** What a datetime-local field sends: the admin's own wall-clock time, no zone. */
     private const LOCAL_FORMAT = 'Y-m-d\TH:i';
 
-    public function index(Request $request, PlatformSettings $settings): View
+    public function index(Request $request, PlatformSettings $settings, WaitlistService $waitlist): View|RedirectResponse
     {
         $status = $settings->registrationStatus();
         $timezone = $request->user()->display_timezone;
         $now = now($timezone);
 
+        // The waitlist of the closed sign-ups: one tab per kind that has one (organization, counselor; never individuals).
+        $tab = in_array($request->query('waitlist'), $waitlist->types(), true) ? $request->query('waitlist') : $waitlist->types()[0];
+        $search = mb_substr(trim((string) $request->query('q', '')), 0, 100);
+        $entries = $waitlist->enabled()
+            ? WaitlistEntry::query()->ofType($tab)->when($search !== '', fn ($q) => $q->search($search))
+                ->orderByDesc('created_at')->orderByDesc('id')->paginate((int) config('waitlist.per_page'), pageName: 'wpage')->withQueryString()->fragment('waitlist')
+            : null;
+
+        if ($entries !== null && $entries->isEmpty() && $entries->currentPage() > 1) {
+            return redirect()->to(route('platform.registration', array_filter(['waitlist' => $tab, 'q' => $search, 'wpage' => $entries->lastPage()])).'#waitlist');
+        }
+
         return view('platform.registration.index', [
+            'waitlist' => [
+                'enabled' => $waitlist->enabled(),
+                'types' => $waitlist->types(),
+                'tab' => $tab,
+                'search' => $search,
+                'counts' => $waitlist->counts(),
+                'entries' => $entries,
+                'blockers' => $waitlist->notifyBlockers($tab),
+                'timezone' => $timezone,
+            ],
             'roles' => config('platform-settings.registration_roles'),
             'status' => $status,
             'maintenance' => $settings->maintenanceOn(),

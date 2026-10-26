@@ -25,6 +25,7 @@ return [
         'complaints' => ['label' => 'Complaints'],
         'moderation' => ['label' => 'Moderation'],
         'settings' => ['label' => 'Platform settings'],
+        'waitlist' => ['label' => 'Waitlist'],
         'pricing' => ['label' => 'Pricing & promo codes'],
         'admins' => ['label' => 'Platform admins'],
         'security' => ['label' => 'Account security'],
@@ -83,6 +84,13 @@ return [
         'lkm.review_rejected' => ['category' => 'lkm', 'badge' => 'rejected', 'label' => 'LKM review rejected'],
         'lkm.evidence_viewed' => ['category' => 'lkm', 'badge' => 'security', 'label' => 'LKM review evidence viewed'],
         'lkm.evidence_purged' => ['category' => 'lkm', 'badge' => 'deleted', 'label' => 'LKM review evidence removed (retention)'],
+
+        // Waitlist for closed sign-ups. Counts and record ids only: NEVER an email address. Sign-ups and opt-outs are not audited.
+        'waitlist.notified' => ['category' => 'waitlist', 'badge' => 'updated', 'label' => 'Waitlist notified'],
+        'waitlist.exported' => ['category' => 'waitlist', 'badge' => 'exported', 'label' => 'Waitlist exported'],
+        'waitlist.entry_removed' => ['category' => 'waitlist', 'badge' => 'deleted', 'label' => 'Waitlist address removed'],
+        // Written by the daily retention job (waitlist:purge): always the "system" actor.
+        'waitlist.purged' => ['category' => 'waitlist', 'badge' => 'deleted', 'label' => 'Waitlist addresses removed (retention)'],
 
         // Complaints (reference IDs only — never the complaint text)
         'complaint.note_added' => ['category' => 'complaints', 'badge' => 'created', 'label' => 'Internal note added'],

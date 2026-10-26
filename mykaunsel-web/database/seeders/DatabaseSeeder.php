@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             CounselorSeeder::class,
             CounselorReviewSeeder::class,
             LkmReviewRequestSeeder::class,
+            WaitlistSeeder::class,
             ComplaintReviewSeeder::class,
             UserSeeder::class,
             AuditLogSeeder::class,
