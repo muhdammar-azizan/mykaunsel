@@ -96,6 +96,8 @@ return [
         'complaint.note_added' => ['category' => 'complaints', 'badge' => 'created', 'label' => 'Internal note added'],
         'complaint.status_changed' => ['category' => 'complaints', 'badge' => 'updated', 'label' => 'Complaint status changed'],
         'complaint.warning_issued' => ['category' => 'complaints', 'badge' => 'security', 'label' => 'Warning issued'],
+        // Written by the daily retention job (complaints:purge-text): always the "system" actor, counts only.
+        'complaint.text_purged' => ['category' => 'complaints', 'badge' => 'deleted', 'label' => 'Complaint text erased (retention)'],
         'complaint.counselor_suspended' => ['category' => 'complaints', 'badge' => 'suspended', 'label' => 'Counselor suspended after complaint'],
 
         // Moderation

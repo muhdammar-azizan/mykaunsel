@@ -26,13 +26,10 @@ class PlatformComplaintController extends Controller
 {
     public function index(Request $request): View|RedirectResponse
     {
-        $filters = ComplaintListFilters::fromRequest($request);
+        $filters = ComplaintListFilters::fromRequest($request, $request->user()->display_timezone);
         $tab = $filters->tab();
 
-        $complaints = ComplaintListFilters::order(
-            $filters->applyFilters(Complaint::query())->withStatus(ComplaintStatus::from($tab)),
-            $tab,
-        )
+        $complaints = $filters->order($filters->applyTab($filters->applyFilters(Complaint::query())))
             // The text (description) is not needed on the list, so it is not even loaded.
             ->select(['complaints.id', 'complaints.reporter_user_id', 'complaints.counselor_user_id', 'complaints.booking_id', 'complaints.status', 'complaints.created_at', 'complaints.updated_at'])
             ->with(['reporter:id,name', 'counselor:id,name', 'counselorProfile:id,user_id,kb_number', 'booking:id,org_id', 'booking.organization:id,name,org_type'])
@@ -49,6 +46,7 @@ class PlatformComplaintController extends Controller
             'filters' => $filters,
             'tab' => $tab,
             'tabs' => ComplaintListFilters::TABS,
+            'sorts' => ComplaintListFilters::SORTS,
             'counts' => $filters->counts(),
             'complaints' => $complaints,
             'organizations' => Organization::query()->whereIn('id', $organizationIds)->orderBy('name')->get()
@@ -63,7 +61,8 @@ class PlatformComplaintController extends Controller
 
         $profile = $complaint->counselorProfile;
 
-        // How it was closed, from the audit log (the outcome text is what the admin wrote, never the complaint).
+        // How it was closed: who and when from the audit log, and the outcome the admin wrote from the complaint itself (it is not in
+        // the audit log). Once the retention rule has run the outcome is gone.
         $closing = $complaint->status->isClosed()
             ? AuditLog::with('actor')->where('target_type', 'complaint')->where('target_id', $complaint->id)->where('action', 'complaint.status_changed')->latest('id')->first()
             : null;
@@ -71,12 +70,13 @@ class PlatformComplaintController extends Controller
         return view('platform.complaints.show', [
             'closing' => $closing ? [
                 'by' => $closing->isSystem() ? 'System' : ($closing->actor_name ?? $closing->actor?->name ?? 'Unknown'),
-                'at' => $closing->created_at,
-                'outcome' => $closing->metadata['reason'] ?? null,
+                'at' => $complaint->closed_at ?? $closing->created_at,
+                'outcome' => $complaint->closing_reason,
             ] : null,
             'upcoming' => $profile?->upcomingSessionsCount() ?? 0,
             'pendingRequests' => $profile?->pendingRequestsCount() ?? 0,
             'complaint' => $complaint,
+            'history' => $this->history($complaint),
             'profile' => $profile,
             'booking' => $complaint->booking,
             // A count only: how many other complaints this counselor has.
@@ -85,6 +85,34 @@ class PlatformComplaintController extends Controller
             'timeline' => $timeline->for($complaint),
             'timezone' => $request->user()->display_timezone,
         ]);
+    }
+
+    /**
+     * Everything the platform has on this counselor, WITHOUT any text: how many complaints, from how many different people, how
+     * each ended, and whether there are several in a short time. Information for the admin only; nothing happens automatically.
+     *
+     * @return array{total: int, reporters: int, by_status: array<string, int>, recent: int, window_days: int, threshold: int, pattern: bool, others: \Illuminate\Support\Collection}
+     */
+    private function history(Complaint $complaint): array
+    {
+        $all = Complaint::query()->where('counselor_user_id', $complaint->counselor_user_id)->orderByDesc('created_at')->orderByDesc('id')
+            ->get(['id', 'reporter_user_id', 'status', 'created_at']);
+
+        $days = (int) config('complaints.pattern.days');
+        $threshold = (int) config('complaints.pattern.count');
+        $recent = $all->filter(fn ($c) => $c->created_at->gte(now()->subDays($days)))->count();
+
+        return [
+            'total' => $all->count(),
+            // Different people: a complaint whose reporter has deleted their account still counts as one person.
+            'reporters' => $all->whereNotNull('reporter_user_id')->pluck('reporter_user_id')->unique()->count() + $all->whereNull('reporter_user_id')->count(),
+            'by_status' => collect(ComplaintStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $all->where('status', $s)->count()])->all(),
+            'recent' => $recent,
+            'window_days' => $days,
+            'threshold' => $threshold,
+            'pattern' => $recent >= $threshold,
+            'others' => $all->where('id', '!=', $complaint->id)->values(),
+        ];
     }
 
     /** Internal note between admins. Its text is not copied into the audit log, only its id. */

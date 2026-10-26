@@ -2,6 +2,7 @@
     $tabUrl = fn (string $key) => route('platform.complaints', $filters->toQuery(['tab', 'page'], $key === 'open' ? [] : ['tab' => $key]));
 
     $emptyText = [
+        'all' => ['No complaints yet', 'Complaints from clients will show up here.'],
         'open' => ['No open complaints', 'New complaints from clients will show up here.'],
         'under_review' => ['Nothing under review', 'Complaints you are looking into will be listed here.'],
         'resolved' => ['No resolved complaints', 'Complaints that have been dealt with are listed here.'],
@@ -35,7 +36,7 @@
         <label class="relative min-w-[240px] flex-1 sm:max-w-[360px]">
             <span class="sr-only">Search complaints</span>
             <svg class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-ink/40" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input type="search" name="q" value="{{ $filters->get('q') }}" maxlength="100" placeholder="Counselor name, KB number or reporter name"
+            <input type="search" name="q" value="{{ $filters->get('q') }}" maxlength="100" placeholder="Counselor, KB number, reporter or reference (#12)"
                    class="w-full rounded-full border border-brand-ink/10 bg-white py-2.5 pl-10 pr-4 text-[14px] placeholder:text-brand-ink/40 focus:border-brand-blue focus:ring-brand-blue">
         </label>
 
@@ -49,10 +50,28 @@
             </select>
         </label>
 
+        <label class="flex items-center gap-2 text-[13px] text-brand-ink/65">
+            <span>Filed from</span>
+            <input type="date" name="from" value="{{ $filters->get('from') }}" class="rounded-full border border-brand-ink/10 bg-white px-3.5 py-2 text-[13.5px] focus:border-brand-blue focus:ring-brand-blue">
+        </label>
+        <label class="flex items-center gap-2 text-[13px] text-brand-ink/65">
+            <span>to</span>
+            <input type="date" name="to" value="{{ $filters->get('to') }}" class="rounded-full border border-brand-ink/10 bg-white px-3.5 py-2 text-[13.5px] focus:border-brand-blue focus:ring-brand-blue">
+        </label>
+
+        <label>
+            <span class="sr-only">Order</span>
+            <select name="sort" onchange="this.form.requestSubmit()" class="{{ $selectClass }}">
+                @foreach ($sorts as $key => $text)
+                    <option value="{{ $key }}" @selected($filters->sort() === $key)>Order: {{ $text }}</option>
+                @endforeach
+            </select>
+        </label>
+
         <button type="submit" class="rounded-full bg-brand-blue px-5 py-2.5 text-[14px] font-semibold text-white transition hover:bg-brand-deep">Search</button>
 
         @if ($filters->isFiltering())
-            <a href="{{ route('platform.complaints', array_filter(['tab' => $tab === 'open' ? null : $tab])) }}" class="text-[13px] font-semibold text-brand-blue hover:underline">Clear filters</a>
+            <a href="{{ route('platform.complaints', array_filter(['tab' => $tab === 'open' ? null : $tab, 'sort' => $filters->sort() === 'urgent' ? null : $filters->sort()])) }}" class="text-[13px] font-semibold text-brand-blue hover:underline">Clear filters</a>
         @endif
     </form>
 
@@ -91,7 +110,7 @@
                             <p class="text-[14px] font-semibold">{{ $complaint->counselor->name }}</p>
                             @if ($complaint->counselorProfile)<p class="font-mono text-[11.5px] text-brand-ink/50">{{ $complaint->counselorProfile->kb_number }}</p>@endif
                         </td>
-                        <td class="px-4 py-3.5 text-[13.5px]">{{ $complaint->reporter->name }}</td>
+                        <td class="px-4 py-3.5 text-[13.5px]">{{ $complaint->reporterName() }}</td>
                         <td class="px-4 py-3.5 text-[13px] text-brand-ink/70">
                             @if ($org){{ $org->org_type === \App\Enums\OrgType::Platform ? 'Independent practice' : $org->name }}@else<span class="text-brand-ink/40">No session linked</span>@endif
                         </td>

@@ -8,7 +8,8 @@ use Illuminate\Support\Collection;
 
 /**
  * The "Activity" list on a complaint, newest first: when it was filed, plus everything the audit log recorded
- * against it. Never contains the complaint text or what the reporter said.
+ * against it. Never contains the complaint text or what the reporter said. The audit log holds no text, so what the admin
+ * wrote (the closing reason, a warning's message) is read from the complaint's own records, while they still exist.
  */
 class ComplaintTimeline
 {
@@ -31,6 +32,8 @@ class ComplaintTimeline
             'tone' => 'info',
         ]]);
 
+        $warnings = $complaint->warnings()->get()->keyBy('id');
+
         AuditLog::query()
             ->with('actor')
             ->where('target_type', 'complaint')
@@ -38,7 +41,7 @@ class ComplaintTimeline
             ->whereIn('action', array_keys(self::ACTIONS))
             ->orderBy('id')
             ->get()
-            ->each(function (AuditLog $log) use ($events) {
+            ->each(function (AuditLog $log) use ($events, $complaint, $warnings) {
                 [$title, $tone] = self::ACTIONS[$log->action];
                 $meta = $log->metadata ?? [];
                 $change = $meta['changes']['status'] ?? null;
@@ -46,7 +49,12 @@ class ComplaintTimeline
                 $events->push([
                     'at' => $log->created_at,
                     'title' => $title,
-                    'detail' => $change ? "{$change['old']} → {$change['new']}".(isset($meta['reason']) ? ' — '.$meta['reason'] : '') : ($meta['reason'] ?? $meta['summary'] ?? null),
+                    'detail' => match ($log->action) {
+                        'complaint.status_changed' => "{$change['old']} → {$change['new']}".($complaint->status->isClosed() && $change['new'] === $complaint->status->value && $complaint->closing_reason ? ' — '.$complaint->closing_reason : ''),
+                        'complaint.warning_issued' => $warnings->get($meta['warning_id'] ?? 0)?->message ?? 'Warning emailed to the counselor',
+                        'complaint.counselor_suspended' => ($meta['sessions'] ?? 'keep') === 'cancel_upcoming' ? 'Upcoming sessions cancelled, clients told' : 'Existing sessions kept',
+                        default => $meta['summary'] ?? null,
+                    },
                     'actor' => $log->isSystem() ? 'System' : ($log->actor_name ?? $log->actor?->name ?? ($log->actor_user_id ? 'Deleted user' : 'Unknown')),
                     'tone' => $tone,
                 ]);

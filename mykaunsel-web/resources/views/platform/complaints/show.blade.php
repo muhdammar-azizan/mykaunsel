@@ -63,6 +63,8 @@
             </p>
             @if ($closing && $closing['outcome'])
                 <p class="mt-2 rounded-xl bg-cream px-4 py-3 text-[13.5px] leading-relaxed"><span class="font-semibold">Outcome:</span> {{ $closing['outcome'] }}</p>
+            @elseif ($complaint->isTextPurged())
+                <p class="mt-2 text-[12.5px] text-brand-ink/55">The written outcome was erased with the rest of the text under the retention rule.</p>
             @endif
         @endif
     </x-platform.panel>
@@ -70,7 +72,11 @@
     <div class="mt-5 grid gap-5 lg:grid-cols-2">
         <x-platform.panel title="What was reported" class="lg:col-span-2">
             <p class="mt-1 text-[12.5px] text-brand-ink/55">Confidential. Only Platform Admins see this, and it is never copied into the audit log.</p>
-            <p class="mt-3 whitespace-pre-line break-words rounded-2xl bg-cream px-5 py-4 text-[14px] leading-relaxed">{{ $complaint->description }}</p>
+            @if ($complaint->isTextPurged())
+                <p class="mt-3 rounded-2xl bg-cream px-5 py-4 text-[13.5px] leading-relaxed text-brand-ink/65">The text of this complaint was erased on {{ $local($complaint->text_purged_at, 'j M Y') }} under the retention rule ({{ config('complaints.retention.closed_years') }} years after it was closed). The record stays: reference, status, dates and outcome.</p>
+            @else
+                <p class="mt-3 whitespace-pre-line break-words rounded-2xl bg-cream px-5 py-4 text-[14px] leading-relaxed">{{ $complaint->description }}</p>
+            @endif
         </x-platform.panel>
 
         <x-platform.panel title="Counselor">
@@ -97,7 +103,7 @@
         <div class="space-y-5">
             <x-platform.panel title="Reporter">
                 <dl class="mt-2 divide-y divide-brand-ink/[.07]">
-                    <x-platform.detail-row label="Name">{{ $complaint->reporter->name }}</x-platform.detail-row>
+                    <x-platform.detail-row label="Name">{{ $complaint->reporterName() }}</x-platform.detail-row>
                 </dl>
             </x-platform.panel>
 
@@ -122,6 +128,37 @@
             </x-platform.panel>
         </div>
     </div>
+
+    {{-- Everything the platform has on this counselor, without any text. For the admin's information; nothing happens by itself. --}}
+    @php
+        $statusWords = ['open' => 'open', 'under_review' => 'under review', 'resolved' => 'resolved', 'dismissed' => 'dismissed'];
+        $summary = collect([
+            $history['total'].' '.($history['total'] === 1 ? 'complaint' : 'complaints'),
+            $history['reporters'].' '.($history['reporters'] === 1 ? 'reporter' : 'reporters'),
+        ])->merge(collect($history['by_status'])->filter()->map(fn ($n, $s) => $n.' '.$statusWords[$s]))->implode(', ');
+    @endphp
+    <x-platform.panel title="Counselor history" class="mt-5">
+        <p class="mt-1 text-[13.5px] font-semibold" aria-live="polite">{{ $summary }}</p>
+        @if ($history['pattern'])
+            <p class="mt-3 flex gap-2.5 rounded-xl bg-brand-yellow/25 px-4 py-3 text-[13px] text-[#6B4C0C]" role="note">
+                <span aria-hidden="true">⚠</span>
+                <span><strong>Pattern:</strong> {{ $history['recent'] }} complaints about this counselor in the last {{ $history['window_days'] }} days (the warning starts at {{ $history['threshold'] }}). This is for your information; nothing happens automatically.</span>
+            </p>
+        @endif
+        @if ($history['others']->isEmpty())
+            <p class="mt-3 text-[13px] text-brand-ink/60">No other complaints about this counselor.</p>
+        @else
+            <ul class="mt-3 divide-y divide-brand-ink/[.07] rounded-xl border border-brand-ink/10">
+                @foreach ($history['others'] as $other)
+                    <li class="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-[13px]">
+                        <a href="{{ route('platform.complaints.show', $other) }}" class="font-semibold text-brand-blue hover:underline">Complaint #{{ $other->id }}</a>
+                        <span class="text-brand-ink/60">filed {{ $local($other->created_at, 'j M Y') }}</span>
+                        <x-platform.complaint-status-pill :status="$other->status" />
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </x-platform.panel>
 
     <div class="mt-5 grid gap-5 lg:grid-cols-2">
         <x-platform.review-notes :notes="$notes"

@@ -88,7 +88,7 @@ class ComplaintsTest extends CounselorTestCase
     {
         $counts = $this->listing()->viewData('counts');
 
-        $this->assertSame(['open' => 5, 'under_review' => 1, 'resolved' => 2, 'dismissed' => 1], $counts);
+        $this->assertSame(['all' => 9, 'open' => 5, 'under_review' => 1, 'resolved' => 2, 'dismissed' => 1], $counts);
         $this->assertSame(6, $this->as()->get(route('platform.dashboard'))->viewData('counts')['active_complaints'], 'open + under review');
         $this->listing()->assertSee('Complaint status')->assertSee('Open')->assertSee('Under review')->assertSee('Resolved')->assertSee('Dismissed');
     }
@@ -149,7 +149,7 @@ class ComplaintsTest extends CounselorTestCase
 
     public function test_the_search_and_filters_narrow_the_tab_counts_too(): void
     {
-        $this->assertSame(['open' => 2, 'under_review' => 0, 'resolved' => 1, 'dismissed' => 0], $this->listing(['q' => 'ahmad'])->viewData('counts'));
+        $this->assertSame(['all' => 3, 'open' => 2, 'under_review' => 0, 'resolved' => 1, 'dismissed' => 0], $this->listing(['q' => 'ahmad'])->viewData('counts'));
     }
 
     public function test_filter_by_counselor_as_the_counselors_page_links_to_it(): void
@@ -159,7 +159,7 @@ class ComplaintsTest extends CounselorTestCase
 
         $this->assertEqualsCanonicalizing($this->about('KB10891')->where('status', 'open')->pluck('id')->all(), $page->viewData('complaints')->getCollection()->pluck('id')->all());
         $page->assertSee('Showing complaints about one counselor')->assertSee(route('platform.counselors.show', $tan), false);
-        $this->assertSame(['open' => 1, 'under_review' => 1, 'resolved' => 1, 'dismissed' => 0], $page->viewData('counts'));
+        $this->assertSame(['all' => 3, 'open' => 1, 'under_review' => 1, 'resolved' => 1, 'dismissed' => 0], $page->viewData('counts'));
 
         // The link on the counselor's page really is this filter.
         $this->as()->get(route('platform.counselors.show', $tan))->assertSee(route('platform.complaints', ['counselor' => $tan->id]), false);
@@ -175,7 +175,7 @@ class ComplaintsTest extends CounselorTestCase
         $this->assertCount(1, $this->ids(['organization' => $klinik->id]));
         $this->assertCount(1, $this->ids(['organization' => $platform->id]), "Tan's session");
         $this->assertSame([], $this->ids(['organization' => 999999]));
-        $this->assertSame(['open' => 2, 'under_review' => 0, 'resolved' => 1, 'dismissed' => 0], $this->listing(['organization' => $umpsa->id])->viewData('counts'));
+        $this->assertSame(['all' => 3, 'open' => 2, 'under_review' => 0, 'resolved' => 1, 'dismissed' => 0], $this->listing(['organization' => $umpsa->id])->viewData('counts'));
 
         // The organization dropdown lists organizations that have complaints, and names the platform "Independent practice".
         $names = $this->listing()->viewData('organizations')->values()->all();
@@ -323,12 +323,13 @@ class ComplaintsTest extends CounselorTestCase
         $review = $this->find('Not linked to any session');
         $events = app(ComplaintTimeline::class)->for($review);
 
-        $this->assertSame(['Internal note added', 'Status changed', 'Complaint filed'], $events->pluck('title')->all());
-        $this->assertSame('open → under_review', $events[1]['detail']);
-        $this->assertSame(['Platform Administrator', 'Platform Administrator', 'Reporter'], $events->pluck('actor')->all());
+        $this->assertSame(['Warning issued to the counselor', 'Internal note added', 'Status changed', 'Complaint filed'], $events->pluck('title')->all());
+        $this->assertSame('open → under_review', $events[2]['detail']);
+        $this->assertStringContainsString('answer clients', $events[0]['detail'], 'the warning message comes from the complaint\'s own records');
+        $this->assertSame(['Platform Administrator', 'Platform Administrator', 'Platform Administrator', 'Reporter'], $events->pluck('actor')->all());
 
         $resolved = $this->find('meeting link did not work');
-        $this->assertSame('under_review → resolved — Sample outcome (made up).', app(ComplaintTimeline::class)->for($resolved)->first()['detail']);
+        $this->assertSame('under_review → resolved — [Sample] Outcome (made up).', app(ComplaintTimeline::class)->for($resolved)->first()['detail']);
 
         $this->show($review)->assertSee('Complaint filed')->assertSee('Status changed')->assertSee('View full history');
     }

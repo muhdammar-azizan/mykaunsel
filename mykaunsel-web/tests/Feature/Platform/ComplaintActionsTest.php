@@ -63,7 +63,11 @@ class ComplaintActionsTest extends CounselorTestCase
 
         $this->as()->post(route('platform.complaints.status', $c), ['to' => 'resolved', 'from' => 'open', 'reason' => 'Spoke to the counselor, agreed a fix.']);
         $this->assertSame(ComplaintStatus::Resolved, $c->fresh()->status);
-        $this->assertSame('Spoke to the counselor, agreed a fix.', $this->logs($c, 'complaint.status_changed')->sole()->metadata['reason']);
+        // The outcome is kept on the complaint; the audit entry has only the old and new status (no text).
+        $this->assertSame('Spoke to the counselor, agreed a fix.', $c->fresh()->closing_reason);
+        $this->assertNotNull($c->fresh()->closed_at);
+        $this->assertSame(['changes' => ['status' => ['old' => 'open', 'new' => 'resolved']]], collect($this->logs($c, 'complaint.status_changed')->sole()->metadata)->only('changes')->all());
+        $this->assertArrayNotHasKey('reason', $this->logs($c, 'complaint.status_changed')->sole()->metadata);
     }
 
     public function test_a_closed_complaint_cannot_be_changed_again(): void
@@ -101,7 +105,10 @@ class ComplaintActionsTest extends CounselorTestCase
 
         Notification::assertSentTo($c->counselor, CounselorComplaintWarning::class);
         $this->assertSame(ComplaintStatus::Open, $c->fresh()->status);
-        $this->assertSame('Please arrive on time for every session.', $this->logs($c, 'complaint.warning_issued')->sole()->metadata['reason']);
+        // The message is kept in complaint_warnings; the audit entry only says which warning was issued.
+        $warning = $c->warnings()->sole();
+        $this->assertSame(['Please arrive on time for every session.', $this->admin->id], [$warning->message, $warning->user_id]);
+        $this->assertSame(['warning_id' => $warning->id], $this->logs($c, 'complaint.warning_issued')->sole()->metadata);
     }
 
     public function test_warning_needs_a_message_and_not_on_a_closed_complaint(): void
@@ -139,7 +146,9 @@ class ComplaintActionsTest extends CounselorTestCase
             ->assertSessionHas('status');
 
         $this->assertSame(VerificationStatus::Suspended, $profile->fresh()->verification_status);
-        $this->assertSame('Repeated complaints about conduct.', $this->logs($c, 'complaint.counselor_suspended')->sole()->metadata['reason']);
+        // The reason is on the counselor's profile; the complaint's audit entry has no text.
+        $this->assertSame('Repeated complaints about conduct.', $profile->fresh()->suspension_reason);
+        $this->assertSame(['counselor_profile_id' => $profile->id, 'sessions' => 'keep'], $this->logs($c, 'complaint.counselor_suspended')->sole()->metadata);
         $this->assertTrue(AuditLog::where('target_type', 'counselor')->where('target_id', $profile->id)->get()->contains(fn ($l) => ($l->metadata['source'] ?? null) === 'complaint'));
         // It does not close the complaint by itself.
         $this->assertSame(ComplaintStatus::Open, $c->fresh()->status);

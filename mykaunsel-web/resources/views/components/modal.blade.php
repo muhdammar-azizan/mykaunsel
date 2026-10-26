@@ -17,6 +17,7 @@ $maxWidth = [
 <div
     x-data="{
         show: @js($show),
+        trigger: null,
         focusables() {
             // All focusable element types...
             let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])'
@@ -31,12 +32,19 @@ $maxWidth = [
         nextFocusableIndex() { return (this.focusables().indexOf(document.activeElement) + 1) % (this.focusables().length + 1) },
         prevFocusableIndex() { return Math.max(0, this.focusables().indexOf(document.activeElement)) -1 },
     }"
-    x-init="$watch('show', value => {
+    x-init="
+        // Named by its first heading, for screen readers.
+        const heading = $el.querySelector('h1, h2, h3');
+        if (heading) { heading.id = heading.id || 'modal-title-{{ $name }}'; $el.setAttribute('aria-labelledby', heading.id) }
+        $watch('show', value => {
         if (value) {
+            trigger = document.activeElement;
             document.body.classList.add('overflow-y-hidden');
             {{ $attributes->has('focusable') ? 'setTimeout(() => firstFocusable().focus(), 100)' : '' }}
         } else {
             document.body.classList.remove('overflow-y-hidden');
+            // Back to the button that opened it.
+            if (trigger && document.body.contains(trigger)) trigger.focus();
         }
     })"
     x-on:open-modal.window="$event.detail == '{{ $name }}' ? show = true : null"
@@ -46,6 +54,8 @@ $maxWidth = [
     x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
     x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
     x-show="show"
+    role="dialog"
+    aria-modal="true"
     class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
     style="display: {{ $show ? 'block' : 'none' }};"
 >

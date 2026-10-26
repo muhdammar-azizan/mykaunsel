@@ -201,7 +201,7 @@ class AuditLogSeeder extends Seeder
             $this->log('complaint.status_changed', null, ['complaint_id' => 40 + $i, 'changes' => ['status' => ['old' => $old, 'new' => $new]]], $this->pick($this->admins), $this->when(), ['target_type' => 'complaint', 'target_id' => 40 + $i, 'target_name' => 'Complaint #'.(40 + $i)]);
         }
         $this->log('complaint.warning_issued', null, ['complaint_id' => 41, 'counselor_id' => 22], $this->admins[0], $this->when(), ['target_type' => 'complaint', 'target_id' => 41, 'target_name' => 'Complaint #41']);
-        $this->log('complaint.counselor_suspended', null, ['complaint_id' => 42, 'counselor_id' => 23, 'reason' => 'Serious breach of the code of conduct.'], $this->admins[0], $this->when(), ['target_type' => 'complaint', 'target_id' => 42, 'target_name' => 'Complaint #42']);
+        $this->log('complaint.counselor_suspended', null, ['complaint_id' => 42, 'counselor_profile_id' => 23, 'sessions' => 'keep'], $this->admins[0], $this->when(), ['target_type' => 'complaint', 'target_id' => 42, 'target_name' => 'Complaint #42']);
         $this->log('complaint.status_changed', null, ['complaint_id' => 43, 'changes' => ['status' => ['old' => 'open', 'new' => 'dismissed']]], $this->pick($this->admins), $this->when(), ['target_type' => 'complaint', 'target_id' => 43, 'target_name' => 'Complaint #43']);
     }
 

@@ -14,6 +14,7 @@ use App\Models\Booking;
 use App\Models\CalendarEntry;
 use App\Models\Complaint;
 use App\Models\ComplaintReviewNote;
+use App\Models\ComplaintWarning;
 use App\Models\CounselorProfile;
 use App\Models\Membership;
 use App\Models\Organization;
@@ -72,6 +73,9 @@ class ComplaintReviewSeeder extends Seeder
             $this->audit('complaint.status_changed', $review, ['changes' => ['status' => ['old' => 'open', 'new' => 'under_review']]], 11);
             $note = ComplaintReviewNote::create(['complaint_id' => $review->id, 'user_id' => $this->admin->id, 'body' => 'Asked the counselor for their side. Waiting for a reply.']);
             $this->audit('complaint.note_added', $review, ['note_id' => $note->id], 10);
+
+            $warning = ComplaintWarning::create(['complaint_id' => $review->id, 'user_id' => $this->admin->id, 'message' => '[Sample] Please answer clients\' messages politely and in good time.']);
+            $this->audit('complaint.warning_issued', $review, ['warning_id' => $warning->id], 9);
         }
 
         // 5. Resolved.
@@ -119,7 +123,9 @@ class ComplaintReviewSeeder extends Seeder
         $complaint->forceFill(['created_at' => now()->subDays($daysAgo), 'updated_at' => now()->subDays($closedDaysAgo ?? $daysAgo)])->saveQuietly();
 
         if ($closedDaysAgo !== null) {
-            $this->audit('complaint.status_changed', $complaint, ['reason' => 'Sample outcome (made up).', 'changes' => ['status' => ['old' => 'under_review', 'new' => $enum->value]]], $closedDaysAgo);
+            // The outcome is on the complaint; the audit entry holds only the old and new status.
+            $complaint->forceFill(['closing_reason' => '[Sample] Outcome (made up).', 'closed_at' => now()->subDays($closedDaysAgo)])->saveQuietly();
+            $this->audit('complaint.status_changed', $complaint, ['changes' => ['status' => ['old' => 'under_review', 'new' => $enum->value]]], $closedDaysAgo);
         }
 
         return $complaint;

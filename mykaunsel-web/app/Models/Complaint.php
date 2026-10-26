@@ -26,12 +26,17 @@ class Complaint extends Model
         'booking_id',
         'description',
         'status',
+        'closing_reason',
+        'closed_at',
+        'text_purged_at',
     ];
 
     protected function casts(): array
     {
         return [
             'status' => ComplaintStatus::class,
+            'closed_at' => 'datetime',
+            'text_purged_at' => 'datetime',
         ];
     }
 
@@ -54,6 +59,24 @@ class Complaint extends Model
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    /** The warnings sent to the counselor about this complaint (their messages are erased by the retention rule). */
+    public function warnings(): HasMany
+    {
+        return $this->hasMany(ComplaintWarning::class);
+    }
+
+    /** The reporter's name, or "Deleted user" if they have deleted their account (the complaint stays). */
+    public function reporterName(): string
+    {
+        return $this->reporter?->name ?? 'Deleted user';
+    }
+
+    /** The retention rule has erased the text (what was reported, the closing reason, the warning messages). */
+    public function isTextPurged(): bool
+    {
+        return $this->text_purged_at !== null;
     }
 
     public function reviewNotes(): HasMany
@@ -128,15 +151,26 @@ class Complaint extends Model
         return $query->whereHas('booking', fn (Builder $b) => $b->where('org_id', $organizationId));
     }
 
-    /** Counselor name or KB number, or the reporter's name. The complaint text is deliberately not searched. */
+    /** Counselor name or KB number, the reporter's name, or the reference ("12", "#12" or "CMP-12"; the last two look at the reference only). The complaint text is deliberately not searched. */
     public function scopeSearch(Builder $query, string $term): Builder
     {
         // "!" is the LIKE escape character (a backslash means different things to SQLite and MySQL).
         $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term).'%';
 
-        return $query->where(fn (Builder $q) => $q
-            ->whereHas('counselor', fn (Builder $u) => $u->whereRaw("name like ? escape '!'", [$like]))
-            ->orWhereHas('counselorProfile', fn (Builder $p) => $p->whereRaw("kb_number like ? escape '!'", [$like]))
-            ->orWhereHas('reporter', fn (Builder $u) => $u->whereRaw("name like ? escape '!'", [$like])));
+        // "#12" and "CMP-12" can only mean the reference.
+        if (preg_match('/^\s*(?:#|cmp-?)(\d{1,9})\s*$/i', $term, $m) === 1) {
+            return $query->where('complaints.id', (int) $m[1]);
+        }
+
+        return $query->where(function (Builder $q) use ($like, $term) {
+            $q->whereHas('counselor', fn (Builder $u) => $u->whereRaw("name like ? escape '!'", [$like]))
+                ->orWhereHas('counselorProfile', fn (Builder $p) => $p->whereRaw("kb_number like ? escape '!'", [$like]))
+                ->orWhereHas('reporter', fn (Builder $u) => $u->whereRaw("name like ? escape '!'", [$like]));
+
+            // A plain "12" may be the reference or part of a KB number or a name, so it looks in all of them.
+            if (preg_match('/^\s*(\d{1,9})\s*$/', $term, $m) === 1) {
+                $q->orWhere('complaints.id', (int) $m[1]);
+            }
+        });
     }
 }

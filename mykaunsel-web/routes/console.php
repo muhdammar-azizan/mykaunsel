@@ -17,6 +17,9 @@ Schedule::command('counselors:purge-documents')->dailyAt('02:30')->withoutOverla
 // Maintenance mode with a reopen time switches itself off when the time arrives (checked every minute).
 Schedule::command('maintenance:reopen-due')->everyMinute()->withoutOverlapping();
 
+// The text of complaints closed 3 years ago is erased (the record stays): see config/complaints.php.
+Schedule::command('complaints:purge-text')->dailyAt('03:15')->withoutOverlapping();
+
 // Waitlist addresses are deleted 30 days after they were notified (365 days if never): see config/waitlist.php.
 Schedule::command('waitlist:purge')->dailyAt('03:00')->withoutOverlapping();
 
