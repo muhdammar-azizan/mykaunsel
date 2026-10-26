@@ -1,0 +1,281 @@
+{
+  "@@locale": "en",
+
+  "appName": "MyKaunsel",
+
+  "startingUp": "Starting MyKaunsel…",
+
+  "tryAgain": "Try again",
+  "signOut": "Sign out",
+
+  "maintenanceTitle": "Down for maintenance",
+
+  "updateRequiredTitle": "Please update the app",
+  "updateRequiredBody": "This version of MyKaunsel is out of date. Please update the app to continue.",
+  "updateNow": "Update now",
+
+  "noConnectionTitle": "No connection",
+  "noConnectionBody": "We could not reach MyKaunsel. Check your internet connection and try again.",
+
+  "somethingWentWrongTitle": "Something went wrong",
+  "somethingWentWrongBody": "Please try again in a moment.",
+
+  "tooManyRequests": "Too many attempts. Please try again in a moment.",
+  "tooManyRequestsIn": "Too many attempts. Please try again in {seconds} seconds.",
+  "@tooManyRequestsIn": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "sessionExpired": "Your session has ended. Please sign in again.",
+
+  "signedInAs": "Signed in as {name}",
+  "@signedInAs": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "signInTitle": "Welcome back",
+  "signInSubtitle": "Sign in to your MyKaunsel account.",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "emailRequired": "Enter your email address.",
+  "passwordRequired": "Enter your password.",
+  "signInButton": "Sign in",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+
+  "twoFactorTitle": "Two-step verification",
+  "twoFactorBody": "Enter the 6-digit code from your authenticator app.",
+  "twoFactorRecoveryBody": "Enter one of your recovery codes. Each code works only once.",
+  "codeLabel": "6-digit code",
+  "codeRequired": "Enter the 6-digit code.",
+  "recoveryCodeLabel": "Recovery code",
+  "recoveryCodeRequired": "Enter a recovery code.",
+  "useRecoveryCode": "Use a recovery code instead",
+  "useAuthenticatorCode": "Use the code from my authenticator app",
+  "verifyButton": "Verify",
+  "signInExpired": "Your sign-in took too long. Please sign in again.",
+
+  "verifyEmailTitle": "Confirm your email",
+  "verifyEmailBody": "We sent a link to {email}. Open it to confirm your address, then come back here and sign in.",
+  "@verifyEmailBody": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "resendEmail": "Send the email again",
+  "resendEmailIn": "Send again in {seconds}s",
+  "@resendEmailIn": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "emailResent": "If that address still needs confirming, we have sent the email again.",
+  "backToSignIn": "Back to sign in",
+
+  "noAccountYet": "New to MyKaunsel?",
+  "createAccountLink": "Create an account",
+  "forgotPasswordLink": "Forgot your password?",
+  "alreadyHaveAccount": "Already have an account?",
+  "signInLink": "Sign in",
+
+  "signUpTitle": "Create your account",
+  "signUpSubtitle": "A few details and you are ready to go.",
+  "nameLabel": "Full name",
+  "nameRequired": "Enter your name.",
+  "emailInvalid": "Enter a valid email address.",
+  "confirmPasswordLabel": "Confirm password",
+  "confirmPasswordRequired": "Type the password again.",
+  "passwordsDontMatch": "The two passwords are not the same.",
+  "createAccountButton": "Create account",
+  "passwordMustHave": "Your password needs:",
+  "ruleLength": "At least 8 characters",
+  "ruleUpper": "An upper-case letter",
+  "ruleLower": "A lower-case letter",
+  "ruleNumber": "A number",
+  "ruleSymbol": "A symbol, such as ! or #",
+  "ruleMet": "{rule}, done",
+  "@ruleMet": {
+    "placeholders": {
+      "rule": {"type": "String"}
+    }
+  },
+  "ruleNotMet": "{rule}, not yet",
+  "@ruleNotMet": {
+    "placeholders": {
+      "rule": {"type": "String"}
+    }
+  },
+  "signUpCheckingTitle": "Checking if sign-up is open…",
+  "signUpClosedTitle": "Sign-up is closed for now",
+
+  "forgotTitle": "Forgot your password?",
+  "forgotSubtitle": "Enter your email and we will send you a link to choose a new one.",
+  "sendLinkButton": "Send the link",
+  "forgotSentTitle": "Check your email",
+  "forgotSentBody": "If {email} has an account, we have emailed a link. Open it, choose a new password, then come back here and sign in.",
+  "@forgotSentBody": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "useDifferentEmail": "Use a different email",
+
+  "homeGreeting": "Hello, {name}",
+  "@homeGreeting": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "homeEmptyTitle": "Your space is being set up",
+  "homeEmptyBody": "Finding a counselor and booking sessions are coming soon. You are signed in and your account is ready.",
+  "accountMenu": "Account",
+  "signOutEverywhere": "Sign out of all devices",
+  "signOutEverywhereTitle": "Sign out of all devices?",
+  "signOutEverywhereBody": "Every phone signed in to your account, including this one, will be signed out.",
+  "cancel": "Cancel",
+  "notFoundBody": "We could not find that. It may no longer be available.",
+
+  "navHome": "Home",
+  "navFind": "Find",
+  "navAccount": "Account",
+
+  "findTitle": "Find a counselor",
+  "searchHint": "Search by name",
+  "clearSearch": "Clear search",
+  "filtersButton": "Filters",
+  "filtersTitle": "Filters",
+  "filtersApply": "Show results",
+  "filtersClear": "Clear all",
+  "filterFocusArea": "Focus area",
+  "filterLanguage": "Language",
+  "filterSessionType": "Session type",
+  "filterState": "State",
+  "anyOption": "Any",
+  "sessionOnline": "Online",
+  "sessionInPerson": "In person",
+  "filtersCount": "Filters ({count})",
+  "@filtersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "resultsCount": "{count, plural, =0{No counselors} =1{1 counselor} other{{count} counselors}}",
+  "@resultsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "emptyFilteredTitle": "No counselors found",
+  "emptyFilteredBody": "Try a different name, or fewer filters.",
+  "emptyNoneTitle": "No counselors yet",
+  "emptyNoneBody": "Counselors will appear here as soon as they are available. Please check back soon.",
+  "clearFilters": "Clear filters",
+  "loadMoreFailed": "Could not load more counselors.",
+  "loadingMore": "Loading more…",
+  "verifiedLabel": "Verified registered counselor",
+  "independentLabel": "Independent",
+  "moreFocusAreas": "+{count} more",
+  "@moreFocusAreas": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "nextAvailable": "Next free time: {when}",
+  "@nextAvailable": {
+    "placeholders": {
+      "when": {"type": "String"}
+    }
+  },
+  "noUpcomingTimes": "No free times in the coming weeks",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "malaysiaTimeNote": "All times are Malaysian time.",
+  "inPersonIn": "In person · {place}",
+  "@inPersonIn": {
+    "placeholders": {
+      "place": {"type": "String"}
+    }
+  },
+  "minutesShort": "{minutes} min",
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+
+  "profileFocusAreas": "Focus areas",
+  "profileLanguages": "Languages",
+  "profileSessionTypes": "Session types",
+  "profileWhere": "Where",
+  "profileWorksWith": "Works with",
+  "profileAvailability": "Free times",
+  "profileNoTimes": "No free times right now. Please check again soon.",
+  "profileAcceptsRequests": "Also takes session requests.",
+  "profileBookingSoon": "Booking is coming soon.",
+  "profileNotFoundTitle": "Counselor not available",
+
+  "accountTitle": "Account",
+  "homeFindTitle": "Find a counselor",
+  "homeFindBody": "Browse verified counselors and see when they are free.",
+
+  "accountProfile": "Profile",
+  "accountPassword": "Change password",
+  "accountDevices": "Signed-in devices",
+
+  "profileTitle": "Your profile",
+  "profileSave": "Save changes",
+  "profileSaved": "Profile saved.",
+  "profileEmailNote": "To change your email address, use the MyKaunsel website.",
+  "timezoneLabel": "Time zone",
+
+  "passwordTitle": "Change password",
+  "passwordNote": "Changing your password signs you out on all your other devices.",
+  "currentPasswordLabel": "Current password",
+  "currentPasswordRequired": "Enter your current password.",
+  "newPasswordLabel": "New password",
+  "confirmNewPasswordLabel": "Confirm new password",
+  "changePasswordButton": "Change password",
+  "passwordChanged": "Password updated. Your other devices were signed out.",
+
+  "devicesTitle": "Signed-in devices",
+  "devicesNote": "These are the phones signed in to your account. Sign out any you do not recognise or no longer use.",
+  "thisPhone": "This phone",
+  "deviceSignOut": "Sign out",
+  "deviceSignOutTitle": "Sign out {name}?",
+  "@deviceSignOutTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "deviceSignOutBody": "Enter your password to confirm. That phone will have to sign in again.",
+  "deviceSignedOut": "That device was signed out.",
+  "lastUsedNow": "Active just now",
+  "lastUsedMinutes": "{count, plural, =1{Last used 1 minute ago} other{Last used {count} minutes ago}}",
+  "@lastUsedMinutes": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lastUsedHours": "{count, plural, =1{Last used 1 hour ago} other{Last used {count} hours ago}}",
+  "@lastUsedHours": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lastUsedDays": "{count, plural, =1{Last used yesterday} other{Last used {count} days ago}}",
+  "@lastUsedDays": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lastUsedOn": "Last used {date}",
+  "@lastUsedOn": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "neverUsed": "Not used yet"
+}

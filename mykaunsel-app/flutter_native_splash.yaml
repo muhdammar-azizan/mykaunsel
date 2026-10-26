@@ -1,0 +1,14 @@
+# The screen shown by the phone itself from the moment the app is tapped until Flutter is ready (then the app's own
+# "Starting MyKaunsel…" screen takes over on the same cream background, so there is no flash).
+# Run:  dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#FAF8F5"
+  image: assets/splash/splash.png
+  android_gravity: center
+  ios_content_mode: center
+  fullscreen: false
+
+  # Android 12 and newer draw their own splash (the icon in the middle of a plain background).
+  android_12:
+    color: "#FAF8F5"
+    image: assets/splash/splash_android12.png

@@ -48,6 +48,9 @@ class NewPasswordController extends Controller
                     'remember_token' => Str::random(60),
                 ])->save();
 
+                // A new password signs the person out of the mobile app on every device.
+                $user->tokens()->delete();
+
                 event(new PasswordReset($user));
             }
         );

@@ -188,6 +188,8 @@ class AuditEntryPresenter
             'organization' => $model instanceof Organization && $model->org_type !== OrgType::Platform
                 ? route('platform.organizations.show', $model)
                 : null,
+            'complaint' => route('platform.complaints.show', $model),
+            'lkm_record' => route('platform.lkm.show', $model),
             default => null, // no page for this kind of record yet
         };
     }

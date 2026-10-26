@@ -189,7 +189,7 @@ class AuditLogSeeder extends Seeder
 
     private function lkmAndComplaints(): void
     {
-        foreach (['lkm.record_created', 'lkm.record_updated', 'lkm.review_requested', 'lkm.review_resolved'] as $i => $action) {
+        foreach (['lkm.record_created', 'lkm.record_updated', 'lkm.review_requested', 'lkm.review_approved'] as $i => $action) {
             $meta = $action === 'lkm.record_updated' ? ['changes' => ['status' => ['old' => 'Active', 'new' => 'Expired'], 'expiry_date' => ['old' => '2026-03-01', 'new' => '2026-09-01']]] : ['record_id' => 900 + $i];
             $this->log($action, null, $meta, $this->pick($this->admins), $this->when(), ['target_type' => 'lkm_record', 'target_id' => 900 + $i, 'target_name' => 'LKM-2025-'.(1000 + $i)]);
         }

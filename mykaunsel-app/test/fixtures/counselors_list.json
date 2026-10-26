@@ -1,0 +1,110 @@
+{
+  "data": [
+    {
+      "id": "01m5sgvy9wr6m0z3dge4kvgvkx",
+      "name": "Kaunselor Aina Syazwani",
+      "verified": true,
+      "contexts": [
+        {
+          "type": "organization",
+          "organization": "Klinik Kaunseling Damai"
+        }
+      ],
+      "specializations": [
+        "Keluarga & Perkahwinan",
+        "Kemurungan",
+        "Stres & Kebimbangan"
+      ],
+      "specializations_count": 3,
+      "languages": [
+        "Bahasa Malaysia",
+        "English"
+      ],
+      "session_modes": [
+        "online",
+        "physical"
+      ],
+      "locations": [
+        {
+          "city": "Kuantan",
+          "state": "Pahang"
+        }
+      ],
+      "next_available": {
+        "starts_at": "2026-10-26T10:00:00+08:00",
+        "duration_minutes": 60,
+        "session_mode": "online",
+        "city": null,
+        "state": null,
+        "context": {
+          "type": "organization",
+          "organization": "Klinik Kaunseling Damai"
+        }
+      }
+    },
+    {
+      "id": "01m5sgvxz0m3gfrg0cs387b66r",
+      "name": "Kaunselor Tan Wei Ming",
+      "verified": true,
+      "contexts": [
+        {
+          "type": "independent",
+          "organization": null
+        }
+      ],
+      "specializations": [
+        "Kesedihan & Kehilangan",
+        "Stres & Kebimbangan",
+        "Trauma"
+      ],
+      "specializations_count": 3,
+      "languages": [
+        "Bahasa Malaysia",
+        "English",
+        "Mandarin"
+      ],
+      "session_modes": [
+        "online"
+      ],
+      "locations": [],
+      "next_available": {
+        "starts_at": "2026-10-26T10:00:00+08:00",
+        "duration_minutes": 60,
+        "session_mode": "online",
+        "city": null,
+        "state": null,
+        "context": {
+          "type": "independent",
+          "organization": null
+        }
+      }
+    },
+    {
+      "id": "01m5sgw1znvw8fs5r5sfv978mx",
+      "name": "Rajesh a/l Kumar",
+      "verified": true,
+      "contexts": [
+        {
+          "type": "independent",
+          "organization": null
+        }
+      ],
+      "specializations": [
+        "Stres & Kebimbangan"
+      ],
+      "specializations_count": 1,
+      "languages": [
+        "Bahasa Malaysia"
+      ],
+      "session_modes": [],
+      "locations": [],
+      "next_available": null
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "per_page": 20,
+    "total": 3,
+    "last_page": 1
+  }
+}

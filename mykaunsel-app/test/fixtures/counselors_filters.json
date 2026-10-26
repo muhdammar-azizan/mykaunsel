@@ -1,0 +1,23 @@
+{
+  "data": {
+    "specializations": [
+      "Keluarga & Perkahwinan",
+      "Kemurungan",
+      "Kesedihan & Kehilangan",
+      "Stres & Kebimbangan",
+      "Trauma"
+    ],
+    "languages": [
+      "Bahasa Malaysia",
+      "English",
+      "Mandarin"
+    ],
+    "session_modes": [
+      "online",
+      "physical"
+    ],
+    "states": [
+      "Pahang"
+    ]
+  }
+}

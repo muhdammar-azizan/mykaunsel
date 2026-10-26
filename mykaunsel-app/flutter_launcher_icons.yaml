@@ -1,0 +1,13 @@
+# App icon for the real app (prod: Android and iOS). Source pictures come from tool/generate_brand_assets.py.
+# Run:  dart run flutter_launcher_icons   (also does the dev icon, see flutter_launcher_icons-dev.yaml)
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/icon/icon_prod.png"
+  min_sdk_android: 24
+  # An iPhone icon may not have any see-through part.
+  remove_alpha_ios: true
+  adaptive_icon_background: "#FAF8F5"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  # Android 13 "themed icons": one colour picture the phone tints to match the wallpaper.
+  adaptive_icon_monochrome: "assets/icon/icon_monochrome.png"

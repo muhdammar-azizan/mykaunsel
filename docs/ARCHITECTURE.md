@@ -40,7 +40,7 @@ mykaunsel/
 | `Http/Controllers/Organization` | Controller papan pemuka & tetapan organisasi |
 | `Http/Controllers/Counselor` | Controller papan pemuka kaunselor |
 | `Http/Controllers/Platform` | Controller papan pemuka Platform Admin |
-| `Http/Controllers/Api` | Controller API untuk aplikasi Flutter (akan datang) |
+| `Http/Controllers/Api` | Controller API untuk aplikasi Flutter (Fasa 1: akaun, lihat `docs/API.md`) |
 | `Http/Middleware` | Middleware konteks organisasi, status keahlian, dan peranan |
 | `Http/Requests` | Form Request untuk pengesahan input, disusun mengikut modul |
 | `Models` | Model Eloquent bagi semua jadual pangkalan data |

@@ -1,0 +1,4 @@
+{
+  "FLAVOR": "prod",
+  "API_BASE_URL": "https://REPLACE-WITH-THE-REAL-API-DOMAIN"
+}

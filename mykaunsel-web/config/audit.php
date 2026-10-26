@@ -3,6 +3,7 @@
 use App\Models\Booking;
 use App\Models\Complaint;
 use App\Models\CounselorProfile;
+use App\Models\LkmDirectorySnapshot;
 use App\Models\Organization;
 use App\Models\User;
 
@@ -60,17 +61,31 @@ return [
         'counselor.suspended' => ['category' => 'counselors', 'badge' => 'suspended', 'label' => 'Counselor suspended'],
         'counselor.reactivated' => ['category' => 'counselors', 'badge' => 'reactivated', 'label' => 'Counselor reactivated'],
         'counselor.note_added' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Internal note added'],
-        // Written by the (not yet built) scheduled PA-expiry check — always the "system" actor.
+        'counselor.resubmitted' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Counselor resubmitted documents'],
+        'counselor.document_flagged' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Document marked'],
+        'counselor.document_viewed' => ['category' => 'counselors', 'badge' => 'security', 'label' => 'Document viewed'],
+        'counselor.document_purged' => ['category' => 'counselors', 'badge' => 'deleted', 'label' => 'Document removed (retention)'],
+        'counselor.lkm_rechecked' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'LKM check re-run'],
+        'counselor.kb_duplicate_flagged' => ['category' => 'counselors', 'badge' => 'security', 'label' => 'Duplicate KB registration attempt'],
+        'counselor.renewal_reminder_sent' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'PA renewal reminder sent'],
+        // Written by the daily PA check (counselors:check-pa-expiry) — always the "system" actor.
         'counselor.pa_expired_suspended' => ['category' => 'counselors', 'badge' => 'suspended', 'label' => 'Suspended automatically: practising certificate expired'],
 
         // LKM records
         'lkm.record_created' => ['category' => 'lkm', 'badge' => 'created', 'label' => 'LKM record added'],
         'lkm.record_updated' => ['category' => 'lkm', 'badge' => 'updated', 'label' => 'LKM record updated'],
-        'lkm.record_deleted' => ['category' => 'lkm', 'badge' => 'deleted', 'label' => 'LKM record removed'],
+        // One entry per import, with counts only (never the rows themselves).
+        'lkm.records_imported' => ['category' => 'lkm', 'badge' => 'created', 'label' => 'LKM records imported (CSV)'],
+        'lkm.records_exported' => ['category' => 'lkm', 'badge' => 'exported', 'label' => 'LKM records exported (CSV)'],
+        // A counselor's request to re-check their LKM record (the target is the counselor, so it shows in their activity too).
         'lkm.review_requested' => ['category' => 'lkm', 'badge' => 'created', 'label' => 'LKM review requested'],
-        'lkm.review_resolved' => ['category' => 'lkm', 'badge' => 'updated', 'label' => 'LKM review resolved'],
+        'lkm.review_approved' => ['category' => 'lkm', 'badge' => 'approved', 'label' => 'LKM review approved'],
+        'lkm.review_rejected' => ['category' => 'lkm', 'badge' => 'rejected', 'label' => 'LKM review rejected'],
+        'lkm.evidence_viewed' => ['category' => 'lkm', 'badge' => 'security', 'label' => 'LKM review evidence viewed'],
+        'lkm.evidence_purged' => ['category' => 'lkm', 'badge' => 'deleted', 'label' => 'LKM review evidence removed (retention)'],
 
         // Complaints (reference IDs only — never the complaint text)
+        'complaint.note_added' => ['category' => 'complaints', 'badge' => 'created', 'label' => 'Internal note added'],
         'complaint.status_changed' => ['category' => 'complaints', 'badge' => 'updated', 'label' => 'Complaint status changed'],
         'complaint.warning_issued' => ['category' => 'complaints', 'badge' => 'security', 'label' => 'Warning issued'],
         'complaint.counselor_suspended' => ['category' => 'complaints', 'badge' => 'suspended', 'label' => 'Counselor suspended after complaint'],
@@ -83,6 +98,10 @@ return [
         // Platform settings
         'settings.registration_toggled' => ['category' => 'settings', 'badge' => 'updated', 'label' => 'Registration switched'],
         'settings.maintenance_toggled' => ['category' => 'settings', 'badge' => 'updated', 'label' => 'Maintenance mode switched'],
+        'settings.maintenance_reopen_scheduled' => ['category' => 'settings', 'badge' => 'updated', 'label' => 'Maintenance reopen time changed'],
+        // Written by the scheduler (maintenance:reopen-due) when the set time arrives: always the "system" actor.
+        'settings.maintenance_auto_reopened' => ['category' => 'settings', 'badge' => 'system', 'label' => 'Maintenance ended automatically'],
+        'settings.message_updated' => ['category' => 'settings', 'badge' => 'updated', 'label' => 'Notice wording edited'],
 
         // Pricing
         'pricing.plan_created' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Plan created'],
@@ -127,6 +146,7 @@ return [
         Organization::class => 'organization',
         User::class => 'user',
         CounselorProfile::class => 'counselor',
+        LkmDirectorySnapshot::class => 'lkm_record',
         Complaint::class => 'complaint',
         Booking::class => 'booking',
     ],

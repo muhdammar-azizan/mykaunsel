@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # The API speaks snake_case (min_version, email_verified…); Dart code stays camelCase.
+          field_rename: snake

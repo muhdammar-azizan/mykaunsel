@@ -28,9 +28,8 @@
                             <a href="{{ route('dashboard') }}" class="text-sm text-gray-600 hover:text-gray-900">{{ __('Dashboard') }}</a>
                         @else
                             <a href="{{ route('login') }}" class="text-sm text-gray-600 hover:text-gray-900">{{ __('Log in') }}</a>
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="text-sm px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-500">{{ __('Register') }}</a>
-                            @endif
+                            {{-- Individuals sign up in the mobile app, not on the web. --}}
+                            <a href="{{ config('registration.mobile_app_url') }}" class="text-sm px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-500">{{ __('Get the mobile app') }}</a>
                         @endauth
                     </nav>
                 </div>

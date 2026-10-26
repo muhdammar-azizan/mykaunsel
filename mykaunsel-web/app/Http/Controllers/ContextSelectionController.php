@@ -25,6 +25,15 @@ class ContextSelectionController extends Controller
             'role' => ['required', 'string'],
         ]);
 
+        // The role in the session decides what the user may open (including the Platform Admin area), so it must
+        // be one the user really has in that organization, never just something sent by the browser.
+        $owns = $request->user()->memberships()
+            ->where('org_id', $validated['org_id'])
+            ->where('role', $validated['role'])
+            ->exists();
+
+        abort_unless($owns, 403);
+
         $request->session()->put('current_org_id', $validated['org_id']);
         $request->session()->put('current_role', $validated['role']);
 

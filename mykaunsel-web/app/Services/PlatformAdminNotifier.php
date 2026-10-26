@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
+use App\Models\CounselorProfile;
 use App\Models\Organization;
 use App\Models\User;
+use App\Notifications\NewCounselorApplication;
 use App\Notifications\NewOrganizationApplication;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -19,6 +21,8 @@ class PlatformAdminNotifier
 {
     public const NEW_ORGANIZATION_APPLICATION = 'new_organization_application';
 
+    public const NEW_COUNSELOR_APPLICATION = 'new_counselor_application';
+
     /** @return int how many admins were emailed */
     public function newOrganizationApplication(Organization $organization): int
     {
@@ -30,6 +34,23 @@ class PlatformAdminNotifier
                 $sent++;
             } catch (Throwable $e) {
                 Log::warning('Could not email a Platform Admin about a new application.', ['admin_id' => $admin->id, 'org_id' => $organization->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return $sent;
+    }
+
+    /** @return int how many admins were emailed */
+    public function newCounselorApplication(CounselorProfile $profile, bool $resubmitted = false): int
+    {
+        $sent = 0;
+
+        foreach ($this->adminsWanting(self::NEW_COUNSELOR_APPLICATION) as $admin) {
+            try {
+                $admin->notify(new NewCounselorApplication($profile, $resubmitted));
+                $sent++;
+            } catch (Throwable $e) {
+                Log::warning('Could not email a Platform Admin about a counselor application.', ['admin_id' => $admin->id, 'profile_id' => $profile->id, 'error' => $e->getMessage()]);
             }
         }
 

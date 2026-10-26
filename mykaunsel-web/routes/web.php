@@ -27,14 +27,23 @@ use App\Http\Controllers\Platform\AccountEmailController;
 use App\Http\Controllers\Platform\AccountNotificationController;
 use App\Http\Controllers\Platform\AccountSecurityController;
 use App\Http\Controllers\Platform\AccountTwoFactorController;
+use App\Http\Controllers\Platform\PlatformAdminController;
 use App\Http\Controllers\Platform\PlatformAuditLogController;
+use App\Http\Controllers\Platform\PlatformComplaintActionController;
 use App\Http\Controllers\Platform\PlatformComplaintController;
 use App\Http\Controllers\Platform\PlatformCounselorController;
+use App\Http\Controllers\Platform\PlatformCounselorDocumentController;
+use App\Http\Controllers\Platform\PlatformCounselorReviewController;
+use App\Http\Controllers\Platform\PlatformCounselorStatusController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
+use App\Http\Controllers\Platform\PlatformLkmDirectoryController;
+use App\Http\Controllers\Platform\PlatformLkmImportController;
+use App\Http\Controllers\Platform\PlatformLkmReviewController;
 use App\Http\Controllers\Platform\PlatformOrganizationController;
 use App\Http\Controllers\Platform\PlatformOrganizationDecisionController;
 use App\Http\Controllers\Platform\PlatformOrganizationDnsController;
 use App\Http\Controllers\Platform\PlatformOrganizationReviewController;
+use App\Http\Controllers\Platform\PlatformRegistrationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,17 +51,26 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Opens from the confirmation email sent to someone who signed up in the mobile app (signed link; no web sign-in needed).
+Route::get('/email/verify-app/{id}/{hash}', \App\Http\Controllers\Auth\VerifyAppEmailController::class)
+    ->whereNumber('id')->middleware(['signed', 'throttle:6,1'])->name('verification.app');
+
 Route::middleware('guest')->group(function () {
     // New routes, not part of the original spec — the entry point for
     // choosing which kind of account to create (individual is hidden on
     // web for now; that flow is Flutter-only).
     Route::get('/register/type', [AccountTypeController::class, 'index'])->name('register.type');
 
-    Route::get('/organizations/signup', [OrgSignupController::class, 'create'])->name('organizations.signup.create');
-    Route::post('/organizations/signup', [OrgSignupController::class, 'store'])->name('organizations.signup.store');
+    // Sign-up can be closed per kind of account (Platform Admin → Registration Control).
+    Route::middleware('registration.open:organization')->group(function () {
+        Route::get('/organizations/signup', [OrgSignupController::class, 'create'])->name('organizations.signup.create');
+        Route::post('/organizations/signup', [OrgSignupController::class, 'store'])->name('organizations.signup.store');
+    });
 
-    Route::get('/counselors/signup', [CounselorSignupController::class, 'create'])->name('counselors.signup.create');
-    Route::post('/counselors/signup', [CounselorSignupController::class, 'store'])->name('counselors.signup.store');
+    Route::middleware('registration.open:counselor')->group(function () {
+        Route::get('/counselors/signup', [CounselorSignupController::class, 'create'])->name('counselors.signup.create');
+        Route::post('/counselors/signup', [CounselorSignupController::class, 'store'])->name('counselors.signup.store');
+    });
 });
 
 Route::middleware('auth')->group(function () {
@@ -126,7 +144,75 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/organizations/{organization}/dns/check', [PlatformOrganizationDnsController::class, 'check'])->whereNumber('organization')->middleware('throttle:20,1')->name('organizations.dns.check');
         Route::post('/organizations/{organization}/dns/remind', [PlatformOrganizationDnsController::class, 'remind'])->whereNumber('organization')->middleware('throttle:20,1')->name('organizations.dns.remind');
         Route::get('/counselors', [PlatformCounselorController::class, 'index'])->name('counselors');
+        Route::get('/counselors/{counselor}', [PlatformCounselorController::class, 'show'])->whereNumber('counselor')->name('counselors.show');
+
+        // LKM Directory: our snapshot of the LKM register, kept by hand. Records are added and changed, never deleted.
+        Route::get('/lkm-directory', [PlatformLkmDirectoryController::class, 'index'])->name('lkm');
+        Route::get('/lkm-directory/create', [PlatformLkmDirectoryController::class, 'create'])->name('lkm.create');
+        Route::get('/lkm-directory/lookup', [PlatformLkmDirectoryController::class, 'lookup'])->middleware('throttle:120,1')->name('lkm.lookup');
+
+        // CSV import (preview first, then confirm; creates and updates only, never deletes) and export.
+        Route::get('/lkm-directory/import', [PlatformLkmImportController::class, 'show'])->name('lkm.import');
+        Route::post('/lkm-directory/import', [PlatformLkmImportController::class, 'stage'])->middleware('throttle:10,1')->name('lkm.import.stage');
+        Route::post('/lkm-directory/import/confirm', [PlatformLkmImportController::class, 'commit'])->middleware('throttle:10,1')->name('lkm.import.commit');
+        Route::delete('/lkm-directory/import', [PlatformLkmImportController::class, 'cancel'])->middleware('throttle:30,1')->name('lkm.import.cancel');
+        Route::get('/lkm-directory/import/errors', [PlatformLkmImportController::class, 'errors'])->middleware('throttle:30,1')->name('lkm.import.errors');
+        Route::get('/lkm-directory/import/template', [PlatformLkmImportController::class, 'template'])->middleware('throttle:30,1')->name('lkm.import.template');
+        // Counselors asking for their LKM record to be checked again. Evidence: no public URL, a short-lived signed link per admin.
+        Route::get('/lkm-directory/reviews', [PlatformLkmReviewController::class, 'index'])->name('lkm.reviews');
+        Route::post('/lkm-directory/reviews/{review}/approve', [PlatformLkmReviewController::class, 'approve'])->whereNumber('review')->middleware('throttle:30,1')->name('lkm.reviews.approve');
+        Route::post('/lkm-directory/reviews/{review}/reject', [PlatformLkmReviewController::class, 'reject'])->whereNumber('review')->middleware('throttle:30,1')->name('lkm.reviews.reject');
+        Route::get('/lkm-directory/reviews/{review}/evidence/open', [PlatformLkmReviewController::class, 'evidenceOpen'])->whereNumber('review')->middleware('throttle:60,1')->name('lkm.reviews.evidence.open');
+        Route::get('/lkm-directory/reviews/{review}/evidence', [PlatformLkmReviewController::class, 'evidenceShow'])->whereNumber('review')->middleware('signed')->name('lkm.reviews.evidence');
+
+        Route::get('/lkm-directory/export', [PlatformLkmImportController::class, 'export'])->middleware('throttle:10,1')->name('lkm.export');
+        Route::post('/lkm-directory', [PlatformLkmDirectoryController::class, 'store'])->middleware('throttle:30,1')->name('lkm.store');
+        Route::get('/lkm-directory/{record}', [PlatformLkmDirectoryController::class, 'show'])->whereNumber('record')->name('lkm.show');
+        Route::put('/lkm-directory/{record}', [PlatformLkmDirectoryController::class, 'update'])->whereNumber('record')->middleware('throttle:60,1')->name('lkm.update');
+
+        // Reviewing an independent counselor's application.
+        Route::post('/counselors/{counselor}/approve', [PlatformCounselorReviewController::class, 'approve'])->whereNumber('counselor')->middleware('throttle:30,1')->name('counselors.approve');
+        Route::post('/counselors/{counselor}/reject', [PlatformCounselorReviewController::class, 'reject'])->whereNumber('counselor')->middleware('throttle:30,1')->name('counselors.reject');
+        Route::post('/counselors/{counselor}/lkm-recheck', [PlatformCounselorReviewController::class, 'recheckLkm'])->whereNumber('counselor')->middleware('throttle:20,1')->name('counselors.lkm-recheck');
+        Route::patch('/counselors/{counselor}/documents/{document}/mark', [PlatformCounselorReviewController::class, 'markDocument'])->whereNumber(['counselor', 'document'])->middleware('throttle:60,1')->name('counselors.documents.mark');
+        Route::patch('/counselors/{counselor}/checklist', [PlatformCounselorReviewController::class, 'checklist'])->whereNumber('counselor')->middleware('throttle:120,1')->name('counselors.checklist');
+        Route::post('/counselors/{counselor}/notes', [PlatformCounselorReviewController::class, 'storeNote'])->whereNumber('counselor')->middleware('throttle:30,1')->name('counselors.notes.store');
+
+        // Looking after an approved counselor (independent or organization).
+        Route::post('/counselors/{counselor}/suspend', [PlatformCounselorStatusController::class, 'suspend'])->whereNumber('counselor')->middleware('throttle:30,1')->name('counselors.suspend');
+        Route::post('/counselors/{counselor}/reactivate', [PlatformCounselorStatusController::class, 'reactivate'])->whereNumber('counselor')->middleware('throttle:30,1')->name('counselors.reactivate');
+        Route::post('/counselors/{counselor}/renewal-reminder', [PlatformCounselorStatusController::class, 'remindRenewal'])->whereNumber('counselor')->middleware('throttle:20,1')->name('counselors.renewal-reminder');
+
+        // DEVELOPMENT ONLY: stands in for the (not yet built) LKM review request. Not registered anywhere but local / testing.
+        if (app()->environment(['local', 'testing'])) {
+            Route::post('/counselors/{counselor}/dev/lkm-date', [PlatformCounselorStatusController::class, 'devSetLkmDate'])->whereNumber('counselor')->name('counselors.dev.lkm-date');
+        }
+
+        // Counselor documents: no public URL. The link endpoint hands out a short-lived signed URL; the signed route serves the file.
+        Route::get('/counselors/{counselor}/documents/{document}/link', [PlatformCounselorDocumentController::class, 'link'])
+            ->whereNumber(['counselor', 'document'])->middleware('throttle:60,1')->name('counselors.documents.link');
+        Route::get('/counselor-documents/{document}', [PlatformCounselorDocumentController::class, 'show'])
+            ->whereNumber('document')->middleware('signed')->name('counselor-documents.show');
         Route::get('/complaints', [PlatformComplaintController::class, 'index'])->name('complaints');
+        Route::get('/complaints/{complaint}', [PlatformComplaintController::class, 'show'])->whereNumber('complaint')->name('complaints.show');
+        Route::post('/complaints/{complaint}/status', [PlatformComplaintActionController::class, 'status'])->whereNumber('complaint')->middleware('throttle:30,1')->name('complaints.status');
+        Route::post('/complaints/{complaint}/warn', [PlatformComplaintActionController::class, 'warn'])->whereNumber('complaint')->middleware('throttle:20,1')->name('complaints.warn');
+        Route::post('/complaints/{complaint}/suspend-counselor', [PlatformComplaintActionController::class, 'suspendCounselor'])->whereNumber('complaint')->middleware('throttle:20,1')->name('complaints.suspend-counselor');
+        Route::post('/complaints/{complaint}/notes', [PlatformComplaintController::class, 'storeNote'])->whereNumber('complaint')->middleware('throttle:30,1')->name('complaints.notes.store');
+
+        // Platform Admins: who has access to this area. Admins are never deleted, only removed (the row and history stay).
+        Route::get('/admins', [PlatformAdminController::class, 'index'])->name('admins');
+        Route::post('/admins', [PlatformAdminController::class, 'store'])->middleware('throttle:10,1')->name('admins.store');
+        Route::post('/admins/{admin}/resend', [PlatformAdminController::class, 'resend'])->whereNumber('admin')->middleware('throttle:10,1')->name('admins.resend');
+        Route::post('/admins/{admin}/remove', [PlatformAdminController::class, 'remove'])->whereNumber('admin')->middleware('throttle:10,1')->name('admins.remove');
+
+        // Registration Control: close sign-ups (per kind of account or all), maintenance mode and the wording shown for them.
+        Route::get('/registration', [PlatformRegistrationController::class, 'index'])->name('registration');
+        Route::post('/registration/all', [PlatformRegistrationController::class, 'toggleAll'])->middleware('throttle:20,1')->name('registration.all');
+        Route::post('/registration/maintenance', [PlatformRegistrationController::class, 'maintenance'])->middleware('throttle:20,1')->name('registration.maintenance');
+        Route::put('/registration/maintenance/reopen', [PlatformRegistrationController::class, 'reopenTimeUpdate'])->middleware('throttle:20,1')->name('registration.maintenance.reopen');
+        Route::put('/registration/messages', [PlatformRegistrationController::class, 'messages'])->middleware('throttle:20,1')->name('registration.messages');
+        Route::post('/registration/{role}', [PlatformRegistrationController::class, 'toggle'])->where('role', '[a-z]+')->middleware('throttle:20,1')->name('registration.toggle');
 
         // Audit Log (read-only). The export route comes first so "export" is never read as an entry id.
         Route::get('/audit-log', [PlatformAuditLogController::class, 'index'])->name('audit-log');

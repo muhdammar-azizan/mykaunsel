@@ -81,6 +81,11 @@
                 <a href="{{ route('register.type') }}" class="font-medium text-teal">{{ __('Sign up') }}</a>
             </p>
         @endif
+        {{-- Individuals sign up in the mobile app; the web sign-up is for organizations and counselors. --}}
+        <p class="mt-3 text-center text-[13.5px] text-navy/55">
+            {{ __('Looking for support?') }}
+            <a href="{{ config('registration.mobile_app_url') }}" class="font-medium text-teal">{{ __('Get the mobile app') }}</a>
+        </p>
     </div>
 
     @push('scripts')

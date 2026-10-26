@@ -10,6 +10,7 @@
     'rows' => 4,
     'bag' => null,
     'templates' => [],
+    'tone' => 'danger', // danger (red button) | primary (blue)
 ])
 
 {{--
@@ -41,7 +42,7 @@
 
         <div class="mt-4 flex justify-end gap-2">
             <button type="button" @click="$dispatch('close-modal', '{{ $name }}')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
-            <button type="submit" :disabled="busy || reason.trim().length < 10" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-red px-6 text-[13.5px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40">
+            <button type="submit" :disabled="busy || reason.trim().length < 10" class="inline-flex min-h-[42px] items-center rounded-full {{ $tone === 'primary' ? 'bg-brand-blue hover:bg-brand-deep' : 'bg-brand-red hover:opacity-90' }} px-6 text-[13.5px] font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-40">
                 <span x-show="!busy">{{ $submitLabel }}</span><span x-show="busy" x-cloak>{{ $busyLabel }}</span>
             </button>
         </div>

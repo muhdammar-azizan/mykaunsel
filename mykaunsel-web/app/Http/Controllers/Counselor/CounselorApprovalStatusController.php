@@ -13,9 +13,8 @@ class CounselorApprovalStatusController extends Controller
         $profile = $request->user()->counselorProfile;
         abort_unless($profile, 404);
 
-        $documentsSubmitted = filled($profile->cert_document_path)
-            && filled($profile->pa_document_path)
-            && filled($profile->ic_document_path);
+        // All three documents (KB certificate, PA certificate, ID) are on file.
+        $documentsSubmitted = $profile->documents()->count() === count(\App\Models\CounselorDocument::TYPES);
 
         return view('counselors.signup.waiting-approval', [
             'profile' => $profile,

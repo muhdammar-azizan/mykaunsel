@@ -49,8 +49,8 @@
                     <div class="flex items-center justify-between gap-3 py-3 {{ $loop->first ? '' : 'border-t border-brand-ink/[.07]' }}">
                         <div class="min-w-0">
                             <p class="truncate text-[13px] font-medium">{{ $item['text'] }}</p>
-                            <p class="text-[12px] {{ $item['days'] > 7 ? 'font-semibold text-brand-red' : 'text-brand-ink/50' }}">
-                                Waiting {{ $item['days'] }} {{ \Illuminate\Support\Str::plural('day', $item['days']) }}
+                            <p class="text-[12px] {{ ! $item['note'] && $item['days'] > 7 ? 'font-semibold text-brand-red' : 'text-brand-ink/50' }}">
+                                {{ $item['note'] ?? 'Waiting '.$item['days'].' '.\Illuminate\Support\Str::plural('day', $item['days']) }}
                             </p>
                         </div>
                         <a href="{{ $item['url'] }}" class="shrink-0 text-[12.5px] font-semibold text-brand-blue hover:underline">Review →</a>

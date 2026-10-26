@@ -19,6 +19,16 @@
 
     <x-platform.topbar />
 
+    @if (app(\App\Services\PlatformSettings::class)->maintenanceOn())
+        <a href="{{ route('platform.registration') }}" class="mx-2.5 mb-2.5 flex items-center justify-center gap-2 rounded-xl bg-brand-yellow px-4 py-2 text-[13px] font-bold text-[#4A3405] transition hover:brightness-95">
+            Maintenance mode is ON — everyone except Platform Admins is blocked.
+            @if ($reopen = app(\App\Services\PlatformSettings::class)->maintenanceReopenAt())
+                Switches off by itself {{ $reopen->setTimezone(auth()->user()?->display_timezone ?? config('account.default_timezone'))->format('j M, g:i A') }}.
+            @endif
+            <span class="underline">Manage</span>
+        </a>
+    @endif
+
     {{-- One joined light panel: sidebar + content share the same surface and the same rounded outer corners. --}}
     <div class="mx-2.5 mb-2.5 flex min-h-0 flex-1 overflow-hidden rounded-[28px] bg-[#F5F5F6]">
         <x-platform.sidebar />

@@ -25,7 +25,7 @@
     <p class="mt-3 text-center text-[15px] text-navy/55">{{ __("We'll set up the right experience for you.") }}</p>
 
     <div class="mt-12 grid gap-6 md:grid-cols-2">
-        <button type="button" class="jk-pilih group relative flex flex-col items-center rounded-2xl border border-navy/12 bg-cream p-8 text-center" data-href="{{ route('organizations.signup.create') }}" data-aksen="#D98F4A" aria-pressed="false" style="--aksen:#D98F4A; --tunda:0.00s">
+        <button type="button" @disabled(! $open['organization']) class="{{ $open['organization'] ? 'jk-pilih ' : 'cursor-not-allowed opacity-60 ' }}group relative flex flex-col items-center rounded-2xl border border-navy/12 bg-cream p-8 text-center" data-href="{{ route('organizations.signup.create') }}" data-aksen="#D98F4A" aria-pressed="false" style="--aksen:#D98F4A; --tunda:0.00s">
             <span class="jk-radio absolute right-5 top-5 grid h-[22px] w-[22px] place-items-center rounded-full border-2 border-navy/20" aria-hidden="true">
                 <svg class="jk-semak" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
             </span>
@@ -34,8 +34,9 @@
             </span>
             <span class="mt-6 block text-[17px] font-semibold tracking-tight text-navy">{{ __('Organization') }}</span>
             <span class="mt-2.5 block max-w-[26ch] text-[13.5px] leading-relaxed text-navy/55">{{ __('Manage counselors, availability, and bookings for your organization.') }}</span>
+            @unless ($open['organization'])<span class="mt-3 block max-w-[30ch] whitespace-pre-line break-words rounded-lg bg-amber/10 px-3 py-2 text-[12.5px] font-medium leading-snug text-navy/70">{{ $closedMessages['organization'] }}</span>@endunless
         </button>
-        <button type="button" class="jk-pilih group relative flex flex-col items-center rounded-2xl border border-navy/12 bg-cream p-8 text-center" data-href="{{ route('counselors.signup.create') }}" data-aksen="#4A7DFF" aria-pressed="false" style="--aksen:#4A7DFF; --tunda:0.08s">
+        <button type="button" @disabled(! $open['counselor']) class="{{ $open['counselor'] ? 'jk-pilih ' : 'cursor-not-allowed opacity-60 ' }}group relative flex flex-col items-center rounded-2xl border border-navy/12 bg-cream p-8 text-center" data-href="{{ route('counselors.signup.create') }}" data-aksen="#4A7DFF" aria-pressed="false" style="--aksen:#4A7DFF; --tunda:0.08s">
             <span class="jk-radio absolute right-5 top-5 grid h-[22px] w-[22px] place-items-center rounded-full border-2 border-navy/20" aria-hidden="true">
                 <svg class="jk-semak" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FAF8F5" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
             </span>
@@ -44,6 +45,7 @@
             </span>
             <span class="mt-6 block text-[17px] font-semibold tracking-tight text-navy">{{ __('Registered Counselor') }}</span>
             <span class="mt-2.5 block max-w-[26ch] text-[13.5px] leading-relaxed text-navy/55">{{ __('Accept bookings and manage your own schedule on the platform.') }}</span>
+            @unless ($open['counselor'])<span class="mt-3 block max-w-[30ch] whitespace-pre-line break-words rounded-lg bg-amber/10 px-3 py-2 text-[12.5px] font-medium leading-snug text-navy/70">{{ $closedMessages['counselor'] }}</span>@endunless
         </button>
     </div>
 
@@ -54,6 +56,11 @@
         <p class="flex items-center gap-1.5 text-[13.5px] text-navy/55">
             {{ __('Already have an account?') }}
             <a href="{{ route('login') }}" class="font-medium text-teal">{{ __('Log in') }}</a>
+        </p>
+        {{-- Clients (individuals) sign up in the mobile app, not here. --}}
+        <p class="text-[13px] text-navy/50">
+            {{ __('Looking for support?') }}
+            <a href="{{ config('registration.mobile_app_url') }}" class="font-medium text-teal">{{ __('Get the mobile app') }}</a>
         </p>
     </div>
 

@@ -12,16 +12,22 @@ use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('guest')->group(function () {
+// Individuals sign up in the mobile app. The web form is kept but switched off (404) unless
+// registration.web_individual_enabled is true; when it is on, the Individuals switch in Registration Control still applies.
+// The web-individual check comes FIRST so it answers 404 for everyone, signed in or not (the guest redirect would hide it).
+Route::middleware(['registration.web-individual', 'guest', 'registration.open:individual'])->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 
     Route::post('register', [RegisteredUserController::class, 'store']);
+});
 
+Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    // Named on purpose: maintenance mode lets this route through by name, so a Platform Admin can always sign in.
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
 
     // Second step of sign-in for accounts with two-factor authentication on.
     Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.challenge');

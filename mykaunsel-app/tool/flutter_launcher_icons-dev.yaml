@@ -1,0 +1,9 @@
+# App icon for the TEST app (dev flavor, Android): the same heart with a red DEV tag, so it can be installed beside the real
+# app without being mistaken for it. iOS flavors (Xcode schemes) are not set up yet, so there is no iOS dev icon.
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: false
+  image_path: "assets/icon/icon_dev.png"
+  min_sdk_android: 24
+  adaptive_icon_background: "#FBE9EB"
+  adaptive_icon_foreground: "assets/icon/icon_dev_foreground.png"

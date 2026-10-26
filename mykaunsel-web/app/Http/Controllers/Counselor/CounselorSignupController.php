@@ -14,6 +14,7 @@ use App\Models\LkmDirectorySnapshot;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\CounselorKbAttemptRecorder;
 use App\Services\LkmVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,7 @@ class CounselorSignupController extends Controller
         return view('counselors.signup.create');
     }
 
-    public function store(StoreCounselorSignupRequest $request, LkmVerificationService $lkmService)
+    public function store(StoreCounselorSignupRequest $request, LkmVerificationService $lkmService, CounselorKbAttemptRecorder $kbAttempts)
     {
         $data = $request->validated();
         $kbNumber = Str::upper($data['kb_number']);
@@ -37,6 +38,12 @@ class CounselorSignupController extends Controller
         $failureReason = $lkmService->verificationFailureReason($kbNumber, $paNumber, $data['name']);
 
         if ($failureReason !== null) {
+            // Someone trying a KB number that already has an account: keep a record on the ORIGINAL account.
+            // The person trying sees the same message as always — nothing about who owns the number.
+            if ($lkmService->isAlreadyRegistered($kbNumber)) {
+                $kbAttempts->record($kbNumber, $data['name'], $request->ip());
+            }
+
             return back()
                 ->withInput($request->except(['password', 'password_confirmation']))
                 ->withErrors(['lkm' => $failureReason]);

@@ -57,6 +57,24 @@ return [
             'report' => false,
         ],
 
+        // LKM Directory CSV files waiting for the admin to confirm an import. Private, random names, short-lived (config/lkm.php).
+        'lkm_imports' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/lkm-imports'),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => false,
+        ],
+
+        // Evidence for LKM review requests (renewed practising certificates). Private, random names, deleted after the retention period.
+        'lkm_review_evidence' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/lkm-review-evidence'),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
