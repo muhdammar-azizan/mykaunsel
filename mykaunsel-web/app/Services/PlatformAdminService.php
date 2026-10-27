@@ -11,6 +11,7 @@ use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
 use App\Notifications\PlatformAdminInvited;
+use App\Notifications\PlatformAdminRemoved;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -142,6 +143,11 @@ class PlatformAdminService
      * Take Platform Admin access away. Never yourself, and never the last active admin (two admins removing each other
      * at the same time cannot both succeed: the admin rows are locked while the count is checked).
      *
+     * The person is also signed out everywhere at once, in the same transaction: their browser sessions (when sessions are
+     * kept in the database), their remember-me token and their API tokens. (CheckMembershipStatus is the second line: it
+     * signs them out on their next request even if sessions are kept somewhere else.) They get a short email without the
+     * reason, queued and sent after the commit. Older audit entries they wrote are not touched.
+     *
      * @throws AdminChangeBlocked
      */
     public function remove(User $actor, User $admin, string $reason): void
@@ -170,14 +176,30 @@ class PlatformAdminService
             }
 
             // Logged first: while they are still active the entry keeps their name (non-staff people are stored by id only).
-            Audit::log('admin.removed', $admin, ['reason' => $reason], $actor);
+            Audit::log('admin.removed', $admin, ['reason' => $reason, 'signed_out' => true], $actor);
 
             $membership->update([
                 'status' => MembershipStatus::Offboarded->value,
                 'offboarded_at' => now(),
                 'offboard_reason' => $reason,
             ]);
+
+            $this->signOutEverywhere($admin);
         });
+
+        $this->sendRemoved($admin);
+    }
+
+    /** Ends every way this person could still get in: database sessions, the remember-me cookie and API tokens. */
+    private function signOutEverywhere(User $user): void
+    {
+        if (config('session.driver') === 'database') {
+            DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))->where('user_id', $user->getKey())->delete();
+        }
+
+        // A new random token makes every remember-me cookie already issued worthless.
+        $user->forceFill(['remember_token' => Str::random(60)])->saveQuietly();
+        $user->tokens()->delete();
     }
 
     private function membershipOf(User $admin, bool $lock = false): ?Membership
@@ -195,6 +217,16 @@ class PlatformAdminService
         $token = Password::broker()->createToken($user);
 
         return route('password.reset', ['token' => $token, 'email' => $user->email]);
+    }
+
+    /** Queued and sent after the commit; a mail problem never undoes the removal. */
+    private function sendRemoved(User $user): void
+    {
+        try {
+            $user->notify(new PlatformAdminRemoved);
+        } catch (Throwable $e) {
+            Log::warning('Could not email a removed Platform Admin.', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+        }
     }
 
     /** After the commit; a mail problem never undoes the change. */

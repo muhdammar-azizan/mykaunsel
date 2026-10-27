@@ -157,9 +157,9 @@ class PlatformAdminsTest extends CounselorTestCase
         $this->assertSame('Left the team in October.', $log->metadata['reason']);
         $this->assertSame($user->name, $log->target_name);
 
-        // Blocked on their next request.
+        // Signed out on their next request.
         $this->flushSession();
-        $this->actingAs($user)->withSession($this->session)->get(route('platform.dashboard'))->assertRedirect(route('membership.blocked'));
+        $this->actingAs($user)->withSession($this->session)->get(route('platform.dashboard'))->assertRedirect(route('login'));
     }
 
     public function test_removing_needs_a_reason(): void

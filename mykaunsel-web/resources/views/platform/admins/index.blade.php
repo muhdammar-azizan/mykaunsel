@@ -121,7 +121,8 @@
                 label="Why their access is removed (kept in the audit log)" placeholder="e.g. Left the team."
                 submit-label="Remove access" busy-label="Removing…">
                 <ul class="mt-4 space-y-2.5 text-[13.5px] leading-snug">
-                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> They are blocked on their next click. Their account and everything they did stay as they are.</li>
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> They are signed out on every device straight away, and emailed that their access has ended (the reason is not in that email).</li>
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> Their account and everything they did stay as they are.</li>
                     <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> You can give them access again later with "Add admin".</li>
                 </ul>
             </x-platform.reason-modal>
