@@ -54,6 +54,7 @@ class CounselorProfile extends Model
         'suspended_at',
         'suspended_by',
         'suspension_source',
+        'suspension_complaint_id',
         'review_checklist',
         'meeting_provider',
         'display_name_org',

@@ -118,9 +118,10 @@ class ComplaintActionService
                 throw new CounselorDecisionBlocked(['This counselor is not currently approved, so there is nothing to suspend.']);
             }
 
-            $this->counselors->suspend($profile, $admin, $reason, $cancelUpcoming, 'complaint');
+            $this->counselors->suspend($profile, $admin, $reason, $cancelUpcoming, 'complaint', $locked->id);
 
-            // The reason the admin wrote is on the counselor's profile (suspension_reason), not repeated here.
+            // The reason the admin wrote is on the counselor's profile (suspension_reason, linked to this complaint), not repeated here
+            // or in the counselor's own audit entry.
             Audit::log('complaint.counselor_suspended', $locked, [
                 'counselor_profile_id' => $profile->id,
                 'sessions' => $cancelUpcoming ? 'cancel_upcoming' : 'keep',

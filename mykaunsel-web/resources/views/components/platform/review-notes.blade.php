@@ -23,7 +23,12 @@
         <ul class="mt-4 space-y-3">
             @foreach ($notes as $note)
                 <li class="rounded-xl border border-brand-ink/10 bg-cream px-4 py-3">
-                    <p class="whitespace-pre-line break-words text-[13.5px] leading-relaxed">{{ $note->body }}</p>
+                    @if ($note->body === '')
+                        {{-- A complaint's notes are emptied by its retention rule: who wrote it and when stay, the words go. --}}
+                        <p class="text-[13px] italic text-brand-ink/50">The words of this note were erased under the retention rule.</p>
+                    @else
+                        <p class="whitespace-pre-line break-words text-[13.5px] leading-relaxed">{{ $note->body }}</p>
+                    @endif
                     <p class="mt-2 text-[11.5px] text-brand-ink/50" title="{{ $note->created_at->format('j M Y, g:i A') }}">
                         {{ $note->author?->name ?? 'Deleted user' }} · {{ $note->created_at->diffForHumans() }}
                     </p>

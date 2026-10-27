@@ -61,14 +61,13 @@ The audit log holds only the kind of action, the old and new status and ids: `co
 - each **warning's message** in `complaint_warnings` (admin, time, message),
 - the **suspension reason** on the counselor's profile (`suspension_reason`, as before).
 
-The form still says "do not paste the complaint text". **Not changed on purpose:** the audit event `counselor.suspended`, written by the shared suspend logic for the Counselors page and also when a suspension comes from a complaint, still holds the reason (it belongs to that other page). Audit entries written before this change are not rewritten (development data can be reset with the seeder).
+The form still says "do not paste the complaint text". **Suspension from a complaint:** the reason is kept ONLY on the counselor's profile (`suspension_reason`, linked to the complaint by `suspension_complaint_id`) and the counselor's own audit entry `counselor.suspended` no longer repeats it: it holds the source (`complaint`), the complaint id, a `has_reason` flag, a short line "Suspended after complaint #N (the reason is kept with the complaint)" and the session options. The Counselors page shows the reason from the profile with a link "See complaint #N", and its activity shows that short line; once the reason has been erased it says so. **An ordinary suspension from the Counselors page is unchanged** (its entry still holds its reason). The email the counselor receives still holds the reason the admin wrote (it is the message to them). Reactivating clears the reason and the link. Audit entries written before this change are not rewritten (development data can be reset with the seeder).
 
 ## Retention (a decision, taken)
 
-- A **closed** (resolved or dismissed) complaint keeps its text for **3 years from the day it was closed** (`config/complaints.php` → `retention.closed_years`). Then `php artisan complaints:purge-text` (daily 03:15, `--dry-run` to look) erases the **complaint text, the closing reason and the warning messages**. The record stays: reference, status, dates, who it was about, who made it (or "Deleted user"), and how it ended. The page then says the text was erased under the retention rule.
+- A **closed** (resolved or dismissed) complaint keeps its text for **3 years from the day it was closed** (`config/complaints.php` → `retention.closed_years`). Then `php artisan complaints:purge-text` (daily 03:15, `--dry-run` to look) erases **everything written about it**: the complaint text, the closing reason, the messages of the warnings sent, the **internal notes** (the note rows stay, empty: who wrote each and when), and the **reason of a suspension that came from it** (while the counselor is still suspended, the profile just stops showing the reason). The record stays: reference, status, dates, who it was about, who made it (or "Deleted user"), and how it ended. The page then says the text was erased under the retention rule. The same rule covers every word an admin writes on a complaint: closing reason, warning message, suspension reason and notes.
 - **Open and under-review complaints are never touched**, however old.
-- One system audit entry (`complaint.text_purged`) with counts only.
-- **Not covered yet (to decide):** the **internal notes** that admins wrote. They are not part of the rule above.
+- One system audit entry (`complaint.text_purged`) with counts only (complaints, warning messages, notes): no words, no names.
 
 ## Deleted accounts
 

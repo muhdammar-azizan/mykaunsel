@@ -51,13 +51,13 @@ class CounselorStatusService
      *
      * @throws InvalidCounselorTransition when they are no longer approved
      */
-    public function suspend(CounselorProfile $profile, ?User $admin, string $reason, bool $cancelUpcoming = false, string $source = 'platform'): void
+    public function suspend(CounselorProfile $profile, ?User $admin, string $reason, bool $cancelUpcoming = false, string $source = 'platform', ?int $complaintId = null): void
     {
         $clientNotices = [];
         $cancelledIds = [];
         $expiredIds = [];
 
-        DB::transaction(function () use ($profile, $admin, $reason, $cancelUpcoming, $source, &$clientNotices, &$cancelledIds, &$expiredIds) {
+        DB::transaction(function () use ($profile, $admin, $reason, $cancelUpcoming, $source, $complaintId, &$clientNotices, &$cancelledIds, &$expiredIds) {
             $locked = $profile->newQuery()->lockForUpdate()->findOrFail($profile->id);
 
             if ($locked->verification_status !== VerificationStatus::Approved) {
@@ -69,6 +69,8 @@ class CounselorStatusService
                 'suspended_at' => now(),
                 'suspended_by' => $admin?->id,
                 'suspension_source' => $source,
+                // From a complaint: which one, so the reason can be kept only here and erased with that complaint's text.
+                'suspension_complaint_id' => $source === 'complaint' ? $complaintId : null,
             ], VerificationStatus::Approved);
 
             $name = $locked->user->name;
@@ -99,14 +101,21 @@ class CounselorStatusService
                 }
             }
 
-            Audit::log($source === 'system' ? 'counselor.pa_expired_suspended' : 'counselor.suspended', $locked, [
-                'reason' => $reason,
+            $entry = [
                 'source' => $source,
                 'sessions' => $cancelUpcoming ? 'cancel_upcoming' : 'keep',
                 'cancelled_booking_ids' => $cancelledIds,
                 'expired_request_ids' => $expiredIds,
                 'changes' => ['status' => ['old' => 'approved', 'new' => 'suspended']],
-            ], $admin ?? 'system');
+            ];
+
+            // A suspension that comes from a complaint keeps its reason ONLY on the profile (where it goes with the complaint's
+            // retention): the audit entry points to the complaint instead of repeating the words. Every other suspension is unchanged.
+            $entry = $source === 'complaint' && $complaintId !== null
+                ? ['complaint_id' => $complaintId, 'has_reason' => trim($reason) !== '', 'summary' => "Suspended after complaint #{$complaintId} (the reason is kept with the complaint)"] + $entry
+                : ['reason' => $reason] + $entry;
+
+            Audit::log($source === 'system' ? 'counselor.pa_expired_suspended' : 'counselor.suspended', $locked, $entry, $admin ?? 'system');
         });
 
         DB::afterCommit(function () use ($profile, $reason, $cancelUpcoming, $clientNotices) {
@@ -157,6 +166,7 @@ class CounselorStatusService
                 'suspended_at' => null,
                 'suspended_by' => null,
                 'suspension_source' => null,
+                'suspension_complaint_id' => null,
             ], VerificationStatus::Suspended);
 
             Audit::log('counselor.reactivated', $locked, [

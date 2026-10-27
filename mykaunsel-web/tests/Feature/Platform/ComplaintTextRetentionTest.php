@@ -130,19 +130,101 @@ class ComplaintTextRetentionTest extends CounselorTestCase
         }
     }
 
-    public function test_the_suspension_entry_the_counselors_page_also_writes_is_unchanged_and_still_has_its_reason(): void
+    public function test_a_suspension_from_a_complaint_keeps_its_reason_only_on_the_profile_and_the_audit_entry_points_to_the_complaint(): void
     {
-        // counselor.suspended is shared with the Counselors page and is deliberately left as it was (docs/COMPLAINTS.md).
         Notification::fake();
         $c = $this->complaint();
+        $profile = $this->profile('KB10234');
 
-        $this->as()->post(route('platform.complaints.suspend-counselor', $c), ['reason' => self::REASON, 'sessions' => 'keep']);
+        $this->as()->post(route('platform.complaints.suspend-counselor', $c), ['reason' => self::REASON, 'sessions' => 'keep'])->assertSessionHas('status');
 
-        $shared = AuditLog::where('action', 'counselor.suspended')->where('target_id', $this->profile('KB10234')->id)->sole();
-        $this->assertSame(self::REASON, $shared->metadata['reason']);
-        $this->assertSame('complaint', $shared->metadata['source']);
+        $entry = AuditLog::where('action', 'counselor.suspended')->where('target_id', $profile->id)->sole();
+        $this->assertArrayNotHasKey('reason', $entry->metadata);
+        $this->assertSame('complaint', $entry->metadata['source']);
+        $this->assertSame($c->id, $entry->metadata['complaint_id']);
+        $this->assertTrue($entry->metadata['has_reason']);
+        $this->assertSame("Suspended after complaint #{$c->id} (the reason is kept with the complaint)", $entry->metadata['summary']);
+        $this->assertStringNotContainsString('conduct concerns', json_encode($entry->getAttributes()), 'the words are not in the audit entry');
+        $this->assertSame(['complaint.counselor_suspended'], AuditLog::where('target_type', 'complaint')->where('target_id', $c->id)->pluck('action')->all());
+
+        // The reason is on the profile, linked to the complaint.
+        $profile->refresh();
+        $this->assertSame([self::REASON, $c->id, 'complaint'], [$profile->suspension_reason, $profile->suspension_complaint_id, $profile->suspension_source]);
+
+        // ...and nowhere in the audit log page or its export.
+        $this->assertStringNotContainsString('conduct concerns', $this->as()->get(route('platform.audit-log'))->getContent());
+        $this->assertStringNotContainsString('conduct concerns', $this->as()->get(route('platform.audit-log.export'))->streamedContent());
     }
 
+    public function test_an_ordinary_suspension_from_the_counselors_page_is_exactly_as_before(): void
+    {
+        Notification::fake();
+        $profile = $this->profile('KB10234');
+
+        $this->as()->post(route('platform.counselors.suspend', $profile), ['reason' => 'Repeated late cancellations without notice.', 'sessions' => 'keep'])->assertSessionHas('status');
+
+        $entry = AuditLog::where('action', 'counselor.suspended')->where('target_id', $profile->id)->sole();
+        $this->assertSame('Repeated late cancellations without notice.', $entry->metadata['reason']);
+        $this->assertSame('platform', $entry->metadata['source']);
+        $this->assertArrayNotHasKey('complaint_id', $entry->metadata);
+        $this->assertArrayNotHasKey('has_reason', $entry->metadata);
+        $this->assertNull($profile->fresh()->suspension_complaint_id);
+    }
+
+    public function test_the_counselors_page_shows_the_reason_from_the_profile_and_a_link_and_its_activity_does_not_break(): void
+    {
+        Notification::fake();
+        $c = $this->complaint();
+        $this->as()->post(route('platform.complaints.suspend-counselor', $c), ['reason' => self::REASON, 'sessions' => 'keep']);
+        $profile = $this->profile('KB10234');
+
+        $this->as()->get(route('platform.counselors.show', $profile))->assertOk()
+            ->assertSee(self::REASON)->assertSee("See complaint #{$c->id}")->assertSee(route('platform.complaints.show', $c), false)
+            ->assertSee("Suspended after complaint #{$c->id}");
+
+        $events = app(\App\Services\CounselorTimeline::class)->for($profile)->firstWhere('title', 'Suspended');
+        $this->assertSame("Suspended after complaint #{$c->id} (the reason is kept with the complaint)", $events['detail']);
+    }
+
+    public function test_reactivating_a_counselor_forgets_the_link_to_the_complaint(): void
+    {
+        Notification::fake();
+        $c = $this->complaint();
+        $this->as()->post(route('platform.complaints.suspend-counselor', $c), ['reason' => self::REASON, 'sessions' => 'keep']);
+        $profile = $this->profile('KB10234');
+        $profile->update(['pa_valid_until' => now()->addYear()->toDateString()]);
+
+        $this->as()->post(route('platform.counselors.reactivate', $profile))->assertSessionHas('status');
+
+        $profile->refresh();
+        $this->assertSame([null, null], [$profile->suspension_reason, $profile->suspension_complaint_id]);
+    }
+
+    public function test_when_the_complaint_text_is_erased_so_is_the_reason_of_the_suspension_it_caused_and_no_other(): void
+    {
+        Notification::fake();
+        $c = $this->complaint();
+        $this->as()->post(route('platform.complaints.suspend-counselor', $c), ['reason' => self::REASON, 'sessions' => 'keep']);
+        $this->as()->post(route('platform.complaints.status', $c), ['to' => 'resolved', 'from' => 'open', 'reason' => self::OUTCOME]);
+        $other = $this->profile('KB10567');
+        $other->update(['verification_status' => 'suspended', 'suspension_reason' => 'An unrelated reason.', 'suspension_source' => 'platform']);
+
+        // Not yet: only 2 years after closing.
+        $c->refresh()->forceFill(['closed_at' => now()->subYears(2)])->save();
+        $this->artisan('complaints:purge-text')->assertSuccessful();
+        $this->assertSame(self::REASON, $this->profile('KB10234')->suspension_reason);
+
+        $c->forceFill(['closed_at' => now()->subYears(4)])->save();
+        $this->artisan('complaints:purge-text')->assertSuccessful();
+
+        $erased = $this->profile('KB10234');
+        $this->assertNull($erased->suspension_reason);
+        $this->assertSame(\App\Enums\VerificationStatus::Suspended, $erased->verification_status, 'still suspended; only the words went');
+        $this->assertSame('An unrelated reason.', $other->fresh()->suspension_reason);
+
+        $this->as()->get(route('platform.counselors.show', $erased))->assertOk()
+            ->assertSee('The reason was kept with the complaint and has been erased under its retention rule.')->assertSee("See complaint #{$c->id}");
+    }
     // ---- the page and the activity read the words from the complaint's own records -------------------------------
 
     public function test_the_activity_shows_what_the_admin_wrote_while_it_is_kept_and_a_neutral_line_after_it_is_erased(): void
@@ -172,7 +254,7 @@ class ComplaintTextRetentionTest extends CounselorTestCase
         $warning = ComplaintWarning::create(['complaint_id' => $old->id, 'user_id' => $this->admin->id, 'message' => self::WARNING]);
         $filed = $old->created_at;
 
-        $this->artisan('complaints:purge-text')->expectsOutputToContain('Erased the text of 1 complaints (1 warning messages)')->assertSuccessful();
+        $this->artisan('complaints:purge-text')->expectsOutputToContain('Erased the text of 1 complaints (1 warning messages, 0 notes)')->assertSuccessful();
 
         $old->refresh();
         $this->assertNull($old->description);
@@ -214,7 +296,7 @@ class ComplaintTextRetentionTest extends CounselorTestCase
         $this->artisan('complaints:purge-text')->assertSuccessful();
 
         $log = AuditLog::where('action', 'complaint.text_purged')->sole();
-        $this->assertSame(['system', null, ['complaints' => 2, 'warnings' => 2]], [$log->actor_type, $log->actor_user_id, $log->metadata]);
+        $this->assertSame(['system', null, ['complaints' => 2, 'warnings' => 2, 'notes' => 0]], [$log->actor_type, $log->actor_user_id, $log->metadata]);
         $this->assertStringNotContainsString(self::TEXT, json_encode($log->getAttributes()));
 
         $this->artisan('complaints:purge-text')->expectsOutputToContain('Erased the text of 0 complaints')->assertSuccessful();
@@ -236,16 +318,62 @@ class ComplaintTextRetentionTest extends CounselorTestCase
         $this->assertMatchesRegularExpression('/15\s+3\s+\*\s+\*\s+\*\s+php artisan complaints:purge-text/', Artisan::output());
     }
 
-    public function test_internal_notes_are_not_part_of_the_rule_yet(): void
+    public function test_the_words_of_the_internal_notes_are_erased_too_and_who_wrote_them_and_when_stays(): void
     {
         $c = $this->complaint('resolved', now()->subYears(5));
-        ComplaintReviewNote::create(['complaint_id' => $c->id, 'user_id' => $this->admin->id, 'body' => 'An internal note.']);
+        $note = ComplaintReviewNote::create(['complaint_id' => $c->id, 'user_id' => $this->admin->id, 'body' => 'Spoke to the counselor about the refund.']);
+        $written = $note->created_at;
+        $young = $this->complaint('resolved', now()->subYears(1));
+        $youngNote = ComplaintReviewNote::create(['complaint_id' => $young->id, 'user_id' => $this->admin->id, 'body' => 'A note on a recent complaint.']);
+        $open = $this->complaint('open');
+        $openNote = ComplaintReviewNote::create(['complaint_id' => $open->id, 'user_id' => $this->admin->id, 'body' => 'A note on an open complaint.']);
+
+        $this->artisan('complaints:purge-text', ['--dry-run' => true])->expectsOutputToContain('1 notes')->assertSuccessful();
+        $this->assertSame('Spoke to the counselor about the refund.', $note->fresh()->body, 'a dry run changes nothing');
+
+        $this->artisan('complaints:purge-text')->expectsOutputToContain('(0 warning messages, 1 notes)')->assertSuccessful();
+
+        $note->refresh();
+        $this->assertSame(['', $this->admin->id], [$note->body, $note->user_id]);
+        $this->assertTrue($note->created_at->equalTo($written));
+        $this->assertSame('A note on a recent complaint.', $youngNote->fresh()->body);
+        $this->assertSame('A note on an open complaint.', $openNote->fresh()->body);
+        $this->assertSame(['complaints' => 1, 'warnings' => 0, 'notes' => 1], AuditLog::where('action', 'complaint.text_purged')->sole()->metadata);
+        $this->assertStringNotContainsString('refund', json_encode(AuditLog::where('action', 'complaint.text_purged')->sole()->getAttributes()));
+
+        // Running it again finds nothing more to empty.
+        $this->artisan('complaints:purge-text')->expectsOutputToContain('(0 warning messages, 0 notes)')->assertSuccessful();
+    }
+
+    public function test_an_erased_note_shows_who_wrote_it_and_that_its_words_were_erased(): void
+    {
+        $c = $this->complaint('resolved', now()->subYears(5));
+        ComplaintReviewNote::create(['complaint_id' => $c->id, 'user_id' => $this->admin->id, 'body' => 'Spoke to the counselor about the refund.']);
+        $this->artisan('complaints:purge-text')->assertSuccessful();
+
+        $this->as()->get(route('platform.complaints.show', $c))->assertOk()
+            ->assertSee($this->admin->name)->assertSee('The words of this note were erased under the retention rule.')->assertDontSee('about the refund');
+    }
+
+    public function test_everything_an_admin_wrote_on_a_complaint_goes_with_the_same_rule(): void
+    {
+        Notification::fake();
+        $c = $this->complaint();
+        $this->as()->post(route('platform.complaints.notes.store', $c), ['body' => 'My private note about the matter.']);
+        $this->as()->post(route('platform.complaints.warn', $c), ['reason' => self::WARNING]);
+        $this->as()->post(route('platform.complaints.suspend-counselor', $c), ['reason' => self::REASON, 'sessions' => 'keep']);
+        $this->as()->post(route('platform.complaints.status', $c), ['to' => 'dismissed', 'from' => 'open', 'reason' => self::OUTCOME]);
+        $c->refresh()->forceFill(['closed_at' => now()->subYears(3)->subDay()])->save();
 
         $this->artisan('complaints:purge-text')->assertSuccessful();
 
-        $this->assertSame('An internal note.', ComplaintReviewNote::firstOrFail()->body, 'a decision still to be made (docs/COMPLAINTS.md)');
+        $c->refresh();
+        $this->assertSame([null, null], [$c->description, $c->closing_reason]);
+        $this->assertSame([null], $c->warnings->pluck('message')->all());
+        $this->assertSame([''], $c->reviewNotes->pluck('body')->all());
+        $this->assertNull($this->profile('KB10234')->suspension_reason);
+        $this->assertTrue($c->isTextPurged());
     }
-
     public function test_an_erased_complaint_still_opens_lists_and_searches_and_says_the_text_was_erased(): void
     {
         $c = $this->complaint('resolved', now()->subYears(4));

@@ -67,7 +67,18 @@
         @if ($status === VerificationStatus::Suspended)
             <div class="mt-4 rounded-2xl border border-brand-red/25 bg-brand-red/[.06] px-5 py-4 text-[13.5px] leading-relaxed">
                 <p class="font-bold text-brand-red">Suspended {{ $profile->suspended_at ? 'on '.$local($profile->suspended_at, 'j M Y') : '' }} by {{ $sourceLabel }}{{ $profile->suspender ? ' ('.$profile->suspender->name.')' : '' }}</p>
-                <p class="mt-1 text-brand-ink/80">{{ $profile->suspension_reason ?? 'No reason recorded.' }}</p>
+                <p class="mt-1 text-brand-ink/80">
+                    @if ($profile->suspension_reason !== null)
+                        {{ $profile->suspension_reason }}
+                    @elseif ($profile->suspension_source === 'complaint')
+                        The reason was kept with the complaint and has been erased under its retention rule.
+                    @else
+                        No reason recorded.
+                    @endif
+                    @if ($profile->suspension_complaint_id)
+                        <a href="{{ route('platform.complaints.show', $profile->suspension_complaint_id) }}" class="ml-1 font-semibold text-brand-blue hover:underline">See complaint #{{ $profile->suspension_complaint_id }} →</a>
+                    @endif
+                </p>
             </div>
         @endif
         @if ($profile->rejection_reason && in_array($status, [VerificationStatus::Rejected, VerificationStatus::Pending], true))
