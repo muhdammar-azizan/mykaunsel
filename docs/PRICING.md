@@ -2,7 +2,7 @@
 
 **There is no payment.** Nothing is charged. This page records plans, prices and promo codes and which organization is on which plan. The page says so, and so does this document. Prices shown are **examples** and **exclude tax (SST)**. Out of scope: payment gateway, invoices, receipts, proration, automatic renewal and reminders, what happens when a subscription ends, tax, and a public pricing page.
 
-This file is built in three steps. **Step 1 (done): Plans tab, commission, database, example data. Step 2 (done): Promo Codes tab.** Step 3: giving plans to organizations (Approve modal, "Change plan"), redemption, snapshots.
+This file is built in three steps. **Step 1 (done): Plans tab, commission, database, example data. Step 2 (done): Promo Codes tab. Step 3 (done): giving plans to organizations (Approve modal, "Change plan"), redemption, snapshots.**
 
 ## Business rules
 
@@ -37,6 +37,45 @@ A promo code lowers the price that is **recorded** when a Platform Admin gives a
 - **Audit:** `promo.created` (ids, type, value, dates, limit, applies to), `promo.updated` (old and new for the numeric fields and dates; `code_changed` when the code was renamed), `promo.disabled`, `promo.enabled`, `promo.deleted` (written first, in the same transaction, so it still names the code). `promo.redeemed` is written by step 3.
 - **No public endpoint checks a code.** Codes are applied only by a Platform Admin when giving an organization a plan. All promo routes are inside the Platform Admin area (403 for everyone else; a test lists every route that mentions a code). **If a code field is ever added to a public form it needs rate limiting** (per address and per code) and must give the same answer for a wrong, expired or used-up code.
 - **Example codes** (all start with `EX-`): one Active, one Scheduled, one Expired, one Used up, one Disabled (`PricingSeeder`).
+## Giving an organization a plan (step 3)
+
+Only **active universities and corporates** can be given a plan (clinics have none; a pending organization gets one only through Approve). Nothing is charged: an assignment is a record.
+
+**Where**
+1. **Organizations → a pending organization → Approve.** The plan is optional ("No plan for now" stays allowed). The list shows only **active plans of the organization's type**. The size the applicant stated (`estimated_size`, for example "51–200 members", "5,000+ employees"; older data "10 - 50") is read as a range (`App\Support\OrganizationSize`; "5,000+" means 5,000 up to no limit). A plan that covers **all** of that range is listed first with a **Fits** badge; one that covers only **part** is listed with **Covers part of the stated size** (never hidden); one that covers none of it is not offered. If the size is empty or unreadable every active plan is shown with "Size not stated". If no plan covers the size the form says **"No plan covers this size."** and you can still approve without a plan.
+2. **Organizations → an active organization → Subscription → Change plan** (or "Choose a plan"). Same list, same preview, recorded as a **new assignment**; the old one stays in the history ("Earlier plans").
+
+**Price preview.** Before confirming, the form asks the server (`POST …/plan-preview`, Platform Admin only) and shows plan price, discount and the price that will be recorded, the start and end date, and any warning. The preview does **not** use up a code and saves nothing.
+
+**What is recorded** (`subscription_assignments`): organization, plan, promo code (if any), the plan price, the discount and the final price **as they were that day** (snapshots), start date, end date, and who assigned it. `organizations.current_assignment_id` points to the newest; `subscription_ends_at` is set to the end date. The end date is **one year after the start** (29 February → 28 February). Today is taken in the public timezone (`platform-settings.public_timezone`, Malaysia). **Editing a plan's price or a code later never changes an existing assignment.**
+
+**More members than the plan's maximum** is only a warning on the organization page (and in the preview). Nothing is blocked.
+
+**Promo code redemption**, in the **same database transaction** as the assignment and its audit entries (approving an organization with a plan is also one transaction: if the plan or code is refused the approval is undone, the email is not sent, and the form opens again with the reason):
+1. lock the organization, then the plan, then the code (always in that order);
+2. check the code is not disabled, not used up, not expired, not scheduled, and applies to this organization type;
+3. raise `used_count` with **one conditional statement**: `UPDATE promo_codes SET used_count = used_count + 1 WHERE id = ? AND disabled = 0 AND valid_from <= now AND valid_until >= now AND (usage_limit IS NULL OR used_count < usage_limit)`, and check that exactly one row changed (never read-then-write). If the code was used up in between, nothing is saved;
+4. the discount: **percentage rounded to the nearest sen (half up)**, **fixed amount never above the price**, **final price never below RM 0.00**.
+
+Every **assignment with a code** uses it once, including "Change plan". Changing the plan **without** a code does not use the earlier code again.
+
+**Audit** (ids and numbers only; the target is the organization, or the code for `promo.redeemed`): `organization.plan_assigned` (the first plan) or `organization.plan_changed` (with `previous_assignment_id`), and `promo.redeemed` (organization, assignment, discount, the new `used_count`).
+
+**Reading it back for the Organization Admin portal (not built):** `SubscriptionAssignmentService::currentSubscription($organization)` returns the plan, list price, discount, price, code, dates and whether it ended; `history($organization)` lists all assignments.
+
+**Out of scope (and not built):** what happens when a subscription ends (no read-only period, no blocking of bookings: reported only, nothing in the code does it), renewal, reminders, invoices, tax.
+
+### Two simultaneous redemptions of the last use
+
+- Normal tests (SQLite): the statement above is checked in the query log, a second statement finds no room and changes nothing, and a code used up between the check and the update refuses the redemption.
+- **A real parallel test** (`tests/Feature/Platform/PricingConcurrencyTest.php`): six processes redeem the last use at the same moment. It needs a database that runs transactions side by side, so it is **skipped on SQLite** ("Needs MySQL and PRICING_CONCURRENCY_TEST=1"). To run it, against a **throw-away MySQL/MariaDB database, never a real one** (the test commits its own rows and removes them afterwards, but do not point it at live data):
+
+```
+DB_CONNECTION=mysql DB_HOST=127.0.0.1 DB_PORT=3306 DB_DATABASE=mykaunsel_test DB_USERNAME=root DB_PASSWORD= php artisan migrate --force
+DB_CONNECTION=mysql DB_HOST=127.0.0.1 DB_PORT=3306 DB_DATABASE=mykaunsel_test DB_USERNAME=root DB_PASSWORD= PRICING_CONCURRENCY_TEST=1 php artisan test tests/Feature/Platform/PricingConcurrencyTest.php
+```
+
+  (On Windows PowerShell set the variables with `$env:NAME = 'value'` first.) Exactly one process must answer OK and the other five REFUSED. It was run against MariaDB 10.4 three times with six processes and passed each time; with the locks and the conditional update removed all six succeed, so the test does detect the problem. Note that locking the plan row already makes the redemptions of one plan take turns; the conditional UPDATE is the second, independent protection.
 ## Commission
 
 One percentage for sessions of clinics and independent counselors, 0 to 100 with at most two decimals. The starting value **10** is example data (`config/pricing.php`). Stored in `platform_settings` (key `pricing.commission_percent`) and changed through `PlatformSettings::setCommissionPercent()`: row locked, audit entry in the same transaction, saving the same value again changes and logs nothing. **Record only. No payments are processed.**
@@ -72,11 +111,11 @@ The older keys (`pricing.plan_created`, `pricing.plan_updated`, `pricing.plan_de
 
 ## Example data
 
-`php artisan db:seed --class=PricingSeeder` (part of `db:seed`, local and testing only): three University plans that cover every size (the last, "5,000+", has no upper limit), two Corporate plans (one with no upper limit, one inactive) and five promo codes, one in each state. Every plan name says "(example)" and every code starts with `EX-`.
+`php artisan db:seed --class=PricingSeeder` (part of `db:seed`, local and testing only): three University plans that cover every size (the last, "5,000+", has no upper limit), two Corporate plans (one with no upper limit, one inactive) and five promo codes, one in each state, and one university already on "University Growth (example)" with the code `EX-WELCOME10` (to see that editing the plan's price later does not change what that organization was given). Every plan name says "(example)" and every code starts with `EX-`.
 
 ## Numbers for the Dashboard
 
-`App\Services\PricingStats`: `activePlans()`, `activePromoCodes()`, `subscriptionsEndingWithin(30)`. The Dashboard is not connected to them yet.
+`App\Services\PricingStats`: `activePlans()`, `activePromoCodes()`, `subscriptionsEndingWithin(30)` (organizations whose CURRENT plan ends in the next 30 days). The Dashboard is not connected to them yet.
 
 ## Security
 

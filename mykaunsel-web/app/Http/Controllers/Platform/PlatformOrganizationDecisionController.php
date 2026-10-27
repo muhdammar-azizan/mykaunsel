@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Platform;
 
 use App\Enums\OrgType;
 use App\Exceptions\InvalidOrgTransition;
+use App\Exceptions\PricingChangeBlocked;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Organization;
@@ -17,10 +18,18 @@ class PlatformOrganizationDecisionController extends Controller
     {
         abort_if($organization->org_type === OrgType::Platform, 404);
 
+        $plan = $request->validateWithBag('plan', [
+            'plan_id' => ['nullable', 'integer'],
+            'promo_code' => ['nullable', 'string', 'max:32'],
+        ]);
+
         try {
-            $decisions->approve($organization, $request->user());
+            $decisions->approve($organization, $request->user(), isset($plan['plan_id']) ? (int) $plan['plan_id'] : null, $plan['promo_code'] ?? null);
         } catch (InvalidOrgTransition) {
             return $this->alreadyDecided($organization);
+        } catch (PricingChangeBlocked $e) {
+            // Nothing was saved, not even the approval.
+            return back()->withInput()->withErrors(['plan' => implode(' ', $e->reasons)], 'plan');
         }
 
         return redirect()->route('platform.organizations.show', $organization)

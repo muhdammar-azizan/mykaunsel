@@ -88,7 +88,7 @@ class PlatformOrganizationController extends Controller
         ]);
     }
 
-    public function show(Organization $organization, DomainVerificationService $domains, OrganizationTimeline $timeline)
+    public function show(Organization $organization, DomainVerificationService $domains, OrganizationTimeline $timeline, \App\Services\SubscriptionAssignmentService $plans)
     {
         abort_if($organization->org_type === OrgType::Platform, 404);
 
@@ -126,6 +126,9 @@ class PlatformOrganizationController extends Controller
             'notes' => $organization->reviewNotes()->with('author')->latest()->latest('id')->get(),
             'timeline' => $timeline->for($organization),
             'organization' => $organization,
+            'offer' => $plans->offeredPlans($organization),
+            'planHistory' => $plans->history($organization),
+            'memberCount' => $plans->memberCount($organization),
             'registrant' => $registrant,
             'registrantTitle' => $organization->registrant?->title,
             'emailMatch' => $emailMatch,

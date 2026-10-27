@@ -22,16 +22,26 @@ use Throwable;
  */
 class OrganizationDecisionService
 {
-    /** @throws InvalidOrgTransition when someone else already decided */
-    public function approve(Organization $organization, User $reviewer): void
+    public function __construct(private SubscriptionAssignmentService $plans) {}
+
+    /**
+     * Approve. A plan (and promo code) can be given in the SAME transaction: if the plan or code is refused, the approval is undone too.
+     * No plan stays allowed.
+     *
+     * @throws InvalidOrgTransition when someone else already decided
+     * @throws \App\Exceptions\PricingChangeBlocked when the plan or code cannot be used (nothing is saved)
+     */
+    public function approve(Organization $organization, User $reviewer, ?int $planId = null, ?string $promoCode = null): void
     {
-        DB::transaction(function () use ($organization, $reviewer) {
+        DB::transaction(function () use ($organization, $reviewer, $planId, $promoCode) {
             $organization->transitionTo(OrgStatus::Active, [
                 'reviewed_by' => $reviewer->id,
                 'reviewed_at' => now(),
             ], OrgStatus::Pending);
 
             Audit::log('organization.approved', $organization, $this->statusChange(OrgStatus::Pending, OrgStatus::Active), $reviewer);
+
+            $this->plans->assign($reviewer, $organization, $planId, $promoCode);
         });
 
         DB::afterCommit(fn () => $this->notify($organization, new OrganizationApproved($organization)));

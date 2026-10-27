@@ -25,13 +25,13 @@ return new class extends Migration
             $table->string('active_email')->nullable()->unique();
             $table->string('status', 16)->default('pending');
             $table->foreignId('invited_by_user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('expires_at');
-            $table->timestamp('last_sent_at');
+            $table->dateTime('expires_at');
+            $table->dateTime('last_sent_at');
             $table->unsignedSmallInteger('sent_count')->default(1);
-            $table->timestamp('accepted_at')->nullable();
+            $table->dateTime('accepted_at')->nullable();
             $table->foreignId('accepted_user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('revoked_at')->nullable();
-            $table->timestamp('superseded_at')->nullable();
+            $table->dateTime('revoked_at')->nullable();
+            $table->dateTime('superseded_at')->nullable();
             $table->timestamps();
 
             $table->index('email');

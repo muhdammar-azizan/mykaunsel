@@ -155,6 +155,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::get('/dashboard', [PlatformDashboardController::class, 'index'])->name('dashboard');
         Route::get('/organizations', [PlatformOrganizationController::class, 'index'])->name('organizations');
         Route::get('/organizations/{organization}', [PlatformOrganizationController::class, 'show'])->whereNumber('organization')->name('organizations.show');
+        Route::post('/organizations/{organization}/plan', [\App\Http\Controllers\Platform\PlatformOrganizationPlanController::class, 'change'])->whereNumber('organization')->middleware('throttle:20,1')->name('organizations.plan');
+        Route::post('/organizations/{organization}/plan-preview', [\App\Http\Controllers\Platform\PlatformOrganizationPlanController::class, 'preview'])->whereNumber('organization')->middleware('throttle:60,1')->name('organizations.plan-preview');
         Route::post('/organizations/{organization}/approve', [PlatformOrganizationDecisionController::class, 'approve'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.approve');
         Route::post('/organizations/{organization}/reject', [PlatformOrganizationDecisionController::class, 'reject'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.reject');
         Route::post('/organizations/{organization}/suspend', [PlatformOrganizationDecisionController::class, 'suspend'])->whereNumber('organization')->middleware('throttle:30,1')->name('organizations.suspend');

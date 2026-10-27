@@ -12,6 +12,9 @@
 @endphp
 
 <x-platform-layout :title="$org->name">
+    @if ($errors->hasBag('plan') && $org->subscription_status === \App\Enums\OrgStatus::Pending)
+        <div x-data x-init="$nextTick(() => $dispatch('open-modal', 'approve-org'))"></div>
+    @endif
     <a href="{{ route('platform.organizations', ['tab' => match (true) {
             $org->subscription_status === \App\Enums\OrgStatus::Rejected => 'rejected',
             $org->subscription_status !== \App\Enums\OrgStatus::Pending => 'approved',
@@ -148,11 +151,40 @@
                             <span class="inline-flex rounded-full bg-brand-ink/10 px-2.5 py-0.5 text-[11.5px] font-bold text-brand-ink/65">Not set</span>
                         @endif
                     </x-platform.detail-row>
+                    @if ($org->currentAssignment)
+                        <x-platform.detail-row label="Price recorded">
+                            {{ \App\Support\Money::rm($org->currentAssignment->final_price_cents) }} a year
+                            @if ($org->currentAssignment->discount_cents > 0)
+                                <span class="block text-[12.5px] font-normal text-brand-ink/60">Plan price {{ \App\Support\Money::rm($org->currentAssignment->plan_price_cents) }}, discount {{ \App\Support\Money::rm($org->currentAssignment->discount_cents) }}@if ($org->currentAssignment->promoCode) ({{ $org->currentAssignment->promoCode->code }})@endif</span>
+                            @endif
+                        </x-platform.detail-row>
+                        <x-platform.detail-row label="Started">{{ $org->currentAssignment->starts_on->format('j M Y') }}</x-platform.detail-row>
+                    @endif
                     @if ($org->subscription_ends_at)
                         <x-platform.detail-row label="Ends">{{ $org->subscription_ends_at->format('j M Y') }}</x-platform.detail-row>
                     @endif
+                    <x-platform.detail-row label="Members">{{ number_format($memberCount) }}</x-platform.detail-row>
                 </dl>
-                <p class="mt-2 text-[12.5px] text-brand-ink/50">Plans can be assigned here once Pricing is ready.</p>
+                @if ($org->currentAssignment?->plan->max_members !== null && $org->currentAssignment && $memberCount > $org->currentAssignment->plan->max_members)
+                    <p class="mt-3 rounded-xl border border-brand-yellow/50 bg-brand-yellow/10 px-4 py-2.5 text-[13px] font-semibold text-[#6B4C0C]" role="alert">Warning: {{ number_format($memberCount) }} members is more than the plan's maximum of {{ number_format($org->currentAssignment->plan->max_members) }}. Nothing is blocked.</p>
+                @endif
+                <p class="mt-3 text-[12.5px] text-brand-ink/50">A record only: no payment is processed. Prices exclude tax (SST).</p>
+                @if ($offer['applicable'])
+                    <button type="button" x-data @click="$dispatch('open-modal', 'change-plan')" class="mt-3 inline-flex min-h-[38px] items-center rounded-full border border-brand-ink/20 px-4 text-[13px] font-semibold transition hover:bg-brand-ink/5">{{ $org->currentAssignment ? 'Change plan' : 'Choose a plan' }}</button>
+                @else
+                    <p class="mt-2 text-[12.5px] text-brand-ink/55">Clinics have no plan: their clients pay and the platform keeps a commission.</p>
+                @endif
+
+                @if ($planHistory->count() > 1)
+                    <details class="mt-4">
+                        <summary class="cursor-pointer text-[13px] font-semibold text-brand-blue">Earlier plans ({{ $planHistory->count() - 1 }})</summary>
+                        <ul class="mt-2 space-y-1.5 text-[12.5px] text-brand-ink/70">
+                            @foreach ($planHistory->skip(1) as $old)
+                                <li>{{ $old->plan->name }} · {{ \App\Support\Money::rm($old->final_price_cents) }} · {{ $old->starts_on->format('j M Y') }} to {{ $old->ends_on->format('j M Y') }}</li>
+                            @endforeach
+                        </ul>
+                    </details>
+                @endif
             </x-platform.panel>
 
             <x-platform.panel title="Complaints">
@@ -414,6 +446,8 @@
                     <li class="flex gap-2.5 text-[#6B4C0C]"><span class="mt-0.5">!</span> {{ $unverified }} {{ \Illuminate\Support\Str::plural('domain', $unverified) }} not DNS-verified — members will not be matched by email domain until verified.</li>
                 @endif
             </ul>
+
+            @include('platform.organizations._plan-picker', ['org' => $org, 'offer' => $offer, 'prefix' => 'approve', 'bag' => 'plan', 'allowNone' => true, 'currentPlanId' => null])
         </x-platform.confirm-modal>
 
         {{-- Reject --}}
@@ -451,4 +485,30 @@
     @endif
 
     <x-platform.toast />
+
+    {{-- Change plan (active organizations that can have a plan) --}}
+    @if ($org->subscription_status === \App\Enums\OrgStatus::Active && $offer['applicable'])
+        <x-modal name="change-plan" maxWidth="lg" :show="$errors->hasBag('plan')" focusable>
+            <form method="POST" action="{{ route('platform.organizations.plan', $org) }}" x-data="{ busy: false }" @submit="busy = true" class="p-6">
+                @csrf
+                <h2 class="text-[18px] font-extrabold tracking-tight">{{ $org->currentAssignment ? 'Change plan' : 'Choose a plan' }} for {{ $org->name }}</h2>
+                <ul class="mt-3 space-y-2 text-[13.5px] leading-snug text-brand-ink/75">
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> Recorded as a new plan for one year from today. The earlier plan stays in the history.</li>
+                    <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> Saved in the audit log under your name. <strong>No payment is processed.</strong></li>
+                    @if ($org->currentAssignment)
+                        <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> A promo code is only used if you type one now. The old code is not used again.</li>
+                    @endif
+                </ul>
+
+                @include('platform.organizations._plan-picker', ['org' => $org, 'offer' => $offer, 'prefix' => 'change', 'bag' => 'plan', 'allowNone' => false, 'currentPlanId' => $org->currentAssignment?->plan_id])
+
+                <div class="mt-6 flex justify-end gap-2">
+                    <button type="button" @click="$dispatch('close-modal', 'change-plan')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
+                    <button type="submit" :disabled="busy" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50">
+                        <span x-show="!busy">Save plan</span><span x-show="busy" x-cloak>Saving…</span>
+                    </button>
+                </div>
+            </form>
+        </x-modal>
+    @endif
 </x-platform-layout>

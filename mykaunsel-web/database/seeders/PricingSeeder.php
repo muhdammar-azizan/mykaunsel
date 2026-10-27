@@ -2,8 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Organization;
 use App\Models\PromoCode;
 use App\Models\SubscriptionPlan;
+use App\Models\User;
+use App\Services\SubscriptionAssignmentService;
 use Illuminate\Database\Seeder;
 use RuntimeException;
 
@@ -44,6 +47,19 @@ class PricingSeeder extends Seeder
         }
 
         $this->promoCodes();
+        $this->assignExample();
+    }
+
+    /** One organization already on a plan with a promo code, to see that editing the plan's price later does not change what it was given. */
+    private function assignExample(): void
+    {
+        $admin = User::where('email', 'admin@mykaunsel.com')->first();
+        $org = Organization::where('org_type', 'university')->where('subscription_status', 'active')->orderBy('id')->first();
+        $plan = SubscriptionPlan::where('name', 'University Growth (example)')->first();
+
+        if ($admin && $org && $plan && $org->current_assignment_id === null) {
+            app(SubscriptionAssignmentService::class)->assign($admin, $org, $plan->id, 'EX-WELCOME10');
+        }
     }
 
     private function promoCodes(): void
