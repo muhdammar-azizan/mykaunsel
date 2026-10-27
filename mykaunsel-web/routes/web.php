@@ -232,6 +232,12 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/pricing/plans', [PlatformPricingController::class, 'storePlan'])->middleware('throttle:20,1')->name('pricing.plans.store');
         Route::post('/pricing/plans/{plan}', [PlatformPricingController::class, 'updatePlan'])->whereNumber('plan')->middleware('throttle:30,1')->name('pricing.plans.update');
         Route::post('/pricing/commission', [PlatformPricingController::class, 'updateCommission'])->middleware('throttle:10,1')->name('pricing.commission');
+        // Promo codes are applied only by an admin (when giving an organization a plan). There is NO public route that checks a code.
+        Route::post('/pricing/promos', [PlatformPricingController::class, 'storePromo'])->middleware('throttle:20,1')->name('pricing.promos.store');
+        Route::post('/pricing/promos/{promo}', [PlatformPricingController::class, 'updatePromo'])->whereNumber('promo')->middleware('throttle:30,1')->name('pricing.promos.update');
+        Route::post('/pricing/promos/{promo}/disable', [PlatformPricingController::class, 'disablePromo'])->whereNumber('promo')->middleware('throttle:30,1')->name('pricing.promos.disable');
+        Route::post('/pricing/promos/{promo}/enable', [PlatformPricingController::class, 'enablePromo'])->whereNumber('promo')->middleware('throttle:30,1')->name('pricing.promos.enable');
+        Route::delete('/pricing/promos/{promo}', [PlatformPricingController::class, 'destroyPromo'])->whereNumber('promo')->middleware('throttle:20,1')->name('pricing.promos.destroy');
 
         // Registration Control: close sign-ups (per kind of account or all), maintenance mode and the wording shown for them.
         Route::get('/registration', [PlatformRegistrationController::class, 'index'])->name('registration');

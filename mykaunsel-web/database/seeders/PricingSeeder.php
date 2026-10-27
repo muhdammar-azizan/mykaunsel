@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\PromoCode;
 use App\Models\SubscriptionPlan;
 use Illuminate\Database\Seeder;
 use RuntimeException;
@@ -11,6 +12,7 @@ use RuntimeException;
  *
  * University: three active plans that together cover every size (the last has no upper limit, shown as "5,000+").
  * Corporate: one active plan with no upper limit and one inactive plan (to try "inactive plans are not offered").
+ * Promo codes (every code starts with EX-): one in each state, Active, Scheduled, Expired, Used up and Disabled.
  */
 class PricingSeeder extends Seeder
 {
@@ -37,6 +39,35 @@ class PricingSeeder extends Seeder
                 'price_cents' => $price,
                 'active' => $active,
                 'display_order' => $order,
+                'version' => 1,
+            ]);
+        }
+
+        $this->promoCodes();
+    }
+
+    private function promoCodes(): void
+    {
+        $codes = [
+            // code, type, value, valid from, valid until, limit, used, applies to, disabled
+            ['EX-WELCOME10', 'percent', 10, now()->subMonth(), now()->addMonths(3), 100, 34, 'all', false],
+            ['EX-SPRING27', 'percent', 15, now()->addMonths(2), now()->addMonths(5), null, 0, 'university', false],
+            ['EX-RAYA26', 'percent', 20, now()->subMonths(6), now()->subMonths(4), 200, 41, 'all', false],
+            ['EX-FIRST50', 'fixed', 50000, now()->subMonths(2), now()->addMonths(2), 50, 50, 'corporate', false],
+            ['EX-PAUSED20', 'percent', 20, now()->subMonth(), now()->addMonths(2), null, 3, 'all', true],
+        ];
+
+        foreach ($codes as [$code, $type, $value, $from, $until, $limit, $used, $appliesTo, $disabled]) {
+            PromoCode::create([
+                'code' => $code,
+                'type' => $type,
+                'value' => $value,
+                'valid_from' => $from->copy()->startOfMinute(),
+                'valid_until' => $until->copy()->startOfMinute()->setSecond(59),
+                'usage_limit' => $limit,
+                'used_count' => $used,
+                'applies_to' => $appliesTo,
+                'disabled' => $disabled,
                 'version' => 1,
             ]);
         }

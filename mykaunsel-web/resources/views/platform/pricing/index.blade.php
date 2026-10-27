@@ -4,7 +4,7 @@
 @endphp
 
 <x-platform-layout title="Pricing & Promotions">
-    <x-platform.page-header title="Pricing & Promotions" subtitle="Yearly plans for universities and corporates, and the commission for clinics and independent counselors." />
+    <x-platform.page-header title="Pricing & Promotions" subtitle="Yearly plans for universities and corporates, promo codes, and the commission for clinics and independent counselors." />
 
     <div class="mt-4 rounded-2xl border border-brand-blue/25 bg-brand-blue/[.05] px-5 py-3 text-[13.5px] leading-snug" role="note">
         <strong>No payment is processed.</strong> Plans and prices only record what an organization was given; nothing is charged. The prices on this page are <strong>examples</strong>, and prices exclude tax (SST).
@@ -22,6 +22,9 @@
 
     <x-platform.status-tabs :tabs="$tabs" :active="$tab" label="Pricing sections" />
 
+    @if ($tab === 'promos')
+        @include('platform.pricing._promos')
+    @else
     @foreach ($groups as $type => $groupLabel)
         @php
             $list = $plans->get($type, collect());
@@ -110,4 +113,5 @@
             <p id="commission-note" class="mt-2 text-[12.5px] text-brand-ink/55">Record only. No payments are processed. 10 is an example value.</p>
         </x-platform.panel>
     </section>
+    @endif
 </x-platform-layout>
