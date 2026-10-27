@@ -8,13 +8,15 @@ use App\Models\AuditLog;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
-use App\Notifications\PlatformAdminInvited;
+use App\Models\AdminInvitation;
+use App\Notifications\PlatformAdminInvitation;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Password;
 use Tests\Feature\Counselor\CounselorTestCase;
 
 class PlatformAdminsTest extends CounselorTestCase
 {
+    use AdminInvitationHelpers;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -24,13 +26,6 @@ class PlatformAdminsTest extends CounselorTestCase
     private function platformMembership(User $user): ?Membership
     {
         return Membership::where('user_id', $user->id)->where('org_id', $this->session['current_org_id'])->first();
-    }
-
-    private function addAdmin(string $name = 'Nur Aisyah', string $email = 'aisyah@mykaunsel.com'): User
-    {
-        $this->as()->post(route('platform.admins.store'), ['name' => $name, 'email' => $email])->assertSessionHasNoErrors();
-
-        return User::where('email', strtolower($email))->firstOrFail();
     }
 
     private function logs(string $action)
@@ -43,11 +38,14 @@ class PlatformAdminsTest extends CounselorTestCase
         $orgAdmin = User::where('email', 'afif@umpsa.edu.my')->firstOrFail();
         $umpsa = Organization::where('name', 'like', 'Universiti Malaysia Pahang%')->firstOrFail();
         $target = $this->admin;
+        $invitation = AdminInvitation::create(['name' => 'Someone', 'email' => 'someone@example.com', 'token_hash' => str_repeat('a', 64), 'active_email' => 'someone@example.com', 'status' => 'pending', 'invited_by_user_id' => $this->admin->id, 'expires_at' => now()->addDay(), 'last_sent_at' => now()]);
 
         foreach ([
             fn ($t) => $t->get(route('platform.admins')),
             fn ($t) => $t->post(route('platform.admins.store'), ['name' => 'X Y', 'email' => 'x@y.com']),
-            fn ($t) => $t->post(route('platform.admins.resend', $target)),
+            fn ($t) => $t->post(route('platform.admins.invitations.resend', $invitation)),
+            fn ($t) => $t->post(route('platform.admins.invitations.revoke', $invitation)),
+            fn ($t) => $t->get(route('platform.admins', ['tab' => 'invitations'])),
             fn ($t) => $t->post(route('platform.admins.remove', $target), ['reason' => 'Because I want to.']),
         ] as $call) {
             $this->flushSession();
@@ -55,6 +53,7 @@ class PlatformAdminsTest extends CounselorTestCase
         }
 
         $this->assertNull(User::where('email', 'x@y.com')->first());
+        $this->assertSame('pending', $invitation->fresh()->status->value);
     }
 
     public function test_the_page_lists_the_admins_and_is_in_the_menu(): void
@@ -66,46 +65,30 @@ class PlatformAdminsTest extends CounselorTestCase
         $this->as()->get(route('platform.dashboard'))->assertSee(route('platform.admins'), false);
     }
 
-    public function test_adding_a_new_email_creates_the_account_audits_and_sends_a_set_password_link(): void
+    public function test_inviting_changes_nothing_for_the_person_until_they_accept(): void
     {
-        Notification::fake();
+        [$invitation, $url] = $this->invite('Nur Aisyah', 'Aisyah@MyKaunsel.com');
 
-        $user = $this->addAdmin('Nur Aisyah', 'Aisyah@MyKaunsel.com');
+        $this->assertSame('aisyah@mykaunsel.com', $invitation->email);
+        $this->assertSame('pending', $invitation->status->value);
+        $this->assertNull(User::where('email', 'aisyah@mykaunsel.com')->first(), 'no account yet');
+        $this->assertSame(1, Membership::where('role', 'platform_admin')->count(), 'no role yet');
 
-        $this->assertSame('aisyah@mykaunsel.com', $user->email);
-        $this->assertNotNull($user->email_verified_at);
-        $this->assertSame(MembershipRole::PlatformAdmin, $this->platformMembership($user)->role);
-        $this->assertSame(MembershipStatus::Active, $this->platformMembership($user)->status);
-
-        Notification::assertSentTo($user, PlatformAdminInvited::class, function ($n) use ($user) {
-            $mail = $n->toMail($user);
-
-            return str_contains($mail->actionUrl, '/reset-password/') && ! str_contains(implode(' ', $mail->introLines), 'password:');
-        });
-
-        $log = $this->logs('admin.invited')->sole();
-        $this->assertSame($user->id, (int) $log->target_id);
-        $this->assertSame($this->admin->id, (int) $log->actor_user_id);
+        Notification::assertSentOnDemand(PlatformAdminInvitation::class, fn ($n, $channels, $notifiable) => $notifiable->routes['mail'] === 'aisyah@mykaunsel.com');
+        $this->assertStringContainsString('/admin-invitation/', $url);
+        $this->assertStringContainsString('signature=', $url);
+        $this->assertStringNotContainsString('/reset-password/', $url, 'no longer the password-reset link');
     }
 
-    public function test_the_emailed_link_lets_the_new_admin_choose_a_password(): void
+    public function test_the_invitation_is_audited_by_number_without_the_name_or_the_email(): void
     {
-        Notification::fake();
-        $user = $this->addAdmin();
+        [$invitation] = $this->invite('Nur Aisyah', 'aisyah@mykaunsel.com');
 
-        $url = null;
-        Notification::assertSentTo($user, PlatformAdminInvited::class, function ($n) use ($user, &$url) {
-            $url = $n->toMail($user)->actionUrl;
+        $log = $this->logs('admin.invited')->sole();
+        $this->assertSame(['admin_invitation', $invitation->id, "Admin invitation #{$invitation->id}", $this->admin->id], [$log->target_type, (int) $log->target_id, $log->target_name, (int) $log->actor_user_id]);
 
-            return true;
-        });
-        preg_match('#/reset-password/([^?]+)\?email=#', $url, $m);
-
-        $this->assertTrue(Password::broker()->tokenExists($user, urldecode($m[1])));
-        $this->flushSession();
-        auth()->logout();
-        $this->post('/reset-password', ['token' => urldecode($m[1]), 'email' => $user->email, 'password' => 'A-very-Strong-pass-123', 'password_confirmation' => 'A-very-Strong-pass-123'])
-            ->assertRedirect(route('login'));
+        $row = strtolower(json_encode($log->getAttributes()));
+        $this->assertStringNotContainsString('aisyah', $row);
     }
 
     public function test_adding_validates_name_and_email(): void
@@ -124,22 +107,9 @@ class PlatformAdminsTest extends CounselorTestCase
             ->assertSessionHas('error');
 
         Notification::assertNothingSent();
+        $this->assertSame(0, AdminInvitation::count());
         $this->assertSame(1, Membership::where('role', 'platform_admin')->count());
         $this->assertCount(0, $this->logs('admin.invited'));
-    }
-
-    public function test_an_existing_account_keeps_its_password_and_gets_the_role(): void
-    {
-        Notification::fake();
-        $counselor = $this->profile('KB10234')->user;
-        $hash = $counselor->password;
-
-        $this->as()->post(route('platform.admins.store'), ['name' => 'Ignored Name', 'email' => $counselor->email])->assertSessionHas('status');
-
-        $this->assertSame($hash, $counselor->fresh()->password);
-        $this->assertSame($counselor->name, $counselor->fresh()->name);
-        $this->assertSame(MembershipStatus::Active, $this->platformMembership($counselor)->status);
-        Notification::assertSentTo($counselor, PlatformAdminInvited::class, fn ($n) => $n->toMail($counselor)->actionUrl === route('login'));
     }
 
     public function test_removing_keeps_the_row_blocks_access_and_is_audited_with_the_name(): void
@@ -208,32 +178,21 @@ class PlatformAdminsTest extends CounselorTestCase
         $this->assertCount(1, $this->logs('admin.removed'));
     }
 
-    public function test_a_removed_admin_can_be_added_again(): void
+    public function test_a_removed_admin_can_be_invited_again_and_is_restored_when_they_accept(): void
     {
-        Notification::fake();
         $user = $this->addAdmin();
         $this->as()->post(route('platform.admins.remove', $user), ['reason' => 'Left the team in October.']);
 
-        $this->as()->post(route('platform.admins.store'), ['name' => 'Nur Aisyah', 'email' => $user->email])->assertSessionHas('status');
+        [, $url] = $this->invite('Nur Aisyah', $user->email);
+        $this->assertSame(MembershipStatus::Offboarded, $this->platformMembership($user)->status, 'still removed until they accept');
+
+        // Their account exists with a verified email, so they confirm with their own password.
+        $this->asGuest()->post($url, ['password' => self::NEW_PASSWORD])->assertRedirect(route('login'));
 
         $membership = $this->platformMembership($user);
         $this->assertSame(MembershipStatus::Active, $membership->status);
         $this->assertNull($membership->offboarded_at);
         $this->assertSame(1, Membership::where('user_id', $user->id)->where('org_id', $this->session['current_org_id'])->count());
-    }
-
-    public function test_the_invite_can_be_sent_again_only_until_the_first_sign_in(): void
-    {
-        Notification::fake();
-        $user = $this->addAdmin();
-
-        $this->as()->post(route('platform.admins.resend', $user))->assertSessionHas('status');
-        Notification::assertSentToTimes($user, PlatformAdminInvited::class, 2);
-        $this->assertCount(2, $this->logs('admin.invited'));
-
-        $user->forceFill(['last_login_at' => now()])->save();
-        $this->as()->post(route('platform.admins.resend', $user))->assertSessionHas('error');
-        Notification::assertSentToTimes($user, PlatformAdminInvited::class, 2);
     }
 
     public function test_the_removed_tab_shows_who_and_why(): void

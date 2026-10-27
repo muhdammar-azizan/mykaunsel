@@ -6,17 +6,19 @@ use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
 use App\Exceptions\AdminChangeBlocked;
 use App\Http\Controllers\Controller;
+use App\Models\AdminInvitation;
 use App\Models\Membership;
 use App\Models\User;
+use App\Services\AdminInvitationService;
 use App\Services\PlatformAdminService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/** Platform Admin → Platform Admins: who has access to this area. Adding, re-sending the invite, removing. */
+/** Platform Admin → Platform Admins: who has access to this area. Inviting (and sending again / revoking an invitation) and removing. */
 class PlatformAdminController extends Controller
 {
-    private const TABS = ['active' => 'Active', 'removed' => 'Removed'];
+    private const TABS = ['active' => 'Active', 'invitations' => 'Invitations', 'removed' => 'Removed'];
 
     public function index(Request $request, PlatformAdminService $admins): View
     {
@@ -29,10 +31,15 @@ class PlatformAdminController extends Controller
 
         $counts = [
             'active' => (clone $base)->where('status', MembershipStatus::Active->value)->count(),
+            'invitations' => AdminInvitation::query()->live()->count(),
             'removed' => (clone $base)->where('status', '!=', MembershipStatus::Active->value)->count(),
         ];
 
-        $members = (clone $base)
+        $invitations = $tab === 'invitations'
+            ? AdminInvitation::query()->with('invitedBy:id,name')->orderByDesc('id')->paginate(20)->withQueryString()
+            : null;
+
+        $members = $tab === 'invitations' ? collect() : (clone $base)
             ->with('user:id,name,email,avatar_path,last_login_at,two_factor_secret,two_factor_confirmed_at')
             ->when($tab === 'active',
                 fn ($q) => $q->where('status', MembershipStatus::Active->value),
@@ -46,11 +53,12 @@ class PlatformAdminController extends Controller
             'tabs' => self::TABS,
             'counts' => $counts,
             'members' => $members,
+            'invitations' => $invitations,
             'timezone' => $request->user()->display_timezone,
         ]);
     }
 
-    public function store(Request $request, PlatformAdminService $admins): RedirectResponse
+    public function store(Request $request, AdminInvitationService $invitations): RedirectResponse
     {
         $data = $request->validateWithBag('invite', [
             'name' => ['required', 'string', 'max:100'],
@@ -62,29 +70,35 @@ class PlatformAdminController extends Controller
         ]);
 
         try {
-            $result = $admins->invite($request->user(), $data['name'], $data['email']);
+            $invitation = $invitations->invite($request->user(), $data['name'], $data['email']);
         } catch (AdminChangeBlocked $e) {
             return redirect()->route('platform.admins')->withInput()->with('error', implode(' ', $e->reasons));
         }
 
-        $name = $result['user']->name;
-
-        return redirect()->route('platform.admins')->with('status', match ($result['outcome']) {
-            'created' => "{$name} was added. An email with a link to choose a password has been sent.",
-            'restored' => "{$name} is a Platform Admin again and has been emailed.",
-            default => "{$name} already has a MyKaunsel account and was given Platform Admin access. They have been emailed.",
-        });
+        return redirect()->route('platform.admins', ['tab' => 'invitations'])
+            ->with('status', "An invitation was emailed to {$invitation->email}. It works for ".config('platform-admins.invitation.expires_hours').' hours, and nothing changes for them until they accept.');
     }
 
-    public function resend(Request $request, User $admin, PlatformAdminService $admins): RedirectResponse
+    public function resendInvitation(Request $request, AdminInvitation $invitation, AdminInvitationService $invitations): RedirectResponse
     {
         try {
-            $admins->resendInvite($request->user(), $admin);
+            $invitations->resend($request->user(), $invitation);
         } catch (AdminChangeBlocked $e) {
-            return redirect()->route('platform.admins')->with('error', implode(' ', $e->reasons));
+            return redirect()->route('platform.admins', ['tab' => 'invitations'])->with('error', implode(' ', $e->reasons));
         }
 
-        return redirect()->route('platform.admins')->with('status', "A new link was emailed to {$admin->email}.");
+        return redirect()->route('platform.admins', ['tab' => 'invitations'])->with('status', "A new link was emailed to {$invitation->email}. The old link no longer works.");
+    }
+
+    public function revokeInvitation(Request $request, AdminInvitation $invitation, AdminInvitationService $invitations): RedirectResponse
+    {
+        try {
+            $invitations->revoke($request->user(), $invitation);
+        } catch (AdminChangeBlocked $e) {
+            return redirect()->route('platform.admins', ['tab' => 'invitations'])->with('error', implode(' ', $e->reasons));
+        }
+
+        return redirect()->route('platform.admins', ['tab' => 'invitations'])->with('status', "The invitation to {$invitation->email} was revoked. Its link no longer works.");
     }
 
     public function remove(Request $request, User $admin, PlatformAdminService $admins): RedirectResponse

@@ -8,7 +8,7 @@
 <x-platform-layout title="Platform Admins">
     <div class="flex flex-wrap items-start justify-between gap-4">
         <x-platform.page-header title="Platform Admins" subtitle="People who can sign in to this area. Everything they do is saved in the audit log." />
-        <button type="button" x-data @click="$dispatch('open-modal', 'add-admin')" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep">Add admin</button>
+        <button type="button" x-data @click="$dispatch('open-modal', 'add-admin')" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep">Invite admin</button>
     </div>
 
     @if (session('error'))
@@ -20,8 +20,54 @@
         :active="$tab"
         label="Admin status" />
 
-    <x-platform.table :headings="$tab === 'active' ? ['Admin', 'Sign-in', 'Two-factor', 'Added', ''] : ['Admin', 'Removed', 'Reason', '']"
-        :empty="$tab === 'active' ? 'No active Platform Admins.' : 'Nobody has been removed.'">
+    <x-platform.table :headings="match ($tab) { 'active' => ['Admin', 'Sign-in', 'Two-factor', 'Added', ''], 'invitations' => ['Invited', 'Status', 'Sent', 'Link works until', ''], default => ['Admin', 'Removed', 'Reason', ''] }"
+        :empty="match ($tab) { 'active' => 'No active Platform Admins.', 'invitations' => 'No invitations yet. Use Invite admin to send one.', default => 'Nobody has been removed.' }">
+        @foreach ($invitations ?? [] as $invitation)
+            @php
+                $state = $invitation->displayStatus();
+                $waiting = $invitation->status === \App\Enums\AdminInvitationStatus::Pending;
+                $chip = match ($state->value) {
+                    'pending' => 'bg-brand-blue/10 text-brand-blue',
+                    'accepted' => 'bg-emerald-100 text-emerald-800',
+                    'expired' => 'bg-brand-yellow/20 text-[#8A6210]',
+                    default => 'bg-brand-ink/10 text-brand-ink/70',
+                };
+            @endphp
+            <tr class="border-t border-brand-ink/[.07] align-middle">
+                <td class="px-4 py-3">
+                    <p class="truncate text-[14px] font-semibold">{{ $invitation->name }}</p>
+                    <p class="truncate text-[12.5px] text-brand-ink/60">{{ $invitation->email }}</p>
+                </td>
+                <td class="px-4 py-3 text-[13px]">
+                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11.5px] font-bold {{ $chip }}">{{ $state->label() }}</span>
+                    @if ($state === \App\Enums\AdminInvitationStatus::Accepted)
+                        <p class="mt-1 text-[12px] text-brand-ink/60">{{ $local($invitation->accepted_at, 'j M Y') }}</p>
+                    @elseif ($invitation->status === \App\Enums\AdminInvitationStatus::Revoked)
+                        <p class="mt-1 text-[12px] text-brand-ink/60">{{ $local($invitation->revoked_at, 'j M Y') }}</p>
+                    @endif
+                </td>
+                <td class="px-4 py-3 text-[13px] text-brand-ink/70">
+                    {{ $local($invitation->last_sent_at) }}
+                    <p class="text-[12px] text-brand-ink/55">by {{ $invitation->invitedBy?->name ?? 'a removed account' }}@if ($invitation->sent_count > 1) · sent {{ $invitation->sent_count }} times @endif</p>
+                </td>
+                <td class="px-4 py-3 text-[13px] text-brand-ink/70">{{ $waiting ? $local($invitation->expires_at) : '—' }}</td>
+                <td class="px-4 py-3">
+                    @if ($waiting)
+                        <div class="flex flex-wrap justify-end gap-2">
+                            <form method="POST" action="{{ route('platform.admins.invitations.resend', $invitation) }}" x-data="{ busy: false }" @submit="busy = true">
+                                @csrf
+                                <button type="submit" :disabled="busy" class="inline-flex min-h-[36px] items-center rounded-full border border-brand-ink/20 px-4 text-[12.5px] font-semibold transition hover:bg-brand-ink/5 disabled:opacity-60">Send again</button>
+                            </form>
+                            <form method="POST" action="{{ route('platform.admins.invitations.revoke', $invitation) }}" x-data="{ busy: false }" @submit="busy = true">
+                                @csrf
+                                <button type="submit" :disabled="busy" class="inline-flex min-h-[36px] items-center rounded-full border border-brand-red/40 px-4 text-[12.5px] font-semibold text-brand-red transition hover:bg-brand-red hover:text-white disabled:opacity-60">Revoke</button>
+                            </form>
+                        </div>
+                    @endif
+                </td>
+            </tr>
+        @endforeach
+
         @foreach ($members as $member)
             @php
                 $user = $member->user;
@@ -59,12 +105,6 @@
                     <td class="px-4 py-3 text-[13px] text-brand-ink/70">{{ $local($member->joined_at, 'j M Y') }}</td>
                     <td class="px-4 py-3">
                         <div class="flex flex-wrap justify-end gap-2">
-                            @if ($pending)
-                                <form method="POST" action="{{ route('platform.admins.resend', $user) }}" x-data="{ busy: false }" @submit="busy = true">
-                                    @csrf
-                                    <button type="submit" :disabled="busy" class="inline-flex min-h-[36px] items-center rounded-full border border-brand-ink/20 px-4 text-[12.5px] font-semibold transition hover:bg-brand-ink/5 disabled:opacity-60">Send invite again</button>
-                                </form>
-                            @endif
                             @unless ($isMe)
                                 <button type="button" x-data @click="$dispatch('open-modal', 'remove-admin-{{ $user->id }}')" class="inline-flex min-h-[36px] items-center rounded-full border border-brand-red/40 px-4 text-[12.5px] font-semibold text-brand-red transition hover:bg-brand-red hover:text-white">Remove</button>
                             @endunless
@@ -73,14 +113,18 @@
                 @else
                     <td class="px-4 py-3 text-[13px] text-brand-ink/70">{{ $local($member->offboarded_at, 'j M Y, g:i A') ?? '—' }}</td>
                     <td class="max-w-[360px] px-4 py-3 text-[13px] text-brand-ink/70"><span class="line-clamp-2">{{ $member->offboard_reason ?? '—' }}</span></td>
-                    <td class="px-4 py-3 text-right text-[12.5px] text-brand-ink/55">Use "Add admin" with the same email to give access again.</td>
+                    <td class="px-4 py-3 text-right text-[12.5px] text-brand-ink/55">To give access again, invite them with the same email.</td>
                 @endif
             </tr>
         @endforeach
     </x-platform.table>
 
+    @if ($invitations)
+        <div class="mt-4">{{ $invitations->links() }}</div>
+    @endif
+
     <p class="mt-4 text-[13px] text-brand-ink/60">
-        There must always be at least one active Platform Admin, and you cannot remove yourself.
+        There must always be at least one active Platform Admin, and you cannot remove yourself. Any Platform Admin can invite and remove other admins.
         <a href="{{ route('platform.audit-log', ['category' => 'admins']) }}" class="font-semibold text-brand-blue hover:underline">See the history →</a>
     </p>
 
@@ -88,10 +132,10 @@
     <x-modal name="add-admin" maxWidth="lg" :show="$errors->hasBag('invite')" focusable>
         <form method="POST" action="{{ route('platform.admins.store') }}" x-data="{ busy: false }" @submit="busy = true" class="p-6">
             @csrf
-            <h2 class="text-[18px] font-extrabold tracking-tight">Add a Platform Admin</h2>
+            <h2 class="text-[18px] font-extrabold tracking-tight">Invite a Platform Admin</h2>
             <ul class="mt-3 space-y-2 text-[13.5px] leading-snug text-brand-ink/75">
-                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> A new email gets an account and an email with a link to choose a password. The link works for 60 minutes.</li>
-                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> An email that already has a MyKaunsel account keeps its own password and is given this role as well.</li>
+                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> They get an email with a link that works once, for {{ config('platform-admins.invitation.expires_hours') }} hours. Nothing changes for them until they accept.</li>
+                <li class="flex gap-2.5"><span class="mt-0.5 text-emerald-600">✓</span> Someone with no account chooses a password. Someone who already has an account confirms with their own password (an account whose email was never verified must choose a new one).</li>
                 <li class="flex gap-2.5"><span class="mt-0.5 text-brand-red">!</span> Platform Admins can read complaints and counselor documents. Only add people who should see them.</li>
             </ul>
 
@@ -106,7 +150,7 @@
             <div class="mt-6 flex justify-end gap-2">
                 <button type="button" @click="$dispatch('close-modal', 'add-admin')" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5">Cancel</button>
                 <button type="submit" :disabled="busy" class="inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50">
-                    <span x-show="!busy">Add and send email</span><span x-show="busy" x-cloak>Adding…</span>
+                    <span x-show="!busy">Send invitation</span><span x-show="busy" x-cloak>Sending…</span>
                 </button>
             </div>
         </form>

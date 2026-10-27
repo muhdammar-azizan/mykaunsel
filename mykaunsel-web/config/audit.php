@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AdminInvitation;
 use App\Models\Booking;
 use App\Models\Complaint;
 use App\Models\CounselorProfile;
@@ -123,7 +124,9 @@ return [
 
         // Platform admins
         'admin.invited' => ['category' => 'admins', 'badge' => 'created', 'label' => 'Platform admin invited'],
-        'admin.invite_revoked' => ['category' => 'admins', 'badge' => 'deleted', 'label' => 'Invite revoked'],
+        'admin.invite_resent' => ['category' => 'admins', 'badge' => 'updated', 'label' => 'Platform admin invitation sent again'],
+        'admin.invite_accepted' => ['category' => 'admins', 'badge' => 'approved', 'label' => 'Platform admin invitation accepted'],
+        'admin.invite_revoked' => ['category' => 'admins', 'badge' => 'deleted', 'label' => 'Platform admin invitation revoked'],
         'admin.role_changed' => ['category' => 'admins', 'badge' => 'updated', 'label' => 'Admin role changed'],
         'admin.created_from_console' => ['category' => 'admins', 'badge' => 'created', 'label' => 'Platform admin created from the command line'],
         'admin.removed' => ['category' => 'admins', 'badge' => 'deleted', 'label' => 'Platform admin removed'],
@@ -160,6 +163,7 @@ return [
         LkmDirectorySnapshot::class => 'lkm_record',
         Complaint::class => 'complaint',
         Booking::class => 'booking',
+        AdminInvitation::class => 'admin_invitation',
     ],
 
     // Roles whose name + role are copied into the entry. Everyone else is stored as a bare user id

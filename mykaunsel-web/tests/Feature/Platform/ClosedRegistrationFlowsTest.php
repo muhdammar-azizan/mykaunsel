@@ -145,13 +145,29 @@ class ClosedRegistrationFlowsTest extends CounselorTestCase
 
     // ---- the platform's own invitations are not sign-ups ----------------------------------------------------------------
 
-    public function test_inviting_a_platform_admin_works_while_every_sign_up_is_closed(): void
+    public function test_inviting_and_accepting_a_platform_admin_works_while_every_sign_up_is_closed(): void
     {
         $this->as()->post(route('platform.admins.store'), ['name' => 'New Admin', 'email' => 'new.admin@example.com'])->assertSessionHasNoErrors()->assertSessionHas('status');
+        $invitation = \App\Models\AdminInvitation::where('email', 'new.admin@example.com')->sole();
+        $this->assertNull(User::where('email', 'new.admin@example.com')->first(), 'nothing is created until the person accepts');
+
+        // Accepting creates the account although every sign-up is closed: an invitation is not a sign-up.
+        $url = URL::temporarySignedRoute('admin-invitation.show', now()->addHour(), ['token' => $this->tokenFor($invitation)]);
+        $this->flushSession();
+        $this->app['auth']->forgetGuards();
+        $this->post($url, ['password' => 'Str0ng!Passw0rd', 'password_confirmation' => 'Str0ng!Passw0rd'])->assertRedirect(route('login'));
 
         $this->assertNotNull(User::where('email', 'new.admin@example.com')->first());
     }
 
+    /** The invitation stores only a hash, so give it a token we know. */
+    private function tokenFor(\App\Models\AdminInvitation $invitation): string
+    {
+        $token = bin2hex(random_bytes(32));
+        $invitation->update(['token_hash' => hash('sha256', $token)]);
+
+        return $token;
+    }
     public function test_closing_sign_ups_changes_no_existing_counselor(): void
     {
         $before = CounselorProfile::query()->pluck('verification_status', 'id')->all();

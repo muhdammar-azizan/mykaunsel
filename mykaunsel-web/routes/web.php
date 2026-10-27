@@ -67,6 +67,13 @@ Route::post('/waitlist/unsubscribe/{type}/{hash}/{signature}', [\App\Http\Contro
 Route::get('/email/verify-app/{id}/{hash}', \App\Http\Controllers\Auth\VerifyAppEmailController::class)
     ->whereNumber('id')->middleware(['signed', 'throttle:6,1'])->name('verification.app');
 
+// Accepting an invitation to be a Platform Admin: a signed link from the email, opened by someone who may not have an account yet.
+// The same page answers for a wrong, used, replaced, revoked or expired link. See docs/PLATFORM_ADMINS.md.
+Route::get('/admin-invitation/{token}', [\App\Http\Controllers\AdminInvitationController::class, 'show'])
+    ->where('token', '[a-f0-9]{64}')->middleware('throttle:30,1')->name('admin-invitation.show');
+Route::post('/admin-invitation/{token}', [\App\Http\Controllers\AdminInvitationController::class, 'accept'])
+    ->where('token', '[a-f0-9]{64}')->middleware('throttle:10,1')->name('admin-invitation.accept');
+
 Route::middleware('guest')->group(function () {
     // New routes, not part of the original spec — the entry point for
     // choosing which kind of account to create (individual is hidden on
@@ -215,7 +222,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         // Platform Admins: who has access to this area. Admins are never deleted, only removed (the row and history stay).
         Route::get('/admins', [PlatformAdminController::class, 'index'])->name('admins');
         Route::post('/admins', [PlatformAdminController::class, 'store'])->middleware('throttle:10,1')->name('admins.store');
-        Route::post('/admins/{admin}/resend', [PlatformAdminController::class, 'resend'])->whereNumber('admin')->middleware('throttle:10,1')->name('admins.resend');
+        Route::post('/admins/invitations/{invitation}/resend', [PlatformAdminController::class, 'resendInvitation'])->whereNumber('invitation')->middleware('throttle:10,1')->name('admins.invitations.resend');
+        Route::post('/admins/invitations/{invitation}/revoke', [PlatformAdminController::class, 'revokeInvitation'])->whereNumber('invitation')->middleware('throttle:10,1')->name('admins.invitations.revoke');
         Route::post('/admins/{admin}/remove', [PlatformAdminController::class, 'remove'])->whereNumber('admin')->middleware('throttle:10,1')->name('admins.remove');
 
         // Registration Control: close sign-ups (per kind of account or all), maintenance mode and the wording shown for them.

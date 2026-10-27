@@ -22,6 +22,8 @@ use Tests\Feature\Counselor\CounselorTestCase;
  */
 class PlatformAdminRemovalTest extends CounselorTestCase
 {
+    use AdminInvitationHelpers;
+
     private const REASON = 'Left the team in October.';
 
     protected function setUp(): void
@@ -32,14 +34,8 @@ class PlatformAdminRemovalTest extends CounselorTestCase
 
     private function newAdmin(string $name = 'Nur Aisyah', string $email = 'aisyah@mykaunsel.com'): User
     {
-        Notification::fake();
-        $this->as()->post(route('platform.admins.store'), ['name' => $name, 'email' => $email])->assertSessionHasNoErrors();
-        $user = User::where('email', $email)->firstOrFail();
-        $user->forceFill(['password' => 'Str0ng!Passw0rd'])->save();
-
-        return $user;
+        return $this->addAdmin($name, $email);
     }
-
     private function remove(User $user, ?User $by = null)
     {
         return $this->as($by)->post(route('platform.admins.remove', $user), ['reason' => self::REASON]);
