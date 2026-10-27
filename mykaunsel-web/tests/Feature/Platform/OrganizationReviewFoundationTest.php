@@ -132,7 +132,7 @@ class OrganizationReviewFoundationTest extends TestCase
         }
 
         $this->assertSame('50 - 200', $org->estimated_size);
-        $this->assertNull($org->subscription_tier);
+        $this->assertNull($org->current_assignment_id, 'a new application has no plan yet');
         $this->assertNotNull($org->submitted_at);
         $this->assertNotNull($org->authority_confirmed_at);
         $this->assertSame(1, $org->submission_count);

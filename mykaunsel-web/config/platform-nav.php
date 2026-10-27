@@ -21,7 +21,7 @@ return [
     ['group' => 'Platform', 'items' => [
         ['label' => 'Analytics', 'route' => null, 'icon' => 'M3 3v18h18M7 15l4-5 4 3 5-7'],
         ['label' => 'Audit Log', 'route' => 'platform.audit-log', 'icon' => 'M9 12h6M9 16h6M9 8h6M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'],
-        ['label' => 'Pricing & Promotions', 'route' => null, 'icon' => 'M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM2 10h20M6 15h3'],
+        ['label' => 'Pricing & Promotions', 'route' => 'platform.pricing', 'icon' => 'M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM2 10h20M6 15h3'],
     ]],
     ['group' => 'Settings', 'items' => [
         ['label' => 'Registration Control', 'route' => 'platform.registration', 'icon' => 'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4'],

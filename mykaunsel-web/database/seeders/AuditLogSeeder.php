@@ -222,10 +222,22 @@ class AuditLogSeeder extends Seeder
         $this->log('settings.registration_toggled', null, ['changes' => ['counselor_registration' => ['old' => false, 'new' => true]]], $this->admins[0], $this->when());
         $this->log('settings.maintenance_toggled', null, ['changes' => ['maintenance_mode' => ['old' => false, 'new' => true]], 'reason' => 'Database upgrade window.'], $this->admins[0], $this->when());
 
-        foreach ([['pricing.plan_created', []], ['pricing.plan_updated', ['changes' => ['monthly_price' => ['old' => '199.00', 'new' => '249.00']]]], ['pricing.plan_deleted', []], ['pricing.promo_created', ['code' => 'RAYA25']], ['pricing.promo_updated', ['changes' => ['discount_percent' => ['old' => 20, 'new' => 25]]]], ['pricing.promo_deleted', ['code' => 'OLD10']]] as $i => [$action, $meta]) {
-            $this->log($action, null, $meta, $this->pick($this->admins), $this->when(), ['target_type' => str_contains($action, 'promo') ? 'promo_code' : 'plan', 'target_id' => 3 + $i, 'target_name' => str_contains($action, 'promo') ? ($meta['code'] ?? 'RAYA25') : 'Growth plan']);
+        foreach ([
+            ['plan.created', []],
+            ['plan.updated', ['changes' => ['price_cents' => ['old' => 120000, 'new' => 150000]]]],
+            ['plan.deactivated', []],
+            ['plan.activated', []],
+            ['promo.created', []],
+            ['promo.updated', ['changes' => ['usage_limit' => ['old' => 50, 'new' => 100]]]],
+            ['promo.disabled', []],
+            ['promo.enabled', []],
+            ['promo.redeemed', ['discount_cents' => 24000]],
+            ['promo.deleted', []],
+        ] as $i => [$action, $meta]) {
+            $isPromo = str_starts_with($action, 'promo');
+            $this->log($action, null, $meta, $this->pick($this->admins), $this->when(), ['target_type' => $isPromo ? 'promo_code' : 'plan', 'target_id' => 3 + $i, 'target_name' => $isPromo ? 'RAYA25' : 'Growth plan (example)']);
         }
-
+        $this->log('commission.updated', null, ['changes' => ['commission_percent' => ['old' => 10.0, 'new' => 12.5]]], $this->admins[0], $this->when());
         foreach ([['admin.invited', []], ['admin.invite_revoked', []], ['admin.role_changed', ['changes' => ['role' => ['old' => 'viewer', 'new' => 'admin']]]], ['admin.removed', ['reason' => 'Left the company.']], ['admin.invited', []]] as $i => [$action, $meta]) {
             $this->log($action, $this->admins[1 + ($i % 2)] ?? $this->admins[0], $meta, $this->admins[0], $this->when());
         }

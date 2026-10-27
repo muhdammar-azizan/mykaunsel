@@ -140,9 +140,10 @@
         <div class="mt-5 grid gap-5 lg:grid-cols-2">
             <x-platform.panel title="Subscription">
                 <dl class="mt-2 divide-y divide-brand-ink/[.07]">
-                    <x-platform.detail-row label="Tier">
-                        @if ($org->subscription_tier)
-                            {{ $org->subscription_tier }}
+                    <x-platform.detail-row label="Plan">
+                        @if ($org->currentAssignment)
+                            {{ $org->currentAssignment->plan->name }}
+                            <span class="block text-[12.5px] font-normal text-brand-ink/60">{{ \App\Support\Money::rm($org->currentAssignment->final_price_cents) }} a year</span>
                         @else
                             <span class="inline-flex rounded-full bg-brand-ink/10 px-2.5 py-0.5 text-[11.5px] font-bold text-brand-ink/65">Not set</span>
                         @endif

@@ -44,8 +44,8 @@ class Organization extends Model
         'suspension_reason',
         'suspended_at',
         'review_checklist',
-        'subscription_tier',
         'subscription_ends_at',
+        'current_assignment_id',
         'allow_counselor_freelance',
         'join_method',
         'cancellation_deadline_hours',
@@ -68,6 +68,12 @@ class Organization extends Model
             'join_method' => JoinMethod::class,
             'cancellation_deadline_hours' => 'integer',
         ];
+    }
+
+    /** The plan this organization is on now (the newest assignment). Older ones stay in subscription_assignments as history. */
+    public function currentAssignment(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionAssignment::class, 'current_assignment_id');
     }
 
     public function reviewer(): BelongsTo

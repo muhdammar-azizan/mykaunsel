@@ -61,6 +61,54 @@ class PlatformSettings
         return $this->webIndividualEnabled() && $this->registrationOpen('individual');
     }
 
+    /**
+     * The commission (in percent, 0 to 100, at most two decimals) the platform keeps from sessions of clinics and independent
+     * counselors. A record only: no payment is processed. The example value from config/pricing.php is used until one is saved.
+     */
+    public function commissionPercent(): float
+    {
+        $saved = $this->all()['pricing.commission_percent'] ?? null;
+
+        return is_numeric($saved) ? (float) $saved : (float) config('pricing.commission_percent_default');
+    }
+
+    /**
+     * Save the commission. Written with its audit entry in one transaction; saving the same value again changes nothing and logs nothing.
+     *
+     * @return bool whether it changed
+     *
+     * @throws InvalidArgumentException when it is not a number from 0 to 100 with at most two decimals
+     */
+    public function setCommissionPercent(User $admin, string $percent): bool
+    {
+        $percent = trim($percent);
+
+        if (! preg_match('/^\d{1,3}(\.\d{1,2})?$/', $percent) || (float) $percent > 100) {
+            throw new InvalidArgumentException('The commission must be a number from 0 to 100, with at most two decimals.');
+        }
+
+        $new = round((float) $percent, 2);
+
+        $changed = DB::transaction(function () use ($admin, $new) {
+            $row = $this->lockedRow('pricing.commission_percent', (float) config('pricing.commission_percent_default'));
+            $old = is_numeric($row->value) ? round((float) $row->value, 2) : (float) config('pricing.commission_percent_default');
+
+            if ($old === $new) {
+                return false;
+            }
+
+            $row->update(['value' => $new, 'updated_by' => $admin->id]);
+
+            Audit::log('commission.updated', null, ['changes' => ['commission_percent' => ['old' => $old, 'new' => $new]]], $admin);
+
+            return true;
+        });
+
+        $this->values = null;
+
+        return $changed;
+    }
+
     public function anyRegistrationOpen(): bool
     {
         return in_array(true, $this->registrationStatus(), true);

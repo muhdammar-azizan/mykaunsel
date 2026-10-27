@@ -21,6 +21,13 @@ class AuditCatalogue
             return $known;
         }
 
+        // A key an earlier version wrote: still readable, no longer writable.
+        $legacy = config('audit.legacy_actions', [])[$action] ?? null;
+
+        if ($legacy !== null) {
+            return $legacy;
+        }
+
         return [
             'category' => 'other',
             'badge' => 'updated',

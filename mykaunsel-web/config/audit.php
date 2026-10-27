@@ -6,6 +6,8 @@ use App\Models\Complaint;
 use App\Models\CounselorProfile;
 use App\Models\LkmDirectorySnapshot;
 use App\Models\Organization;
+use App\Models\PromoCode;
+use App\Models\SubscriptionPlan;
 use App\Models\User;
 
 /*
@@ -114,14 +116,21 @@ return [
         'settings.maintenance_auto_reopened' => ['category' => 'settings', 'badge' => 'system', 'label' => 'Maintenance ended automatically'],
         'settings.message_updated' => ['category' => 'settings', 'badge' => 'updated', 'label' => 'Notice wording edited'],
 
-        // Pricing
-        'pricing.plan_created' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Plan created'],
-        'pricing.plan_updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Plan updated'],
-        'pricing.plan_deleted' => ['category' => 'pricing', 'badge' => 'deleted', 'label' => 'Plan deleted'],
-        'pricing.promo_created' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Promo code created'],
-        'pricing.promo_updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Promo code updated'],
-        'pricing.promo_deleted' => ['category' => 'pricing', 'badge' => 'deleted', 'label' => 'Promo code deleted'],
-
+        // Pricing & Promotions (no payment: these record plans, promo codes and who is on which plan).
+        // Metadata holds ids and numbers only. Plans are never deleted, so there is no plan.deleted.
+        'plan.created' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Plan created'],
+        'plan.updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Plan updated'],
+        'plan.activated' => ['category' => 'pricing', 'badge' => 'reactivated', 'label' => 'Plan activated'],
+        'plan.deactivated' => ['category' => 'pricing', 'badge' => 'suspended', 'label' => 'Plan deactivated'],
+        'promo.created' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Promo code created'],
+        'promo.updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Promo code updated'],
+        'promo.enabled' => ['category' => 'pricing', 'badge' => 'reactivated', 'label' => 'Promo code enabled'],
+        'promo.disabled' => ['category' => 'pricing', 'badge' => 'suspended', 'label' => 'Promo code disabled'],
+        'promo.deleted' => ['category' => 'pricing', 'badge' => 'deleted', 'label' => 'Promo code deleted'],
+        'promo.redeemed' => ['category' => 'pricing', 'badge' => 'approved', 'label' => 'Promo code redeemed'],
+        'commission.updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Commission updated'],
+        'organization.plan_assigned' => ['category' => 'organizations', 'badge' => 'updated', 'label' => 'Plan assigned to organization'],
+        'organization.plan_changed' => ['category' => 'organizations', 'badge' => 'updated', 'label' => 'Organization plan changed'],
         // Platform admins
         'admin.invited' => ['category' => 'admins', 'badge' => 'created', 'label' => 'Platform admin invited'],
         'admin.invite_resent' => ['category' => 'admins', 'badge' => 'updated', 'label' => 'Platform admin invitation sent again'],
@@ -156,6 +165,17 @@ return [
     ],
 
     // Model class => short key stored in audit_logs.target_type. Unknown models fall back to snake_case of the class name.
+    // Action keys that older entries in the database may still carry. They are NOT in `actions`, so nothing can write them any
+    // more, but the Audit Log still shows them with a proper label. Old rows are never rewritten.
+    'legacy_actions' => [
+        'pricing.plan_created' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Plan created'],
+        'pricing.plan_updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Plan updated'],
+        'pricing.plan_deleted' => ['category' => 'pricing', 'badge' => 'deleted', 'label' => 'Plan deleted'],
+        'pricing.promo_created' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Promo code created'],
+        'pricing.promo_updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Promo code updated'],
+        'pricing.promo_deleted' => ['category' => 'pricing', 'badge' => 'deleted', 'label' => 'Promo code deleted'],
+    ],
+
     'target_types' => [
         Organization::class => 'organization',
         User::class => 'user',
@@ -164,6 +184,8 @@ return [
         Complaint::class => 'complaint',
         Booking::class => 'booking',
         AdminInvitation::class => 'admin_invitation',
+        SubscriptionPlan::class => 'plan',
+        PromoCode::class => 'promo_code',
     ],
 
     // Roles whose name + role are copied into the entry. Everyone else is stored as a bare user id

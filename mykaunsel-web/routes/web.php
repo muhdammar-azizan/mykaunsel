@@ -43,6 +43,7 @@ use App\Http\Controllers\Platform\PlatformOrganizationController;
 use App\Http\Controllers\Platform\PlatformOrganizationDecisionController;
 use App\Http\Controllers\Platform\PlatformOrganizationDnsController;
 use App\Http\Controllers\Platform\PlatformOrganizationReviewController;
+use App\Http\Controllers\Platform\PlatformPricingController;
 use App\Http\Controllers\Platform\PlatformRegistrationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -225,6 +226,12 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/admins/invitations/{invitation}/resend', [PlatformAdminController::class, 'resendInvitation'])->whereNumber('invitation')->middleware('throttle:10,1')->name('admins.invitations.resend');
         Route::post('/admins/invitations/{invitation}/revoke', [PlatformAdminController::class, 'revokeInvitation'])->whereNumber('invitation')->middleware('throttle:10,1')->name('admins.invitations.revoke');
         Route::post('/admins/{admin}/remove', [PlatformAdminController::class, 'remove'])->whereNumber('admin')->middleware('throttle:10,1')->name('admins.remove');
+
+        // Pricing & Promotions: plans, promo codes and the commission setting. No payment is processed: these are records.
+        Route::get('/pricing', [PlatformPricingController::class, 'index'])->name('pricing');
+        Route::post('/pricing/plans', [PlatformPricingController::class, 'storePlan'])->middleware('throttle:20,1')->name('pricing.plans.store');
+        Route::post('/pricing/plans/{plan}', [PlatformPricingController::class, 'updatePlan'])->whereNumber('plan')->middleware('throttle:30,1')->name('pricing.plans.update');
+        Route::post('/pricing/commission', [PlatformPricingController::class, 'updateCommission'])->middleware('throttle:10,1')->name('pricing.commission');
 
         // Registration Control: close sign-ups (per kind of account or all), maintenance mode and the wording shown for them.
         Route::get('/registration', [PlatformRegistrationController::class, 'index'])->name('registration');
