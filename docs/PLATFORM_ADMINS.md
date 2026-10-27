@@ -13,6 +13,8 @@ Who can sign in to the Platform Admin area. The original spec for this page was 
 - **Removal needs a written reason** (10–1000 characters), kept in the audit log. A removed admin is blocked on their next click (the existing membership check). The person is **not** emailed about being removed.
 - **Not built:** changing an admin's own email/name from here (they do it in Account), seeing what an admin did from this page (use the "See the history" link, which opens the Audit Log filtered to Platform admins).
 
+- **The first admin of a real server** is made in the terminal, not here: `php artisan platform:create-admin` (hidden password prompt, never an argument; the Account page's password rules; e-mail counts as verified). It refuses when an active admin already exists unless `--force`, and refuses an e-mail that already has an account (it never changes an existing account). It is audited as a system action, `admin.created_from_console`, with no e-mail and no password. The demo `PlatformSeeder` (well-known password) **only runs in `local` and `testing`** and stops with an error anywhere else. See `docs/SETUP.md`.
+
 ## What is there
 
 - **List** with two tabs: Active (name, email, last sign-in or "Not signed in yet", two-factor on/off, date added) and Removed (when and why).

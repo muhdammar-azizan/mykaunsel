@@ -51,20 +51,44 @@ DB_PASSWORD=
 
 ## 3. Jalankan Migration dan Seeder
 
+### Pembangunan (local)
+
 ```bash
 php artisan migrate --seed
 ```
 
 Ini akan mencipta semua jadual dan mengisi data demo (organisasi, kaunselor,
-pengguna, dan rekod simulasi LKM). Akaun demo yang tersedia selepas seeding:
+pengguna, dan rekod simulasi LKM). Seeder demo **hanya berjalan pada persekitaran
+`local` dan `testing`**; di tempat lain `PlatformSeeder` berhenti dengan ralat dan
+tidak mencipta apa-apa. Akaun demo yang tersedia selepas seeding:
 
 | Peranan | E-mel | Kata Laluan |
 |---|---|---|
-| Platform Admin | `admin@mykaunsel.com` | `password` |
+| Platform Admin | dicipta oleh `database/seeders/PlatformSeeder.php` (untuk local sahaja) | lihat fail itu |
 | Org Admin (UMPSA) | `afif@umpsa.edu.my` | `password` |
 | Org Admin (Klinik Damai) | `admin@klinikdamai.com` | `password` |
 | Kaunselor (UMPSA) | `ahmad.zulkarnain@umpsa.edu.my` | `password` |
 | Pelajar (UMPSA) | `amalina.zulkifli@adab.umpsa.edu.my` | `password` |
+
+### Pelayan sebenar (staging / produksi)
+
+Jangan jalankan `--seed`. Jalankan migration sahaja, kemudian cipta Platform Admin
+pertama dari terminal:
+
+```bash
+php artisan migrate --force
+php artisan platform:create-admin
+```
+
+Arahan ini bertanya nama, e-mel dan kata laluan (kata laluan ditaip pada input
+tersembunyi dan **tidak boleh** diberikan sebagai argumen, kerana ia akan kekal dalam
+sejarah shell). Kata laluan mengikut polisi yang sama seperti halaman Account
+(sekurang-kurangnya 8 aksara, huruf besar dan kecil, nombor dan simbol). E-mel dianggap
+disahkan. Arahan ini ditolak jika sudah ada Platform Admin aktif (gunakan
+`--force` untuk menambah satu lagi; admin lain dijemput dari Settings > Platform Admins),
+dan ditolak jika e-mel itu sudah ada akaun (ia tidak pernah mengubah akaun sedia ada).
+Tindakan ini direkod dalam audit log sebagai tindakan sistem (`admin.created_from_console`),
+tanpa e-mel dan kata laluan.
 
 ## 4. Pasang Dependency Frontend & Bina Aset
 
@@ -91,4 +115,4 @@ Portal boleh diakses di `http://127.0.0.1:8000`.
 
 - Aplikasi Flutter (`mykaunsel-app/`) belum bermula pembangunan; folder ini
   akan diisi apabila kerja mudah alih dimulakan.
-- Semua kata laluan akaun demo ialah `password`.
+- Kata laluan akaun demo (local sahaja) diketahui umum; jangan sekali-kali guna seeder demo pada pelayan sebenar.

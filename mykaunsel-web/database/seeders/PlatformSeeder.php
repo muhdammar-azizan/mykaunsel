@@ -12,11 +12,20 @@ use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
+/**
+ * Demo Platform Admin for DEVELOPMENT and TESTS only: it has a well-known password. It refuses to run anywhere else
+ * (and creates nothing). The first real admin is made with `php artisan platform:create-admin`.
+ */
 class PlatformSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            throw new RuntimeException('PlatformSeeder creates an admin with a well-known password, so it only runs in the local and testing environments. Create the first Platform Admin with: php artisan platform:create-admin');
+        }
+
         $platform = Organization::create([
             'name' => 'MyKaunsel Platform',
             'org_type' => OrgType::Platform,

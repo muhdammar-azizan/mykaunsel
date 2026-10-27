@@ -125,6 +125,7 @@ return [
         'admin.invited' => ['category' => 'admins', 'badge' => 'created', 'label' => 'Platform admin invited'],
         'admin.invite_revoked' => ['category' => 'admins', 'badge' => 'deleted', 'label' => 'Invite revoked'],
         'admin.role_changed' => ['category' => 'admins', 'badge' => 'updated', 'label' => 'Admin role changed'],
+        'admin.created_from_console' => ['category' => 'admins', 'badge' => 'created', 'label' => 'Platform admin created from the command line'],
         'admin.removed' => ['category' => 'admins', 'badge' => 'deleted', 'label' => 'Platform admin removed'],
 
         // The signed-in user's own account
