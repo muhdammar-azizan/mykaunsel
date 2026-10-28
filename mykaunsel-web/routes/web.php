@@ -229,6 +229,9 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/admins/invitations/{invitation}/revoke', [PlatformAdminController::class, 'revokeInvitation'])->whereNumber('invitation')->middleware('throttle:10,1')->name('admins.invitations.revoke');
         Route::post('/admins/{admin}/remove', [PlatformAdminController::class, 'remove'])->whereNumber('admin')->middleware('throttle:10,1')->name('admins.remove');
 
+        // Analytics: read-only aggregates from AnalyticsService.
+        Route::get('/analytics', [\App\Http\Controllers\Platform\PlatformAnalyticsController::class, 'index'])->middleware('throttle:60,1')->name('analytics');
+
         // Pricing & Promotions: plans, promo codes and the commission setting. No payment is processed: these are records.
         Route::get('/pricing', [PlatformPricingController::class, 'index'])->name('pricing');
         Route::post('/pricing/plans', [PlatformPricingController::class, 'storePlan'])->middleware('throttle:20,1')->name('pricing.plans.store');

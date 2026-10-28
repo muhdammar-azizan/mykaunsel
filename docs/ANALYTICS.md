@@ -2,7 +2,21 @@
 
 Platform-wide **trends**, read-only, **aggregates only**. It never shows an individual's data, chat content or session details. Everything is worked out from the live tables by one class, `App\Services\AnalyticsService`: there is no statistics table that can go stale, and the Dashboard's Platform Stats widget will read the same service, so the numbers always match.
 
-Built in three steps. **Step 1 (done): the service, the range class, the demo seeder and their tests (no page yet).** Step 2: the page. Step 3: export, caching, audit entry for the export, Dashboard hook documentation.
+Built in three steps. **Step 1 (done): the service, the range class, the demo seeder and their tests.** **Step 2 (done): the page.** Step 3: export, caching, audit entry for the export, Dashboard hook documentation.
+
+## The page (Step 2)
+
+`Platform → Analytics`, route `platform.analytics` (`GET /platform/analytics`, platform admins only, 403 for anyone else, throttled). Opening it is **not** audited.
+
+- **Range in the URL:** `?range=7|30|90` or `?range=custom&from=YYYY-MM-DD&to=YYYY-MM-DD`. Default 30 days. An unknown value falls back to the default; an invalid custom range (reversed, future end, over 366 days, not a date, missing, or sent as an array) shows the reason and the default range, never an error page.
+- **Controls:** the three quick ranges, custom dates, "Updated …", **Refresh** (reloads with the same range) and an **Export** button that is shown disabled until Step 3.
+- **Four cards:** approved organizations, approved counselors, sessions completed, no-show rate. Each trend is written as arrow + sign + percent ("▲ +12.5% vs previous 30 days", spoken text for screen readers) and "—" when there is nothing to compare with.
+- **Four charts**, all server-rendered SVG (no chart library): growth (line, two series), sessions by organization type (bars), specializations (bars; "Sessions" and "Offered" views) and application outcomes (stacked bars). Every chart has a plain-text summary, a **View as table** toggle with the same numbers, and a title (hover) on each mark.
+- **Not colour alone:** the two growth lines differ by dash and marker shape and are in the legend; a hidden "<5" bar is a hatched stub (it carries no size); outcome segments have a legend with counts and percentages, and "pending" is hatched.
+- **Distinct empty states:** nothing approved yet; no session data **yet** (the attendance step is not built); no completed sessions **in this period**; no specializations recorded; no applications submitted in this period.
+- **Loading:** a skeleton is shown while a new range or a refresh loads.
+- **Notes shown on the page:** the "live data / demo data" sentence, sessions without a date, "N suspended currently", "N without a recorded approval date", "Rejected is the current status", "Resubmissions: not tracked yet" for organizations, and the "<5" explanation.
+- **Not checked in a browser yet:** the layout, colours and focus rings follow the existing Platform style but have not been looked at on a screen. New Tailwind classes need `npm run build` (or `npm run dev`) to appear.
 
 ## Privacy rules (the page, the table views and the export)
 
