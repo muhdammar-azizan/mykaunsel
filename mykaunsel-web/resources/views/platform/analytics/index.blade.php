@@ -68,9 +68,12 @@
             </nav>
 
             <div class="flex flex-wrap items-center gap-3">
-                <p class="text-[12.5px] text-brand-ink/60" role="status">Updated {{ $generatedAt->diffInSeconds(now(), true) < 60 ? 'just now' : $generatedAt->diffForHumans() }}</p>
-                <a href="{{ request()->fullUrl() }}" @click="loading = true" class="{{ $pill }} border-brand-ink/20 text-brand-ink hover:bg-brand-ink/5">Refresh</a>
-                <button type="button" disabled aria-disabled="true" title="Export is not available yet" class="{{ $pill }} cursor-not-allowed border-brand-ink/15 text-brand-ink/40">Export (coming soon)</button>
+                <p class="text-[12.5px] text-brand-ink/60" role="status" title="Figures are kept for {{ config('analytics.cache_minutes') }} minutes. Refresh works them out again.">Updated {{ $generatedAt->diffInSeconds(now(), true) < 60 ? 'just now' : $generatedAt->diffForHumans() }}</p>
+                <form method="POST" action="{{ route('platform.analytics.refresh', $rangeQuery) }}" @submit="loading = true">
+                    @csrf
+                    <button type="submit" class="{{ $pill }} border-brand-ink/20 text-brand-ink hover:bg-brand-ink/5">Refresh</button>
+                </form>
+                <a href="{{ route('platform.analytics.export', $rangeQuery) }}" class="{{ $pill }} border-brand-ink/20 text-brand-ink hover:bg-brand-ink/5">Export CSV</a>
             </div>
         </div>
 

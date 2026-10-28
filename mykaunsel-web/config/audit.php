@@ -35,6 +35,7 @@ return [
         'account' => ['label' => 'Account'],
         'system' => ['label' => 'System jobs'],
         'audit' => ['label' => 'Audit log'],
+        'analytics' => ['label' => 'Analytics'],
         'auth' => ['label' => 'Sign-in activity', 'hidden_by_default' => true],
         'other' => ['label' => 'Other'],
     ],
@@ -164,6 +165,7 @@ return [
 
         // The audit log itself
         'audit.exported' => ['category' => 'audit', 'badge' => 'exported', 'label' => 'Audit log exported'],
+        'analytics.exported' => ['category' => 'analytics', 'badge' => 'exported', 'label' => 'Analytics exported'],
     ],
 
     // Model class => short key stored in audit_logs.target_type. Unknown models fall back to snake_case of the class name.

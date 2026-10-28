@@ -68,6 +68,34 @@ final class AnalyticsRange
         return $range;
     }
 
+    /**
+     * The range a page address asks for (?range=7|30|90 or ?range=custom&from=…&to=…), the same for the page, Refresh and the export.
+     * A value that is not text (?range[]=x) counts as missing. An unknown quick range falls back to the default. A bad custom range
+     * also falls back to the default, and the reason is returned so the caller can say why.
+     *
+     * @param  array<string, mixed>  $query
+     * @return array{0: self, 1: string, 2: ?string} the range, the choice ("7", "30", "90" or "custom") and the reason it was replaced
+     */
+    public static function fromQuery(array $query, string $timezone, ?CarbonInterface $now = null): array
+    {
+        $text = fn (string $key) => is_string($query[$key] ?? null) ? $query[$key] : null;
+        $presets = array_map('intval', (array) config('analytics.presets'));
+        $default = (int) config('analytics.default_days');
+        $choice = $text('range') ?? (string) $default;
+
+        if ($choice === 'custom') {
+            try {
+                return [self::custom($text('from'), $text('to'), $timezone, $now), 'custom', null];
+            } catch (InvalidAnalyticsRange $e) {
+                return [self::preset($default, $timezone, $now), (string) $default, $e->getMessage()];
+            }
+        }
+
+        $days = in_array((int) $choice, $presets, true) ? (int) $choice : $default;
+
+        return [self::preset($days, $timezone, $now), (string) $days, null];
+    }
+
     /** How many calendar days the range covers (both ends included). */
     public function days(): int
     {

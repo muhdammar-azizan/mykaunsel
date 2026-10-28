@@ -2,14 +2,14 @@
 
 Platform-wide **trends**, read-only, **aggregates only**. It never shows an individual's data, chat content or session details. Everything is worked out from the live tables by one class, `App\Services\AnalyticsService`: there is no statistics table that can go stale, and the Dashboard's Platform Stats widget will read the same service, so the numbers always match.
 
-Built in three steps. **Step 1 (done): the service, the range class, the demo seeder and their tests.** **Step 2 (done): the page.** Step 3: export, caching, audit entry for the export, Dashboard hook documentation.
+Built in three steps. **Step 1 (done): the service, the range class, the demo seeder and their tests.** **Step 2 (done): the page.** **Step 3 (done): CSV export, kept results with Refresh, the audit entry for the export, Dashboard hook documentation.**
 
 ## The page (Step 2)
 
 `Platform → Analytics`, route `platform.analytics` (`GET /platform/analytics`, platform admins only, 403 for anyone else, throttled). Opening it is **not** audited.
 
 - **Range in the URL:** `?range=7|30|90` or `?range=custom&from=YYYY-MM-DD&to=YYYY-MM-DD`. Default 30 days. An unknown value falls back to the default; an invalid custom range (reversed, future end, over 366 days, not a date, missing, or sent as an array) shows the reason and the default range, never an error page.
-- **Controls:** the three quick ranges, custom dates, "Updated …", **Refresh** (reloads with the same range) and an **Export** button that is shown disabled until Step 3.
+- **Controls:** the three quick ranges, custom dates, "Updated …", **Refresh** and **Export CSV** (both described below).
 - **Four cards:** approved organizations, approved counselors, sessions completed, no-show rate. Each trend is written as arrow + sign + percent ("▲ +12.5% vs previous 30 days", spoken text for screen readers) and "—" when there is nothing to compare with.
 - **Four charts**, all server-rendered SVG (no chart library): growth (line, two series), sessions by organization type (bars), specializations (bars; "Sessions" and "Offered" views) and application outcomes (stacked bars). Every chart has a plain-text summary, a **View as table** toggle with the same numbers, and a title (hover) on each mark.
 - **Not colour alone:** the two growth lines differ by dash and marker shape and are in the legend; a hidden "<5" bar is a hatched stub (it carries no size); outcome segments have a legend with counts and percentages, and "pending" is hatched.
@@ -17,6 +17,39 @@ Built in three steps. **Step 1 (done): the service, the range class, the demo se
 - **Loading:** a skeleton is shown while a new range or a refresh loads.
 - **Notes shown on the page:** the "live data / demo data" sentence, sessions without a date, "N suspended currently", "N without a recorded approval date", "Rejected is the current status", "Resubmissions: not tracked yet" for organizations, and the "<5" explanation.
 - **Not checked in a browser yet:** the layout, colours and focus rings follow the existing Platform style but have not been looked at on a screen. New Tailwind classes need `npm run build` (or `npm run dev`) to appear.
+
+## Kept results and Refresh (Step 3)
+
+`App\Services\AnalyticsReports` sits between the page/export and `AnalyticsService`. A worked-out report is **kept for `analytics.cache_minutes` (default 5, env `ANALYTICS_CACHE_MINUTES`; 0 = never kept)** under the key from `AnalyticsRange::cacheKey()`, which is the **dates AND the timezone**: two admins in different zones never share a result, and a new day is a new key. "Updated …" shows when the kept result was made.
+
+- **Refresh** is `POST /platform/analytics/refresh` (a state change, so not a link). It forgets the kept result of **that range only**, then goes back to the page with the same `range/from/to` (nothing else from the address is carried), which works everything out again. It is not audited.
+- Only aggregates are kept (counts, percentages, labels; a hidden small count has no number in it). The cache store is the application's (`CACHE_STORE`); on a server with several machines it must be a shared store (database, Redis) or each machine keeps its own copy.
+- A kept result can be up to 5 minutes behind the live tables. That is why the page and the export both say when they were made.
+
+## CSV export (Step 3)
+
+`GET /platform/analytics/export?range=…` (same address parts as the page, so it exports exactly the range on the screen), platform admins only, **at most 6 downloads a minute**. Opening the page is not audited, but **an export is**.
+
+- **Long format**, UTF-8 with a byte-order mark so Excel reads it: columns `section, label, period, value`. The first lines (section `Report`) give the **date range, timezone, "generated at" (in the admin's timezone)**, the chart period, the small-number rule and the live/demo-data sentence.
+- Sections: approved organizations, approved counselors, sessions completed, no-show rate, platform growth (one line per series per chart period, dated by its first day), sessions by organization type, specializations (sessions), specializations (counselors offering), application outcomes (organizations) and (independent counselors).
+- It is built from **the same report the page shows** (through the kept result), so the two cannot disagree. A figure that does not exist is `n/a` (nothing to compare with, no session data yet); organization resubmissions are `not tracked yet`.
+- **Privacy in the file:** a hidden count is written as `<5` and never as a number; a specialization under the threshold is not named (it is inside "Other (fewer than 5)"); the file holds no name, email, KB number or id.
+- **Formula safety:** a text cell that starts with `=`, `+`, `-` or `@` (or a tab/return, even after spaces) gets a leading apostrophe (same rule as the Audit Log and Waitlist exports). Specialization names are free text typed by counselors, which is why this matters here. Real numbers (a negative trend) are left alone.
+- **An invalid range is not exported as another one.** The admin is sent back to the page, which says what is wrong.
+- **Audit:** `analytics.exported` (category "Analytics", badge "exported"), written before the download starts, with **only** `format`, `from`, `to`, `timezone` and `sections` (the section names, not the `Report` lines). No figures, no labels. No target.
+
+## Connecting the Dashboard (not done on purpose)
+
+The Dashboard's Platform Stats widget is **not rewired**. When it is, it must call these methods of `AnalyticsService` instead of counting by itself:
+
+| Widget figure | Call |
+|---|---|
+| Organizations | `totalOrganizations()` (+ "N suspended" from `report()['cards']['organizations']['suspended']`, or the same count from the service) |
+| Counselors | `totalCounselors()` |
+| Active members | `activeMembers()` |
+| "Completed sessions this month" | `completedSessionsThisMonth($admin->display_timezone)` |
+
+Doing it changes the Dashboard's numbers (see the table in "Conflicts with the Dashboard" below): organizations include suspended ones, counselors include suspended ones, and "Bookings this month" (booking creation date) becomes "Completed sessions this month" (session date), which is 0 until the attendance step exists. Decide that wording before connecting. The widget does not need the kept result: these four methods are cheap single counts.
 
 ## Privacy rules (the page, the table views and the export)
 
@@ -78,7 +111,7 @@ The Dashboard's Platform Stats widget is **not changed** by this work. It counts
 
 ## Files
 
-`app/Services/AnalyticsService.php` (all figures) · `app/Support/AnalyticsRange.php` (the range, buckets, previous period, cache key) · `app/Exceptions/InvalidAnalyticsRange.php` · `config/analytics.php` · `database/seeders/AnalyticsDemoSeeder.php` · tests: `AnalyticsRangeTest`, `AnalyticsServiceTest`, `AnalyticsDemoSeederTest` (+ `AnalyticsFixtures`).
+`app/Services/AnalyticsService.php` (all figures) · `app/Services/AnalyticsReports.php` (kept results, Refresh) · `app/Support/AnalyticsCsv.php` (the export rows, formula guard) · `app/Http/Controllers/Platform/PlatformAnalyticsController.php` · `resources/views/platform/analytics/` and `components/platform/{chart-panel,bar-chart,line-chart}` · `app/Support/AnalyticsRange.php` (the range, buckets, previous period, cache key, `fromQuery`) · `app/Exceptions/InvalidAnalyticsRange.php` · `config/analytics.php` · `database/seeders/AnalyticsDemoSeeder.php` · tests: `AnalyticsRangeTest`, `AnalyticsServiceTest`, `AnalyticsDemoSeederTest`, `AnalyticsPageTest`, `AnalyticsExportTest` (+ `AnalyticsFixtures`).
 
 ## Tests on MySQL
 

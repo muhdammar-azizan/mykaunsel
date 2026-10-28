@@ -231,6 +231,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
 
         // Analytics: read-only aggregates from AnalyticsService.
         Route::get('/analytics', [\App\Http\Controllers\Platform\PlatformAnalyticsController::class, 'index'])->middleware('throttle:60,1')->name('analytics');
+        Route::post('/analytics/refresh', [\App\Http\Controllers\Platform\PlatformAnalyticsController::class, 'refresh'])->middleware('throttle:30,1')->name('analytics.refresh');
+        Route::get('/analytics/export', [\App\Http\Controllers\Platform\PlatformAnalyticsController::class, 'export'])->middleware('throttle:6,1')->name('analytics.export');
 
         // Pricing & Promotions: plans, promo codes and the commission setting. No payment is processed: these are records.
         Route::get('/pricing', [PlatformPricingController::class, 'index'])->name('pricing');

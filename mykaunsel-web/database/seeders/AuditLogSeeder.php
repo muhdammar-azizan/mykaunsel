@@ -326,6 +326,7 @@ class AuditLogSeeder extends Seeder
     {
         $this->log('waitlist.notified', null, ['type' => 'organization', 'sent' => 12, 'failed' => 0], $this->pick($this->admins));
         $this->log('waitlist.notified', null, ['type' => 'counselor', 'sent' => 7, 'failed' => 1], $this->pick($this->admins));
+        $this->log('analytics.exported', null, ['format' => 'csv', 'from' => '2026-09-01', 'to' => '2026-09-30', 'timezone' => 'Asia/Kuala_Lumpur', 'sections' => ['Approved organizations', 'Approved counselors', 'Platform growth']], $this->pick($this->admins));
         $this->log('waitlist.exported', null, ['type' => 'organization', 'count' => 19], $this->pick($this->admins));
         $this->log('waitlist.entry_removed', null, ['entry_id' => 41, 'type' => 'counselor'], $this->pick($this->admins));
         $this->log('waitlist.purged', null, ['notified' => 9, 'waiting' => 2], 'system');
