@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
         WaitlistSeeder::class,
         ComplaintReviewSeeder::class,
         UserSeeder::class,
+        AnalyticsDemoSeeder::class,
         AuditLogSeeder::class,
     ];
 
