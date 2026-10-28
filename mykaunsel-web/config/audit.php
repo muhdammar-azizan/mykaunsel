@@ -135,6 +135,8 @@ return [
         'admin.invited' => ['category' => 'admins', 'badge' => 'created', 'label' => 'Platform admin invited'],
         'admin.invite_resent' => ['category' => 'admins', 'badge' => 'updated', 'label' => 'Platform admin invitation sent again'],
         'admin.invite_accepted' => ['category' => 'admins', 'badge' => 'approved', 'label' => 'Platform admin invitation accepted'],
+        // Written by the scheduler (admin-invitations:purge): old invitations lose their name and email. A count only, never a name or email.
+        'admin.invitations_purged' => ['category' => 'admins', 'badge' => 'system', 'label' => 'Old invitation details erased'],
         'admin.invite_revoked' => ['category' => 'admins', 'badge' => 'deleted', 'label' => 'Platform admin invitation revoked'],
         'admin.role_changed' => ['category' => 'admins', 'badge' => 'updated', 'label' => 'Admin role changed'],
         'admin.created_from_console' => ['category' => 'admins', 'badge' => 'created', 'label' => 'Platform admin created from the command line'],

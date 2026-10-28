@@ -5,8 +5,8 @@ namespace Database\Seeders;
 use App\Enums\AdminInvitationStatus;
 use App\Models\AdminInvitation;
 use App\Models\User;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
-use RuntimeException;
 
 /**
  * Sample invitations for development (one in each state) so the Invitations tab has something to show.
@@ -14,11 +14,11 @@ use RuntimeException;
  */
 class AdminInvitationSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     public function run(): void
     {
-        if (! app()->environment(['local', 'testing'])) {
-            throw new RuntimeException('AdminInvitationSeeder only runs in the local and testing environments.');
-        }
+        $this->refuseOutsideDevelopment();
 
         $sender = User::where('email', 'admin@mykaunsel.com')->first();
 

@@ -304,12 +304,12 @@ class PricingAssignmentTest extends CounselorTestCase
 
         DB::enableQueryLog();
         $this->service()->assign($this->admin, $this->umpsa(), $plan->id, 'SAVE10');
-        $update = collect(DB::getQueryLog())->first(fn ($q) => str_contains($q['query'], 'used_count" = used_count + 1'));
+        $update = collect(DB::getQueryLog())->first(fn ($q) => str_contains(self::plainSql($q['query']), 'used_count = used_count + 1'));
         DB::disableQueryLog();
 
         $this->assertNotNull($update, 'used_count is raised inside the UPDATE, not read and written back');
-        $this->assertStringContainsString('"used_count" < "usage_limit"', $update['query']);
-        $this->assertStringContainsString('"disabled" = ?', $update['query']);
+        $this->assertStringContainsString('used_count < usage_limit', self::plainSql($update['query']));
+        $this->assertStringContainsString('disabled = ?', self::plainSql($update['query']));
         $this->assertSame(5, PromoCode::where('code', 'SAVE10')->value('used_count'));
 
         // A statement that finds no room changes nothing (what a second, simultaneous redemption would hit).
@@ -328,7 +328,7 @@ class PricingAssignmentTest extends CounselorTestCase
         PromoCode::updating(fn () => null);
         DB::listen(function ($query) use ($promo) {
             static $done = false;
-            if (! $done && str_starts_with($query->sql, 'select * from "promo_codes" where "code"')) {
+            if (! $done && str_starts_with(self::plainSql($query->sql), 'select * from promo_codes where code')) {
                 $done = true;
                 DB::table('promo_codes')->where('id', $promo->id)->update(['used_count' => 1]);
             }

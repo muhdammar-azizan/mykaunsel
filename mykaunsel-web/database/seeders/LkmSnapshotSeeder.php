@@ -3,12 +3,17 @@
 namespace Database\Seeders;
 
 use App\Models\LkmDirectorySnapshot;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 
 class LkmSnapshotSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     public function run(): void
     {
+        $this->refuseOutsideDevelopment();
+
         $records = [
             // 12 rekod: status Aktif, PA sah
             ['KB10234', 'PA20345', 'Ahmad Zulkarnain bin Yusof', 'Aktif', '2024-01-01', '2027-06-30', 'ahmad.zulkarnain@example.com', 'Kuantan', 'Pahang'],

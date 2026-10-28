@@ -25,7 +25,7 @@
         @foreach ($invitations ?? [] as $invitation)
             @php
                 $state = $invitation->displayStatus();
-                $waiting = $invitation->status === \App\Enums\AdminInvitationStatus::Pending;
+                $waiting = $invitation->status === \App\Enums\AdminInvitationStatus::Pending && ! $invitation->isErased();
                 $chip = match ($state->value) {
                     'pending' => 'bg-brand-blue/10 text-brand-blue',
                     'accepted' => 'bg-emerald-100 text-emerald-800',
@@ -35,8 +35,13 @@
             @endphp
             <tr class="border-t border-brand-ink/[.07] align-middle">
                 <td class="px-4 py-3">
-                    <p class="truncate text-[14px] font-semibold">{{ $invitation->name }}</p>
-                    <p class="truncate text-[12.5px] text-brand-ink/60">{{ $invitation->email }}</p>
+                    @if ($invitation->isErased())
+                        <p class="text-[13px] italic text-brand-ink/55">Details erased under the retention rule</p>
+                        <p class="text-[12px] text-brand-ink/45">Invitation #{{ $invitation->id }}</p>
+                    @else
+                        <p class="truncate text-[14px] font-semibold">{{ $invitation->name }}</p>
+                        <p class="truncate text-[12.5px] text-brand-ink/60">{{ $invitation->email }}</p>
+                    @endif
                 </td>
                 <td class="px-4 py-3 text-[13px]">
                     <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11.5px] font-bold {{ $chip }}">{{ $state->label() }}</span>

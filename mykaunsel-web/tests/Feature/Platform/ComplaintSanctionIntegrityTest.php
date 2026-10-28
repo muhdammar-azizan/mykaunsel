@@ -169,7 +169,7 @@ class ComplaintSanctionIntegrityTest extends CounselorTestCase
 
         // Record, in order, which rows are read FOR UPDATE and whether a transaction is open at that moment.
         \DB::listen(function ($query) use (&$inside) {
-            if (preg_match('/from "(complaints|counselor_profiles)"/', $query->sql, $m) && ! str_contains($query->sql, 'count(')) {
+            if (preg_match('/from (complaints|counselor_profiles)\b/', self::plainSql($query->sql), $m) && ! str_contains($query->sql, 'count(')) {
                 $inside[] = [$m[1], \DB::transactionLevel() > 0];
             }
         });

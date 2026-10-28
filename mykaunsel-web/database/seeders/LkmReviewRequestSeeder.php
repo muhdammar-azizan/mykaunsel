@@ -8,6 +8,7 @@ use App\Models\CounselorProfile;
 use App\Models\LkmDirectorySnapshot;
 use App\Models\LkmReviewRequest;
 use App\Models\User;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -26,10 +27,14 @@ use Illuminate\Support\Str;
  */
 class LkmReviewRequestSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     private User $admin;
 
     public function run(): void
     {
+        $this->refuseOutsideDevelopment();
+
         if (LkmReviewRequest::query()->exists()) {
             return;
         }

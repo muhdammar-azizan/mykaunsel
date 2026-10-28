@@ -6,6 +6,7 @@ use App\Models\WaitlistEntry;
 use App\Models\WaitlistSuppression;
 use App\Services\WaitlistHasher;
 use App\Services\WaitlistService;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 
 /**
@@ -15,8 +16,12 @@ use Illuminate\Database\Seeder;
  */
 class WaitlistSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     public function run(WaitlistHasher $hasher, WaitlistService $waitlist): void
     {
+        $this->refuseOutsideDevelopment();
+
         if (! $hasher->available() || WaitlistEntry::query()->exists()) {
             return;
         }

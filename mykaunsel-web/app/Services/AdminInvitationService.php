@@ -121,6 +121,10 @@ class AdminInvitationService
         $fresh = DB::transaction(function () use ($actor, $invitation, $plain) {
             $locked = AdminInvitation::query()->lockForUpdate()->findOrFail($invitation->getKey());
 
+            if ($locked->isErased()) {
+                throw new AdminChangeBlocked(['This old invitation no longer holds the name and email it was sent to, so it cannot be sent again. Invite the person again.']);
+            }
+
             if ($locked->status !== AdminInvitationStatus::Pending) {
                 throw new AdminChangeBlocked(['This invitation is '.$locked->status->value.', so it cannot be sent again. Invite the person again if needed.']);
             }
@@ -160,6 +164,10 @@ class AdminInvitationService
     {
         DB::transaction(function () use ($actor, $invitation) {
             $locked = AdminInvitation::query()->lockForUpdate()->findOrFail($invitation->getKey());
+
+            if ($locked->isErased()) {
+                throw new AdminChangeBlocked(['This old invitation has run out and its details were erased. There is nothing to revoke.']);
+            }
 
             if ($locked->status !== AdminInvitationStatus::Pending) {
                 throw new AdminChangeBlocked(['Only an invitation that is waiting can be revoked. This one is '.$locked->status->value.'.']);

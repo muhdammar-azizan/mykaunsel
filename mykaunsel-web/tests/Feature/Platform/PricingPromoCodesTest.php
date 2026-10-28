@@ -472,11 +472,11 @@ class PricingPromoCodesTest extends CounselorTestCase
 
         DB::enableQueryLog();
         app(PromoCodeService::class)->update($this->admin, $promo, 1, $data);
-        $update = collect(DB::getQueryLog())->first(fn ($q) => str_starts_with($q['query'], 'update "promo_codes" set "code"'));
+        $update = collect(DB::getQueryLog())->first(fn ($q) => str_starts_with(self::plainSql($q['query']), 'update promo_codes set code'));
         DB::disableQueryLog();
 
         $this->assertNotNull($update);
-        $this->assertMatchesRegularExpression('/where "promo_codes"\."id" = \? and "version" = \?/', $update['query']);
+        $this->assertMatchesRegularExpression('/where promo_codes\.id = \? and version = \?/', self::plainSql($update['query']));
     }
 
     public function test_a_missing_or_bad_version_is_refused(): void

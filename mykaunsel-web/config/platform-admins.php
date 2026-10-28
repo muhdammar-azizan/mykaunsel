@@ -16,6 +16,10 @@ return [
         // New invitations one admin can send per hour.
         'new_per_admin_per_hour' => 20,
 
+        // How long an accepted, expired or revoked invitation keeps the name and email it was sent to. After this many days they are
+        // erased (the row stays as an empty record). A chosen default, not a legal rule: change it here. See admin-invitations:purge.
+        'retention_days' => (int) env('PLATFORM_ADMIN_INVITATION_RETENTION_DAYS', 30),
+
         // Wrong passwords on the accept page of ONE invitation before it is locked for a while.
         'accept_attempts' => 5,
         'accept_lock_minutes' => 15,

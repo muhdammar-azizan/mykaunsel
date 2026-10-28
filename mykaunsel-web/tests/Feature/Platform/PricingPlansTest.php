@@ -423,11 +423,11 @@ class PricingPlansTest extends CounselorTestCase
         // changes nothing): the UPDATE statement carries "version = ?" in its WHERE.
         DB::enableQueryLog();
         $service->update($this->admin, $plan->fresh(), 2, ['price_cents' => 160000] + $data);
-        $update = collect(DB::getQueryLog())->first(fn ($q) => str_starts_with($q['query'], 'update "subscription_plans"'));
+        $update = collect(DB::getQueryLog())->first(fn ($q) => str_starts_with(self::plainSql($q['query']), 'update subscription_plans'));
         DB::disableQueryLog();
 
         $this->assertNotNull($update);
-        $this->assertMatchesRegularExpression('/where "subscription_plans"\."id" = \? and "version" = \?/', $update['query']);
+        $this->assertMatchesRegularExpression('/where subscription_plans\.id = \? and version = \?/', self::plainSql($update['query']));
         $this->assertSame(160000, $plan->fresh()->price_cents);
     }
 

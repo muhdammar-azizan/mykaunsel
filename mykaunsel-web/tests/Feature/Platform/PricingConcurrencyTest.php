@@ -15,12 +15,8 @@ use Tests\TestCase;
  * transactions side by side (MySQL), so it is SKIPPED on SQLite, which is what the normal test run uses.
  *
  * It does NOT use RefreshDatabase (the child processes must see its rows, which are committed), so it creates its own rows with a
- * unique marker and removes them afterwards. Run it against a throw-away MySQL database, never a real one:
- *
- *     DB_CONNECTION=mysql DB_HOST=127.0.0.1 DB_DATABASE=mykaunsel_test DB_USERNAME=root DB_PASSWORD= \
- *     PRICING_CONCURRENCY_TEST=1 php artisan test tests/Feature/Platform/PricingConcurrencyTest.php
- *
- * (migrate that database first: the same variables with `php artisan migrate`.)
+ * unique marker and removes them afterwards. It runs automatically whenever the suite runs on MySQL/MariaDB, against the throw-away test
+ * database that the suite insists on (see tests/TestCase.php and docs/MYSQL_TESTING.md).
  */
 class PricingConcurrencyTest extends TestCase
 {
@@ -38,8 +34,8 @@ class PricingConcurrencyTest extends TestCase
     {
         parent::setUp();
 
-        if (DB::connection()->getDriverName() !== 'mysql' || ! getenv('PRICING_CONCURRENCY_TEST')) {
-            $this->markTestSkipped('Needs MySQL and PRICING_CONCURRENCY_TEST=1: SQLite cannot run two transactions at the same time. See the class comment for how to run it.');
+        if (! in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)) {
+            $this->markTestSkipped('Needs MySQL/MariaDB: SQLite cannot run two transactions at the same time. It runs by itself when the suite is run on MySQL (docs/MYSQL_TESTING.md).');
         }
     }
 

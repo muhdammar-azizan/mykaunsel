@@ -12,6 +12,7 @@ Artisan::command('inspire', function () {
 Schedule::command('organizations:check-dns')->everyThirtyMinutes()->withoutOverlapping();
 
 // Document retention (ID copies after 30 days, certificates of rejected applications after 90): see config/counselors.php.
+Schedule::command('admin-invitations:purge')->dailyAt('03:45')->withoutOverlapping();
 Schedule::command('counselors:purge-documents')->dailyAt('02:30')->withoutOverlapping();
 
 // Maintenance mode with a reopen time switches itself off when the time arrives (checked every minute).

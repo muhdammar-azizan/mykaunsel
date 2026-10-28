@@ -7,13 +7,18 @@ use App\Enums\MembershipStatus;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     public function run(): void
     {
+        $this->refuseOutsideDevelopment();
+
         $umpsa = Organization::where('name', 'like', 'Universiti Malaysia Pahang%')->firstOrFail();
 
         $students = [

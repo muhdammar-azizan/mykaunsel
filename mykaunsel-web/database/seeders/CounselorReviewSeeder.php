@@ -23,6 +23,7 @@ use App\Models\LkmDirectorySnapshot;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -39,12 +40,16 @@ use Illuminate\Support\Str;
  */
 class CounselorReviewSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     private User $admin;
 
     private Organization $platform;
 
     public function run(): void
     {
+        $this->refuseOutsideDevelopment();
+
         if (CounselorProfile::where('kb_number', 'KB11023')->exists()) {
             return;
         }

@@ -7,8 +7,8 @@ use App\Models\PromoCode;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
 use App\Services\SubscriptionAssignmentService;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
-use RuntimeException;
 
 /**
  * EXAMPLE plans for development (the names say so). The prices are made up. There is no payment on MyKaunsel. Local and testing only.
@@ -19,11 +19,11 @@ use RuntimeException;
  */
 class PricingSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     public function run(): void
     {
-        if (! app()->environment(['local', 'testing'])) {
-            throw new RuntimeException('PricingSeeder holds example prices, so it only runs in the local and testing environments.');
-        }
+        $this->refuseOutsideDevelopment();
 
         $plans = [
             ['university', 'University Starter (example)', 1, 500, 120000, true],

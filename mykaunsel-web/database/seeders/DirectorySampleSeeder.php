@@ -8,6 +8,7 @@ use App\Models\CalendarEntry;
 use App\Models\CounselorProfile;
 use App\Models\Organization;
 use App\Models\PracticeLocation;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 
 /**
@@ -19,6 +20,8 @@ use Illuminate\Database\Seeder;
  */
 class DirectorySampleSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     private const PEOPLE = [
         // kb => [specializations, languages, mode of the slots]
         'KB10234' => [['Stres & Kebimbangan', 'Pelajar & Kerjaya'], ['Bahasa Malaysia', 'English'], 'online'],
@@ -29,6 +32,8 @@ class DirectorySampleSeeder extends Seeder
 
     public function run(): void
     {
+        $this->refuseOutsideDevelopment();
+
         $clinic = Organization::where('name', 'Klinik Kaunseling Damai')->first();
 
         $place = $clinic ? PracticeLocation::firstOrCreate(

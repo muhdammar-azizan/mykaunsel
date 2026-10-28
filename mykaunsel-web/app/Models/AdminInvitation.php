@@ -15,7 +15,7 @@ class AdminInvitation extends Model
 {
     protected $fillable = [
         'name', 'email', 'token_hash', 'active_email', 'status', 'invited_by_user_id', 'expires_at', 'last_sent_at', 'sent_count',
-        'accepted_at', 'accepted_user_id', 'revoked_at', 'superseded_at',
+        'accepted_at', 'accepted_user_id', 'revoked_at', 'superseded_at', 'personal_data_erased_at',
     ];
 
     protected $hidden = ['token_hash'];
@@ -29,6 +29,7 @@ class AdminInvitation extends Model
             'accepted_at' => 'datetime',
             'revoked_at' => 'datetime',
             'superseded_at' => 'datetime',
+            'personal_data_erased_at' => 'datetime',
         ];
     }
 
@@ -61,6 +62,12 @@ class AdminInvitation extends Model
         }
 
         return $this->status;
+    }
+
+    /** The name and email were erased under the retention rule (the row stays as an empty record). */
+    public function isErased(): bool
+    {
+        return $this->personal_data_erased_at !== null;
     }
 
     /** Audit entries name the invitation by number only: no name and no email. */

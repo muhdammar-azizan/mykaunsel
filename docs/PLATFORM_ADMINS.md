@@ -25,7 +25,7 @@ Made in the terminal, not on this page: `php artisan platform:create-admin` (hid
 - **States on the Invitations tab:** Pending, Accepted, Expired (pending and past its time) and Revoked. The tab shows who sent it, when, and how many times.
 - **The email** (`PlatformAdminInvitation`) is queued and sent after the commit (a queue worker must be running). It does **not** say whether the address already has an account.
 - **A link only works while the admin who sent it still has access.** When an admin is removed, the waiting invitations they sent are revoked in the same transaction (`admin.invite_revoked`, cause `sender_removed`); the check is also made when the link is opened. "Send again" by another admin makes that admin the sender.
-- **Personal data:** an invitation keeps the name and email it was sent to (needed to accept it). There is no automatic deletion yet (see "Not built").
+- **Personal data (retention):** an invitation holds the name and email it was sent to only while it is needed. `php artisan admin-invitations:purge` (daily 03:45, `--dry-run` to count) **empties the name and email 30 days after** an invitation was **accepted** (counted from `accepted_at`), **revoked** (`revoked_at`) or **expired** (the day it ran out, `expires_at`, or the day a newer invitation replaced it, `superseded_at`). The row stays as an empty record: id, status, dates, who invited and who accepted (as user ids) and the token hash (not personal), plus `personal_data_erased_at`. The list then shows "Details erased under the retention rule" with no actions, and such an invitation can no longer be sent again (invite the person again). A **pending** invitation still within its time is never touched. One system audit entry `admin.invitations_purged` with the count only (never a name or email). **30 days is a conscious choice, not a legal rule:** change `platform-admins.invitation.retention_days` (env `PLATFORM_ADMIN_INVITATION_RETENTION_DAYS`) and document why.
 
 ### Accepting (the page behind the link)
 
@@ -70,5 +70,5 @@ Every entry is written in the same transaction as the change it records.
 
 - Changing an admin's own email/name from here (they do it in Account).
 - Two tiers / Super Admin, role change, deactivate and reactivate.
-- Deleting old invitations (accepted, revoked and expired rows keep the name and email they were sent to). A retention rule can be added like the one for the waitlist if wanted.
+- Deleting old invitation ROWS: only the name and email are erased (see "Personal data"); the empty record stays.
 - The invitation link is in the queued email job until it is sent; anyone who can read the jobs table in that moment can read it. It is removed when the job finishes.

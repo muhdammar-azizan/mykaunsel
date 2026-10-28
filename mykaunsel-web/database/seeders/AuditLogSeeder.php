@@ -12,6 +12,7 @@ use App\Models\AuditLog;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -26,6 +27,8 @@ use Illuminate\Support\Str;
  */
 class AuditLogSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     private const SET = 'audit-demo';
 
     private const AGENTS = [
@@ -49,6 +52,8 @@ class AuditLogSeeder extends Seeder
 
     public function run(): void
     {
+        $this->refuseOutsideDevelopment();
+
         if (AuditLog::query()->where('metadata->sample_set', self::SET)->exists()) {
             return;
         }

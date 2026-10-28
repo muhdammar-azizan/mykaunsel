@@ -72,7 +72,7 @@ tidak mencipta apa-apa. Akaun demo yang tersedia selepas seeding:
 
 ### Pelayan sebenar (staging / produksi)
 
-Jangan jalankan `--seed`. Jalankan migration sahaja, kemudian cipta Platform Admin
+Jangan jalankan `--seed`. Semua seeder yang mencipta data demo (akaun berkata laluan diketahui, organisasi, kaunselor, aduan, harga contoh dan lain-lain) **berhenti dengan ralat yang jelas sebelum mencipta apa-apa** jika persekitaran bukan `local` atau `testing` (`Database\Seeders\Concerns\RefusesOutsideDevelopment`), dan `DatabaseSeeder` tidak memanggil satu pun di luar persekitaran itu. Ujian `SeederGuardTest` memastikan seeder baharu tidak boleh terlupa dipagar. Seeder asas tanpa akaun (tiada buat masa ini) akan disenaraikan dalam `DatabaseSeeder::BASE_SEEDERS`. Jalankan migration sahaja, kemudian cipta Platform Admin
 pertama dari terminal:
 
 ```bash
@@ -89,6 +89,8 @@ disahkan. Arahan ini ditolak jika sudah ada Platform Admin aktif (gunakan
 dan ditolak jika e-mel itu sudah ada akaun (ia tidak pernah mengubah akaun sedia ada).
 Tindakan ini direkod dalam audit log sebagai tindakan sistem (`admin.created_from_console`),
 tanpa e-mel dan kata laluan.
+
+Sebelum setiap deploy, jalankan seluruh suite ujian pada MySQL (ujian biasa guna SQLite, yang berbeza dalam perkara kecil tetapi nyata): `bash tool/test-on-mysql.sh`. Lihat [`MYSQL_TESTING.md`](MYSQL_TESTING.md).
 
 ## 4. Pasang Dependency Frontend & Bina Aset
 

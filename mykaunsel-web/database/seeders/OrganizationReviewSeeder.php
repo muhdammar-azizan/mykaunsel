@@ -17,6 +17,7 @@ use App\Models\OrgReviewNote;
 use App\Models\Organization;
 use App\Models\PracticeLocation;
 use App\Models\User;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -26,9 +27,13 @@ use Illuminate\Support\Facades\Hash;
  */
 class OrganizationReviewSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     /** Safe to run again: each group is skipped when its first organization already exists. */
     public function run(): void
     {
+        $this->refuseOutsideDevelopment();
+
         $platformAdmin = User::whereHas('memberships', fn ($q) => $q->where('role', MembershipRole::PlatformAdmin))->first();
 
         if (! Organization::where('name', 'Universiti Teknologi Contoh')->exists()) {

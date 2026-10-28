@@ -19,6 +19,7 @@ use App\Models\CounselorProfile;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -31,10 +32,14 @@ use Illuminate\Support\Str;
  */
 class ComplaintReviewSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     private User $admin;
 
     public function run(): void
     {
+        $this->refuseOutsideDevelopment();
+
         if (Complaint::where('description', 'like', '[Sample]%')->exists()) {
             return;
         }

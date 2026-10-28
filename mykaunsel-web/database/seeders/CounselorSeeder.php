@@ -14,13 +14,18 @@ use App\Models\LkmDirectorySnapshot;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class CounselorSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     public function run(): void
     {
+        $this->refuseOutsideDevelopment();
+
         $platform = Organization::where('org_type', 'platform')->firstOrFail();
         $umpsa = Organization::where('name', 'like', 'Universiti Malaysia Pahang%')->firstOrFail();
         $klinikDamai = Organization::where('name', 'Klinik Kaunseling Damai')->firstOrFail();

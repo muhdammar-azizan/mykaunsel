@@ -69,10 +69,11 @@ class PlatformDashboardTest extends TestCase
 
     public function test_non_platform_admin_is_forbidden(): void
     {
-        [$admin] = $this->platformAdminSession();
+        [$admin, $session] = $this->platformAdminSession();
 
+        // The admin really belongs to this organization, but is acting as a student in it: not allowed into the Platform area.
         $this->actingAs($admin)
-            ->withSession(['current_org_id' => 1, 'current_role' => 'student'])
+            ->withSession(['current_org_id' => $session['current_org_id'], 'current_role' => 'student'])
             ->get(route('platform.dashboard'))
             ->assertForbidden();
     }

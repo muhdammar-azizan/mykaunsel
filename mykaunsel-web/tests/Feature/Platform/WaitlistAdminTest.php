@@ -295,7 +295,7 @@ class WaitlistAdminTest extends CounselorTestCase
 
         // Another admin's run gets to the first address between this run listing it and claiming it.
         \DB::listen(function ($query) use (&$stolen, $first) {
-            if (! $stolen && str_contains($query->sql, 'from "waitlist_entries"') && str_contains($query->sql, 'order by')) {
+            if (! $stolen && str_contains(self::plainSql($query->sql), 'from waitlist_entries') && str_contains($query->sql, 'order by')) {
                 $stolen = true;
                 \DB::table('waitlist_entries')->where('id', $first->id)->update(['status' => 'notified', 'notified_at' => now(), 'emailed_at' => now()]);
             }

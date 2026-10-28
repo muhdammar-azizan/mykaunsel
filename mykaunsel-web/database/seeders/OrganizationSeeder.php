@@ -14,13 +14,18 @@ use App\Models\OrgInviteCode;
 use App\Models\Organization;
 use App\Models\PracticeLocation;
 use App\Models\User;
+use Database\Seeders\Concerns\RefusesOutsideDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class OrganizationSeeder extends Seeder
 {
+    use RefusesOutsideDevelopment;
+
     public function run(): void
     {
+        $this->refuseOutsideDevelopment();
+
         // UMPSA
         $umpsa = Organization::create([
             'name' => 'Universiti Malaysia Pahang Al-Sultan Abdullah (UMPSA)',
