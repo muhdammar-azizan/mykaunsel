@@ -33,6 +33,8 @@ class AuditLogFilters
             'q' => ['nullable', 'string', 'max:100'],
             'category' => ['nullable', 'string', Rule::in(array_keys(config('audit.categories', [])))],
             'action' => ['nullable', 'string', 'max:100', 'regex:/^[a-z0-9_.]+$/'],
+            // Several actions at once, written as a comma list of known action keys (the Dashboard's "View all approvals" link uses it).
+            'actions' => ['nullable', 'string', 'max:400', 'regex:/^[a-z0-9_.]+(,[a-z0-9_.]+){0,9}$/'],
             'actor' => ['nullable', 'string', 'regex:/^(system|[1-9][0-9]{0,18})$/'],
             'target_type' => ['nullable', 'string', 'max:40', 'regex:/^[a-z0-9_]+$/'],
             'organization' => ['nullable', 'integer', 'min:1'],
@@ -44,6 +46,7 @@ class AuditLogFilters
         ], [
             'category.in' => 'Unknown category.',
             'action.regex' => 'Unknown action.',
+            'actions.regex' => 'Unknown actions.',
             'actor.regex' => 'Unknown admin.',
             'range.in' => 'Unknown date range.',
             'from.date_format' => 'The start date must look like 2026-10-22.',
@@ -136,6 +139,9 @@ class AuditLogFilters
         if (isset($this->values['action'])) {
             $add('Action', AuditCatalogue::describe($this->values['action'])['label'], ['action']);
         }
+        if (isset($this->values['actions'])) {
+            $add('Actions', collect(explode(',', $this->values['actions']))->map(fn ($key) => AuditCatalogue::describe($key)['label'])->implode(', '), ['actions']);
+        }
         if (isset($this->values['actor'])) {
             $actor = $this->values['actor'];
             $add('Admin', $actor === 'system' ? 'System' : ($actorNames[$actor] ?? "User #{$actor}"), ['actor']);
@@ -188,6 +194,10 @@ class AuditLogFilters
 
         if (isset($v['action'])) {
             $query->where('action', $v['action']);
+        }
+
+        if (isset($v['actions'])) {
+            $query->whereIn('action', explode(',', $v['actions']));
         }
 
         if (isset($v['actor'])) {

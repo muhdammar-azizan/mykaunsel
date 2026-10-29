@@ -249,9 +249,7 @@ class CounselorProfile extends Model
     /** 'ok' → under 5 days, 'amber' → 5+ days, 'red' → 8+ days (same thresholds as organizations). */
     public function waitingTone(): string
     {
-        $days = $this->waitingDays();
-
-        return $days >= 8 ? 'red' : ($days >= 5 ? 'amber' : 'ok');
+        return \App\Support\WaitingTime::tone($this->waitingDays());
     }
 
     // ---- scopes ----------------------------------------------------------------------------

@@ -101,8 +101,7 @@ class AnalyticsService
                 // Completed or no-show bookings that have no calendar entry, so no date: they cannot be placed in any range.
                 'sessions_without_date' => DB::table('bookings')->whereNull('calendar_entry_id')->whereIn('status', [BookingStatus::Completed->value, BookingStatus::NoShow->value])->count(),
                 // Has any session ever been marked completed or no-show (with a date)? false = "No session data yet".
-                'any_session_outcomes' => DB::table('bookings')->join('calendar_entries', 'calendar_entries.id', '=', 'bookings.calendar_entry_id')
-                    ->whereIn('bookings.status', [BookingStatus::Completed->value, BookingStatus::NoShow->value])->exists(),
+                'any_session_outcomes' => $this->anySessionOutcomes(),
             ],
         ];
     }
@@ -123,13 +122,25 @@ class AnalyticsService
         return $this->countAsOf($this->approvedCounselors(), $asOf ?? now());
     }
 
-    /** Active memberships of students, staff and employees (the same rule the Dashboard uses today). */
+    /**
+     * Active members: DISTINCT PEOPLE (a user who belongs to two organizations counts once) with an active student, staff or employee
+     * membership in a real organization (the virtual platform organization is left out).
+     */
     public function activeMembers(): int
     {
         return Membership::query()
             ->where('status', MembershipStatus::Active->value)
             ->whereIn('role', [MembershipRole::Student->value, MembershipRole::Staff->value, MembershipRole::Employee->value])
-            ->count();
+            ->whereIn('org_id', Organization::query()->where('org_type', '!=', OrgType::Platform->value)->select('id'))
+            ->distinct()
+            ->count('user_id');
+    }
+
+    /** Has any session ever been marked completed or no-show (with a session date)? false = the page says "No session data yet". */
+    public function anySessionOutcomes(): bool
+    {
+        return DB::table('bookings')->join('calendar_entries', 'calendar_entries.id', '=', 'bookings.calendar_entry_id')
+            ->whereIn('bookings.status', [BookingStatus::Completed->value, BookingStatus::NoShow->value])->exists();
     }
 
     /** Completed sessions this calendar month IN THE GIVEN TIMEZONE, counted by SESSION date (not by when the booking was made). */

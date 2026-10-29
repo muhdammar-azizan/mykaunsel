@@ -189,9 +189,7 @@ class Organization extends Model
     /** 'ok' → under 5 days, 'amber' → 5+ days, 'red' → 8+ days. */
     public function waitingTone(): string
     {
-        $days = $this->waitingDays();
-
-        return $days >= 8 ? 'red' : ($days >= 5 ? 'amber' : 'ok');
+        return \App\Support\WaitingTime::tone($this->waitingDays());
     }
 
     /** 'not_applicable' (clinic / no domain), 'verified' (all domains), or 'skipped' (some not verified). Needs orgDomains. */
