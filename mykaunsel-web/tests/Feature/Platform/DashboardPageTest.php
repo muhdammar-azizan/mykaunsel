@@ -301,13 +301,18 @@ class DashboardPageTest extends TestCase
         }
     }
 
-    public function test_the_bell_is_switched_off_and_shows_no_false_dot(): void
+    public function test_the_bell_is_on_and_shows_a_badge_only_when_something_is_unread(): void
     {
         $html = $this->dashboard()->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('/<button type="button" disabled aria-disabled="true" aria-label="Notifications \(coming soon\)"/', $html);
-        $this->assertStringNotContainsString('border-2 border-cream bg-brand-red', $html, 'no red dot claiming something is waiting');
-        $this->assertStringContainsString('Notifications — coming soon', $html);
+        $this->assertStringNotContainsString('Notifications (coming soon)', $html, 'the bell is no longer switched off');
+        $this->assertStringContainsString('aria-label="Notifications"', $html);
+        $this->assertMatchesRegularExpression('/<span data-bell-badge[^>]*class="hidden [^"]*"[^>]*><\/span>/', $html, 'no number, no dot, when nothing is unread');
+
+        // Written directly: the full tests of the bell are in tests/Feature/Notifications.
+        \App\Models\UserNotification::create(['recipient_user_id' => $this->admin->id, 'type' => 'system.maintenance_auto_reopened', 'occurrence_key' => 'x', 'occurred_at' => now()]);
+
+        $this->assertStringContainsString('aria-label="Notifications, 1 unread"', $this->dashboard()->getContent());
     }
 
     public function test_the_search_palette_lists_the_sidebar_pages_only_and_searches_no_data(): void

@@ -23,11 +23,7 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
             <span role="tooltip" class="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-brand-ink px-2.5 py-1 text-[12px] font-medium text-white opacity-0 shadow-lg transition duration-150 group-hover:translate-y-0 group-hover:opacity-100">Search</span>
         </button>
-        {{-- Notifications are not built yet: the bell is switched off and shows no dot (a dot would claim something is waiting). --}}
-        <button type="button" disabled aria-disabled="true" aria-label="Notifications (coming soon)" class="group relative grid h-10 w-10 cursor-not-allowed place-items-center rounded-full border border-brand-ink/10 bg-cream text-brand-ink opacity-60 shadow-[0_2px_6px_-2px_rgba(14,42,51,.25)]">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 4-2 5-2 7h16c0-2-2-3-2-7z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>
-            <span role="tooltip" class="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-brand-ink px-2.5 py-1 text-[12px] font-medium text-white opacity-0 shadow-lg transition duration-150 group-hover:translate-y-0 group-hover:opacity-100">Notifications — coming soon</span>
-        </button>
+        <x-platform.notification-bell />
         <x-platform.user-menu />
     </div>
 </header>

@@ -2,9 +2,13 @@ import './bootstrap';
 
 import Alpine from 'alpinejs';
 import L from 'leaflet';
+import { notificationBell } from './notification-bell';
 import 'leaflet/dist/leaflet.css';
 
 window.Alpine = Alpine;
+
+// The Platform Admin notification bell (used by components/platform/topbar.blade.php).
+Alpine.data('notificationBell', notificationBell);
 
 Alpine.start();
 

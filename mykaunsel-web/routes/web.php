@@ -229,6 +229,13 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/admins/invitations/{invitation}/revoke', [PlatformAdminController::class, 'revokeInvitation'])->whereNumber('invitation')->middleware('throttle:10,1')->name('admins.invitations.revoke');
         Route::post('/admins/{admin}/remove', [PlatformAdminController::class, 'remove'])->whereNumber('admin')->middleware('throttle:10,1')->name('admins.remove');
 
+        // Notification center (the bell). Platform Admins only, and only ever your own notifications. No sidebar entry: reached from the bell.
+        Route::get('/notifications', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'index'])->middleware('throttle:60,1')->name('notifications');
+        Route::get('/notifications/unread-count', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'count'])->middleware('throttle:120,1')->name('notifications.count');
+        Route::get('/notifications/panel', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'panel'])->middleware('throttle:60,1')->name('notifications.panel');
+        Route::post('/notifications/read-all', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'readAll'])->middleware('throttle:30,1')->name('notifications.read-all');
+        Route::post('/notifications/{notification}/open', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'open'])->whereNumber('notification')->middleware('throttle:60,1')->name('notifications.open');
+
         // Analytics: read-only aggregates from AnalyticsService.
         Route::get('/analytics', [\App\Http\Controllers\Platform\PlatformAnalyticsController::class, 'index'])->middleware('throttle:60,1')->name('analytics');
         Route::post('/analytics/refresh', [\App\Http\Controllers\Platform\PlatformAnalyticsController::class, 'refresh'])->middleware('throttle:30,1')->name('analytics.refresh');

@@ -2,7 +2,7 @@
 
 An **in-app inbox of things that happened** ("event-based"). It is separate from the Dashboard's "Needs your attention" list ("state-based": what is pending right now). A notification links to the item; it never replaces the pending lists.
 
-Built in three steps. **Step 1 (done): storage, registry, service, de-duplication, coalescing and their tests (no screen).** Step 2: the bell, the panel, polling and the redirect route. Step 3: the full page, the producer hooks on the existing events, retention, the demo seeder and these docs completed.
+Built in three steps. **Step 1 (done): storage, registry, service, de-duplication, coalescing and their tests (no screen).** **Step 2 (done): the bell, the panel, polling and the redirect route.** Step 3: the full page, the producer hooks on the existing events, retention, the demo seeder and these docs completed.
 
 ## Decisions
 
@@ -50,6 +50,28 @@ State resolver: given the ids of many targets, says for each `open` (still waiti
 ## The service (`NotificationCenter`)
 
 Producing: `publish()` and `publishCoalescing()` (best effort), `notifyAdmins()` and `notifyAdminsCoalescing()` (the same but they throw; used by tests). Reading and changing, **always the signed-in person's own**: `unreadCount()` (one indexed count), `latest()`, `find()`, `markRead()`, `markUnread()`, `markAllRead()` (returns how many it changed), `deleteAllFor()` (used when a Platform Admin is removed). Another admin's notification is simply "not found": every query is scoped to the owner.
+
+## The bell, the panel and the redirect (Step 2)
+
+All routes are under `/platform/notifications`, **Platform Admins only** (anyone else gets 403, a signed-out script gets a JSON 401, never a login page), each **rate limited**, and every one works only on the **signed-in admin's own** notifications.
+
+| Route | What it does |
+|---|---|
+| `GET /notifications/unread-count` (120/min) | `{"count": n}` for the polling. One indexed count query. |
+| `GET /notifications/panel` (60/min) | The panel's contents as HTML built and **escaped on the server**: the latest **8**, grouped **Today** and **Earlier** in the admin's timezone. Header `X-Unread-Count`. |
+| `POST /notifications/read-all` (30/min) | Marks all of the admin's own as read; answers `{"marked": n, "count": 0}`. |
+| `POST /notifications/{id}/open` (60/min) | Marks that one read and redirects to its target. Not yours, or not there: **404**. The target page comes **only from the type registry**, never from what is stored (a test puts a web address in every stored field and checks the redirect ignores it). If the target no longer exists, the admin lands on `/notifications` with "That item no longer exists." It is a POST (a click is a form button), so it needs the CSRF token and cannot be triggered by a link. |
+| `GET /notifications` (60/min) | The full page. **Basic for now** (the list, 25 per page, the message, an empty state); tabs, filters and per-item actions come in step 3. |
+
+**The bell** (`components/platform/notification-bell.blade.php` in the header): the badge shows the number itself, capped at **9+**, and is hidden at zero. The button's accessible name includes the count ("Notifications, 3 unread"; "Notifications, 9+ unread"). On a normal page load **only the count is read** (one query); the **panel is fetched when the bell is opened**. The Dashboard went from 27 to **28** queries for a full load (limit stays 40).
+
+**The panel:** each item shows its title, the label, a relative time (hover for the full time in the admin's timezone from the Account page) and, if its target is no longer waiting, a neutral **"Already reviewed"** and is dimmed (a deleted target says "No longer available"). Unread = a filled dot **and** bold text **and** the words "Unread" for screen readers, so it is never colour alone. "Already reviewed" is resolved for the whole list at once (one query per kind of notification, not per item). Empty: "You're all caught up." Header: "Mark all as read". Footer: "View all notifications".
+
+**Keyboard:** Enter or Space opens (it is a button); Tab stays inside the open panel; items are buttons reachable by Tab; Escape closes it and returns focus to the bell.
+
+**Polling** (`resources/js/notification-bell.js`): the count is refreshed every **60 seconds**, **only while the tab is visible** (a hidden tab does not call the server; coming back asks at once). Errors back off 1, 2, 4, 8 minutes and then at most 15 minutes, and a good answer resets it. **401, 403 and 419 (and a redirect to the sign-in page) stop it for good.** No websockets. The logic is tested without a browser: `npm run test:js` (Node's built-in test runner, no extra packages).
+
+**Not checked in a browser:** the panel's look, the keyboard behaviour and the polling in a real browser have not been seen. Run `npm run dev` or `npm run build` so the new script and styles are included.
 
 ## Known gap: two Account preferences have no sender
 
