@@ -22,6 +22,12 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    // The Anthropic (Claude) API key. It lives ONLY in the server's .env file (never in code, in the mobile app or in git) and is read
+    // with config('services.anthropic.key'), never env() outside config files. Empty = the AI feature is simply off.
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

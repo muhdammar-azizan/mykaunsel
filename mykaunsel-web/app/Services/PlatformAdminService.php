@@ -24,7 +24,7 @@ use Throwable;
  */
 class PlatformAdminService
 {
-    public function __construct(private AccountSessionEnder $sessions, private AdminInvitationService $invitations) {}
+    public function __construct(private AccountSessionEnder $sessions, private AdminInvitationService $invitations, private NotificationCenter $inbox) {}
 
     public function platformOrganization(): Organization
     {
@@ -79,6 +79,7 @@ class PlatformAdminService
 
             $this->sessions->endAll($admin);
             $this->invitations->revokeSentBy($admin);
+            $this->inbox->deleteAllFor($admin);   // their inbox is deleted with their access
         });
 
         $this->sendRemoved($admin);

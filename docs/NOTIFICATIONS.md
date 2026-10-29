@@ -2,7 +2,7 @@
 
 An **in-app inbox of things that happened** ("event-based"). It is separate from the Dashboard's "Needs your attention" list ("state-based": what is pending right now). A notification links to the item; it never replaces the pending lists.
 
-Built in three steps. **Step 1 (done): storage, registry, service, de-duplication, coalescing and their tests (no screen).** **Step 2 (done): the bell, the panel, polling and the redirect route.** Step 3: the full page, the producer hooks on the existing events, retention, the demo seeder and these docs completed.
+Built in three steps. **Step 1 (done): storage, registry, service, de-duplication, coalescing and their tests (no screen).** **Step 2 (done): the bell, the panel, polling and the redirect route.** **Step 3 (done): the full page, the producers on the existing events, retention, the demo seeder and these docs.**
 
 ## Decisions
 
@@ -13,7 +13,7 @@ Built in three steps. **Step 1 (done): storage, registry, service, de-duplicatio
 | In-app vs email | An in-app item is **always** created for every type. The Account-page preferences control **email only**, and the Account page is not changed. |
 | Failure | Publishing is **best effort**: `NotificationCenter::publish()` never throws; a failure is `report()`ed and the action that caused it goes on. Producers call it after the commit, from the same place that sends the email. |
 | Coalescing | Repeated duplicate-KB attempts: **one notification per KB per 24 hours** (config `notifications.coalesce_hours`), counted from the **first** attempt. A new attempt inside the window raises the count, moves `occurred_at` and makes it unread again; an attempt after the window starts a new notification and leaves the old count alone. The target row is locked while this happens so two attempts at once cannot both create one. |
-| Retention (step 3) | Read items 90 days, unread 180 days, configurable (`notifications.retention`), by a scheduled command with `--dry-run`; audit event `notification.purged` (counts only). Opening, reading and creating are not audited. |
+| Retention | Read items 90 days, unread 180 days, configurable (`notifications.retention`), by a scheduled command with `--dry-run`; audit event `notification.purged` (counts only). Opening, reading and creating are not audited. |
 
 ## The table
 
@@ -61,7 +61,8 @@ All routes are under `/platform/notifications`, **Platform Admins only** (anyone
 | `GET /notifications/panel` (60/min) | The panel's contents as HTML built and **escaped on the server**: the latest **8**, grouped **Today** and **Earlier** in the admin's timezone. Header `X-Unread-Count`. |
 | `POST /notifications/read-all` (30/min) | Marks all of the admin's own as read; answers `{"marked": n, "count": 0}`. |
 | `POST /notifications/{id}/open` (60/min) | Marks that one read and redirects to its target. Not yours, or not there: **404**. The target page comes **only from the type registry**, never from what is stored (a test puts a web address in every stored field and checks the redirect ignores it). If the target no longer exists, the admin lands on `/notifications` with "That item no longer exists." It is a POST (a click is a form button), so it needs the CSRF token and cannot be triggered by a link. |
-| `GET /notifications` (60/min) | The full page. **Basic for now** (the list, 25 per page, the message, an empty state); tabs, filters and per-item actions come in step 3. |
+| `GET /notifications` (60/min) | The full page (below). |
+| `POST /notifications/{id}/read` and `/unread` (120/min) | Mark one of your own as read or unread, from the page. Another admin's, or one that does not exist: **404**. They come back to the same tab, kind and page number; only those three values are carried back, each checked. |
 
 **The bell** (`components/platform/notification-bell.blade.php` in the header): the badge shows the number itself, capped at **9+**, and is hidden at zero. The button's accessible name includes the count ("Notifications, 3 unread"; "Notifications, 9+ unread"). On a normal page load **only the count is read** (one query); the **panel is fetched when the bell is opened**. The Dashboard went from 27 to **28** queries for a full load (limit stays 40).
 
@@ -73,10 +74,55 @@ All routes are under `/platform/notifications`, **Platform Admins only** (anyone
 
 **Not checked in a browser:** the panel's look, the keyboard behaviour and the polling in a real browser have not been seen. Run `npm run dev` or `npm run build` so the new script and styles are included.
 
+## The full page (Step 3)
+
+`/platform/notifications`, reached from the panel's "View all notifications" (**no sidebar entry**).
+
+- Tabs **All** and **Unread** with counts, a filter by kind (**Applications, LKM, Complaints, Admins, System**; the counts follow the filter), **25 per page** with the filters kept in the page links. A page past the end goes to the last real page.
+- Per item: open it (marks it read and goes through the registry), **Mark as read / Mark as unread**, and the "Already reviewed" / "No longer available" state.
+- **"Mark all as read (N)"** marks all unread, or only those of the kind being looked at ("Mark all in System as read"), and says how many it changed ("Marked 3 notifications as read." / "Nothing to mark: everything is already read."). Disabled when nothing is unread. The bell's own "Mark all" (a script asking for JSON) is every unread one.
+- **Three different empty states:** no notifications at all ("No notifications yet"), nothing unread ("You're all caught up"), and no match for the filter ("No notifications match this filter", with a way to clear it).
+- A small note states the retention rule with the real periods.
+
+## Who produces notifications (Step 3)
+
+Each producer calls `NotificationCenter::publish()` (or `publishCoalescing()`) **after the commit**, from the **same place** that already sent the email, so the two cannot drift apart. In-app items are created for every active admin; the Account preference decides the **email** only. Neither blocks the action if it fails (the failure is reported).
+
+| Event | Where it is produced | Occurrence (so a retry or re-run adds nothing) |
+|---|---|---|
+| `organization.application_submitted` | `PlatformAdminNotifier::newOrganizationApplication` (called by `OrgSignupController` after the sign-up commits), together with the email | the application number |
+| `counselor.application_submitted` / `_resubmitted` | `PlatformAdminNotifier::newCounselorApplication` (called after the commit by `CounselorDocumentController`), together with the email | the attempt number |
+| `counselor.kb_duplicate_flagged` | `CounselorKbAttemptRecorder::record`, after the attempt is saved. **Coalesced:** one per KB number per 24 hours with a count | (coalescing, see above) |
+| `lkm.review_requested` | `LkmReviewService::request` | the request itself |
+| `admin.invitation_accepted` | `AdminInvitationService::accept`; **everyone but the new admin** is told | the invitation |
+| `counselor.pa_expired_suspended` | `CounselorStatusService::suspend`, **only** for the automatic (system) suspension, not an admin's own | the PA date that ran out |
+| `system.maintenance_auto_reopened` | `PlatformSettings::reopenIfDue` | the time maintenance was due to end |
+
+**Defined, not produced yet (hooks):** `organization.application_resubmitted` (a rejected organization cannot apply again yet), `complaint.received` and `complaint.escalated` (nothing creates or escalates a complaint yet). When their source exists, it only has to call `publish()`.
+
+**Never notified of their own actions:** the actor is left out (the only admin-caused event is a new admin joining). **A removed admin's notifications are deleted** when they are removed (`PlatformAdminService::remove`), and they receive nothing afterwards.
+
+## Retention (Step 3)
+
+`php artisan notifications:purge` (scheduled daily at 03:20; needs the cron `schedule:run` like the other clean-ups). Read notifications older than **90 days** and unread ones older than **180 days** (counted from when the thing happened) are deleted in batches of 1,000. `--dry-run` only counts. When something was deleted, **one system audit entry `notification.purged`** records the counts (read, unread) and the two periods, never a name or label. A read item marked unread again moves to the longer 180-day rule. The periods: `NOTIFICATIONS_READ_DAYS` and `NOTIFICATIONS_UNREAD_DAYS`.
+
+## Demo data (Step 3)
+
+`php artisan db:seed --class=NotificationDemoSeeder` (also part of `db:seed`; **local and testing only**, it stops with an error anywhere else). For every active Platform Admin: about 35 items across all five groups, read and unread, three already-reviewed items, a duplicate-KB item with "3 attempts" and enough for a second page. The targets are small made-up records ("[Demo] Notifications …", "Demo Notifications …", `@example.test`). It does nothing the second time.
+
 ## Known gap: two Account preferences have no sender
 
 The Account page lets an admin switch **`escalated_complaint`** and **`weekly_summary`** on or off, but **nothing in the application sends those emails yet** (only `new_organization_application` and `new_counselor_application` are sent, by `PlatformAdminNotifier`). The switches do nothing today. They are outside this work (the Account page is not changed). They need their own senders: the escalation email when escalation is built, and the weekly summary as a scheduled job.
 
-## Tests (step 1)
+## Tests
 
-`NotificationCenterTest` (who receives, no duplicates on retry, best effort, coalescing window to the second, only your own, privacy, indexes) and `NotificationRegistryTest` (every type, the pages, handled/gone, no N+1). The row-lock test only runs on MySQL/MariaDB (SQLite has no row locks).
+All in `tests/Feature/Notifications` plus `tests/js`:
+
+- `NotificationCenterTest`: who receives, no duplicates on retry, best effort, the 24-hour coalescing window to the second, only your own, privacy, indexes. `NotificationRegistryTest`: every type, the pages, handled/gone, no N+1.
+- `NotificationBellTest`: access, the badge and its name, the lazy panel, Today/Earlier in the admin's timezone, unread not by colour alone, reviewed state, the redirect through the registry only, crafted requests, rate limits, no audit.
+- `NotificationPageTest`: tabs, kind filter, 25 per page, the three empty states, mark one/all with the count, only checked values carried back.
+- `NotificationProducersTest`: each event on the real sample data: one per active admin, none for the actor or a removed/suspended admin, none on a retry or a re-run of the daily jobs, a failure never blocks the sign-up, email follows the preference while the in-app item does not, nothing private in the table or the panel, a removed admin's inbox deleted.
+- `NotificationRetentionTest`: both periods to the second, the dry run, batches, the audit entry (counts only), the schedule. `NotificationDemoSeederTest`.
+- `tests/js/notification-bell.test.mjs` (`npm run test:js`): the polling rules.
+
+The row-lock test only runs on MySQL/MariaDB (SQLite has no row locks).

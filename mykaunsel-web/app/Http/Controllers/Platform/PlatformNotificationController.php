@@ -16,8 +16,8 @@ use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 /**
- * Platform Admin → the bell. Platform Admins only (the route group), and only ever the signed-in admin's OWN notifications: every lookup
- * goes through NotificationCenter, which is scoped to the owner, so another admin's id is simply a 404.
+ * Platform Admin → the bell and the notifications page. Platform Admins only (the route group), and only ever the signed-in admin's OWN
+ * notifications: every lookup goes through NotificationCenter, which is scoped to the owner, so another admin's id is simply a 404.
  *
  * Opening, reading and marking notifications is not audited. The page a notification opens comes from the type registry, never from
  * what is stored, so nothing here can redirect anywhere the registry does not define.
@@ -44,11 +44,41 @@ class PlatformNotificationController extends Controller
             ->header('Cache-Control', 'no-store');
     }
 
-    public function readAll(Request $request): JsonResponse
+    /**
+     * Mark the admin's own unread notifications as read and say how many that was. From the bell (a script asking for JSON) it is
+     * every unread one; from the page it can be limited to the type group being looked at.
+     */
+    public function readAll(Request $request): JsonResponse|RedirectResponse
     {
-        $marked = $this->center->markAllRead($request->user());
+        $user = $request->user();
+        $group = $this->group($request->input('group'));
 
-        return response()->json(['marked' => $marked, 'count' => $this->center->unreadCount($request->user())])->header('Cache-Control', 'no-store');
+        $marked = $this->center->markAllRead($user, $group === null ? null : $this->registry->keysInGroup($group));
+
+        if ($request->expectsJson()) {
+            return response()->json(['marked' => $marked, 'count' => $this->center->unreadCount($user)])->header('Cache-Control', 'no-store');
+        }
+
+        $where = $group === null ? '' : ' in '.config('notifications.groups')[$group];
+
+        return redirect()->route('platform.notifications', $this->pageQuery($request))->with('status', $marked === 0
+            ? 'Nothing to mark: everything'.$where.' is already read.'
+            : "Marked {$marked} ".($marked === 1 ? 'notification' : 'notifications').$where.' as read.');
+    }
+
+    /** Mark one of my own as read / unread, from the page. Not found (or not yours) is a 404. */
+    public function markRead(Request $request, int $notification): RedirectResponse
+    {
+        abort_unless($this->center->markRead($request->user(), $notification), 404);
+
+        return redirect()->route('platform.notifications', $this->pageQuery($request));
+    }
+
+    public function markUnread(Request $request, int $notification): RedirectResponse
+    {
+        abort_unless($this->center->markUnread($request->user(), $notification), 404);
+
+        return redirect()->route('platform.notifications', $this->pageQuery($request));
     }
 
     /**
@@ -76,26 +106,68 @@ class PlatformNotificationController extends Controller
         return redirect()->to($type->url($row->target_id) ?? route('platform.notifications'));
     }
 
-    /** The full page. (Tabs, filters and per-item actions are added in the next step; this shows the list and the messages.) */
-    public function index(Request $request): View
+    /** The full page: All / Unread, a filter by type group, 25 per page, with the three kinds of empty state. */
+    public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user();
-        $timezone = $user->display_timezone;
+        $tab = $request->query('tab') === 'unread' ? 'unread' : 'all';
+        $group = $this->group($request->query('group'));
 
-        $page = UserNotification::query()->ownedBy($user)->orderByDesc('occurred_at')->orderByDesc('id')
-            ->paginate((int) config('notifications.page_size'));
+        $base = fn () => UserNotification::query()->ownedBy($user)
+            ->when($group !== null, fn ($query) => $query->whereIn('type', $this->registry->keysInGroup($group)));
+
+        $page = ($tab === 'unread' ? $base()->unread() : $base())
+            ->orderByDesc('occurred_at')->orderByDesc('id')
+            ->paginate((int) config('notifications.page_size'))->withQueryString();
+
+        // A page number past the end (for example after marking things read on the Unread tab): go to the last real page.
+        if ($page->isEmpty() && $page->currentPage() > 1) {
+            return redirect()->route('platform.notifications', array_filter(['tab' => $tab === 'unread' ? 'unread' : null, 'group' => $group, 'page' => $page->lastPage()]));
+        }
+
+        $has = UserNotification::query()->ownedBy($user)->exists();
 
         return view('platform.notifications.index', [
-            'items' => $this->present($page->getCollection(), $timezone),
+            'items' => $this->present($page->getCollection(), $user->display_timezone),
             'page' => $page,
-            'unread' => $this->center->unreadCount($user),
-            'notice' => session('notice'),
+            'tab' => $tab,
+            'group' => $group,
+            'groups' => config('notifications.groups'),
+            'counts' => ['all' => $base()->count(), 'unread' => $base()->unread()->count()],
+            'empty' => ! $has ? 'none' : ($page->isEmpty() ? ($group === null && $tab === 'unread' ? 'no_unread' : 'no_match') : null),
+            'unreadTotal' => $this->center->unreadCount($user),
+            'readDays' => (int) config('notifications.retention.read_days'),
+            'unreadDays' => (int) config('notifications.retention.unread_days'),
+            'query' => $this->pageQuery($request),
         ]);
     }
 
     private function goneBack(): RedirectResponse
     {
         return redirect()->route('platform.notifications')->with('notice', 'That item no longer exists.');
+    }
+
+    /** A known type group, or null (anything else typed into the address is ignored). */
+    private function group(mixed $value): ?string
+    {
+        return is_string($value) && array_key_exists($value, config('notifications.groups')) ? $value : null;
+    }
+
+    /**
+     * Where to come back to on the page: only the tab, the group and the page number, each checked. Nothing else from the request is
+     * carried, so it cannot be made to point anywhere else.
+     *
+     * @return array<string, string|int>
+     */
+    private function pageQuery(Request $request): array
+    {
+        $page = $request->input('page', $request->query('page'));
+
+        return array_filter([
+            'tab' => $request->input('tab', $request->query('tab')) === 'unread' ? 'unread' : null,
+            'group' => $this->group($request->input('group', $request->query('group'))),
+            'page' => is_numeric($page) && (int) $page > 1 ? (int) $page : null,
+        ]);
     }
 
     /**
@@ -110,8 +182,7 @@ class PlatformNotificationController extends Controller
         $now = CarbonImmutable::now($timezone);
 
         return $items->map(function (UserNotification $item) use ($states, $timezone, $now) {
-            $known = $this->registry->has($item->type);
-            $type = $known ? $this->registry->get($item->type) : null;
+            $type = $this->registry->has($item->type) ? $this->registry->get($item->type) : null;
             $at = CarbonImmutable::instance($item->occurred_at)->setTimezone($timezone);
             $state = $states[$item->id] ?? NotificationType::OPEN;
 

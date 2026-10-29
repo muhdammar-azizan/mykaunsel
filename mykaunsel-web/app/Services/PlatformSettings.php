@@ -339,6 +339,9 @@ class PlatformSettings
                 'summary' => 'Maintenance ended at the scheduled time',
             ], 'system');
 
+            // The time it was due is the occurrence: the every-minute job can never tell the admins twice about the same reopening.
+            DB::afterCommit(fn () => app(NotificationCenter::class)->publish('system.maintenance_auto_reopened', null, null, $at->utc()->format('Y-m-d H:i')));
+
             return true;
         });
 

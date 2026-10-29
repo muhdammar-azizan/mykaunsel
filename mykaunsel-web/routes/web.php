@@ -234,6 +234,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::get('/notifications/unread-count', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'count'])->middleware('throttle:120,1')->name('notifications.count');
         Route::get('/notifications/panel', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'panel'])->middleware('throttle:60,1')->name('notifications.panel');
         Route::post('/notifications/read-all', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'readAll'])->middleware('throttle:30,1')->name('notifications.read-all');
+        Route::post('/notifications/{notification}/read', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'markRead'])->whereNumber('notification')->middleware('throttle:120,1')->name('notifications.read');
+        Route::post('/notifications/{notification}/unread', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'markUnread'])->whereNumber('notification')->middleware('throttle:120,1')->name('notifications.unread');
         Route::post('/notifications/{notification}/open', [\App\Http\Controllers\Platform\PlatformNotificationController::class, 'open'])->whereNumber('notification')->middleware('throttle:60,1')->name('notifications.open');
 
         // Analytics: read-only aggregates from AnalyticsService.

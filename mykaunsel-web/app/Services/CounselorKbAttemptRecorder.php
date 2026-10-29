@@ -20,6 +20,8 @@ class CounselorKbAttemptRecorder
 {
     public const WINDOW_MINUTES = 60;
 
+    public function __construct(private readonly NotificationCenter $inbox) {}
+
     public function record(string $kbNumber, string $submittedName, ?string $ip): ?CounselorKbAttempt
     {
         $profile = CounselorProfile::where('kb_number', $kbNumber)->first();
@@ -49,6 +51,9 @@ class CounselorKbAttemptRecorder
 
             // Reference id only: the typed name stays in this table, not in the audit log.
             Audit::log('counselor.kb_duplicate_flagged', $profile, ['attempt_id' => $attempt->id]);
+
+            // The admins are told once per KB number per day, with a count ("3 attempts"). The name shown is the existing account holder's.
+            DB::afterCommit(fn () => $this->inbox->publishCoalescing('counselor.kb_duplicate_flagged', $profile, $profile->loadMissing('user')->user?->name));
 
             return $attempt;
         });

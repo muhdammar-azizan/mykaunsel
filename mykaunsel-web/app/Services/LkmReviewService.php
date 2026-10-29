@@ -38,7 +38,7 @@ use Throwable;
  */
 class LkmReviewService
 {
-    public function __construct(private LkmVerificationService $lkm) {}
+    public function __construct(private LkmVerificationService $lkm, private NotificationCenter $inbox) {}
 
     /**
      * @param  array{pa_valid_until: string, pa_number?: ?string, full_name?: ?string}  $claimed
@@ -113,6 +113,8 @@ class LkmReviewService
                     'changes' => $this->changes($review->current, $claimed),
                     'summary' => 'Asked for PA valid until to be '.Carbon::parse($claimed['pa_valid_until'])->format('j M Y'),
                 ], $locked->user);
+
+                DB::afterCommit(fn () => $this->inbox->publish('lkm.review_requested', $review, $locked->user->name));
 
                 return $review;
             });

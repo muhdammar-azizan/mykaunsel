@@ -183,16 +183,56 @@ class NotificationCenter
         return true;
     }
 
-    /** @return int how many were unread and are now read */
-    public function markAllRead(User $user): int
+    /**
+     * @param  list<string>|null  $types  only these type keys (the page's type group); null = every unread one
+     * @return int how many were unread and are now read
+     */
+    public function markAllRead(User $user, ?array $types = null): int
     {
-        return UserNotification::query()->ownedBy($user)->unread()->update(['read_at' => now()]);
+        return UserNotification::query()->ownedBy($user)->unread()
+            ->when($types !== null, fn ($query) => $query->whereIn('type', $types))
+            ->update(['read_at' => now()]);
     }
 
     /** When a Platform Admin is removed: everything addressed to them goes. @return int how many were deleted */
     public function deleteAllFor(User $user): int
     {
         return UserNotification::query()->ownedBy($user)->delete();
+    }
+
+    // =============================================================================================================
+    //  Retention
+    // =============================================================================================================
+
+    /**
+     * Delete what is too old: READ notifications older than notifications.retention.read_days (90) and UNREAD ones older than unread_days
+     * (180), counted from when the thing happened. Done in small batches. Opening or reading is never recorded, only this clean-up is
+     * (by the command, with counts only).
+     *
+     * @return array{read: int, unread: int} how many were (or, with $dryRun, would be) deleted
+     */
+    public function purge(bool $dryRun = false): array
+    {
+        $read = fn () => UserNotification::query()->whereNotNull('read_at')->where('occurred_at', '<', now()->subDays(max(1, (int) config('notifications.retention.read_days'))));
+        $unread = fn () => UserNotification::query()->whereNull('read_at')->where('occurred_at', '<', now()->subDays(max(1, (int) config('notifications.retention.unread_days'))));
+
+        if ($dryRun) {
+            return ['read' => $read()->count(), 'unread' => $unread()->count()];
+        }
+
+        return ['read' => $this->deleteInBatches($read()), 'unread' => $this->deleteInBatches($unread())];
+    }
+
+    private function deleteInBatches(\Illuminate\Database\Eloquent\Builder $query): int
+    {
+        $deleted = 0;
+
+        do {
+            $ids = (clone $query)->orderBy('id')->limit(1000)->pluck('id');
+            $deleted += $ids->isEmpty() ? 0 : UserNotification::query()->whereIn('id', $ids)->delete();
+        } while ($ids->count() === 1000);
+
+        return $deleted;
     }
 
     // =============================================================================================================

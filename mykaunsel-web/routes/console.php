@@ -21,6 +21,9 @@ Schedule::command('maintenance:reopen-due')->everyMinute()->withoutOverlapping()
 // The text of complaints closed 3 years ago is erased (the record stays): see config/complaints.php.
 Schedule::command('complaints:purge-text')->dailyAt('03:15')->withoutOverlapping();
 
+// In-app notifications are deleted after 90 days (read) or 180 days (unread): see config/notifications.php.
+Schedule::command('notifications:purge')->dailyAt('03:20')->withoutOverlapping();
+
 // Waitlist addresses are deleted 30 days after they were notified (365 days if never): see config/waitlist.php.
 Schedule::command('waitlist:purge')->dailyAt('03:00')->withoutOverlapping();
 

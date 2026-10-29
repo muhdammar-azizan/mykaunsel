@@ -14,11 +14,15 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Emails to Platform Admins. Every method checks each admin's own setting (Account → Notifications),
- * and never throws: a mail problem must not break the action that triggered it.
+ * Tells Platform Admins about new applications, in two ways from this ONE place (so the two can never drift apart):
+ * - the in-app notification (the bell): always, for every active admin;
+ * - the email: only for admins who have it switched on (Account → Notifications). The preference controls email only.
+ * Neither ever throws: a problem must not break the sign-up or the submission that triggered it. Callers run it after the commit.
  */
 class PlatformAdminNotifier
 {
+    public function __construct(private readonly NotificationCenter $inbox) {}
+
     public const NEW_ORGANIZATION_APPLICATION = 'new_organization_application';
 
     public const NEW_COUNSELOR_APPLICATION = 'new_counselor_application';
@@ -26,6 +30,9 @@ class PlatformAdminNotifier
     /** @return int how many admins were emailed */
     public function newOrganizationApplication(Organization $organization): int
     {
+        // The occurrence is the application's number, so a retry of the same submission adds nothing.
+        $this->inbox->publish('organization.application_submitted', $organization, $organization->name, (string) max(1, (int) $organization->submission_count));
+
         $sent = 0;
 
         foreach ($this->adminsWanting(self::NEW_ORGANIZATION_APPLICATION) as $admin) {
@@ -43,6 +50,14 @@ class PlatformAdminNotifier
     /** @return int how many admins were emailed */
     public function newCounselorApplication(CounselorProfile $profile, bool $resubmitted = false): int
     {
+        // A first submission and each resubmission (its attempt number) are separate occurrences.
+        $this->inbox->publish(
+            $resubmitted ? 'counselor.application_resubmitted' : 'counselor.application_submitted',
+            $profile,
+            $profile->loadMissing('user')->user?->name,
+            (string) max(1, (int) $profile->submission_count),
+        );
+
         $sent = 0;
 
         foreach ($this->adminsWanting(self::NEW_COUNSELOR_APPLICATION) as $admin) {

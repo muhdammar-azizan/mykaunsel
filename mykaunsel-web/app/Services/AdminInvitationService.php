@@ -46,7 +46,7 @@ use Throwable;
  */
 class AdminInvitationService
 {
-    public function __construct(private AccountSessionEnder $sessions) {}
+    public function __construct(private AccountSessionEnder $sessions, private NotificationCenter $inbox) {}
 
     // ---- sending ---------------------------------------------------------------------------------------------
 
@@ -305,6 +305,9 @@ class AdminInvitationService
 
             // After the membership exists, so the entry keeps the new admin's name like other staff entries do.
             Audit::log('admin.invite_accepted', $user, ['invitation_id' => $invitation->getKey(), 'how' => $how, 'summary' => 'Invitation accepted'], $user);
+
+            // The other active admins are told; the person who just joined is not (they did it themselves).
+            DB::afterCommit(fn () => $this->inbox->publish('admin.invitation_accepted', $user, $user->name, (string) $invitation->getKey(), $user));
 
             return $user;
         });

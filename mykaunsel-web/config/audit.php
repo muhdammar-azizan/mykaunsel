@@ -162,6 +162,8 @@ return [
         // Scheduled / queued jobs — the actor is always "system"
         'system.booking_requests_expired' => ['category' => 'system', 'badge' => 'system', 'label' => 'Booking requests expired'],
         'system.chat_purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Chat data purged'],
+        // Written by the scheduler (notifications:purge): old in-app notifications deleted. Counts only. Opening or reading one is never recorded.
+        'notification.purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old notifications deleted'],
 
         // The audit log itself
         'audit.exported' => ['category' => 'audit', 'badge' => 'exported', 'label' => 'Audit log exported'],

@@ -149,15 +149,15 @@ class NotificationBellTest extends TestCase
 
     public function test_the_badge_hides_at_zero_shows_the_number_and_caps_at_nine_plus(): void
     {
-        $this->as()->get(route('platform.notifications'))->assertOk()
+        $this->as()->get(route('platform.dashboard'))->assertOk()
             ->assertSee('aria-label="Notifications"', false)
             ->assertDontSee('unread"', false);
-        $this->assertMatchesRegularExpression('/<span data-bell-badge[^>]*class="hidden absolute[^>]*><\/span>/', $this->as()->get(route('platform.notifications'))->getContent(), 'hidden at zero, and empty');
+        $this->assertMatchesRegularExpression('/<span data-bell-badge[^>]*class="hidden absolute[^>]*><\/span>/', $this->as()->get(route('platform.dashboard'))->getContent(), 'hidden at zero, and empty');
 
         foreach (range(1, 3) as $i) {
             $this->item($this->admin);
         }
-        $html = $this->as()->get(route('platform.notifications'))->getContent();
+        $html = $this->as()->get(route('platform.dashboard'))->getContent();
         $this->assertStringContainsString('aria-label="Notifications, 3 unread"', $html, 'the name includes the count');
         $this->assertMatchesRegularExpression('/<span data-bell-badge[^>]*class="  ?absolute[^>]*>3<\/span>/', preg_replace('/\s+/', ' ', $html) === $html ? $html : $html, 'the number is in the badge itself');
         $this->assertStringNotContainsString('9+', $html);
@@ -165,17 +165,17 @@ class NotificationBellTest extends TestCase
         foreach (range(1, 6) as $i) {
             $this->item($this->admin);                                                  // 9 unread: still a number
         }
-        $this->assertStringContainsString('aria-label="Notifications, 9 unread"', $this->as()->get(route('platform.notifications'))->getContent());
+        $this->assertStringContainsString('aria-label="Notifications, 9 unread"', $this->as()->get(route('platform.dashboard'))->getContent());
 
         $this->item($this->admin);                                                      // 10
-        $html = $this->as()->get(route('platform.notifications'))->getContent();
+        $html = $this->as()->get(route('platform.dashboard'))->getContent();
         $this->assertStringContainsString('aria-label="Notifications, 9+ unread"', $html);
         $this->assertMatchesRegularExpression('/data-bell-badge[^>]*>9\+<\/span>/', $html);
 
         foreach (range(1, 20) as $i) {
             $this->item($this->admin);                                                  // 30: still 9+
         }
-        $this->assertStringContainsString('Notifications, 9+ unread', $this->as()->get(route('platform.notifications'))->getContent());
+        $this->assertStringContainsString('Notifications, 9+ unread', $this->as()->get(route('platform.dashboard'))->getContent());
     }
 
     public function test_every_platform_page_carries_the_bell_with_its_wiring(): void
@@ -491,20 +491,5 @@ class NotificationBellTest extends TestCase
             $this->as($this->other)->postJson(route('platform.notifications.read-all'))->assertOk();
         }
         $this->as($this->other)->postJson(route('platform.notifications.read-all'))->assertStatus(429);
-    }
-
-    // ---- the full page (basic, completed in the next step) -------------------------------------------------------------------------------------------------
-
-    public function test_the_page_lists_25_at_a_time_and_has_an_empty_state(): void
-    {
-        $this->as()->get(route('platform.notifications'))->assertOk()->assertSee("You're all caught up. Nothing has happened yet.", false);
-
-        foreach (range(1, 30) as $i) {
-            $this->item($this->admin, label: sprintf('Entry %02d', $i), at: Carbon::parse(self::NOW)->subMinutes(60 - $i)->toDateTimeString());
-        }
-
-        $first = $this->as()->get(route('platform.notifications'))->assertOk();
-        $this->assertSame(25, substr_count($first->getContent(), 'Entry '));
-        $this->assertSame(5, substr_count($this->as()->get(route('platform.notifications', ['page' => 2]))->getContent(), 'Entry '));
     }
 }

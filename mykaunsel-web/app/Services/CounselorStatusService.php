@@ -37,7 +37,7 @@ use Throwable;
  */
 class CounselorStatusService
 {
-    public function __construct(private LkmVerificationService $lkm) {}
+    public function __construct(private LkmVerificationService $lkm, private NotificationCenter $inbox) {}
 
     /**
      * Suspend an approved counselor. They disappear from search and cannot open new slots (see CounselorProfile::scopeListable).
@@ -116,6 +116,12 @@ class CounselorStatusService
                 : ['reason' => $reason] + $entry;
 
             Audit::log($source === 'system' ? 'counselor.pa_expired_suspended' : 'counselor.suspended', $locked, $entry, $admin ?? 'system');
+
+            // Only the automatic suspension is news to the admins (a suspension by an admin is their own action). The occurrence is the
+            // PA date that ran out, so running the daily check again can never tell them twice.
+            if ($source === 'system') {
+                DB::afterCommit(fn () => $this->inbox->publish('counselor.pa_expired_suspended', $locked, $name, (string) $locked->pa_valid_until?->format('Y-m-d')));
+            }
         });
 
         DB::afterCommit(function () use ($profile, $reason, $cancelUpcoming, $clientNotices) {

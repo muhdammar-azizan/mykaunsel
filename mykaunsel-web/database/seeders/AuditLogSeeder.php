@@ -330,6 +330,7 @@ class AuditLogSeeder extends Seeder
         $this->log('waitlist.exported', null, ['type' => 'organization', 'count' => 19], $this->pick($this->admins));
         $this->log('waitlist.entry_removed', null, ['entry_id' => 41, 'type' => 'counselor'], $this->pick($this->admins));
         $this->log('waitlist.purged', null, ['notified' => 9, 'waiting' => 2], 'system');
+        $this->log('notification.purged', null, ['read' => 41, 'unread' => 3, 'read_days' => 90, 'unread_days' => 180], 'system');
     }
 
     private function log(string $action, $target, array $metadata, User|string|null $actor, ?Carbon $at = null, array $options = []): void
