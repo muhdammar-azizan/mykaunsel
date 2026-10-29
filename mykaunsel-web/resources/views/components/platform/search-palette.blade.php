@@ -1,4 +1,5 @@
-{{-- Command palette. Opened by the header search button or Ctrl/Cmd+K (state: searchOpen on <body>). --}}
+{{-- Command palette. Opened by the header search button or Ctrl/Cmd+K (state: searchOpen on <body>). It only lists the sidebar
+     destinations (config/platform-nav.php) and filters them by name: it does NOT search any data (no people, organizations or complaints). --}}
 @php
     $items = collect(config('platform-nav'))
         ->flatMap(fn ($section) => collect($section['items'])->map(fn ($item) => [
@@ -27,7 +28,7 @@
      @keydown.window.meta.k.prevent="searchOpen = true"
      x-show="searchOpen" x-cloak
      class="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-[12vh]"
-     role="dialog" aria-modal="true" aria-label="Search platform">
+     role="dialog" aria-modal="true" aria-label="Go to a page">
 
     <div x-show="searchOpen" x-transition.opacity.duration.200ms @click="searchOpen = false"
          class="absolute inset-0 bg-brand-deep/50 backdrop-blur-sm"></div>
@@ -45,13 +46,13 @@
             <svg class="shrink-0 text-brand-ink/50" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
             <input x-ref="input" x-model="q" @input="sel = 0"
                    @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)" @keydown.enter.prevent="go()"
-                   type="text" placeholder="Search organizations, counselors, complaints..." aria-label="Search platform"
+                   type="text" placeholder="Go to a page..." aria-label="Go to a page"
                    class="flex-1 border-0 bg-transparent p-0 text-[15px] text-brand-ink placeholder:text-brand-ink/40 focus:outline-none focus:ring-0">
             <kbd class="hidden rounded-md border border-brand-ink/15 px-1.5 py-0.5 text-[11px] font-medium text-brand-ink/50 sm:block">Esc</kbd>
         </div>
 
         <div class="scroll-subtle max-h-[50vh] overflow-y-auto p-2">
-            <p class="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wide text-brand-ink/40" x-text="q.trim() ? 'Results' : 'Quick access'"></p>
+            <p class="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wide text-brand-ink/40" x-text="q.trim() ? 'Pages' : 'Quick access'"></p>
 
             <template x-for="(item, idx) in results" :key="item.label">
                 <a :href="item.url || null" @mouseenter="sel = idx" @click="if (!item.url) $event.preventDefault()"
@@ -66,14 +67,14 @@
             </template>
 
             <p x-show="results.length === 0" class="px-3 py-8 text-center text-[13px] text-brand-ink/50">
-                No results for "<span x-text="q"></span>"
+                No page matches "<span x-text="q"></span>"
             </p>
         </div>
 
         <div class="flex items-center gap-4 border-t border-brand-ink/10 bg-cream px-5 py-2.5 text-[11.5px] text-brand-ink/50">
             <span><kbd class="font-semibold">↑↓</kbd> navigate</span>
             <span><kbd class="font-semibold">↵</kbd> open</span>
-            <span class="ml-auto"><kbd class="font-semibold">Ctrl K</kbd> to search anywhere</span>
+            <span class="ml-auto"><kbd class="font-semibold">Ctrl K</kbd> to jump to a page</span>
         </div>
     </div>
 </div>

@@ -21,13 +21,13 @@ class DashboardCounselorsTest extends CounselorTestCase
 
     public function test_the_pending_counselors_card_matches_the_pending_tab(): void
     {
-        $this->assertSame(4, $this->dashboard()->viewData('counts')['pending_counselors']);
+        $this->assertSame(4, $this->dashboard()->viewData('data')['cards']['pending_counselors']['count']);
         $this->assertSame(4, $this->listPage()->viewData('counts')['pending']);
 
         // An organization counselor sitting at "pending" needs no approval, so it is on neither.
         $this->profile('KB10234')->update(['verification_status' => 'pending']);
 
-        $this->assertSame(4, $this->dashboard()->viewData('counts')['pending_counselors']);
+        $this->assertSame(4, $this->dashboard()->viewData('data')['cards']['pending_counselors']['count']);
         $this->assertSame(4, $this->listPage()->viewData('counts')['pending']);
     }
 
@@ -49,8 +49,8 @@ class DashboardCounselorsTest extends CounselorTestCase
         LkmDirectorySnapshot::where('kb_number', 'KB11489')->delete();
 
         $page = $this->dashboard();
-        $page->assertSee('Kavitha a/p Muniandy — LKM number could not be verified')
-            ->assertSee('Lee Mei Ling — LKM number could not be verified')
+        $page->assertSee('Kavitha a/p Muniandy (KB11023) — LKM number could not be verified')
+            ->assertSee('Lee Mei Ling (KB11489) — LKM number could not be verified')
             ->assertDontSee('Kavitha a/p Muniandy — credentials awaiting verification', false);
 
         $this->assertSame(2, \App\Support\CounselorAttention::counts()['lkm_not_verified']);
@@ -60,8 +60,8 @@ class DashboardCounselorsTest extends CounselorTestCase
     {
         $page = $this->dashboard();
 
-        $page->assertSee('Tan Wei Ming — duplicate KB registration attempt')
-            ->assertSee('Muhammad Haziq bin Ismail — duplicate KB registration attempt')
+        $page->assertSee('Tan Wei Ming (KB10891) — duplicate KB registration attempt')
+            ->assertSee('Muhammad Haziq bin Ismail (KB11256) — duplicate KB registration attempt')
             ->assertSee('Last attempt 1 day ago')
             ->assertSee(route('platform.counselors.show', $this->profile('KB10891')), false);
 
@@ -73,14 +73,16 @@ class DashboardCounselorsTest extends CounselorTestCase
         CounselorProfile::query()->where('verification_status', 'pending')->update(['verification_status' => 'approved']);
         \App\Models\CounselorKbAttempt::query()->delete();
         \App\Models\Organization::query()->where('subscription_status', 'pending')->update(['subscription_status' => 'active']);
+        \App\Models\Complaint::query()->delete();                                  // an open complaint is something to look at too
+        CounselorProfile::query()->update(['pa_valid_until' => now()->addYears(2)->toDateString()]);   // and so is a PA about to run out
 
         $this->dashboard()->assertSee("Nothing is waiting for review. You're all caught up.", false);
     }
 
     public function test_the_attention_badge_still_counts_only_the_four_cards(): void
     {
-        $counts = $this->dashboard()->viewData('counts');
+        $cards = $this->dashboard()->viewData('data')['cards'];
 
-        $this->assertSame(['pending_orgs', 'pending_counselors', 'active_complaints', 'skipped_dns'], array_keys($counts));
+        $this->assertSame(['pending_organizations', 'pending_counselors', 'active_complaints', 'skipped_dns'], array_keys($cards));
     }
 }

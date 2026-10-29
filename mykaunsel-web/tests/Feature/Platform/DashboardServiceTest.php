@@ -606,7 +606,7 @@ class DashboardServiceTest extends TestCase
         $org = $this->pendingOrg(9, 0, 'Visible Org Name');
         $org->forceFill(['rejection_reason' => 'PRIVATE-REASON'])->saveQuietly();
         $profile = $this->pendingCounselor(9);
-        $profile->reviewNotes()->create(['author_user_id' => $this->admin->id, 'body' => 'PRIVATE-NOTE-TEXT']);
+        $profile->reviewNotes()->create(['user_id' => $this->admin->id, 'body' => 'PRIVATE-NOTE-TEXT']);
         $this->complaint(ComplaintStatus::Open, 9, 'PRIVATE-COMPLAINT-TEXT');
 
         $json = json_encode($this->service()->build($this->admin));

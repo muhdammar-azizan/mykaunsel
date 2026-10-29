@@ -344,10 +344,10 @@ class AuditLogDrawerExportTest extends TestCase
 
         $this->as()->get(route('platform.dashboard'))
             ->assertOk()
-            ->assertSee('No approvals recorded yet')
+            ->assertSee('No approvals yet')
             ->assertDontSee('Aktif Tanpa Log')
             ->assertSee('View all in Audit Log →')
-            ->assertSee(route('platform.audit-log', ['q' => 'approved']), false);
+            ->assertSee(route('platform.audit-log', ['actions' => 'organization.approved,counselor.approved']), false);
 
         $this->log('organization.approved', $this->org('Diluluskan Hari Ini'), [], null, '2026-10-20 09:00:00');
         $this->log('counselor.approved', null, [], null, '2026-10-21 09:00:00', ['target_type' => 'counselor', 'target_id' => 3, 'target_name' => 'Dr. Lim']);
@@ -356,7 +356,7 @@ class AuditLogDrawerExportTest extends TestCase
         $this->as()->get(route('platform.dashboard'))
             ->assertSee('Diluluskan Hari Ini')->assertSee('Dr. Lim')->assertSee('Counselor')->assertSee('Organization')
             ->assertDontSee('Ditolak')
-            ->assertDontSee('No approvals recorded yet');
+            ->assertDontSee('No approvals yet');
     }
 
     public function test_approving_an_organization_makes_it_appear_on_the_dashboard(): void

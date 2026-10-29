@@ -43,12 +43,13 @@ class PlatformDashboardTest extends TestCase
     {
         [$admin, $session] = $this->platformAdminSession();
 
+        // Waiting 6 days: from 5 days on it is something that needs attention and is listed by name.
         Organization::create([
             'name' => 'Universiti Contoh',
             'org_type' => OrgType::University,
             'access_model' => AccessModel::Closed,
             'subscription_status' => OrgStatus::Pending,
-        ]);
+        ])->forceFill(['submitted_at' => now()->subDays(6)])->saveQuietly();
 
         $this->actingAs($admin)->withSession($session)
             ->get(route('platform.dashboard'))

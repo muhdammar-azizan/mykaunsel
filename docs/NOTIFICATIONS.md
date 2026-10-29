@@ -1,0 +1,60 @@
+# Notification center (Platform Admin bell)
+
+An **in-app inbox of things that happened** ("event-based"). It is separate from the Dashboard's "Needs your attention" list ("state-based": what is pending right now). A notification links to the item; it never replaces the pending lists.
+
+Built in three steps. **Step 1 (done): storage, registry, service, de-duplication, coalescing and their tests (no screen).** Step 2: the bell, the panel, polling and the redirect route. Step 3: the full page, the producer hooks on the existing events, retention, the demo seeder and these docs completed.
+
+## Decisions
+
+| Question | Decision |
+|---|---|
+| Storage | A **dedicated table** `user_notifications` with real columns (not Laravel's `notifications` table, whose JSON `data` column cannot be filtered, de-duplicated or purged the same way on SQLite and MariaDB, and which would tie the email and the in-app item to one class while the Account preferences must control email only). |
+| Who receives | Every **active** Platform Admin (a `platform_admin` membership with status `active` **in the platform organization**), except the person who did the thing. A removed (`offboarded`) or suspended admin gets nothing. |
+| In-app vs email | An in-app item is **always** created for every type. The Account-page preferences control **email only**, and the Account page is not changed. |
+| Failure | Publishing is **best effort**: `NotificationCenter::publish()` never throws; a failure is `report()`ed and the action that caused it goes on. Producers call it after the commit, from the same place that sends the email. |
+| Coalescing | Repeated duplicate-KB attempts: **one notification per KB per 24 hours** (config `notifications.coalesce_hours`), counted from the **first** attempt. A new attempt inside the window raises the count, moves `occurred_at` and makes it unread again; an attempt after the window starts a new notification and leaves the old count alone. The target row is locked while this happens so two attempts at once cannot both create one. |
+| Retention (step 3) | Read items 90 days, unread 180 days, configurable (`notifications.retention`), by a scheduled command with `--dry-run`; audit event `notification.purged` (counts only). Opening, reading and creating are not audited. |
+
+## The table
+
+`user_notifications`: `recipient_user_id` (the recipient is a plain user id, so other roles can use the same table later), `type` (dotted key), `target_type` + `target_id`, `label`, `occurrence_key`, `count`, `occurred_at`, `read_at`, timestamps. No JSON.
+
+Indexes: **unique** `(recipient, type, occurrence_key)` (a retried job or a re-run scheduled task cannot create a second one); `(recipient, read_at, occurred_at)` for the bell's count and the lists; `(recipient, type, target_id, created_at)` for coalescing; `(read_at, occurred_at)` for retention.
+
+## What a row may hold
+
+Only: the type key, the target (kind + id), a **short label** (an organization name, a counselor name or a complaint reference such as "#12"), a count and timestamps. The producer API has no parameter that could carry anything else, so **complaint text, escalation text, notes, reasons, document names, emails, KB numbers and chat content cannot get in**. The label is cut to 150 characters and tidied to one line, and is escaped again whenever it is shown. **No URL is ever stored**: the page a notification opens is worked out on the server from the type and the target id.
+
+## The type registry
+
+`App\Support\Inbox\NotificationRegistry` (singleton). Each `NotificationType` declares: its **key**, **group** (Applications, LKM, Complaints, Admins, System), a fixed **title**, the **target kind**, a **route resolver** (target id → URL), an optional **state resolver** ("handled") and an optional **count noun** (coalescing types). The core types are in `CoreNotificationTypes`. A later page (Moderate Feed, another role) calls `register()` with its own types; nothing in the core changes (a test does exactly that).
+
+State resolver: given the ids of many targets, says for each `open` (still waiting), `handled` (already decided: the panel shows "Already reviewed", dimmed) or `gone` (deleted). The registry asks each type **once** for a whole list, so the number of queries depends on the number of kinds in the list, never on the number of items.
+
+| Type | Group | Opens | Handled when |
+|---|---|---|---|
+| `organization.application_submitted` | Applications | the organization | it is no longer Pending |
+| `organization.application_resubmitted` (hook) | Applications | the organization | it is no longer Pending |
+| `counselor.application_submitted` | Applications | the counselor | no longer Pending |
+| `counselor.application_resubmitted` | Applications | the counselor | no longer Pending |
+| `counselor.kb_duplicate_flagged` (coalesces: "3 attempts") | Applications | the counselor | never (a heads-up) |
+| `lkm.review_requested` | LKM | Review requests | the request is decided |
+| `complaint.received` (hook) | Complaints | the complaint | closed (resolved or dismissed) |
+| `complaint.escalated` (hook) | Complaints | the complaint | closed |
+| `admin.invitation_accepted` | Admins | Platform Admins | never |
+| `counselor.pa_expired_suspended` | System | the counselor | no longer suspended |
+| `system.maintenance_auto_reopened` | System | Registration Control | n/a (no target) |
+
+"Hook" = the type is defined and tested with fixtures, but no code produces it yet (no code creates or escalates a complaint, and a rejected organization cannot apply again yet). The two system types have a source that exists (the PA expiry check and the maintenance reopen), and are wired in step 3.
+
+## The service (`NotificationCenter`)
+
+Producing: `publish()` and `publishCoalescing()` (best effort), `notifyAdmins()` and `notifyAdminsCoalescing()` (the same but they throw; used by tests). Reading and changing, **always the signed-in person's own**: `unreadCount()` (one indexed count), `latest()`, `find()`, `markRead()`, `markUnread()`, `markAllRead()` (returns how many it changed), `deleteAllFor()` (used when a Platform Admin is removed). Another admin's notification is simply "not found": every query is scoped to the owner.
+
+## Known gap: two Account preferences have no sender
+
+The Account page lets an admin switch **`escalated_complaint`** and **`weekly_summary`** on or off, but **nothing in the application sends those emails yet** (only `new_organization_application` and `new_counselor_application` are sent, by `PlatformAdminNotifier`). The switches do nothing today. They are outside this work (the Account page is not changed). They need their own senders: the escalation email when escalation is built, and the weekly summary as a scheduled job.
+
+## Tests (step 1)
+
+`NotificationCenterTest` (who receives, no duplicates on retry, best effort, coalescing window to the second, only your own, privacy, indexes) and `NotificationRegistryTest` (every type, the pages, handled/gone, no N+1). The row-lock test only runs on MySQL/MariaDB (SQLite has no row locks).

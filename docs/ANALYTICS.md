@@ -1,6 +1,6 @@
 # Analytics (Platform Admin → Platform → Analytics)
 
-Platform-wide **trends**, read-only, **aggregates only**. It never shows an individual's data, chat content or session details. Everything is worked out from the live tables by one class, `App\Services\AnalyticsService`: there is no statistics table that can go stale, and the Dashboard's Platform Stats widget will read the same service, so the numbers always match.
+Platform-wide **trends**, read-only, **aggregates only**. It never shows an individual's data, chat content or session details. Everything is worked out from the live tables by one class, `App\Services\AnalyticsService`: there is no statistics table that can go stale, and the Dashboard's Platform Stats widget reads the same service, so the numbers always match.
 
 Built in three steps. **Step 1 (done): the service, the range class, the demo seeder and their tests.** **Step 2 (done): the page.** **Step 3 (done): CSV export, kept results with Refresh, the audit entry for the export, Dashboard hook documentation.**
 
@@ -38,9 +38,9 @@ Built in three steps. **Step 1 (done): the service, the range class, the demo se
 - **An invalid range is not exported as another one.** The admin is sent back to the page, which says what is wrong.
 - **Audit:** `analytics.exported` (category "Analytics", badge "exported"), written before the download starts, with **only** `format`, `from`, `to`, `timezone` and `sections` (the section names, not the `Report` lines). No figures, no labels. No target.
 
-## Connecting the Dashboard (not done on purpose)
+## The Dashboard uses this service (done)
 
-The Dashboard's Platform Stats widget is **not rewired**. When it is, it must call these methods of `AnalyticsService` instead of counting by itself:
+The Dashboard's Platform Stats widget is **connected**: `DashboardService::stats()` calls these methods of `AnalyticsService` (see `DASHBOARD.md`), and no longer counts by itself:
 
 | Widget figure | Call |
 |---|---|
@@ -49,7 +49,7 @@ The Dashboard's Platform Stats widget is **not rewired**. When it is, it must ca
 | Active members | `activeMembers()` |
 | "Completed sessions this month" | `completedSessionsThisMonth($admin->display_timezone)` |
 
-Doing it changes the Dashboard's numbers (see the table in "Conflicts with the Dashboard" below): organizations include suspended ones, counselors include suspended ones, and "Bookings this month" (booking creation date) becomes "Completed sessions this month" (session date), which is 0 until the attendance step exists. Decide that wording before connecting. The widget does not need the kept result: these four methods are cheap single counts.
+Connecting it changed the Dashboard's numbers (see the table in "Conflicts with the Dashboard" below): organizations include suspended ones, counselors include suspended ones, active members are distinct people, and "Bookings this month" (booking creation date) became "Sessions this month" (completed, by session date), which shows "No session data yet" until the attendance step exists. The widget does not use the kept result: these methods are cheap single counts.
 
 ## Privacy rules (the page, the table views and the export)
 
@@ -94,16 +94,16 @@ Doing it changes the Dashboard's numbers (see the table in "Conflicts with the D
 
 **Nothing in the application sets `completed` or `no_show`**: the attendance step (a counselor marking a session done or missed) is not built. Only `confirmed` and (when a counselor is suspended) `cancelled` are ever written. Because a session is never assumed completed, the sessions cards, the no-show rate, the sessions-by-type chart and the specialization-by-sessions view show **"No session data yet"** until that step exists. Only the demo data fills them. The "Offered" specialization view, the organization/counselor cards, the growth chart and the application outcomes work from real data today.
 
-## Conflicts with the Dashboard (to settle when it is connected)
+## Conflicts with the Dashboard (settled: the Dashboard now uses the service)
 
-The Dashboard's Platform Stats widget is **not changed** by this work. It counts by itself today, with different rules, so when it is connected to `AnalyticsService` (the methods are there: `totalOrganizations()`, `totalCounselors()`, `activeMembers()`, `completedSessionsThisMonth()`) **its numbers will change**:
+The Dashboard's Platform Stats widget used to count by itself with different rules. It now calls `AnalyticsService` (`totalOrganizations()`, `totalCounselors()`, `activeMembers()`, `completedSessionsThisMonth()`), so **its numbers changed**:
 
-| Widget today | After it uses the service |
+| Widget before | Now |
 |---|---|
-| Organizations = **active only** | **active + suspended** ("N suspended" beside it) |
+| Organizations = **active only** | **active + suspended** |
 | Counselors = all approved | approved + suspended |
-| Members = active students, staff, employees (memberships) | the same rule (`activeMembers()`) |
-| "Bookings this month" = bookings **created** this month | "Completed sessions this month, **by session date**" (`completedSessionsThisMonth()`), which is 0 until sessions can be completed |
+| Members = active students, staff, employees (membership **rows**) | **distinct people** with such a membership in a real organization (`activeMembers()`) |
+| "Bookings this month" = bookings **created** this month | "Sessions this month": completed, **by session date** (`completedSessionsThisMonth()`); "No session data yet" until sessions can be completed |
 
 ## Demo data
 

@@ -89,7 +89,7 @@ class ComplaintsTest extends CounselorTestCase
         $counts = $this->listing()->viewData('counts');
 
         $this->assertSame(['all' => 9, 'open' => 5, 'under_review' => 1, 'resolved' => 2, 'dismissed' => 1], $counts);
-        $this->assertSame(6, $this->as()->get(route('platform.dashboard'))->viewData('counts')['active_complaints'], 'open + under review');
+        $this->assertSame(6, $this->as()->get(route('platform.dashboard'))->viewData('data')['cards']['active_complaints']['count'], 'open + under review');
         $this->listing()->assertSee('Complaint status')->assertSee('Open')->assertSee('Under review')->assertSee('Resolved')->assertSee('Dismissed');
     }
 

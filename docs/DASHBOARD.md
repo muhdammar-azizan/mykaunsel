@@ -2,7 +2,7 @@
 
 Everything the Dashboard shows comes from **one class, `App\Services\DashboardService`**, which only **composes** the methods the owning pages already use. It repeats none of their logic, so a number on the Dashboard and the same number on its page can never disagree. Nothing is kept between requests (**no cache**): an admin who approves, suspends or switches something sees the new number on the very next read.
 
-Built in four steps. **Step 1 (done): the audit. Step 2 (done): the service and its tests (no screen changed).** Step 3: wire the view. Step 4: remaining hooks, docs, final run.
+Built in four steps. **Step 1 (done): the audit. Step 2 (done): the service and its tests. Step 3 (done): the view is wired to the service, with an empty state for every widget. Step 4 (done): the remaining hooks, docs and the final run on SQLite and MariaDB.**
 
 ## Where each figure comes from
 
@@ -68,11 +68,34 @@ Latest 5 `organization.approved` and `counselor.approved` entries, newest first 
 - `registration`: one or more kinds of sign-up are closed. Carries the closed kinds, whether **all** are closed, and the waitlist numbers: only people with status **Waiting**, only **Organization** and **Counselor** (individuals have no waitlist), and only for the kinds that are closed.
 - `hidden`: everything is normal.
 
+## The page (Step 3)
+
+`PlatformDashboardController` only calls `DashboardService::build()` and hands the result to the view; nothing is counted or hard-coded in the view. The design is unchanged. What was **added**: the sign-up banner, the "By" column in Recent approvals, the amber/red wait colours, the "more waiting. View all" line, and the "No session data yet" note. What was **changed in wording**: "This month" is now "Overall" (three of the four numbers are totals), and "Bookings this month" is now "Sessions this month".
+
+- **Cards** link to the tab they count. The complaints card shows the combined number and "N open, M under review". The badge next to "Needs your attention" is the sum of the four cards, and they no longer overlap.
+- **Waiting for review** lists the attention items (name, how long, "Review →" to the exact record). When there are more than 8 it says how many more and lists where they are, with links ("View all"). Empty: "Nothing is waiting for review. You're all caught up."
+- **Banner:** the sign-up strip is shown only when a sign-up is closed (which kinds, and how many are on the waitlist). **Maintenance mode** already has its own bar on every Platform page, so it is not repeated here (a test checks it appears once). Hidden when everything is normal.
+- **Platform stats** keep the donut; "No session data yet" appears under it until a session has been marked completed.
+- **Recent approvals** empty state: "No approvals yet. They appear here as they are made."
+- **Greeting** follows the admin's timezone.
+
+## Hooks and the header (Step 4)
+
+| Part | What it does now |
+|---|---|
+| **"Ask anything" box** | **Switched off.** The field, Attach and Send are disabled and the box says "Coming soon". It sends nothing anywhere and returns no answers. The typewriter placeholder and the line "Powered by AI — ask in plain language to search or filter platform data" were removed because they promised something that does not exist. When a real feature exists it replaces this component's disabled state. |
+| **Quick-action pills** | Ordinary links: Review organizations → Organizations, Pending tab; Review counselors → Counselors, Pending tab; View complaints → Complaints, Open tab; Audit log; LKM directory. |
+| **Search icon / Ctrl+K** | A **page jumper**, not a search. It lists the sidebar destinations (`config/platform-nav.php`) and filters them by name. It does **not** search any data: no organization, counselor, complaint or person. Its wording says so ("Go to a page…"). Moderate Feed shows as "Soon" until it exists. |
+| **Bell** | Switched off ("Notifications — coming soon") and the permanent red dot was removed, because it claimed something was waiting. Give it a real source (and a real dot) when notifications exist. |
+| **Avatar menu** | Name, email and "Platform Admin" come from the signed-in user. Account settings, Security, Account activity, Audit log and Notification settings all open (tested). "Language" and "Help & support" are still "Soon". |
+| **Logo** | Unchanged: the icon (`public/images/mykaunsel-icon.png`) with the wordmark that slides out on hover, linking to the Dashboard. Kept as it was (your decision); swap it for `public/images/mykaunsel-logo.png` in `topbar.blade.php` if you want the full logo there. |
+
 ## Query cost
 
-`DashboardService::build()` runs **26 queries** (SQLite measurement), and the number does **not** grow with the data (a test fills the database and compares). About 5 of them belong to `AnalyticsService`. The page limit for a full load is chosen in Step 3 once the view is wired.
+`DashboardService::build()` runs **26 queries** (SQLite measurement) and a full Dashboard load **27**; neither grows with the data (tests fill the database and compare). The limit is **40** queries for a full page load (`DashboardPageTest::MAX_QUERIES`): going over it means an N+1 crept in. About 5 of the queries belong to `AnalyticsService`.
 
 ## Tests
 
 - `DashboardServiceTest`: cards, thresholds to the hour, ordering and stability, the cap and `more`, a more urgent item never cut off by another source, each item kind, every link opens, the stats and the changed definitions, recent approvals (order, saved names, no back-fill, the audit filter), the banner's three states, the greeting in different timezones and at noon/six, an empty database, nothing private in the output, and a constant query count.
+- `DashboardPageTest`: access (platform admin only; organization admin and student get 403), every widget with an empty state, the greeting in two timezones, cards and links, wait colours and order, the cap and "View all", the new stat labels, the approvals table and its timezone, the banner states, nothing private in the HTML (complaint text, document names, notes), no design sample text left in the views, and the query limit.
 - `DashboardMatchesPagesTest`: on the real sample data each card equals the count on its page's tab; approving an organization, suspending a counselor, closing a registration type and taking up a complaint each change the very next read.

@@ -26,6 +26,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AuditContext::class);
         $this->app->singleton(AuditLogger::class);
         $this->app->singleton(\App\Services\PlatformSettings::class);
+        // The in-app notification types: the core ones here; a later page registers its own on this same registry.
+        $this->app->singleton(\App\Support\Inbox\NotificationRegistry::class, function () {
+            $registry = new \App\Support\Inbox\NotificationRegistry;
+            \App\Support\Inbox\CoreNotificationTypes::register($registry);
+
+            return $registry;
+        });
+        $this->app->singleton(\App\Services\NotificationCenter::class);
     }
 
     /**

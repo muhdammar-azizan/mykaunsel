@@ -1,4 +1,4 @@
-@props(['label', 'count', 'route', 'image', 'hint' => null, 'cta' => 'Review', 'color' => 'blue'])
+@props(['label', 'count', 'url', 'image', 'hint' => null, 'cta' => 'Review', 'color' => 'blue'])
 
 {{-- Inspo-style card: text top-left, pill button, photo bleeding in from the right and fading into the card. --}}
 @php
@@ -10,7 +10,7 @@
     ][$color];
 @endphp
 
-<a href="{{ route($route) }}"
+<a href="{{ $url }}"
    class="group relative flex min-h-[260px] overflow-hidden rounded-[28px] bg-gradient-to-br {{ $tint['bg'] }} p-6 shadow-[0_2px_10px_-2px_rgba(14,42,51,.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_-16px_rgba(14,42,51,.3)]">
 
     <img src="{{ asset($image) }}" alt="" loading="lazy"
