@@ -22,6 +22,7 @@ use App\Models\PracticeLocation;
 use App\Models\User;
 use Database\Seeders\PlatformSeeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 
 /**
@@ -141,6 +142,19 @@ trait AvailabilityFixtures
             'booking_mode' => BookingMode::SlotBased, 'status' => $status, 'session_mode' => $slot->session_mode ?? SessionMode::Online,
             'meeting_provider' => 'Google Meet', 'meeting_url' => 'https://meet.example/secret-room-123',
         ]);
+    }
+
+    /**
+     * The contract of EVERY path that ends a booking (cancel, reschedule, a counselor or member leaving): the status changes AND the time is
+     * given back (`is_available` on) in the SAME transaction. Cancelling does not exist as a feature yet; when it does, it must do this, and
+     * its test can use this helper to say what "given back" means. See docs/AVAILABILITY.md.
+     */
+    protected function cancelBooking(Booking $booking): void
+    {
+        DB::transaction(function () use ($booking) {
+            $booking->forceFill(['status' => BookingStatus::Cancelled])->save();
+            CalendarEntry::query()->whereKey($booking->calendar_entry_id)->update(['is_available' => true]);
+        });
     }
 
     protected function place(Organization $org, string $city = 'Kuantan', string $state = 'Pahang'): PracticeLocation

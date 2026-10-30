@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
+use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\CounselorDirectoryController;
 use App\Http\Controllers\Api\V1\StatusController;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +43,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('/devices/{device}/revoke', [AccountController::class, 'revokeDevice'])->whereNumber('device')->name('devices.revoke');
         });
     });
+
+    // Booking a time (docs/AVAILABILITY.md, "The confirm step"). The preview claims nothing; the POST is the only place a Mode A booking is
+    // made. Each has its own limit.
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-booking-preview'])->get('/bookings/preview', [BookingController::class, 'preview'])->name('bookings.preview');
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-booking-create'])->post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 
     // Counselor search (docs/PUBLIC_COUNSELOR_DATA.md). Signed in with a confirmed email only, with its own limit.
     // Which times of one counselor can be picked (read only; the booking itself is a later step). Its own, roomier limit.

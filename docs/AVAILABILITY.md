@@ -62,7 +62,7 @@ Configurable in `config/booking.php`:
 |---|---|---|
 | `min_lead_hours` | 2 | A slot starting sooner than this from now is not offered. Exactly 2 hours is allowed. |
 | `horizon_days` | 30 | The last bookable day is today + 30 (Malaysian time). |
-| `max_upcoming_sessions` | 3 | Per person. **Not enforced here**; the confirm step will. |
+| `max_upcoming_sessions` | 3 | Per person. Not enforced by this screen; the confirm step does. |
 | `availability_days_per_request` | 14 | The longest range of one request. |
 
 - **Time:** slots are stored as a date and a time with no zone and are Malaysian time. A day starts at Malaysian midnight, so a slot at 00:30 belongs to that Malaysian date.
@@ -72,17 +72,73 @@ Configurable in `config/booking.php`:
 - **The profile and the search use the same window and the same clash rule,** so a time shown anywhere can be booked on this screen. **A change you will see:** the profile and the list used to show slots up to 60 days ahead and any time in the future; they now stop at 30 days and start 2 hours from now, and they no longer show a time that clashes with a block or a booked session.
 - **Nothing is cached on the server.** The phone may keep an answer for 30 seconds (`Cache-Control: private, max-age=30`); no shared cache may (`private`, `Vary: Authorization`). A "no" is `no-store`.
 
-## The contract for the confirm step (NOT built here)
+## The confirm step (built)
 
-The confirm endpoint, when it is built, must:
+Two endpoints, one set of rules. Code: `BookingController`, `BookingService`, `BookingIdempotency`; the rules are the SAME functions the availability screen uses (`CounselorDirectory::resolveSlot` / `resolveBookable`, `AvailabilityService::slotBookable`), so the preview and the booking cannot disagree. Tests: `BookingApiTest`, `BookingPublicIdTest`, `PurgeBookingIdempotencyKeysTest`, and (MySQL/MariaDB only) `BookingConcurrencyTest`.
 
-1. Accept an **`Idempotency-Key`** header, so a retry of the same request (a bad network) does not book twice.
-2. **Claim the slot with one atomic conditional update inside a transaction:** `UPDATE calendar_entries SET is_available = 0 WHERE id = ? AND is_available = 1`, and check the **number of rows affected** (do not read, then write). Zero rows = someone else got it: answer `409` with `code: slot_taken`.
-3. Re-run the eligibility rules (who may book this counselor, a confirmed email, not their own sessions) and the clash rule (`AvailabilityService::isFree()`, ignoring the slot being booked), then create the booking, in the same transaction. Only then the app shows "Booking confirmed". The booking's organization comes from the **slot's context**, and the per-person cap (`max_upcoming_sessions`) and overlapping-bookings rules are enforced here.
-4. **Every action that ends a booking must give the time back.** Cancel, reschedule and offboarding (a counselor or member leaving) **set `is_available` back to 1** in the same transaction as the status change. Otherwise the slot would stay "booked" forever (the flag is one of the two layers).
-5. Answer `409 slot_taken` also when the slot was hidden meanwhile by a clash.
+### `GET /api/v1/bookings/preview?slot={public id}` (token, confirmed email)
 
-**No ordinary unique index on `bookings.calendar_entry_id`, on purpose.** A cancelled booking row stays, and its slot may be booked again, so an index over all rows would forbid that. A partial or filtered unique index is not portable across SQLite and MariaDB/MySQL. The safety gate is therefore the conditional update in step 2 with its affected-row check. It must be tested **on MySQL/MariaDB only** (it needs real row locks and parallel connections; SQLite has neither), like the promo-code redemption test.
+Read only: claims nothing. Always `200` for a slot the person may book, with `valid` and `reason`:
+
+| `valid` | `reason` | Body |
+|---|---|---|
+| true | null | the details below |
+| false | `slot_taken` | **nothing else** (no details, never why) |
+| false | `time_conflict` / `upcoming_limit_reached` | the details (they are about the person's own sessions) |
+
+`404 counselor_unavailable` for everything else. Details: `slot`, `counselor{id, display_name, verified}`, `starts_at`, `ends_at` (ISO 8601 with +08:00), `duration_minutes`, `mode`, `location{name, city}|null`, `cancellation_deadline_at` (null when it is already past: the session cannot be cancelled after booking), `cancellation_hours`, `max_reschedules`, `meeting_link_visible_minutes`, and `upcoming_sessions` / `max_upcoming_sessions` **only** when the person holds the cap or one below it. No price, no meeting link, no street address, no organization name, no row ids. Its own limit: `api-booking-preview` (60 a minute, 600 an hour).
+
+### `POST /api/v1/bookings` (token, confirmed email)
+
+Header `Idempotency-Key` (a UUID, required). Body: `slot`, `acknowledged_policy` (must be the JSON value `true`; it is **not stored**), `expected_starts_at`, `expected_duration_minutes`, `expected_mode`. Limit `api-booking-create`: **10 a minute and 60 an hour** (`booking.create_rate_per_minute` / `_per_hour`).
+
+`201`: `{booking: {id (random public id), status, starts_at, ends_at, duration_minutes, mode, counselor{display_name}, location{name, city}|null}}`. Never the meeting link, the address, organization names or other people's data.
+
+| Status | `code` | Meaning |
+|---|---|---|
+| 401 | | signed out |
+| 403 | `email_not_verified` | |
+| 404 | `counselor_unavailable` | **one body** for: unknown or malformed slot, a personal block, a counselor not listable, a closed organization the person is not in, a counselor who left the slot's organization, the person themselves |
+| 409 | `slot_taken` | **one body** for: taken, flag off, inside the lead time now, beyond the horizon, now overlapped by a block or a buffer |
+| 409 | `slot_changed` | the counselor edited the slot (start, length or mode differ from `expected_*`). Body has `slot`: the fresh details. Nothing is booked |
+| 409 | `time_conflict` | the person has a confirmed, not-yet-started session overlapping this time with ANY counselor (touching at the edge is fine) |
+| 409 | `upcoming_limit_reached` | with `max_upcoming_sessions`. Only **confirmed** bookings that have **not started** count (`booking.max_upcoming_sessions`, 3) |
+| 409 | `request_in_progress` | the same key is still being processed; `Retry-After` |
+| 422 | | validation; or `idempotency_key_reuse`: the same key with a different request |
+| 429 / 503 / 426 | | rate limit (with `Retry-After`) / maintenance / outdated app |
+
+**The transaction, in this order** (always, so two bookings never wait for each other in a circle):
+
+1. lock the booking person's row;
+2. lock the counselor's profile row: this serializes **every** booking of that counselor, so two people taking two overlapping slots in two different contexts cannot both succeed;
+3. decide again, with the locks held: who may book (`resolveSlot`) and whether the time can be booked (`slotBookable`): `slot_taken`;
+4. compare `expected_*` with the real slot: `slot_changed`;
+5. the person's limits: `time_conflict`, `upcoming_limit_reached`;
+6. **claim:** one `UPDATE calendar_entries SET is_available = 0 WHERE id = ? AND is_available = 1 AND NOT EXISTS (a booking that is not cancelled)` and check that **exactly one row** changed (never read-then-write); otherwise `slot_taken`;
+7. create the booking: `slot_based`, `confirmed`, `session_mode` from the slot (no mode = online), `org_id` from the slot's context, `location_id` from the slot, `reschedule_count` 0, no meeting link;
+8. commit. Anything that fails before this rolls everything back, **the claim included**.
+
+The e-mails (`BookingConfirmedClient`, `NewBookingCounselor`) are queued after the commit (`afterCommit`) and can never undo or fail the booking (an error is reported and the booking stands). The counselor's e-mail has the client's **display name only** (no e-mail, no phone, no link), and for an online session reminds them to add a meeting link. **Queue:** `QUEUE_CONNECTION=database`, so `php artisan queue:work` must be running or the e-mails wait; `MAIL_MAILER=log` in development. No push, no in-app notification, and **no audit entry** (the booking row is the record).
+
+### Idempotency
+
+Table `booking_idempotency_keys`, unique on (person, key); keeps a hash of the normalised request (never the request, a token or headers) and the answer of a successful booking for `booking.idempotency_ttl_hours` (24). The key is **reserved in its own short transaction before** the booking transaction. Same key + same request after a success: the stored answer, with the original status and `Idempotent-Replayed: true`. Different request: `422 idempotency_key_reuse`. Same key still running: `409 request_in_progress`. A refusal or a rollback **releases** the key (the person may try again with it). A reservation left "processing" (the server died) stops blocking after 60 seconds. `php artisan bookings:purge-idempotency [--dry-run]` (daily 03:30) deletes expired keys and writes one system audit entry with counts.
+
+### Cancel, reschedule, offboard (the contract; none of them exists yet)
+
+Every action that ends a booking **must give the time back in the same transaction as the status change**: set `calendar_entries.is_available` back to 1. Cancel, reschedule, and a counselor or member leaving all do this. Otherwise the slot would stay "booked" forever (the flag is one of the two layers). Tests can use `AvailabilityFixtures::cancelBooking()` to say what "given back" means.
+
+### No ordinary unique index on `bookings.calendar_entry_id`, on purpose
+
+A cancelled booking row stays, and its slot may be booked again, so an index over all rows would forbid that. A partial or filtered unique index is not portable across SQLite and MariaDB/MySQL. The safety gate is therefore **the two locks plus the conditional update with its affected-row check**. It is tested on MySQL/MariaDB only (`BookingConcurrencyTest`, real parallel processes; SQLite has no row locks or parallel connections), like the promo-code redemption test.
+
+### Booking public id
+
+`bookings.public_id`: a lowercase ULID, unique, required, never mass-assignable, set when the row is inserted (`performInsert`, so also in seeders that switch events off). The migration `2026_11_06_000001` is safe to repeat: it adds the column if missing, fills rows without an id in batches with no model events and no audit entries, then makes it required and unique. No sequential id is ever sent to the app.
+
+### Configuration
+
+`config/booking.php`: `cancellation_default_hours` (24; used only when the slot's organization has no value of its own: `organizations.cancellation_deadline_hours`, which defaults to 24 and is what the virtual platform organization has), `max_reschedules` (2), `meeting_link_visible_minutes` (15), `idempotency_ttl_hours` (24), `idempotency_processing_seconds` (60), `create_rate_per_minute` (10) / `_per_hour` (60), `preview_rate_per_minute` (60) / `_per_hour` (600), `max_upcoming_sessions` (3).
 
 ## Findings that shaped this
 

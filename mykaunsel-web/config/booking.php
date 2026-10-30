@@ -15,6 +15,26 @@ return [
     // How many upcoming sessions one person may hold at once. Enforced when a booking is CONFIRMED (a later step), not when browsing.
     'max_upcoming_sessions' => (int) env('BOOKING_MAX_UPCOMING_SESSIONS', 3),
 
+    // Used only when the slot's organization has no cancellation deadline of its own (organizations.cancellation_deadline_hours).
+    'cancellation_default_hours' => (int) env('BOOKING_CANCELLATION_DEFAULT_HOURS', 24),
+
+    'max_reschedules' => (int) env('BOOKING_MAX_RESCHEDULES', 2),
+
+    // How long before the session the meeting link appears in the person's booking.
+    'meeting_link_visible_minutes' => (int) env('BOOKING_MEETING_LINK_VISIBLE_MINUTES', 15),
+
+    // An Idempotency-Key (and the answer kept with it) is forgotten after this many hours.
+    'idempotency_ttl_hours' => (int) env('BOOKING_IDEMPOTENCY_TTL_HOURS', 24),
+
+    // A request that never finished (the server died) stops blocking its key after this many seconds.
+    'idempotency_processing_seconds' => 60,
+
+    // Rate limits per person.
+    'create_rate_per_minute' => (int) env('BOOKING_CREATE_RATE_PER_MINUTE', 10),
+    'create_rate_per_hour' => (int) env('BOOKING_CREATE_RATE_PER_HOUR', 60),
+    'preview_rate_per_minute' => (int) env('BOOKING_PREVIEW_RATE_PER_MINUTE', 60),
+    'preview_rate_per_hour' => (int) env('BOOKING_PREVIEW_RATE_PER_HOUR', 600),
+
     // The longest stretch of days one availability request may ask for.
     'availability_days_per_request' => 14,
 ];

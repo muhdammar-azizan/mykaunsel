@@ -10,6 +10,7 @@ use App\Enums\OrgType;
 use App\Enums\SessionMode;
 use App\Models\CalendarEntry;
 use App\Models\CounselorProfile;
+use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -140,6 +141,41 @@ class CounselorDirectory
             ->first();
 
         return $profile === null ? null : ['profile' => $profile, 'orgIds' => $orgIds];
+    }
+
+    /**
+     * The slot a person wants to book, with its counselor, or null. The counselor rules are exactly resolveBookable's, and the slot's context
+     * must be an organization this person may see where the counselor still works. Unknown slot, a block instead of a slot, a hidden
+     * counselor, a closed organization, yourself: ONE and the same "no". (Whether the TIME can still be booked is a different question,
+     * answered by AvailabilityService::slotBookable.)
+     *
+     * @return array{slot: CalendarEntry, profile: CounselorProfile, orgIds: list<int>}|null
+     */
+    public function resolveSlot(User $viewer, string $slotPublicId): ?array
+    {
+        if (preg_match('/^[0-9A-HJKMNP-TV-Z]{26}$/i', $slotPublicId) !== 1) {
+            return null;
+        }
+
+        $slot = CalendarEntry::query()
+            ->with('location:id,name,city')
+            ->where('public_id', strtolower($slotPublicId))
+            ->where('entry_type', CalendarEntryType::AvailableSlot->value)
+            ->first();
+
+        $profileId = $slot === null ? null : CounselorProfile::query()->where('user_id', $slot->counselor_user_id)->value('public_id');
+        $found = $profileId === null ? null : $this->resolveBookable($viewer, $profileId);
+
+        if ($found === null || ! in_array($slot->context_org_id, $found['orgIds'], true)) {
+            return null;
+        }
+
+        $worksThere = Membership::query()
+            ->where('user_id', $slot->counselor_user_id)->where('org_id', $slot->context_org_id)
+            ->where('role', MembershipRole::Counselor->value)->where('status', MembershipStatus::Active->value)
+            ->exists();
+
+        return $worksThere ? ['slot' => $slot, 'profile' => $found['profile'], 'orgIds' => $found['orgIds']] : null;
     }
 
     /**

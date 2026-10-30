@@ -37,6 +37,8 @@ use Illuminate\Support\Str;
  * SLOTS: over the coming days; some booked (one online booking whose meeting link has not been added yet), some in the past, some inside the
  * minimum lead time, some beyond the booking horizon, and a personal block that makes the slot under it disappear.
  * PEOPLE: an active member of the university, a non-member, and a person whose email address is not confirmed.
+ * CONFIRM SCENARIOS: see confirmScenarios() (a person at the upcoming-sessions cap, one with an overlapping session, two overlapping contexts, a slot
+ * inside the cancellation window, a slot to edit between preview and confirm).
  */
 class AvailabilityDemoSeeder extends Seeder
 {
@@ -121,6 +123,45 @@ class AvailabilityDemoSeeder extends Seeder
         // Never bookable: suspended, expired PA.
         $this->slot($suspended, $platform, 1, '09:00');
         $this->slot($expired, $platform, 1, '09:00');
+
+        $this->confirmScenarios($platform, $clinic, $place);
+    }
+
+    /**
+     * For the "Confirm booking" screen (POST /bookings). Two counselors of their own, so the counts above stay as they are:
+     *   Demo Booking Lab One   the TARGET: every slot below belongs to them.
+     *   Demo Booking Lab Two   the other counselor whose sessions the people below already hold.
+     * and the people (act as them with Sanctum::actingAs):
+     *   demo.availability.atcap     already holds the most upcoming sessions allowed (3): booking one more must be refused
+     *   demo.availability.overlap   holds a session with Lab Two that overlaps Lab One's day-2 09:00 slot: time_conflict
+     *   (the existing member / non-member / unverified people cover the closed organization and the unconfirmed email)
+     * The slots of Lab One:
+     *   day 2 09:00  plain online slot, overlapped by the "overlap" person's session
+     *   day 3 10:00  plain online slot (book this one)
+     *   day 4 14:00 (independent) and 14:30 (clinic, in person)  two contexts, overlapping: only ONE of them can ever be booked
+     *   day 6 11:00  the slot to EDIT between preview and confirm (change its length or start in a test, then confirm: slot_changed)
+     *   in 5 hours   inside the cancellation window (24 hours by default): the screen warns it cannot be cancelled
+     */
+    private function confirmScenarios(Organization $platform, Organization $clinic, PracticeLocation $place): void
+    {
+        $one = $this->counselor('Demo Booking Lab One', [$platform, $clinic]);
+        $two = $this->counselor('Demo Booking Lab Two', [$platform]);
+
+        $this->slot($one, $platform, 2, '09:00');
+        $this->slot($one, $platform, 3, '10:00');
+        $this->slot($one, $platform, 4, '14:00');
+        $this->slot($one, $clinic, 4, '14:30', SessionMode::Physical, $place);
+        $this->slot($one, $platform, 6, '11:00');
+        $this->slotAt($one, $platform, CarbonImmutable::now($this->today->timezone)->addHours(5)->setSecond(0), SessionMode::Online);
+
+        $overlap = $this->person('Demo Overlap', 'demo.availability.overlap@example.test');
+        $this->booking($overlap, $two, $platform, $this->slot($two, $platform, 2, '09:30', SessionMode::Online, null, available: false), SessionMode::Online);
+
+        $atCap = $this->person('Demo At Cap', 'demo.availability.atcap@example.test');
+
+        foreach ([10, 11, 12] as $day) {
+            $this->booking($atCap, $two, $platform, $this->slot($two, $platform, $day, '09:00', SessionMode::Online, null, available: false), SessionMode::Online);
+        }
     }
 
     private function organization(string $name, OrgType $type, AccessModel $access): Organization

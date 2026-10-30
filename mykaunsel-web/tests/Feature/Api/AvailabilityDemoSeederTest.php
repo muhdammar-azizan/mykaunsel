@@ -128,4 +128,50 @@ class AvailabilityDemoSeederTest extends TestCase
         $this->assertStringNotContainsString('dentist', json_encode($answer->json()));
         $this->assertStringNotContainsString('private appointment', strtolower(json_encode($answer->json())));
     }
+
+    // ---- the scenarios for the Confirm booking screen --------------------------------------------------------------
+
+    private function labSlot(string $when, string $name = 'Demo Booking Lab One'): CalendarEntry
+    {
+        $at = Carbon::parse($when, 'Asia/Kuala_Lumpur');
+
+        return CalendarEntry::where('counselor_user_id', $this->counselorNamed($name)->user_id)
+            ->whereDate('entry_date', $at->toDateString())->where('start_time', $at->format('H:i:s'))->firstOrFail();
+    }
+
+    public function test_the_confirm_scenarios_each_give_their_intended_answer(): void
+    {
+        // The person at the cap, and the one with an overlapping session.
+        $this->actAs('Demo At Cap');
+        $this->getJson('/api/v1/bookings/preview?slot='.$this->labSlot('2026-11-05 10:00')->public_id)->assertOk()->assertJson(['valid' => false, 'reason' => 'upcoming_limit_reached']);
+
+        $this->actAs('Demo Overlap');
+        $this->getJson('/api/v1/bookings/preview?slot='.$this->labSlot('2026-11-04 09:00')->public_id)->assertOk()->assertJson(['valid' => false, 'reason' => 'time_conflict']);
+
+        // A slot inside the cancellation window: bookable, with no deadline left.
+        $this->actAs('Demo Member');
+        $soon = $this->labSlot('2026-11-02 14:00');
+        $this->getJson('/api/v1/bookings/preview?slot='.$soon->public_id)->assertOk()->assertJson(['valid' => true, 'cancellation_deadline_at' => null]);
+
+        // The editable slot: change it after the preview and the booking says so.
+        $edit = $this->labSlot('2026-11-08 11:00');
+        $payload = ['slot' => $edit->public_id, 'acknowledged_policy' => true, 'expected_starts_at' => '2026-11-08T11:00:00+08:00', 'expected_duration_minutes' => 60, 'expected_mode' => 'online'];
+        $edit->update(['duration_minutes' => 30]);
+        $this->postJson('/api/v1/bookings', $payload, ['Idempotency-Key' => (string) \Illuminate\Support\Str::uuid()])->assertStatus(409)->assertJson(['code' => 'slot_changed']);
+
+        // Two contexts, overlapping: whichever is booked first takes the other away.
+        $independent = $this->labSlot('2026-11-06 14:00');
+        $inPerson = $this->labSlot('2026-11-06 14:30');
+        $body = fn (CalendarEntry $slot, string $mode) => ['slot' => $slot->public_id, 'acknowledged_policy' => true, 'expected_starts_at' => Carbon::parse($slot->entry_date->format('Y-m-d').' '.$slot->start_time, 'Asia/Kuala_Lumpur')->toIso8601String(), 'expected_duration_minutes' => 60, 'expected_mode' => $mode];
+        $this->postJson('/api/v1/bookings', $body($independent, 'online'), ['Idempotency-Key' => (string) \Illuminate\Support\Str::uuid()])->assertCreated();
+        $this->actAs('Demo Non-member');
+        $this->postJson('/api/v1/bookings', $body($inPerson, 'physical'), ['Idempotency-Key' => (string) \Illuminate\Support\Str::uuid()])->assertStatus(409)->assertJson(['code' => 'slot_taken']);
+
+        // The unconfirmed email and a closed organization the person is not in.
+        $this->actAs('Demo Unverified');
+        $this->getJson('/api/v1/bookings/preview?slot='.$independent->public_id)->assertForbidden()->assertJson(['code' => 'email_not_verified']);
+        $this->actAs('Demo Non-member');
+        $closed = CalendarEntry::where('counselor_user_id', $this->counselorNamed('Demo University Counselor')->user_id)->firstOrFail();
+        $this->getJson('/api/v1/bookings/preview?slot='.$closed->public_id)->assertNotFound()->assertJson(['code' => 'counselor_unavailable']);
+    }
 }

@@ -25,6 +25,7 @@ Schedule::command('complaints:purge-text')->dailyAt('03:15')->withoutOverlapping
 Schedule::command('notifications:purge')->dailyAt('03:20')->withoutOverlapping();
 
 // Waitlist addresses are deleted 30 days after they were notified (365 days if never): see config/waitlist.php.
+Schedule::command('bookings:purge-idempotency')->dailyAt('03:30')->withoutOverlapping();
 Schedule::command('waitlist:purge')->dailyAt('03:00')->withoutOverlapping();
 
 // Evidence of LKM review requests is deleted 30 days after the decision: see config/lkm.php.

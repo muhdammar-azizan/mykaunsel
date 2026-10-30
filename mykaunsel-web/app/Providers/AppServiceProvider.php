@@ -102,6 +102,17 @@ class AppServiceProvider extends ServiceProvider
             Limit::perHour(600)->by('availability-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
         ]);
 
+        // Booking. The create limit is also a brake on one account draining a counselor's calendar (on top of the upcoming-sessions cap).
+        RateLimiter::for('api-booking-preview', fn (Request $request) => [
+            Limit::perMinute((int) config('booking.preview_rate_per_minute'))->by('booking-preview|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+            Limit::perHour((int) config('booking.preview_rate_per_hour'))->by('booking-preview-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+        ]);
+
+        RateLimiter::for('api-booking-create', fn (Request $request) => [
+            Limit::perMinute((int) config('booking.create_rate_per_minute'))->by('booking-create|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+            Limit::perHour((int) config('booking.create_rate_per_hour'))->by('booking-create-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+        ]);
+
         RateLimiter::for('api-user', fn (Request $request) => Limit::perMinute(120)->by('user|'.($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
 }

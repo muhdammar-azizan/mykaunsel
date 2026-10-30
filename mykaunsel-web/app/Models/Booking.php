@@ -29,6 +29,17 @@ class Booking extends Model
         'reschedule_count',
     ];
 
+    /**
+     * Every booking gets its random public id the moment it is inserted (never mass-assignable, never a counter). Done here, not in a model
+     * event, so it also holds when events are switched off (the database seeders do that).
+     */
+    protected function performInsert(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        $this->public_id ??= strtolower((string) \Illuminate\Support\Str::ulid());
+
+        return parent::performInsert($query);
+    }
+
     protected function casts(): array
     {
         return [

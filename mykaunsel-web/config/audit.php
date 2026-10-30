@@ -165,6 +165,9 @@ return [
         // Written by the scheduler (notifications:purge): old in-app notifications deleted. Counts only. Opening or reading one is never recorded.
         'notification.purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old notifications deleted'],
 
+        // Written by the scheduler (bookings:purge-idempotency): expired booking request keys deleted. Counts only. Bookings are not audited.
+        'booking.idempotency_purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old booking request keys deleted'],
+
         // The audit log itself
         'audit.exported' => ['category' => 'audit', 'badge' => 'exported', 'label' => 'Audit log exported'],
         'analytics.exported' => ['category' => 'analytics', 'badge' => 'exported', 'label' => 'Analytics exported'],

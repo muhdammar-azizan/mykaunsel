@@ -102,6 +102,26 @@ class AvailabilityService
         })->values();
     }
 
+    /**
+     * Can this slot be booked right now? The ONE answer used by the preview and by the confirm step: it is a slot, still free (flag on, no
+     * booking that is not cancelled), inside the booking window (lead time and horizon) and clear of everything else on the counselor's
+     * calendar in every context (personal blocks and other bookings, with the buffer). Every "no" is the same "no": the caller never learns why.
+     */
+    public function slotBookable(CalendarEntry $slot, ?CarbonImmutable $now = null): bool
+    {
+        if (! $slot->isSlot() || $this->isBooked($slot)) {
+            return false;
+        }
+
+        $start = $this->startOf($slot);
+
+        if ($start->lt($this->earliestStart($now)) || $slot->entry_date->format('Y-m-d') > $this->lastDate($now)->format('Y-m-d')) {
+            return false;
+        }
+
+        return $this->isFree((int) $slot->counselor_user_id, $start, (int) $slot->duration_minutes, $slot->id);
+    }
+
     /** True when the slot is taken: the flag is off OR a booking that is not cancelled points at it. */
     public function isBooked(CalendarEntry $slot): bool
     {
@@ -201,7 +221,7 @@ class AvailabilityService
         ];
     }
 
-    private function startOf(CalendarEntry $entry): CarbonImmutable
+    public function startOf(CalendarEntry $entry): CarbonImmutable
     {
         return CarbonImmutable::createFromFormat('Y-m-d H:i:s', $entry->entry_date->format('Y-m-d').' '.$entry->start_time, $this->timezone());
     }
