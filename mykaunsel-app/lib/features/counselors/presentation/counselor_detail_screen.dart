@@ -151,6 +151,17 @@ class _Profile extends ConsumerWidget {
           icon: const Icon(Icons.event_available_outlined),
           label: Text(l10n.seeAvailableTimes),
         ),
+        // A counselor who takes requests can be asked for a time inside their weekly hours (the server checks everything).
+        if (counselor.acceptsRequests == true) ...[
+          const SizedBox(height: 12),
+          Text(l10n.counselorAskTimeHint(counselor.name), style: text.bodySmall),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () => context.push(AppRoutes.sendRequestPath(counselor.id), extra: BookingCounselorSummary.fromCounselor(counselor)),
+            icon: const Icon(Icons.edit_calendar_outlined),
+            label: Text(l10n.counselorAskTime),
+          ),
+        ],
       ],
     );
   }

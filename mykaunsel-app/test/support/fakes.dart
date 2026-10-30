@@ -19,6 +19,8 @@ import 'package:mykaunsel/features/booking/data/booking_api.dart';
 import 'package:mykaunsel/features/booking/domain/availability.dart';
 import 'package:mykaunsel/features/booking/domain/booking_preview.dart';
 import 'package:mykaunsel/features/bookings/data/my_bookings_api.dart';
+import 'package:mykaunsel/features/requests/data/requests_api.dart';
+import 'package:mykaunsel/features/requests/domain/time_request.dart';
 import 'package:mykaunsel/features/bookings/domain/my_booking.dart';
 import 'package:mykaunsel/features/counselors/data/counselor_api.dart';
 import 'package:mykaunsel/features/counselors/domain/counselor.dart';
@@ -487,6 +489,7 @@ List<Override> testOverrides({
   FakeAvailabilityApi? availabilityApi,
   FakeBookingApi? bookingApi,
   FakeMyBookingsApi? myBookingsApi,
+  FakeRequestsApi? requestsApi,
 }) {
   return [
     appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://test.local')),
@@ -499,6 +502,7 @@ List<Override> testOverrides({
     availabilityApiProvider.overrideWithValue(availabilityApi ?? FakeAvailabilityApi()),
     bookingApiProvider.overrideWithValue(bookingApi ?? FakeBookingApi()),
     myBookingsApiProvider.overrideWithValue(myBookingsApi ?? FakeMyBookingsApi()),
+    requestsApiProvider.overrideWithValue(requestsApi ?? FakeRequestsApi()),
     clockProvider.overrideWithValue(() => testNow),
   ];
 }
@@ -550,5 +554,101 @@ Availability anAvailability(List<AvailabilityDay> days, {List<SessionMode> modes
     bookingWindow: BookingWindow(earliestStart: DateTime.utc(2026, 11, 2, 3), lastDate: '2026-12-02', minLeadHours: 2),
     days: days,
     nextFrom: nextFrom,
+  );
+}
+
+// ---- time requests (Mode B) ----
+
+class FakeRequestsApi implements RequestsApi {
+  final hoursCalls = <String>[];
+  final sends = <({String counselorId, String date, String time, String? message})>[];
+  final lists = <int>[];
+  final details = <String>[];
+  final withdraws = <String>[];
+
+  Future<WorkingHours> Function(String counselorId) hoursHandler = (id) async => aWorkingHours();
+  Future<TimeRequest> Function(String counselorId, String date, String time) sendHandler = (id, date, time) async => aTimeRequest(id: 'rq-new');
+  Future<RequestsPage> Function(int page) listHandler = (page) async => const RequestsPage(items: [], page: 1, lastPage: 1);
+  Future<TimeRequest> Function(String id) detailHandler = (id) async => aTimeRequest(id: id);
+  Future<TimeRequest> Function(String id) withdrawHandler = (id) async => aTimeRequest(id: id, status: RequestState.withdrawn);
+
+  @override
+  Future<WorkingHours> workingHours(String counselorId) {
+    hoursCalls.add(counselorId);
+
+    return hoursHandler(counselorId);
+  }
+
+  @override
+  Future<TimeRequest> send(String counselorId, {required String date, required String time, String? message}) {
+    sends.add((counselorId: counselorId, date: date, time: time, message: message));
+
+    return sendHandler(counselorId, date, time);
+  }
+
+  @override
+  Future<RequestsPage> list({int page = 1}) {
+    lists.add(page);
+
+    return listHandler(page);
+  }
+
+  @override
+  Future<TimeRequest> detail(String id) {
+    details.add(id);
+
+    return detailHandler(id);
+  }
+
+  @override
+  Future<TimeRequest> withdraw(String id) {
+    withdraws.add(id);
+
+    return withdrawHandler(id);
+  }
+}
+
+/// Aina works Mondays 14:00-16:00 in half-hours in person at Klinik Damai, and Thursdays 10:00-13:00 in hours online.
+WorkingHours aWorkingHours({bool accepts = true, List<WorkingHoursLine>? lines}) {
+  return WorkingHours(
+    counselor: const BookingCounselorRef(id: 'c1', displayName: 'Kaunselor Aina Syazwani'),
+    acceptsRequests: accepts,
+    hours: lines ??
+        const [
+          WorkingHoursLine(weekday: 1, from: '14:00', to: '16:00', durationMinutes: 30, mode: SessionMode.physical, location: SlotLocation(name: 'Klinik Damai', city: 'Kuantan')),
+          WorkingHoursLine(weekday: 4, from: '10:00', to: '13:00', durationMinutes: 60, mode: SessionMode.online),
+        ],
+    bookingWindow: BookingWindow(earliestStart: DateTime.utc(2026, 11, 2, 3), lastDate: '2026-12-02', minLeadHours: 2),
+    answerWithinHours: 48,
+  );
+}
+
+/// A request for Thursday 5 Nov at 10:00 Malaysian time (an hour, online), made on [testNow]'s day.
+TimeRequest aTimeRequest({
+  String id = 'rq1',
+  RequestState status = RequestState.pending,
+  int days = 3,
+  int hour = 10,
+  SessionMode mode = SessionMode.online,
+  SlotLocation? location,
+  String? message,
+  String? reason,
+  String? bookingId,
+}) {
+  final start = DateTime.utc(2026, 11, 2 + days, hour - 8);
+
+  return TimeRequest(
+    id: id,
+    status: status,
+    counselor: const BookingCounselorRef(id: 'c1', displayName: 'Kaunselor Aina Syazwani'),
+    startsAt: start,
+    endsAt: start.add(const Duration(hours: 1)),
+    durationMinutes: 60,
+    mode: mode,
+    location: location,
+    message: message,
+    responseReason: reason,
+    expiresAt: testNow.add(const Duration(hours: 48)),
+    bookingId: bookingId,
   );
 }

@@ -21,6 +21,8 @@ import '../../features/bookings/presentation/reschedule_args.dart';
 import '../../features/bookings/presentation/booking_detail_screen.dart';
 import '../../features/bookings/presentation/bookings_screen.dart';
 import '../../features/counselors/presentation/counselor_detail_screen.dart';
+import '../../features/requests/presentation/request_detail_screen.dart';
+import '../../features/requests/presentation/send_request_screen.dart';
 import '../../features/counselors/presentation/counselors_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/startup/presentation/maintenance_screen.dart';
@@ -63,6 +65,12 @@ abstract final class AppRoutes {
   /// Moving a booking: the time picker for the same counselor. The booking and its current time come in `extra`; without them (an old
   /// link) the route goes back to the booking.
   static String reschedulePath(String id) => '/reschedule/${Uri.encodeComponent(id)}';
+
+  /// Asking a counselor for a time (Mode B). The counselor's name comes in `extra`; without it the screen loads it.
+  static String sendRequestPath(String counselorId) => '/request/${Uri.encodeComponent(counselorId)}';
+
+  /// One time request, inside the Bookings tab.
+  static String requestPath(String id) => '/bookings/requests/${Uri.encodeComponent(id)}';
 
   /// Pages a signed-out person may be on.
   static const signedOutPages = {signIn, twoFactor, verifyEmail, signUp, forgotPassword};
@@ -169,6 +177,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => BookingConfirmedScreen(booking: state.extra! as CreatedBooking),
       ),
       GoRoute(
+        path: '/request/:id',
+        builder: (_, state) {
+          final id = state.pathParameters['id']!;
+          final extra = state.extra;
+
+          return SendRequestScreen(counselor: extra is BookingCounselorSummary ? extra : BookingCounselorSummary(id: id, name: ''));
+        },
+      ),
+      GoRoute(
         path: '/reschedule/:id',
         redirect: (_, state) {
           final target = state.extra;
@@ -219,7 +236,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             GoRoute(
               path: AppRoutes.bookings,
               builder: (_, _) => const BookingsScreen(),
-              routes: [GoRoute(path: ':id', builder: (_, state) => BookingDetailScreen(id: state.pathParameters['id']!))],
+              routes: [
+                // Before ':id', so "requests" is never read as a booking id.
+                GoRoute(path: 'requests/:requestId', builder: (_, state) => RequestDetailScreen(id: state.pathParameters['requestId']!)),
+                GoRoute(path: ':id', builder: (_, state) => BookingDetailScreen(id: state.pathParameters['id']!)),
+              ],
             ),
           ]),
           StatefulShellBranch(routes: [

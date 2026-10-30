@@ -7,11 +7,14 @@ import '../../../core/providers.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../requests/domain/time_request.dart';
+import '../../requests/presentation/my_requests_controller.dart';
+import '../../requests/presentation/request_labels.dart';
 import '../domain/my_booking.dart';
 import 'booking_labels.dart';
 import 'my_bookings_controller.dart';
 
-/// The Bookings tab: Upcoming and Past. Read only; a booking opens its details.
+/// The Bookings tab: Upcoming, Past and Requests (times the person asked counselors for). A booking or a request opens its details.
 class BookingsScreen extends StatelessWidget {
   const BookingsScreen({super.key});
 
@@ -20,14 +23,14 @@ class BookingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.bookingsTitle),
-          bottom: TabBar(tabs: [Tab(text: l10n.bookingsTabUpcoming), Tab(text: l10n.bookingsTabPast)]),
+          bottom: TabBar(tabs: [Tab(text: l10n.bookingsTabUpcoming), Tab(text: l10n.bookingsTabPast), Tab(text: l10n.bookingsTabRequests)]),
         ),
         body: const SafeArea(
-          child: TabBarView(children: [_BookingList(scope: BookingsScope.upcoming), _BookingList(scope: BookingsScope.past)]),
+          child: TabBarView(children: [_BookingList(scope: BookingsScope.upcoming), _BookingList(scope: BookingsScope.past), _RequestList()]),
         ),
       ),
     );
@@ -297,6 +300,135 @@ class _Skeleton extends StatelessWidget {
                 decoration: BoxDecoration(color: color, borderRadius: AppRadii.cardRadius),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The person's own time requests, newest first. Pull to refresh; a request opens its details.
+class _RequestList extends ConsumerStatefulWidget {
+  const _RequestList();
+
+  @override
+  ConsumerState<_RequestList> createState() => _RequestListState();
+}
+
+class _RequestListState extends ConsumerState<_RequestList> {
+  final _scroll = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(() {
+      if (_scroll.hasClients && _scroll.position.extentAfter < 300) ref.read(myRequestsControllerProvider.notifier).loadMore();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final state = ref.watch(myRequestsControllerProvider);
+    final controller = ref.read(myRequestsControllerProvider.notifier);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scroll.hasClients && _scroll.position.maxScrollExtent <= 0 && state.hasMore && !state.loadingMore && state.failure == null) controller.loadMore();
+    });
+
+    if (state.loading) return const _Skeleton();
+
+    if (state.failure != null && state.items.isEmpty) {
+      return _Message(
+        icon: Icons.cloud_off_outlined,
+        title: l10n.somethingWentWrongTitle,
+        body: failureMessage(l10n, state.failure!),
+        action: FilledButton(onPressed: controller.refresh, child: Text(l10n.tryAgain)),
+      );
+    }
+
+    if (state.items.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: controller.refresh,
+        child: LayoutBuilder(
+          builder: (context, box) => SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(height: box.maxHeight, child: _Message(icon: Icons.mark_email_unread_outlined, title: l10n.requestsEmptyTitle, body: l10n.requestsEmptyBody)),
+          ),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: controller.refresh,
+      child: ListView.separated(
+        controller: _scroll,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(AppSpacing.l),
+        itemCount: state.items.length + 1,
+        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.m),
+        itemBuilder: (context, index) {
+          if (index == state.items.length) {
+            if (state.loadingMore) return const Padding(padding: EdgeInsets.all(AppSpacing.l), child: Center(child: CircularProgressIndicator()));
+
+            return state.failure == null
+                ? const SizedBox.shrink()
+                : Column(children: [Semantics(liveRegion: true, child: Text(l10n.bookingsLoadMoreFailed)), TextButton(onPressed: controller.loadMore, child: Text(l10n.tryAgain))]);
+          }
+
+          return _RequestCard(request: state.items[index]);
+        },
+      ),
+    );
+  }
+}
+
+class _RequestCard extends ConsumerWidget {
+  const _RequestCard({required this.request});
+
+  final TimeRequest request;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final when = bookingWhen(l10n, startsAt: request.startsAt, endsAt: request.endsAt, now: ref.watch(clockProvider)(), locale: locale);
+    final type = bookingType(l10n, request.mode, request.location);
+
+    return Material(
+      color: scheme.cardFill,
+      shape: RoundedRectangleBorder(borderRadius: AppRadii.cardRadius, side: BorderSide(color: scheme.cardBorder)),
+      child: InkWell(
+        borderRadius: AppRadii.cardRadius,
+        onTap: () => context.push(AppRoutes.requestPath(request.id)),
+        child: Semantics(
+          button: true,
+          excludeSemantics: true,
+          label: l10n.bookingItemLabel(when, request.counselor.displayName, type, request.status.label(l10n)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: AppSizes.minTouch),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.l),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(when, style: text.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(request.counselor.displayName, style: text.bodyLarge),
+                  Text(type, style: text.bodyMedium?.copyWith(color: scheme.mutedText)),
+                  const SizedBox(height: AppSpacing.s),
+                  _Badge(icon: request.status.icon, label: request.status.label(l10n), emphasis: request.status == RequestState.pending),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

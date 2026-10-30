@@ -219,7 +219,7 @@ On the same page. Code: `CounselorWeeklyHours`, table `counselor_weekly_hours` (
 
 ## Time requests (Mode B)
 
-"Ask this counselor for a time inside their weekly hours; they approve or decline." Code: `BookingRequests` (the client), `CounselorRequests` (the counselor), `Api\V1\TimeRequestController`, `Counselor\CounselorAppointmentController`, `requests:expire`. Table `booking_requests` extended by migration `2026_11_08_000001` (needs `php artisan migrate`). Tests: `TimeRequestApiTest`, `CounselorRequestsTest`, `ExpireTimeRequestsTest`. The app screens for this are a later step.
+"Ask this counselor for a time inside their weekly hours; they approve or decline." Code: `BookingRequests` (the client), `CounselorRequests` (the counselor), `Api\V1\TimeRequestController`, `Counselor\CounselorAppointmentController`, `requests:expire`. Table `booking_requests` extended by migration `2026_11_08_000001` (needs `php artisan migrate`). Tests: `TimeRequestApiTest`, `CounselorRequestsTest`, `ExpireTimeRequestsTest`. The app screens are built (see APP_ARCHITECTURE.md, "Ask for a time").
 
 **The client** (token, confirmed email):
 - `GET /counselors/{id}/working-hours`: the counselor's weekly hours the person may see (weekday 1 to 7, from, to, `duration_minutes`, `mode`, `location{name, city}`), `accepts_requests`, the booking window and `answer_within_hours`. Hours of an organization the person may not see are left out; a counselor they may not see is the same `404 counselor_unavailable`.
@@ -238,7 +238,7 @@ On the same page. Code: `CounselorWeeklyHours`, table `counselor_weekly_hours` (
 
 **Stored times:** the request's `expires_at` and `responded_at` are stored in the application timezone (UTC), not Malaysian wall time; `requested_date` and `requested_time` are Malaysian wall time, like the calendar.
 
-**Not built:** the app screens (Send a request, Request status), a counselor-facing history of answered requests, and expiring a request when the counselor is suspended is already done by the suspension (`CounselorStatusService`).
+**Not built:** a counselor-facing history of answered requests. (Closing the waiting requests of a counselor who is suspended is already done by the suspension, `CounselorStatusService`.)
 
 ## For the app
 

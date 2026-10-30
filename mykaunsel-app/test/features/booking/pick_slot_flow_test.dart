@@ -40,7 +40,7 @@ Future<void> openPicker(
   await tester.tap(find.text('Kaunselor Aina Syazwani'));
   await tester.pumpAndSettle();
   await tester.scrollUntilVisible(find.text('See available times'), 300, scrollable: find.byType(Scrollable).last);
-  await tester.drag(find.byType(Scrollable).last, const Offset(0, -150)); // clear of the bottom bar on a small phone
+  await tester.ensureVisible(find.text('See available times')); // clear of the bottom bar on a small phone
   await tester.pumpAndSettle();
   await tester.tap(find.text('See available times'));
   await tester.pump();

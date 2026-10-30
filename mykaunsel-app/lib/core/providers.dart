@@ -7,6 +7,7 @@ import '../features/booking/data/availability_api.dart';
 import '../features/booking/data/booking_api.dart';
 import '../features/bookings/data/my_bookings_api.dart';
 import '../features/counselors/data/counselor_api.dart';
+import '../features/requests/data/requests_api.dart';
 import '../features/platform_status/data/platform_status_api.dart';
 import 'config/app_config.dart';
 import 'config/app_info.dart';
@@ -50,6 +51,8 @@ final availabilityApiProvider = Provider<AvailabilityApi>((ref) => HttpAvailabil
 final bookingApiProvider = Provider<BookingApi>((ref) => HttpBookingApi(ref.watch(apiClientProvider)));
 
 final myBookingsApiProvider = Provider<MyBookingsApi>((ref) => HttpMyBookingsApi(ref.watch(apiClientProvider)));
+
+final requestsApiProvider = Provider<RequestsApi>((ref) => HttpRequestsApi(ref.watch(apiClientProvider)));
 
 /// Opens an address outside the app (a meeting link, a map). False when nothing could open it. Tests replace it.
 final urlOpenerProvider = Provider<Future<bool> Function(Uri)>((ref) => (uri) => launchUrl(uri, mode: LaunchMode.externalApplication));

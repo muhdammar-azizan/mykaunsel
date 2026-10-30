@@ -969,6 +969,167 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rescheduledSnack => 'Booking rescheduled.';
 
   @override
+  String get counselorAskTime => 'Ask for a different time';
+
+  @override
+  String counselorAskTimeHint(String name) {
+    return 'Not what you need? Ask $name for a time inside their working hours.';
+  }
+
+  @override
+  String get bookingsTabRequests => 'Requests';
+
+  @override
+  String get requestsEmptyTitle => 'No requests yet';
+
+  @override
+  String get requestsEmptyBody =>
+      'When you ask a counselor for a time, it shows here until they answer.';
+
+  @override
+  String get requestTitle => 'Ask for a time';
+
+  @override
+  String requestIntro(String name, int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours hours',
+      one: '1 hour',
+    );
+    return 'Choose a time inside $name\'s working hours. $name has $_temp0 to answer, and nothing is booked until they approve. If they do not answer, the request closes by itself.';
+  }
+
+  @override
+  String get requestNoHours =>
+      'This counselor has not set working hours yet, so you can\'t ask for a time. Try their available times instead.';
+
+  @override
+  String get requestNoTimes =>
+      'There is no time to ask for in the coming weeks.';
+
+  @override
+  String get requestNoteLabel => 'Note for the counselor (optional)';
+
+  @override
+  String get requestNoteHint => 'What would you like to talk about?';
+
+  @override
+  String get requestPickFirst => 'Pick a time to ask for';
+
+  @override
+  String requestSendAt(String when) {
+    return 'Ask for $when';
+  }
+
+  @override
+  String get requestSending => 'Sending…';
+
+  @override
+  String get requestErrTaken =>
+      'That time isn\'t available. Please choose another.';
+
+  @override
+  String get requestErrInvalid =>
+      'That time is outside the counselor\'s working hours. Please choose another.';
+
+  @override
+  String requestErrLimit(int max) {
+    return 'You can have up to $max requests waiting for an answer. Wait for an answer or withdraw one.';
+  }
+
+  @override
+  String get requestErrClosed =>
+      'This counselor isn\'t taking time requests right now.';
+
+  @override
+  String get requestErrServer =>
+      'Something went wrong on our side. Your request may or may not have been sent. Try again: it will not be sent twice.';
+
+  @override
+  String get requestStatusPending => 'Waiting for an answer';
+
+  @override
+  String get requestStatusApproved => 'Approved';
+
+  @override
+  String get requestStatusDeclined => 'Declined';
+
+  @override
+  String get requestStatusExpired => 'Expired';
+
+  @override
+  String get requestStatusWithdrawn => 'Withdrawn';
+
+  @override
+  String get requestStatusUnknown => 'Unknown';
+
+  @override
+  String get requestDetailTitle => 'Request';
+
+  @override
+  String requestWaitUntil(String name, String when) {
+    return '$name can answer until $when.';
+  }
+
+  @override
+  String get requestApprovedNote => 'Approved. Your session is booked.';
+
+  @override
+  String get requestDeclinedNote =>
+      'The counselor couldn\'t take this request.';
+
+  @override
+  String get requestExpiredNote =>
+      'Nobody answered in time, so this request closed.';
+
+  @override
+  String get requestWithdrawnNote => 'You withdrew this request.';
+
+  @override
+  String get requestYourNote => 'Your note';
+
+  @override
+  String get requestTheirMessage => 'Their message';
+
+  @override
+  String get requestViewBooking => 'View booking';
+
+  @override
+  String get requestChooseAnother => 'Choose another time';
+
+  @override
+  String get requestWithdraw => 'Withdraw request';
+
+  @override
+  String get requestWithdrawTitle => 'Withdraw this request?';
+
+  @override
+  String requestWithdrawBody(String name) {
+    return '$name will no longer be asked for this time. You can ask for another time.';
+  }
+
+  @override
+  String get requestKeep => 'Keep request';
+
+  @override
+  String get requestWithdrawing => 'Withdrawing…';
+
+  @override
+  String get requestWithdrawnSnack => 'Request withdrawn.';
+
+  @override
+  String get requestNotPending =>
+      'This request was already answered or has closed.';
+
+  @override
+  String get requestWithdrawServer =>
+      'Something went wrong on our side. Your request may or may not have been withdrawn. Try again: it is safe to repeat.';
+
+  @override
+  String get requestNotFound => 'We couldn\'t find this request.';
+
+  @override
   String get bookingConfirmedTitle => 'Booking confirmed';
 
   @override

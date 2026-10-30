@@ -1659,6 +1659,270 @@ abstract class AppLocalizations {
   /// **'Booking rescheduled.'**
   String get rescheduledSnack;
 
+  /// No description provided for @counselorAskTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for a different time'**
+  String get counselorAskTime;
+
+  /// No description provided for @counselorAskTimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Not what you need? Ask {name} for a time inside their working hours.'**
+  String counselorAskTimeHint(String name);
+
+  /// No description provided for @bookingsTabRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests'**
+  String get bookingsTabRequests;
+
+  /// No description provided for @requestsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests yet'**
+  String get requestsEmptyTitle;
+
+  /// No description provided for @requestsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When you ask a counselor for a time, it shows here until they answer.'**
+  String get requestsEmptyBody;
+
+  /// No description provided for @requestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for a time'**
+  String get requestTitle;
+
+  /// No description provided for @requestIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a time inside {name}\'s working hours. {name} has {hours, plural, =1{1 hour} other{{hours} hours}} to answer, and nothing is booked until they approve. If they do not answer, the request closes by itself.'**
+  String requestIntro(String name, int hours);
+
+  /// No description provided for @requestNoHours.
+  ///
+  /// In en, this message translates to:
+  /// **'This counselor has not set working hours yet, so you can\'t ask for a time. Try their available times instead.'**
+  String get requestNoHours;
+
+  /// No description provided for @requestNoTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no time to ask for in the coming weeks.'**
+  String get requestNoTimes;
+
+  /// No description provided for @requestNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for the counselor (optional)'**
+  String get requestNoteLabel;
+
+  /// No description provided for @requestNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to talk about?'**
+  String get requestNoteHint;
+
+  /// No description provided for @requestPickFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a time to ask for'**
+  String get requestPickFirst;
+
+  /// No description provided for @requestSendAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for {when}'**
+  String requestSendAt(String when);
+
+  /// No description provided for @requestSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get requestSending;
+
+  /// No description provided for @requestErrTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'That time isn\'t available. Please choose another.'**
+  String get requestErrTaken;
+
+  /// No description provided for @requestErrInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That time is outside the counselor\'s working hours. Please choose another.'**
+  String get requestErrInvalid;
+
+  /// No description provided for @requestErrLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You can have up to {max} requests waiting for an answer. Wait for an answer or withdraw one.'**
+  String requestErrLimit(int max);
+
+  /// No description provided for @requestErrClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'This counselor isn\'t taking time requests right now.'**
+  String get requestErrClosed;
+
+  /// No description provided for @requestErrServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong on our side. Your request may or may not have been sent. Try again: it will not be sent twice.'**
+  String get requestErrServer;
+
+  /// No description provided for @requestStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for an answer'**
+  String get requestStatusPending;
+
+  /// No description provided for @requestStatusApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get requestStatusApproved;
+
+  /// No description provided for @requestStatusDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get requestStatusDeclined;
+
+  /// No description provided for @requestStatusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get requestStatusExpired;
+
+  /// No description provided for @requestStatusWithdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get requestStatusWithdrawn;
+
+  /// No description provided for @requestStatusUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get requestStatusUnknown;
+
+  /// No description provided for @requestDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get requestDetailTitle;
+
+  /// No description provided for @requestWaitUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} can answer until {when}.'**
+  String requestWaitUntil(String name, String when);
+
+  /// No description provided for @requestApprovedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved. Your session is booked.'**
+  String get requestApprovedNote;
+
+  /// No description provided for @requestDeclinedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The counselor couldn\'t take this request.'**
+  String get requestDeclinedNote;
+
+  /// No description provided for @requestExpiredNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody answered in time, so this request closed.'**
+  String get requestExpiredNote;
+
+  /// No description provided for @requestWithdrawnNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You withdrew this request.'**
+  String get requestWithdrawnNote;
+
+  /// No description provided for @requestYourNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your note'**
+  String get requestYourNote;
+
+  /// No description provided for @requestTheirMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Their message'**
+  String get requestTheirMessage;
+
+  /// No description provided for @requestViewBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'View booking'**
+  String get requestViewBooking;
+
+  /// No description provided for @requestChooseAnother.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another time'**
+  String get requestChooseAnother;
+
+  /// No description provided for @requestWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw request'**
+  String get requestWithdraw;
+
+  /// No description provided for @requestWithdrawTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw this request?'**
+  String get requestWithdrawTitle;
+
+  /// No description provided for @requestWithdrawBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will no longer be asked for this time. You can ask for another time.'**
+  String requestWithdrawBody(String name);
+
+  /// No description provided for @requestKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep request'**
+  String get requestKeep;
+
+  /// No description provided for @requestWithdrawing.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawing…'**
+  String get requestWithdrawing;
+
+  /// No description provided for @requestWithdrawnSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Request withdrawn.'**
+  String get requestWithdrawnSnack;
+
+  /// No description provided for @requestNotPending.
+  ///
+  /// In en, this message translates to:
+  /// **'This request was already answered or has closed.'**
+  String get requestNotPending;
+
+  /// No description provided for @requestWithdrawServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong on our side. Your request may or may not have been withdrawn. Try again: it is safe to repeat.'**
+  String get requestWithdrawServer;
+
+  /// No description provided for @requestNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find this request.'**
+  String get requestNotFound;
+
   /// No description provided for @bookingConfirmedTitle.
   ///
   /// In en, this message translates to:
