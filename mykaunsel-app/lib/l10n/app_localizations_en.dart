@@ -1130,6 +1130,244 @@ class AppLocalizationsEn extends AppLocalizations {
   String get requestNotFound => 'We couldn\'t find this request.';
 
   @override
+  String get navChat => 'Chat';
+
+  @override
+  String get chatTitle => 'Chat';
+
+  @override
+  String get chatConsentTitle => 'Before you chat';
+
+  @override
+  String get chatConsentIntro =>
+      'The MyKaunsel chat is an AI companion you can talk to about how you feel.';
+
+  @override
+  String get chatConsentPoint1 =>
+      'It is an AI, not a counselor or a doctor. It can\'t diagnose or treat you.';
+
+  @override
+  String get chatConsentPoint2 =>
+      'Your messages are processed by an AI service so it can reply. We don\'t send your name, email or account. Please don\'t type details that identify you.';
+
+  @override
+  String get chatConsentPoint3 =>
+      'Conversations are kept for 12 months. Counselors and organizations can\'t read them.';
+
+  @override
+  String get chatConsentPoint4 =>
+      'You can turn this off at any time in Account.';
+
+  @override
+  String get chatConsentAgree => 'I agree';
+
+  @override
+  String get chatConsentLater => 'Not now';
+
+  @override
+  String get chatConsentSaving => 'Saving…';
+
+  @override
+  String get chatConsentFailed =>
+      'We couldn\'t save your choice. Please try again.';
+
+  @override
+  String chatGreeting(String name) {
+    return 'Hi $name. How are you feeling today?';
+  }
+
+  @override
+  String get chatGreetingBody =>
+      'This is a space to talk. I\'m an AI companion, not a counselor, and I\'m here to listen.';
+
+  @override
+  String get chatInputHint => 'Write a message';
+
+  @override
+  String get chatSend => 'Send';
+
+  @override
+  String get chatDisclaimer => 'AI companion. Not a counselor or a doctor.';
+
+  @override
+  String get chatNew => 'New conversation';
+
+  @override
+  String get chatHistory => 'Chat history';
+
+  @override
+  String get chatHelp => 'Need help now?';
+
+  @override
+  String get chatThinking => 'Thinking…';
+
+  @override
+  String chatYouSaid(String text) {
+    return 'You said: $text';
+  }
+
+  @override
+  String chatCompanionSaid(String text) {
+    return 'Companion said: $text';
+  }
+
+  @override
+  String get chatNoticeNew =>
+      'This is a new conversation, because the last one had ended.';
+
+  @override
+  String get chatUnavailable =>
+      'I can\'t reply right now. Your message is saved. Please try again in a moment.';
+
+  @override
+  String get chatRetrying => 'Trying again…';
+
+  @override
+  String get chatSendAgain => 'Send again';
+
+  @override
+  String get chatSending => 'Sending…';
+
+  @override
+  String get chatErrServer =>
+      'Something went wrong on our side. Your message may or may not have been sent. Try again: it will not be sent twice.';
+
+  @override
+  String chatErrWait(int seconds) {
+    return 'Too many messages. Please wait $seconds seconds.';
+  }
+
+  @override
+  String get chatErrDaily =>
+      'You\'ve reached today\'s limit of messages. Please come back tomorrow.';
+
+  @override
+  String get chatErrFull => 'This conversation is full. Start a new one.';
+
+  @override
+  String get crisisTitle => 'You are not alone';
+
+  @override
+  String get crisisBody =>
+      'If you are thinking about ending your life or hurting yourself, please reach out to someone now. You can call:';
+
+  @override
+  String crisisCall(String name, String number) {
+    return 'Call $name $number';
+  }
+
+  @override
+  String get crisisEmergency =>
+      'If you are in danger right now, go to the nearest hospital emergency department.';
+
+  @override
+  String get crisisFindCounselor => 'Find a counselor';
+
+  @override
+  String get crisisContinue => 'Continue chatting';
+
+  @override
+  String crisisCallFailed(String number) {
+    return 'We couldn\'t start the call. Please dial $number.';
+  }
+
+  @override
+  String get helpSheetBody =>
+      'You don\'t have to face this alone. These lines are there to listen.';
+
+  @override
+  String get chatSuggestTitle => 'Counselors who may be able to help';
+
+  @override
+  String get chatSuggestBody =>
+      'Talking with a real counselor can help. These are people you can book.';
+
+  @override
+  String get chatHistoryTitle => 'Chat history';
+
+  @override
+  String get chatHistoryEmptyTitle => 'No conversations yet';
+
+  @override
+  String get chatHistoryEmptyBody => 'Your past conversations will show here.';
+
+  @override
+  String get chatGroupToday => 'Today';
+
+  @override
+  String get chatGroupWeek => 'This week';
+
+  @override
+  String get chatGroupEarlier => 'Earlier';
+
+  @override
+  String get chatConversationTitle => 'Conversation';
+
+  @override
+  String get chatReadOnly =>
+      'This conversation is finished. You can read it here.';
+
+  @override
+  String get chatNotFound => 'We couldn\'t find this conversation.';
+
+  @override
+  String chatEmotionMostly(String emotion) {
+    return 'Mostly felt: $emotion';
+  }
+
+  @override
+  String get chatEmotionSadness => 'sadness';
+
+  @override
+  String get chatEmotionAnxiety => 'anxiety';
+
+  @override
+  String get chatEmotionStress => 'stress';
+
+  @override
+  String get chatEmotionAnger => 'anger';
+
+  @override
+  String get chatEmotionLoneliness => 'loneliness';
+
+  @override
+  String get chatEmotionFear => 'fear';
+
+  @override
+  String get chatEmotionGuilt => 'guilt';
+
+  @override
+  String get chatEmotionHope => 'hope';
+
+  @override
+  String get chatEmotionCalm => 'calm';
+
+  @override
+  String get chatEmotionJoy => 'joy';
+
+  @override
+  String get chatEmotionNeutral => 'neutral';
+
+  @override
+  String get accountAiChat => 'AI chat';
+
+  @override
+  String get accountAiChatOn => 'On: you can talk with the companion.';
+
+  @override
+  String get accountAiChatOff => 'Off: the chat is turned off.';
+
+  @override
+  String get accountAiOffTitle => 'Turn off AI chat?';
+
+  @override
+  String get accountAiOffBody =>
+      'The chat will stop working until you turn it on again. Your past conversations stay in your history.';
+
+  @override
+  String get accountAiOffConfirm => 'Turn off';
+
+  @override
   String get bookingConfirmedTitle => 'Booking confirmed';
 
   @override

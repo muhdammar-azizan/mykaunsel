@@ -17,6 +17,8 @@ import '../../features/booking/presentation/booking_args.dart';
 import '../../features/booking/presentation/confirm_booking_screen.dart';
 import '../../features/booking/presentation/pick_slot_screen.dart';
 import '../../features/bookings/presentation/booking_confirmed_screen.dart';
+import '../../features/chat/presentation/chat_history_screen.dart';
+import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/bookings/presentation/reschedule_args.dart';
 import '../../features/bookings/presentation/booking_detail_screen.dart';
 import '../../features/bookings/presentation/bookings_screen.dart';
@@ -56,6 +58,11 @@ abstract final class AppRoutes {
 
   /// The slot id is in the address so the screen can restore itself after a sign-in. It is a random public id, nothing private.
   static String confirmBookingPath(String id, String slotId) => '/book/${Uri.encodeComponent(id)}/confirm?slot=${Uri.encodeQueryComponent(slotId)}';
+
+  static const chat = '/chat';
+  static const chatHistory = '/chat/history';
+
+  static String chatSessionPath(String id) => '/chat/history/${Uri.encodeComponent(id)}';
 
   static const bookingConfirmed = '/booking-confirmed';
   static const bookings = '/bookings';
@@ -220,7 +227,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      // The signed-in app: four tabs, each keeping its own place.
+      // The signed-in app: five tabs, each keeping its own place.
       StatefulShellRoute.indexedStack(
         builder: (_, _, navigationShell) => AppShell(navigationShell: navigationShell),
         branches: [
@@ -230,6 +237,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               path: AppRoutes.counselors,
               builder: (_, _) => const CounselorsScreen(),
               routes: [GoRoute(path: ':id', builder: (_, state) => CounselorDetailScreen(id: state.pathParameters['id']!))],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: AppRoutes.chat,
+              builder: (_, _) => const ChatScreen(),
+              routes: [
+                GoRoute(
+                  path: 'history',
+                  builder: (_, _) => const ChatHistoryScreen(),
+                  routes: [GoRoute(path: ':id', builder: (_, state) => ChatSessionScreen(id: state.pathParameters['id']!))],
+                ),
+              ],
             ),
           ]),
           StatefulShellBranch(routes: [

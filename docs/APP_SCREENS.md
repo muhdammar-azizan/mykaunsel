@@ -45,10 +45,10 @@ The only AI component. The API key lives only in the Laravel `.env`; the app nev
 
 | | Screen | Details |
 |---|---|---|
-| ⚠️ | Chat | **Server side built** (see [CHAT.md](CHAT.md)): consent, crisis detection, the model, history, ending with the dominant emotion, purge. The app screen is not built yet. Original spec: The app calls Laravel and Laravel calls the model. Text only, no personal identification sent. Blocked if the AI consent is withdrawn. Rate limit and message length limit. **Crisis detection on the server**, not depending on the model alone. Sessions and messages are stored. Ending a session stores the dominant emotion. Auto-purge after 12 months. A model failure is shown as a friendly message, not a technical error. |
-| ⚠️ | Chat history | (API built, screen not.) Sessions grouped Today, This week, Earlier. Read only, open the whole conversation. Empty state. No delete. |
-| ⚠️ | Counselor suggestion card | (API built, component not.) A component inside chat. Only eligible counselors, from the same rules as search. Tap goes to the Profile. |
-| ⚠️ | Crisis card and helplines | (API built, card not.) Amber, calm tone. Direct call buttons (HEAL 15555, Talian Kasih 15999, and Befrienders: **confirm the real numbers before use**). Buttons "Find a counselor" and "Continue chatting". It never blocks the chat and is always reachable. |
+| ✅ | Chat | **Built, server and app** (see [CHAT.md](CHAT.md), APP_ARCHITECTURE.md "Chat"): consent gate and the Account switch, the conversation, crisis detection on the server with the amber card and an always-present "Need help now?", the model, failure handling, ending with the dominant emotion, purge. The tick at registration and the Chat card on Home are not done. Original spec: The app calls Laravel and Laravel calls the model. Text only, no personal identification sent. Blocked if the AI consent is withdrawn. Rate limit and message length limit. **Crisis detection on the server**, not depending on the model alone. Sessions and messages are stored. Ending a session stores the dominant emotion. Auto-purge after 12 months. A model failure is shown as a friendly message, not a technical error. |
+| ✅ | Chat history | (Built.) Sessions grouped Today, This week, Earlier. Read only, open the whole conversation. Empty state. No delete. |
+| ✅ | Counselor suggestion card | (Built.) A component inside chat. Only eligible counselors, from the same rules as search. Tap goes to the Profile. |
+| ✅ | Crisis card and helplines | (Built; **numbers still to confirm**, Befrienders left out.) Amber, calm tone. Direct call buttons (HEAL 15555, Talian Kasih 15999, and Befrienders: **confirm the real numbers before use**). Buttons "Find a counselor" and "Continue chatting". It never blocks the chat and is always reachable. |
 
 ## 4. Find and book
 
@@ -91,7 +91,7 @@ Depends on Moderate Feed in the admin part. Build them together.
 |---|---|---|
 | ✅ | Profile | Done. |
 | ✅ | Edit profile | Name and time zone. Changing the email needs re-confirmation. **(check: the email is changed on the website, not in the app)** |
-| ⚠️ | Account settings | Add the AI consent toggle: turning it off disables Chat, with a confirmation dialog, and the change is recorded. (Now: change password and signed-in devices.) |
+| ⚠️ | Account settings | (The AI consent switch is built: off asks first, the server records it.) Add the AI consent toggle: turning it off disables Chat, with a confirmation dialog, and the change is recorded. (Now: change password and signed-in devices.) |
 | ❌ | Data and privacy | A static information card: chat deleted after 12 months, counselors and organizations cannot see chat content, PDPA. A link to the Privacy Policy. Data-copy requests: use the support email for now. |
 | ❌ | Notification settings | Email only. A bookings toggle (confirmation, reminders, changes). A community toggle only when Feed exists. **The email-sending code must read this choice.** |
 | ✅ | Log out | Confirmation exists. |

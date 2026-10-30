@@ -6,6 +6,8 @@ import '../../../core/router/app_router.dart';
 import '../../../core/session/session_controller.dart';
 import '../../../core/session/session_state.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../chat/presentation/ai_consent_controller.dart';
+import '../../chat/presentation/ai_consent_widgets.dart';
 
 /// Who is signed in, and signing out. (Profile editing, password and devices come with the settings feature.)
 class AccountScreen extends ConsumerWidget {
@@ -29,6 +31,31 @@ class AccountScreen extends ConsumerWidget {
     if (confirmed == true) {
       await ref.read(sessionControllerProvider.notifier).signOut(everywhere: true);
     }
+  }
+
+  /// Turning the chat on asks first (the same words as in the chat); turning it off asks whether they are sure. Either way the server decides.
+  Future<void> _toggleAiChat(BuildContext context, WidgetRef ref, bool on) async {
+    final l10n = AppLocalizations.of(context);
+
+    if (on) {
+      await showAiConsentDialog(context);
+
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.accountAiOffTitle),
+        content: Text(l10n.accountAiOffBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.accountAiOffConfirm)),
+        ],
+      ),
+    );
+
+    if (confirmed == true) await ref.read(aiConsentControllerProvider.notifier).set(false);
   }
 
   @override
@@ -67,6 +94,13 @@ class AccountScreen extends ConsumerWidget {
             ListTile(leading: const Icon(Icons.person_outline), title: Text(l10n.accountProfile), trailing: const Icon(Icons.chevron_right), onTap: () => context.push(AppRoutes.accountProfile)),
             ListTile(leading: const Icon(Icons.lock_outline), title: Text(l10n.accountPassword), trailing: const Icon(Icons.chevron_right), onTap: () => context.push(AppRoutes.accountPassword)),
             ListTile(leading: const Icon(Icons.smartphone), title: Text(l10n.accountDevices), trailing: const Icon(Icons.chevron_right), onTap: () => context.push(AppRoutes.accountDevices)),
+            SwitchListTile(
+              secondary: const Icon(Icons.chat_bubble_outline),
+              title: Text(l10n.accountAiChat),
+              subtitle: Text(user?.aiConsent == true ? l10n.accountAiChatOn : l10n.accountAiChatOff),
+              value: user?.aiConsent == true,
+              onChanged: (on) => _toggleAiChat(context, ref, on),
+            ),
             const Divider(height: 32),
             ListTile(
               leading: const Icon(Icons.logout),

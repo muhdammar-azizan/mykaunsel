@@ -70,4 +70,9 @@ extension BookingColors on ColorScheme {
   Color get skeleton => onSurface.withValues(alpha: .08);
 
   Color get bannerFill => secondary.withValues(alpha: .2);
+
+  /// The calm amber of the crisis card, and its border. Warm, not alarming; never colour alone (the card has a title and an icon).
+  Color get crisisFill => brightness == Brightness.dark ? const Color(0xFF3A3020) : const Color(0xFFFFF3D6);
+
+  Color get crisisBorder => brightness == Brightness.dark ? const Color(0xFF8A7440) : const Color(0xFFE8C26A);
 }

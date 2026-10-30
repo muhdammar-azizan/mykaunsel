@@ -13,6 +13,7 @@ _AppUser _$AppUserFromJson(Map<String, dynamic> json) => _AppUser(
   emailVerified: json['email_verified'] as bool? ?? false,
   avatarUrl: json['avatar_url'] as String?,
   timezone: json['timezone'] as String?,
+  aiConsent: json['ai_consent'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$AppUserToJson(_AppUser instance) => <String, dynamic>{
@@ -22,4 +23,5 @@ Map<String, dynamic> _$AppUserToJson(_AppUser instance) => <String, dynamic>{
   'email_verified': instance.emailVerified,
   'avatar_url': instance.avatarUrl,
   'timezone': instance.timezone,
+  'ai_consent': instance.aiConsent,
 };

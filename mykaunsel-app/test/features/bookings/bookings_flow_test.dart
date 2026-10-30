@@ -67,11 +67,11 @@ Future<void> showPast(WidgetTester tester) async {
 
 void main() {
   group('the tab', () {
-    testWidgets('the bottom bar has Bookings between Find and Account, and it opens the list', (tester) async {
+    testWidgets('the bottom bar has Bookings between Chat and Account, and it opens the list', (tester) async {
       await openBookings(tester, listing(), path: AppRoutes.home);
 
       final labels = tester.widgetList<NavigationDestination>(find.byType(NavigationDestination)).map((d) => d.label).toList();
-      expect(labels, ['Home', 'Find', 'Bookings', 'Account']);
+      expect(labels, ['Home', 'Find', 'Chat', 'Bookings', 'Account']);
 
       await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Bookings')));
       await tester.pumpAndSettle();

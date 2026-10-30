@@ -13,6 +13,9 @@ abstract class AppUser with _$AppUser {
     @Default(false) bool emailVerified,
     String? avatarUrl,
     String? timezone,
+
+    /// Whether the person agreed to AI processing, which the chat needs.
+    @Default(false) bool aiConsent,
   }) = _AppUser;
 
   factory AppUser.fromJson(Map<String, dynamic> json) => _$AppUserFromJson(json);

@@ -2,7 +2,7 @@
 
 The only AI part of MyKaunsel. **The app calls Laravel and Laravel calls the model; the app never talks to the model.** The Anthropic API key lives only in the server's `.env` (`ANTHROPIC_API_KEY`), is read through `config('services.anthropic.key')`, and is never in code, in the app, in git or in a page (`AnthropicKeyConfigTest` guards this). With no key the feature is simply off: the person gets the friendly "can't answer now" message.
 
-Code: `App\Services\Chat\*` (`ChatService`, `CrisisDetector`, `PromptScrubber`, `ChatPrompt`, `AssistantModel` / `AnthropicAssistantModel`), `Api\V1\ChatController`, `chat:end-idle`, `chat:purge`, `config/chat.php`. Tests: `ChatApiTest`, `ChatCommandsTest`, `CrisisDetectorTest`, `PromptScrubberTest` (the model is always a fake in tests: no test touches the network). The Flutter screens for this are a later step.
+Code: `App\Services\Chat\*` (`ChatService`, `CrisisDetector`, `PromptScrubber`, `ChatPrompt`, `AssistantModel` / `AnthropicAssistantModel`), `Api\V1\ChatController`, `chat:end-idle`, `chat:purge`, `config/chat.php`. Tests: `ChatApiTest`, `ChatCommandsTest`, `CrisisDetectorTest`, `PromptScrubberTest` (the model is always a fake in tests: no test touches the network). The Flutter screens are built (APP_ARCHITECTURE.md, "Chat").
 
 ## The model
 
@@ -15,7 +15,7 @@ Code: `App\Services\Chat\*` (`ChatService`, `CrisisDetector`, `PromptScrubber`, 
 
 ## Consent
 
-The chat needs the person's AI-processing consent: `users.ai_consent_at` (null = none). Without it `403 ai_consent_required` and nothing is stored or sent. `PUT /account/ai-consent` `{consent: bool}` gives or withdraws it; every real change is recorded in `ai_consent_events` (who, granted or withdrawn, when); asking for the state already held records nothing. The user object (`/auth/me`, sign-in) carries `ai_consent`. Withdrawing turns the chat off at once; the history stays readable. **Not done yet:** the tick at registration and the toggle in the app's settings (app steps), and existing accounts have no consent until they give it.
+The chat needs the person's AI-processing consent: `users.ai_consent_at` (null = none). Without it `403 ai_consent_required` and nothing is stored or sent. `PUT /account/ai-consent` `{consent: bool}` gives or withdraws it; every real change is recorded in `ai_consent_events` (who, granted or withdrawn, when); asking for the state already held records nothing. The user object (`/auth/me`, sign-in) carries `ai_consent`. Withdrawing turns the chat off at once; the history stays readable. **Not done yet:** the tick at registration (the switch in Account and the gate in Chat are built), and existing accounts have no consent until they give it.
 
 ## Crisis detection (on the server, not the model)
 
@@ -41,4 +41,4 @@ The chat needs the person's AI-processing consent: `users.ai_consent_at` (null =
 
 ## Not built
 
-The app screens (Chat, history, crisis card, counselor card, consent toggle and the registration tick), a way for the owner to see that the key works other than trying the chat, per-account spend limits (the daily message cap is the only brake), and streaming of the reply (the app waits for the whole answer, a few seconds).
+The tick at registration, a Chat card on Home, resuming an old conversation after the app was closed, a way for the owner to see that the key works other than trying the chat, per-account spend limits (the daily message cap is the only brake), and streaming of the reply (the app waits for the whole answer, a few seconds).

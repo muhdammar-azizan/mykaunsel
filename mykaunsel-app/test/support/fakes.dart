@@ -19,6 +19,8 @@ import 'package:mykaunsel/features/booking/data/booking_api.dart';
 import 'package:mykaunsel/features/booking/domain/availability.dart';
 import 'package:mykaunsel/features/booking/domain/booking_preview.dart';
 import 'package:mykaunsel/features/bookings/data/my_bookings_api.dart';
+import 'package:mykaunsel/features/chat/data/chat_api.dart';
+import 'package:mykaunsel/features/chat/domain/chat.dart';
 import 'package:mykaunsel/features/requests/data/requests_api.dart';
 import 'package:mykaunsel/features/requests/domain/time_request.dart';
 import 'package:mykaunsel/features/bookings/domain/my_booking.dart';
@@ -237,6 +239,8 @@ class FakeAccountApi implements AccountApi {
   Future<AppUser> Function(String name, String timezone) updateProfileHandler =
       (name, timezone) async => AppUser(id: testUser.id, name: name, email: testUser.email, emailVerified: true, timezone: timezone);
   Future<void> Function(String current, String next) changePasswordHandler = (current, next) async {};
+  Future<AppUser> Function(bool consent) aiConsentHandler = (consent) async => AppUser(id: testUser.id, name: testUser.name, email: testUser.email, emailVerified: true, aiConsent: consent);
+  final consentCalls = <bool>[];
   Future<List<SignedInDevice>> Function() devicesHandler = () async => [
         const SignedInDevice(id: 1, name: 'Google Pixel 8', current: true),
         SignedInDevice(id: 2, name: 'Old Tablet', lastUsedAt: testNow.subtract(const Duration(hours: 5))),
@@ -253,6 +257,13 @@ class FakeAccountApi implements AccountApi {
     profileCalls.add((name: name, timezone: timezone));
 
     return updateProfileHandler(name, timezone);
+  }
+
+  @override
+  Future<AppUser> setAiConsent(bool consent) {
+    consentCalls.add(consent);
+
+    return aiConsentHandler(consent);
   }
 
   @override
@@ -490,6 +501,7 @@ List<Override> testOverrides({
   FakeBookingApi? bookingApi,
   FakeMyBookingsApi? myBookingsApi,
   FakeRequestsApi? requestsApi,
+  FakeChatApi? chatApi,
 }) {
   return [
     appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://test.local')),
@@ -503,6 +515,7 @@ List<Override> testOverrides({
     bookingApiProvider.overrideWithValue(bookingApi ?? FakeBookingApi()),
     myBookingsApiProvider.overrideWithValue(myBookingsApi ?? FakeMyBookingsApi()),
     requestsApiProvider.overrideWithValue(requestsApi ?? FakeRequestsApi()),
+    chatApiProvider.overrideWithValue(chatApi ?? FakeChatApi()),
     clockProvider.overrideWithValue(() => testNow),
   ];
 }
@@ -650,5 +663,91 @@ TimeRequest aTimeRequest({
     responseReason: reason,
     expiresAt: testNow.add(const Duration(hours: 48)),
     bookingId: bookingId,
+  );
+}
+
+// ---- the chatbot ----
+
+class FakeChatApi implements ChatApi {
+  final sends = <({String text, String? session, String clientId})>[];
+  final replies = <String>[];
+  final ends = <String>[];
+  final histories = <int>[];
+  final details = <String>[];
+  int helplineCalls = 0;
+
+  Future<ChatSendResult> Function(String text, String? session, String clientId) sendHandler = (text, session, clientId) async => aChatResult(text: text, session: session);
+  Future<ChatSendResult> Function(String session) replyHandler = (session) async => aChatResult(text: 'earlier', session: session);
+  Future<ChatSessionInfo> Function(String session) endHandler = (session) async => aChatSession(id: session, ended: true);
+  Future<ChatHistoryPage> Function(int page) historyHandler = (page) async => const ChatHistoryPage(items: [], page: 1, lastPage: 1);
+  Future<ChatSessionDetail> Function(String id) detailHandler = (id) async => ChatSessionDetail(session: aChatSession(id: id, ended: true), messages: const []);
+  Future<List<Helpline>> Function() helplinesHandler = () async => fallbackHelplines;
+
+  @override
+  Future<ChatSendResult> send(String text, {String? sessionId, required String clientId}) {
+    sends.add((text: text, session: sessionId, clientId: clientId));
+
+    return sendHandler(text, sessionId, clientId);
+  }
+
+  @override
+  Future<ChatSendResult> reply(String sessionId) {
+    replies.add(sessionId);
+
+    return replyHandler(sessionId);
+  }
+
+  @override
+  Future<ChatSessionInfo> end(String sessionId) {
+    ends.add(sessionId);
+
+    return endHandler(sessionId);
+  }
+
+  @override
+  Future<ChatHistoryPage> history({int page = 1}) {
+    histories.add(page);
+
+    return historyHandler(page);
+  }
+
+  @override
+  Future<ChatSessionDetail> detail(String sessionId) {
+    details.add(sessionId);
+
+    return detailHandler(sessionId);
+  }
+
+  @override
+  Future<List<Helpline>> helplines() {
+    helplineCalls++;
+
+    return helplinesHandler();
+  }
+}
+
+ChatSessionInfo aChatSession({String id = 's1', bool ended = false, String? emotion, String? preview, int days = 0}) =>
+    ChatSessionInfo(id: id, startedAt: testNow.add(Duration(days: days)), ended: ended, endedAt: ended ? testNow.add(Duration(days: days, hours: 1)) : null, dominantEmotion: emotion, preview: preview);
+
+ChatMessage aChatMessage(String id, ChatSender sender, String text, {bool crisis = false}) => ChatMessage(id: id, sender: sender, text: text, sentAt: testNow, crisis: crisis);
+
+/// What the server answers to a sent message: the message stored and, unless [reply] is null, the companion's answer.
+ChatSendResult aChatResult({
+  required String text,
+  String? session,
+  String? reply = 'I hear you. That sounds hard.',
+  bool unavailable = false,
+  bool crisis = false,
+  List<Helpline> helplines = const [],
+  List<Counselor> counselors = const [],
+}) {
+  return ChatSendResult(
+    session: aChatSession(id: session ?? 's1'),
+    message: aChatMessage('m-${text.hashCode}', ChatSender.user, text, crisis: crisis),
+    reply: unavailable || reply == null ? null : aChatMessage('r-${text.hashCode}', ChatSender.assistant, reply),
+    assistantUnavailable: unavailable,
+    crisis: crisis,
+    helplines: helplines,
+    counselors: counselors,
   );
 }

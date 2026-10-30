@@ -11,6 +11,9 @@ abstract class AccountApi {
   /// On success the server has signed every OTHER phone out; this one stays.
   Future<void> changePassword({required String currentPassword, required String newPassword});
 
+  /// Agrees to (true) or withdraws (false) AI processing, which the chat needs. The server records every change. Returns the person as they now are.
+  Future<AppUser> setAiConsent(bool consent);
+
   Future<List<SignedInDevice>> devices();
 
   /// Signs ANOTHER phone out. Needs the current password (same failures as [changePassword]).
@@ -25,6 +28,13 @@ class HttpAccountApi implements AccountApi {
   @override
   Future<AppUser> updateProfile({required String name, required String timezone}) async {
     final response = await _client.patch('/account/profile', data: {'name': name, 'timezone': timezone});
+
+    return AppUser.fromJson(Map<String, dynamic>.from(response.data['user'] as Map));
+  }
+
+  @override
+  Future<AppUser> setAiConsent(bool consent) async {
+    final response = await _client.put('/account/ai-consent', data: {'consent': consent});
 
     return AppUser.fromJson(Map<String, dynamic>.from(response.data['user'] as Map));
   }

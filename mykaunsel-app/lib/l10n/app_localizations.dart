@@ -1923,6 +1923,420 @@ abstract class AppLocalizations {
   /// **'We couldn\'t find this request.'**
   String get requestNotFound;
 
+  /// No description provided for @navChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get navChat;
+
+  /// No description provided for @chatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get chatTitle;
+
+  /// No description provided for @chatConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you chat'**
+  String get chatConsentTitle;
+
+  /// No description provided for @chatConsentIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'The MyKaunsel chat is an AI companion you can talk to about how you feel.'**
+  String get chatConsentIntro;
+
+  /// No description provided for @chatConsentPoint1.
+  ///
+  /// In en, this message translates to:
+  /// **'It is an AI, not a counselor or a doctor. It can\'t diagnose or treat you.'**
+  String get chatConsentPoint1;
+
+  /// No description provided for @chatConsentPoint2.
+  ///
+  /// In en, this message translates to:
+  /// **'Your messages are processed by an AI service so it can reply. We don\'t send your name, email or account. Please don\'t type details that identify you.'**
+  String get chatConsentPoint2;
+
+  /// No description provided for @chatConsentPoint3.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversations are kept for 12 months. Counselors and organizations can\'t read them.'**
+  String get chatConsentPoint3;
+
+  /// No description provided for @chatConsentPoint4.
+  ///
+  /// In en, this message translates to:
+  /// **'You can turn this off at any time in Account.'**
+  String get chatConsentPoint4;
+
+  /// No description provided for @chatConsentAgree.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree'**
+  String get chatConsentAgree;
+
+  /// No description provided for @chatConsentLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get chatConsentLater;
+
+  /// No description provided for @chatConsentSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get chatConsentSaving;
+
+  /// No description provided for @chatConsentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t save your choice. Please try again.'**
+  String get chatConsentFailed;
+
+  /// No description provided for @chatGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi {name}. How are you feeling today?'**
+  String chatGreeting(String name);
+
+  /// No description provided for @chatGreetingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a space to talk. I\'m an AI companion, not a counselor, and I\'m here to listen.'**
+  String get chatGreetingBody;
+
+  /// No description provided for @chatInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a message'**
+  String get chatInputHint;
+
+  /// No description provided for @chatSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get chatSend;
+
+  /// No description provided for @chatDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'AI companion. Not a counselor or a doctor.'**
+  String get chatDisclaimer;
+
+  /// No description provided for @chatNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New conversation'**
+  String get chatNew;
+
+  /// No description provided for @chatHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat history'**
+  String get chatHistory;
+
+  /// No description provided for @chatHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Need help now?'**
+  String get chatHelp;
+
+  /// No description provided for @chatThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get chatThinking;
+
+  /// No description provided for @chatYouSaid.
+  ///
+  /// In en, this message translates to:
+  /// **'You said: {text}'**
+  String chatYouSaid(String text);
+
+  /// No description provided for @chatCompanionSaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Companion said: {text}'**
+  String chatCompanionSaid(String text);
+
+  /// No description provided for @chatNoticeNew.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a new conversation, because the last one had ended.'**
+  String get chatNoticeNew;
+
+  /// No description provided for @chatUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'I can\'t reply right now. Your message is saved. Please try again in a moment.'**
+  String get chatUnavailable;
+
+  /// No description provided for @chatRetrying.
+  ///
+  /// In en, this message translates to:
+  /// **'Trying again…'**
+  String get chatRetrying;
+
+  /// No description provided for @chatSendAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Send again'**
+  String get chatSendAgain;
+
+  /// No description provided for @chatSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get chatSending;
+
+  /// No description provided for @chatErrServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong on our side. Your message may or may not have been sent. Try again: it will not be sent twice.'**
+  String get chatErrServer;
+
+  /// No description provided for @chatErrWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many messages. Please wait {seconds} seconds.'**
+  String chatErrWait(int seconds);
+
+  /// No description provided for @chatErrDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached today\'s limit of messages. Please come back tomorrow.'**
+  String get chatErrDaily;
+
+  /// No description provided for @chatErrFull.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation is full. Start a new one.'**
+  String get chatErrFull;
+
+  /// No description provided for @crisisTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not alone'**
+  String get crisisTitle;
+
+  /// No description provided for @crisisBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If you are thinking about ending your life or hurting yourself, please reach out to someone now. You can call:'**
+  String get crisisBody;
+
+  /// No description provided for @crisisCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Call {name} {number}'**
+  String crisisCall(String name, String number);
+
+  /// No description provided for @crisisEmergency.
+  ///
+  /// In en, this message translates to:
+  /// **'If you are in danger right now, go to the nearest hospital emergency department.'**
+  String get crisisEmergency;
+
+  /// No description provided for @crisisFindCounselor.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a counselor'**
+  String get crisisFindCounselor;
+
+  /// No description provided for @crisisContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue chatting'**
+  String get crisisContinue;
+
+  /// No description provided for @crisisCallFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t start the call. Please dial {number}.'**
+  String crisisCallFailed(String number);
+
+  /// No description provided for @helpSheetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have to face this alone. These lines are there to listen.'**
+  String get helpSheetBody;
+
+  /// No description provided for @chatSuggestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Counselors who may be able to help'**
+  String get chatSuggestTitle;
+
+  /// No description provided for @chatSuggestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Talking with a real counselor can help. These are people you can book.'**
+  String get chatSuggestBody;
+
+  /// No description provided for @chatHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat history'**
+  String get chatHistoryTitle;
+
+  /// No description provided for @chatHistoryEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get chatHistoryEmptyTitle;
+
+  /// No description provided for @chatHistoryEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your past conversations will show here.'**
+  String get chatHistoryEmptyBody;
+
+  /// No description provided for @chatGroupToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get chatGroupToday;
+
+  /// No description provided for @chatGroupWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get chatGroupWeek;
+
+  /// No description provided for @chatGroupEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier'**
+  String get chatGroupEarlier;
+
+  /// No description provided for @chatConversationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation'**
+  String get chatConversationTitle;
+
+  /// No description provided for @chatReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation is finished. You can read it here.'**
+  String get chatReadOnly;
+
+  /// No description provided for @chatNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find this conversation.'**
+  String get chatNotFound;
+
+  /// No description provided for @chatEmotionMostly.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly felt: {emotion}'**
+  String chatEmotionMostly(String emotion);
+
+  /// No description provided for @chatEmotionSadness.
+  ///
+  /// In en, this message translates to:
+  /// **'sadness'**
+  String get chatEmotionSadness;
+
+  /// No description provided for @chatEmotionAnxiety.
+  ///
+  /// In en, this message translates to:
+  /// **'anxiety'**
+  String get chatEmotionAnxiety;
+
+  /// No description provided for @chatEmotionStress.
+  ///
+  /// In en, this message translates to:
+  /// **'stress'**
+  String get chatEmotionStress;
+
+  /// No description provided for @chatEmotionAnger.
+  ///
+  /// In en, this message translates to:
+  /// **'anger'**
+  String get chatEmotionAnger;
+
+  /// No description provided for @chatEmotionLoneliness.
+  ///
+  /// In en, this message translates to:
+  /// **'loneliness'**
+  String get chatEmotionLoneliness;
+
+  /// No description provided for @chatEmotionFear.
+  ///
+  /// In en, this message translates to:
+  /// **'fear'**
+  String get chatEmotionFear;
+
+  /// No description provided for @chatEmotionGuilt.
+  ///
+  /// In en, this message translates to:
+  /// **'guilt'**
+  String get chatEmotionGuilt;
+
+  /// No description provided for @chatEmotionHope.
+  ///
+  /// In en, this message translates to:
+  /// **'hope'**
+  String get chatEmotionHope;
+
+  /// No description provided for @chatEmotionCalm.
+  ///
+  /// In en, this message translates to:
+  /// **'calm'**
+  String get chatEmotionCalm;
+
+  /// No description provided for @chatEmotionJoy.
+  ///
+  /// In en, this message translates to:
+  /// **'joy'**
+  String get chatEmotionJoy;
+
+  /// No description provided for @chatEmotionNeutral.
+  ///
+  /// In en, this message translates to:
+  /// **'neutral'**
+  String get chatEmotionNeutral;
+
+  /// No description provided for @accountAiChat.
+  ///
+  /// In en, this message translates to:
+  /// **'AI chat'**
+  String get accountAiChat;
+
+  /// No description provided for @accountAiChatOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On: you can talk with the companion.'**
+  String get accountAiChatOn;
+
+  /// No description provided for @accountAiChatOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off: the chat is turned off.'**
+  String get accountAiChatOff;
+
+  /// No description provided for @accountAiOffTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off AI chat?'**
+  String get accountAiOffTitle;
+
+  /// No description provided for @accountAiOffBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The chat will stop working until you turn it on again. Your past conversations stay in your history.'**
+  String get accountAiOffBody;
+
+  /// No description provided for @accountAiOffConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off'**
+  String get accountAiOffConfirm;
+
   /// No description provided for @bookingConfirmedTitle.
   ///
   /// In en, this message translates to:
