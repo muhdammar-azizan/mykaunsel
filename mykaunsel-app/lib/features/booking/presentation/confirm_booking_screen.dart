@@ -18,22 +18,34 @@ import 'confirm_booking_controller.dart';
 ///
 /// It can open from the two ids alone ([snapshot] only shows something at once), so it also works after a sign-in redirect.
 class ConfirmBookingScreen extends ConsumerStatefulWidget {
-  const ConfirmBookingScreen({super.key, required this.counselorId, required this.slotId, this.snapshot});
+  const ConfirmBookingScreen({
+    super.key,
+    required this.counselorId,
+    required this.slotId,
+    this.snapshot,
+  });
 
   final String counselorId;
   final String slotId;
   final ConfirmBookingArgs? snapshot;
 
   @override
-  ConsumerState<ConfirmBookingScreen> createState() => _ConfirmBookingScreenState();
+  ConsumerState<ConfirmBookingScreen> createState() =>
+      _ConfirmBookingScreenState();
 }
 
-class _ConfirmBookingScreenState extends ConsumerState<ConfirmBookingScreen> with WidgetsBindingObserver {
+class _ConfirmBookingScreenState extends ConsumerState<ConfirmBookingScreen>
+    with WidgetsBindingObserver {
   final _statusFocus = FocusNode(debugLabel: 'confirm status');
 
-  ConfirmTarget get _target => ConfirmTarget(counselorId: widget.counselorId, slotId: widget.slotId, snapshot: widget.snapshot);
+  ConfirmTarget get _target => ConfirmTarget(
+    counselorId: widget.counselorId,
+    slotId: widget.slotId,
+    snapshot: widget.snapshot,
+  );
 
-  ConfirmBookingController get _controller => ref.read(confirmBookingControllerProvider(_target).notifier);
+  ConfirmBookingController get _controller =>
+      ref.read(confirmBookingControllerProvider(_target).notifier);
 
   @override
   void initState() {
@@ -108,36 +120,61 @@ class _ConfirmBookingScreenState extends ConsumerState<ConfirmBookingScreen> wit
             children: [
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.l, AppSpacing.s, AppSpacing.l, AppSpacing.xl),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.l,
+                    AppSpacing.s,
+                    AppSpacing.l,
+                    AppSpacing.xl,
+                  ),
                   children: [
-                    _Status(state: state, focus: _statusFocus, onCheckAgain: _controller.recheck, onRetry: _controller.retrySubmit, onChooseAnother: _backToPicker),
+                    _Status(
+                      state: state,
+                      focus: _statusFocus,
+                      onCheckAgain: _controller.recheck,
+                      onRetry: _controller.retrySubmit,
+                      onChooseAnother: _backToPicker,
+                    ),
                     _SummaryCard(summary: state.summary),
                     const SizedBox(height: AppSpacing.s),
                     Align(
                       alignment: AlignmentDirectional.centerStart,
                       child: TextButton(
                         onPressed: state.submitting ? null : _backToPicker,
-                        style: TextButton.styleFrom(minimumSize: const Size(AppSizes.minTouch, AppSizes.minTouch)),
+                        style: TextButton.styleFrom(
+                          minimumSize: const Size(
+                            AppSizes.minTouch,
+                            AppSizes.minTouch,
+                          ),
+                        ),
                         child: Text(l10n.confirmChooseOtherTime),
                       ),
                     ),
                     if (state.details != null) ...[
                       const SizedBox(height: AppSpacing.m),
                       _Policies(state: state),
-                      if (state.details!.upcomingSessions != null && state.details!.maxUpcomingSessions != null) ...[
+                      if (state.details!.upcomingSessions != null &&
+                          state.details!.maxUpcomingSessions != null) ...[
                         const SizedBox(height: AppSpacing.m),
                         Text(
-                          l10n.confirmUpcomingCount(state.details!.upcomingSessions!, state.details!.maxUpcomingSessions!),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.mutedText),
+                          l10n.confirmUpcomingCount(
+                            state.details!.upcomingSessions!,
+                            state.details!.maxUpcomingSessions!,
+                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.mutedText,
+                              ),
                         ),
                       ],
                     ],
-                    const SizedBox(height: AppSpacing.l),
-                    _AcknowledgeRow(value: state.acknowledged, enabled: !state.submitting, onChanged: _controller.setAcknowledged),
                   ],
                 ),
               ),
-              _ConfirmBar(state: state, onConfirm: _controller.confirm),
+              _ConfirmBar(
+                state: state,
+                onConfirm: _controller.confirm,
+                onAcknowledge: _controller.setAcknowledged,
+              ),
             ],
           ),
         ),
@@ -151,7 +188,13 @@ class _ConfirmBookingScreenState extends ConsumerState<ConfirmBookingScreen> wit
 // =================================================================================================================
 
 class _Status extends ConsumerWidget {
-  const _Status({required this.state, required this.focus, required this.onCheckAgain, required this.onRetry, required this.onChooseAnother});
+  const _Status({
+    required this.state,
+    required this.focus,
+    required this.onCheckAgain,
+    required this.onRetry,
+    required this.onChooseAnother,
+  });
 
   final ConfirmState state;
   final FocusNode focus;
@@ -166,14 +209,22 @@ class _Status extends ConsumerWidget {
     final problem = state.problem;
 
     final (IconData icon, String text)? message = switch (state.banner) {
-      _ when problem != null => (Icons.error_outline, _problemText(l10n, state)),
+      _ when problem != null => (
+        Icons.error_outline,
+        _problemText(l10n, state),
+      ),
       ConfirmBanner.checking => (Icons.sync, l10n.confirmBannerChecking),
       ConfirmBanner.offline => (Icons.wifi_off, l10n.confirmBannerOffline),
-      ConfirmBanner.detailsChanged => (Icons.info_outline, l10n.confirmBannerChanged),
+      ConfirmBanner.detailsChanged => (
+        Icons.info_outline,
+        l10n.confirmBannerChanged,
+      ),
       ConfirmBanner.none => null,
     };
 
-    if (message == null) return Focus(focusNode: focus, child: const SizedBox.shrink());
+    if (message == null) {
+      return Focus(focusNode: focus, child: const SizedBox.shrink());
+    }
 
     final action = _action(context, ref, l10n);
 
@@ -201,7 +252,10 @@ class _Status extends ConsumerWidget {
                   Expanded(child: Text(message.$2)),
                 ],
               ),
-              if (action != null) ...[const SizedBox(height: AppSpacing.s), action],
+              if (action != null) ...[
+                const SizedBox(height: AppSpacing.s),
+                action,
+              ],
             ],
           ),
         ),
@@ -209,30 +263,63 @@ class _Status extends ConsumerWidget {
     );
   }
 
-  String _problemText(AppLocalizations l10n, ConfirmState state) => switch (state.problem!) {
+  String _problemText(AppLocalizations l10n, ConfirmState state) =>
+      switch (state.problem!) {
         ConfirmProblem.timeConflict => l10n.confirmErrTimeConflict,
-        ConfirmProblem.upcomingLimit => l10n.confirmErrLimit(state.maxUpcoming ?? state.details?.maxUpcomingSessions ?? 3),
+        ConfirmProblem.upcomingLimit => l10n.confirmErrLimit(
+          state.maxUpcoming ?? state.details?.maxUpcomingSessions ?? 3,
+        ),
         ConfirmProblem.emailNotVerified => l10n.confirmErrVerify,
         ConfirmProblem.counselorUnavailable => l10n.confirmErrCounselor,
-        ConfirmProblem.rateLimited => state.waitSeconds == null ? l10n.confirmErrWaitGeneric : l10n.confirmErrWait(state.waitSeconds!),
+        ConfirmProblem.rateLimited =>
+          state.waitSeconds == null
+              ? l10n.confirmErrWaitGeneric
+              : l10n.confirmErrWait(state.waitSeconds!),
         ConfirmProblem.serverError => l10n.confirmErrServer,
         ConfirmProblem.unknownOutcome => l10n.confirmErrUnknown,
-        ConfirmProblem.other => (state.problemMessage ?? '').isEmpty ? l10n.somethingWentWrongBody : state.problemMessage!,
+        ConfirmProblem.other =>
+          (state.problemMessage ?? '').isEmpty
+              ? l10n.somethingWentWrongBody
+              : state.problemMessage!,
       };
 
   Widget? _action(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     Widget button(String label, VoidCallback onPressed) => Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: OutlinedButton(onPressed: onPressed, style: OutlinedButton.styleFrom(minimumSize: const Size(AppSizes.minTouch, AppSizes.minTouch)), child: Text(label)),
-        );
+      alignment: AlignmentDirectional.centerStart,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(AppSizes.minTouch, AppSizes.minTouch),
+        ),
+        child: Text(label),
+      ),
+    );
 
     return switch (state.problem) {
-      ConfirmProblem.emailNotVerified => button(l10n.pickSlotVerifyButton, () => startEmailVerification(context, ref)),
-      ConfirmProblem.counselorUnavailable => button(l10n.confirmFindAnother, () => context.go(AppRoutes.counselors)),
-      ConfirmProblem.unknownOutcome => button(l10n.confirmGoHome, () => context.go(AppRoutes.home)),
-      ConfirmProblem.serverError when state.details != null && state.valid => button(l10n.tryAgain, onRetry),
-      ConfirmProblem.serverError || ConfirmProblem.other || ConfirmProblem.rateLimited when !state.valid => button(l10n.confirmCheckAgain, onCheckAgain),
-      null when state.banner == ConfirmBanner.offline => button(l10n.confirmCheckAgain, onCheckAgain),
+      ConfirmProblem.emailNotVerified => button(
+        l10n.pickSlotVerifyButton,
+        () => startEmailVerification(context, ref),
+      ),
+      ConfirmProblem.counselorUnavailable => button(
+        l10n.confirmFindAnother,
+        () => context.go(AppRoutes.counselors),
+      ),
+      ConfirmProblem.unknownOutcome => button(
+        l10n.confirmGoHome,
+        () => context.go(AppRoutes.home),
+      ),
+      ConfirmProblem.serverError when state.details != null && state.valid =>
+        button(l10n.tryAgain, onRetry),
+      ConfirmProblem.serverError ||
+      ConfirmProblem.other ||
+      ConfirmProblem.rateLimited when !state.valid => button(
+        l10n.confirmCheckAgain,
+        onCheckAgain,
+      ),
+      null when state.banner == ConfirmBanner.offline => button(
+        l10n.confirmCheckAgain,
+        onCheckAgain,
+      ),
       _ => null,
     };
   }
@@ -256,7 +343,14 @@ class _SummaryCard extends StatelessWidget {
     final s = summary;
 
     final name = s?.counselorName ?? '';
-    final initials = name.trim().isEmpty ? '' : name.trim().split(RegExp(r'\s+')).take(2).map((p) => p.characters.first.toUpperCase()).join();
+    final initials = name.trim().isEmpty
+        ? ''
+        : name
+              .trim()
+              .split(RegExp(r'\s+'))
+              .take(2)
+              .map((p) => p.characters.first.toUpperCase())
+              .join();
 
     String? date, time, spoken, duration, kind;
 
@@ -270,7 +364,9 @@ class _SummaryCard extends StatelessWidget {
       time = l10n.confirmTimeValue(from, to);
       spoken = l10n.confirmTimeSpoken(from, to);
       duration = l10n.confirmDuration(s.durationMinutes);
-      kind = s.mode == SessionMode.physical && s.location != null ? l10n.inPersonIn('${s.location!.name}, ${s.location!.city}') : s.mode.label(l10n);
+      kind = s.mode == SessionMode.physical && s.location != null
+          ? l10n.inPersonIn('${s.location!.name}, ${s.location!.city}')
+          : s.mode.label(l10n);
     }
 
     return Container(
@@ -289,7 +385,13 @@ class _SummaryCard extends StatelessWidget {
                 child: CircleAvatar(
                   radius: AppSizes.avatar / 2,
                   backgroundColor: scheme.primary.withValues(alpha: .12),
-                  child: Text(initials, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: scheme.primary)),
+                  child: Text(
+                    initials,
+                    style: text.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: scheme.primary,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.m),
@@ -299,13 +401,33 @@ class _SummaryCard extends StatelessWidget {
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Semantics(header: true, child: Text(name, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w800))),
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              name,
+                              style: text.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
                           if (s.verified)
                             Row(
                               children: [
-                                Icon(Icons.verified, size: AppSizes.icon - 4, color: scheme.primary),
+                                Icon(
+                                  Icons.verified,
+                                  size: AppSizes.icon - 4,
+                                  color: scheme.primary,
+                                ),
                                 const SizedBox(width: AppSpacing.xs),
-                                Flexible(child: Text(l10n.confirmVerifiedBadge, style: text.bodySmall?.copyWith(color: scheme.primary, fontWeight: FontWeight.w600))),
+                                Flexible(
+                                  child: Text(
+                                    l10n.confirmVerifiedBadge,
+                                    style: text.bodySmall?.copyWith(
+                                      color: scheme.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                         ],
@@ -314,10 +436,29 @@ class _SummaryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.l),
-          _Row(icon: Icons.calendar_today_outlined, label: l10n.confirmRowDate, value: date),
-          _Row(icon: Icons.schedule, label: l10n.confirmRowTime, value: time, spoken: spoken),
-          _Row(icon: Icons.timelapse, label: l10n.confirmRowDuration, value: duration),
-          _Row(icon: s?.mode == SessionMode.physical ? Icons.place_outlined : Icons.videocam_outlined, label: l10n.confirmRowType, value: kind),
+          _Row(
+            icon: Icons.calendar_today_outlined,
+            label: l10n.confirmRowDate,
+            value: date,
+          ),
+          _Row(
+            icon: Icons.schedule,
+            label: l10n.confirmRowTime,
+            value: time,
+            spoken: spoken,
+          ),
+          _Row(
+            icon: Icons.timelapse,
+            label: l10n.confirmRowDuration,
+            value: duration,
+          ),
+          _Row(
+            icon: s?.mode == SessionMode.physical
+                ? Icons.place_outlined
+                : Icons.videocam_outlined,
+            label: l10n.confirmRowType,
+            value: kind,
+          ),
         ],
       ),
     );
@@ -331,13 +472,25 @@ class _Bar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
-        child: Container(width: width, height: 16, decoration: BoxDecoration(color: Theme.of(context).colorScheme.skeleton, borderRadius: AppRadii.chipRadius)),
-      );
+    child: Container(
+      width: width,
+      height: 16,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.skeleton,
+        borderRadius: AppRadii.chipRadius,
+      ),
+    ),
+  );
 }
 
 /// One labelled fact, announced as its own item ("Date: Tuesday, 16 September 2026").
 class _Row extends StatelessWidget {
-  const _Row({required this.icon, required this.label, required this.value, this.spoken});
+  const _Row({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.spoken,
+  });
 
   final IconData icon;
   final String label;
@@ -352,12 +505,16 @@ class _Row extends StatelessWidget {
 
     return Semantics(
       container: true,
-      label: value == null ? label : l10n.confirmRowLabelled(label, spoken ?? value!),
+      label: value == null
+          ? label
+          : l10n.confirmRowLabelled(label, spoken ?? value!),
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: AppSizes.minTouch - AppSpacing.m),
+          constraints: const BoxConstraints(
+            minHeight: AppSizes.minTouch - AppSpacing.m,
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -365,7 +522,10 @@ class _Row extends StatelessWidget {
               const SizedBox(width: AppSpacing.m),
               Expanded(
                 child: value == null
-                    ? const Align(alignment: AlignmentDirectional.centerStart, child: _Bar(width: 200))
+                    ? const Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: _Bar(width: 200),
+                      )
                     : Text(value!, style: text.bodyLarge),
               ),
             ],
@@ -395,21 +555,37 @@ class _Policies extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Semantics(header: true, child: Text(l10n.confirmBeforeTitle, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800))),
+        Semantics(
+          header: true,
+          child: Text(
+            l10n.confirmBeforeTitle,
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+          ),
+        ),
         const SizedBox(height: AppSpacing.s),
         _PolicyRow(
-          icon: inside ? Icons.warning_amber_rounded : Icons.event_busy_outlined,
+          icon: inside
+              ? Icons.warning_amber_rounded
+              : Icons.event_busy_outlined,
           // The warning is words AND an icon (and a spoken prefix), never colour alone.
           warning: inside,
-          text: inside ? l10n.confirmPolicyNoCancel(details.cancellationHours) : l10n.confirmPolicyCancel(details.cancellationHours),
+          text: inside
+              ? l10n.confirmPolicyNoCancel(details.cancellationHours)
+              : l10n.confirmPolicyCancel(details.cancellationHours),
         ),
         _PolicyRow(
           icon: Icons.update,
-          text: details.maxReschedules <= 0 ? l10n.confirmPolicyNoReschedule : l10n.confirmPolicyReschedule(details.maxReschedules),
+          text: details.maxReschedules <= 0
+              ? l10n.confirmPolicyNoReschedule
+              : l10n.confirmPolicyReschedule(details.maxReschedules),
         ),
         _PolicyRow(
           icon: online ? Icons.link : Icons.place_outlined,
-          text: online ? l10n.confirmPolicyLinkOnline(details.meetingLinkVisibleMinutes) : l10n.confirmPolicyAddressInPerson,
+          text: online
+              ? l10n.confirmPolicyLinkOnline(details.meetingLinkVisibleMinutes)
+              : l10n.confirmPolicyAddressInPerson,
         ),
       ],
     );
@@ -417,7 +593,11 @@ class _Policies extends StatelessWidget {
 }
 
 class _PolicyRow extends StatelessWidget {
-  const _PolicyRow({required this.icon, required this.text, this.warning = false});
+  const _PolicyRow({
+    required this.icon,
+    required this.text,
+    this.warning = false,
+  });
 
   final IconData icon;
   final String text;
@@ -437,9 +617,20 @@ class _PolicyRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: AppSizes.icon, color: warning ? scheme.error : scheme.mutedText),
+            Icon(
+              icon,
+              size: AppSizes.icon,
+              color: warning ? scheme.error : scheme.mutedText,
+            ),
             const SizedBox(width: AppSpacing.m),
-            Expanded(child: Text(text, style: warning ? const TextStyle(fontWeight: FontWeight.w700) : null)),
+            Expanded(
+              child: Text(
+                text,
+                style: warning
+                    ? const TextStyle(fontWeight: FontWeight.w700)
+                    : null,
+              ),
+            ),
           ],
         ),
       ),
@@ -452,7 +643,11 @@ class _PolicyRow extends StatelessWidget {
 // =================================================================================================================
 
 class _AcknowledgeRow extends StatelessWidget {
-  const _AcknowledgeRow({required this.value, required this.enabled, required this.onChanged});
+  const _AcknowledgeRow({
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
 
   final bool value;
   final bool enabled;
@@ -479,7 +674,12 @@ class _AcknowledgeRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
             child: Row(
               children: [
-                ExcludeSemantics(child: Checkbox(value: value, onChanged: enabled ? (v) => onChanged(v ?? false) : null)),
+                ExcludeSemantics(
+                  child: Checkbox(
+                    value: value,
+                    onChanged: enabled ? (v) => onChanged(v ?? false) : null,
+                  ),
+                ),
                 const SizedBox(width: AppSpacing.xs),
                 Expanded(child: Text(l10n.confirmAcknowledge)),
               ],
@@ -492,10 +692,15 @@ class _AcknowledgeRow extends StatelessWidget {
 }
 
 class _ConfirmBar extends StatelessWidget {
-  const _ConfirmBar({required this.state, required this.onConfirm});
+  const _ConfirmBar({
+    required this.state,
+    required this.onConfirm,
+    required this.onAcknowledge,
+  });
 
   final ConfirmState state;
   final VoidCallback onConfirm;
+  final ValueChanged<bool> onAcknowledge;
 
   @override
   Widget build(BuildContext context) {
@@ -514,26 +719,44 @@ class _ConfirmBar extends StatelessWidget {
       color: Theme.of(context).colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.l),
-        child: Semantics(
-          // The button says WHY it is off, so it is never a silent dead end.
-          hint: why,
-          liveRegion: state.submitting,
-          child: SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: state.canConfirm ? onConfirm : null,
-              child: state.submitting
-                  ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2.5)),
-                        const SizedBox(width: AppSpacing.s),
-                        Text(l10n.confirmButtonBusy),
-                      ],
-                    )
-                  : Text(l10n.confirmButton),
+        // The tick lives WITH the button, so the reason the button is off is always on screen, whatever the phone's height.
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _AcknowledgeRow(
+              value: state.acknowledged,
+              enabled: !state.submitting,
+              onChanged: onAcknowledge,
             ),
-          ),
+            const SizedBox(height: AppSpacing.s),
+            Semantics(
+              // The button says WHY it is off, so it is never a silent dead end.
+              hint: why,
+              liveRegion: state.submitting,
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: state.canConfirm ? onConfirm : null,
+                  child: state.submitting
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.s),
+                            Text(l10n.confirmButtonBusy),
+                          ],
+                        )
+                      : Text(l10n.confirmButton),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
