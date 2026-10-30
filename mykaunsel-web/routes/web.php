@@ -148,6 +148,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::get('/dashboard', [CounselorDashboardController::class, 'index'])->name('dashboard');
         Route::get('/planner', [CounselorPlannerController::class, 'index'])->name('planner');
         Route::get('/appointments', [CounselorAppointmentController::class, 'index'])->name('appointments');
+        Route::put('/appointments/{publicId}/meeting', [CounselorAppointmentController::class, 'meeting'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('appointments.meeting');
+        Route::post('/appointments/{publicId}/outcome', [CounselorAppointmentController::class, 'outcome'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('appointments.outcome');
         Route::get('/profile', [CounselorProfileController::class, 'index'])->name('profile');
     });
 

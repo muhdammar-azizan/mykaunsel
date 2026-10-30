@@ -183,7 +183,16 @@ A cancelled booking row stays, and its slot may be booked again, so an index ove
 - **Answer:** `200 {booking: <the details at the new time>}`.
 - **Not built:** the counselor moving a booking, and a MariaDB race test for moving (the claim and the locks are the ones booking and cancelling already have race tests for).
 
-## Findings that shaped this
+## The counselor's sessions (web portal)
+
+`/counselor/appointments` (role counselor). Code: `CounselorSessions`, `Counselor\CounselorAppointmentController`. Tests: `CounselorSessionsTest`.
+
+- **Three lists:** Needs marking (confirmed and already ended), Upcoming (confirmed, not ended) and Past (completed, no-show, cancelled; 20 a page). Only the counselor's own bookings; someone else's is a 404. The client is shown by **display name only** (B3).
+- **Marking:** `POST /counselor/appointments/{id}/outcome` with `completed` or `no_show`. **Only the counselor says what happened**: nothing is assumed from the clock. Allowed only from confirmed and only once the session has ended (to the minute). The same outcome again changes nothing; another outcome once set is refused. It never touches `is_available`. The client's app then shows it under Past.
+- **The meeting link:** `PUT /counselor/appointments/{id}/meeting` (app from a short list, link `https` only, 255 characters). Only for a confirmed **online** session that has not ended. An empty link removes it. This is the only source of the link the client's app shows 15 minutes before the session (until now a link only existed if set in the database).
+- **No e-mail, no audit entry (B12).**
+- **Not built:** the planner (opening and editing times), the counselor's dashboard numbers, session notes, and the counselor cancelling a booking (that path must give the time back, B9).
+
 
 - **Who writes `is_available`:** no code in `app/` sets it to false at all. Only three **demo seeders** do, and each only alongside a booking (one of them leaves it off for a *cancelled* past booking, harmless because it is in the past; the rule in step 4 is what prevents it for real data). So "flag off" and "booked" mean the same thing today. If code ever turns the flag off for another reason (a counselor closing a slot by hand), that slot must be **left out** of the answer, not shown as "booked" (which would reveal a private reason), and this document and `AvailabilityService::isBooked()` must be revisited.
 - **Random ids for slots:** `calendar_entries.public_id` (a lowercase ULID, unique, required, never mass-assignable). The migration is safe to repeat, fills existing rows in batches without model events or audit entries, then makes the column required. The model sets the id when an entry is inserted (not in a model event), so it also holds in the database seeders, which switch events off. **Counselor profiles had the same hole:** after the full seed their `public_id` stayed empty. That is fixed the same way; a development database seeded before this change can still hold profiles without an id: `php artisan migrate:fresh --seed` rebuilds it.

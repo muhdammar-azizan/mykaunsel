@@ -27,6 +27,9 @@ class BookingRefused extends RuntimeException
         'reschedule_closed' => [409, "This session starts too soon, so it can't be moved."],
         'reschedule_limit_reached' => [409, "This booking has already been moved the most times it can be."],
         'different_counselor' => [422, 'A booking can only be moved to another time of the same counselor.'],
+        'meeting_closed' => [409, "The meeting link can't be changed for this session."],
+        'session_not_ended' => [409, "This session hasn't ended yet."],
+        'outcome_set' => [409, 'This session was already marked differently.'],
         'idempotency_key_reuse' => [422, 'This Idempotency-Key was already used for a different request.'],
     ];
 

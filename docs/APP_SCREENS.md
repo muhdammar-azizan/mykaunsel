@@ -60,7 +60,7 @@ The only AI component. The API key lives only in the Laravel `.env`; the app nev
 | ❌ | Send a time request (Mode B) | Date and time inside the counselor's working hours, optional note. A pending request expires automatically after 48 hours. The `booking_requests` table exists; the endpoint and the scheduler do not. The counselor needs a portal to approve, so build it together with the counselor portal. |
 | ✅ | Confirm booking | Done, including idempotency and the concurrency tests (MariaDB). |
 | ✅ | Booking confirmed | Summary, "View booking", "Back to home". A "request sent" variant for Mode B later. "Add to calendar" is optional. (Built; the Mode B variant waits for Mode B.) |
-| ✅ | Session details | (Built as a section of Booking details.) Online: the meeting link appears 15 minutes before until the end of the session, and "link not added yet" if the counselor has not pasted one. In person: the full address and "Get directions". |
+| ✅ | Session details | (Built as a section of Booking details.) Online: the meeting link appears 15 minutes before until the end of the session, and "link not added yet" if the counselor has not pasted one (the counselor now pastes it on the web portal, Appointments page). In person: the full address and "Get directions". |
 
 ## 5. My bookings
 
