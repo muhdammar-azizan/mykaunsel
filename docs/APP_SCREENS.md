@@ -14,7 +14,7 @@ Status: ✅ built · ⚠️ partly built or a placeholder · ❌ not built.
 - Touch targets 44 px, screen-reader labels, never colour alone.
 - The server enforces every rule. The app is not trusted.
 
-**Bottom navigation (5 tabs):** Home, Chat, Bookings, Feed, Profile. **Now 4 tabs** (Home, Find, Bookings, Account). Proposal: do not show a tab that is not built, so there is no dead tab. The Find tab can stay until Chat and Feed are built.
+**Bottom navigation (target: Home, Chat, Bookings, Feed, Profile).** **Now 5 tabs: Home, Find, Chat, Bookings, Account.** Feed is the only tab still to come. Proposal: do not show a tab that is not built, so there is no dead tab (none is dead today).
 
 ## 1. Auth and start
 
@@ -59,7 +59,7 @@ The only AI component. The API key lives only in the Laravel `.env`; the app nev
 | ✅ | Pick a slot (Mode A) | Done, per the spec and the availability API. |
 | ✅ | Send a time request (Mode B) | **Built** (backend, the counselor's approve and decline on the web, and the app screen: pick a day and a start inside the counselor's weekly hours, optional note). Original spec: Date and time inside the counselor's working hours, optional note. A pending request expires automatically after 48 hours. The `booking_requests` table exists; the endpoint and the scheduler do not. The counselor needs a portal to approve, so build it together with the counselor portal. |
 | ✅ | Confirm booking | Done, including idempotency and the concurrency tests (MariaDB). |
-| ✅ | Booking confirmed | Summary, "View booking", "Back to home". A "request sent" variant for Mode B later. "Add to calendar" is optional. (Built; the Mode B variant waits for Mode B.) |
+| ✅ | Booking confirmed | Summary, "View booking", "Back to home". A "request sent" variant for Mode B. "Add to calendar" is optional. (Built. The Mode B variant is not a separate screen: after asking, the app opens the request page, which says "Waiting for an answer".) |
 | ✅ | Session details | (Built as a section of Booking details.) Online: the meeting link appears 15 minutes before until the end of the session, and "link not added yet" if the counselor has not pasted one (the counselor now pastes it on the web portal, Appointments page). In person: the full address and "Get directions". |
 
 ## 5. My bookings
@@ -106,6 +106,17 @@ Depends on Moderate Feed in the admin part. Build them together.
 | ✅ | ★ No connection and general error | Keep. |
 | ❌ | ★ Help, Terms, Privacy Policy | Static pages on the web, opened in an in-app browser. Help: the support email and the list of helplines. The Terms and Privacy Policy text must be real before launch (PDPA). |
 
+## 9. Counselor web portal (not in the original list, built because the app needs it)
+
+On the web, for a signed-in counselor. Not part of the mobile app.
+
+| | Page | What it does |
+|---|---|---|
+| ✅ | Appointments | Their own sessions: Needs marking (ended sessions: Mark completed / no-show), Upcoming (paste an `https` meeting link for an online session), Past. The client is shown by display name only. Also **Time requests**: Approve (books the session) or Decline with an optional reason. |
+| ✅ | Planner | Open and remove their own bookable times (context, date, start, length, online or in person with a place of that organization), with the same buffer and overlap rules as booking. **Weekly hours**: a pattern (for example every Thursday 10:00 to 13:00) and "Open the next weeks". |
+| ❌ | Dashboard numbers, Profile | Still placeholders. |
+| ❌ | Personal blocks, editing a time, the counselor cancelling a booking | Not built. A cancellation by the counselor must give the time back (B9). |
+
 ## Built but not in this list
 
 "Update required" screen, Change password, Signed-in devices, the counselor filter sheet.
@@ -119,14 +130,18 @@ B1 no fee text anywhere. B2 the no-recording acknowledgement is required and not
 1. ~~Reschedule: same cancellation time limit?~~ Decided: yes (built).
 2. Anonymous post: can an admin see the real identity? (FYP1 says yes; say so in the toggle text)
 3. Delete account: the data policy is not decided, so do not build it.
-4. Crisis helpline numbers: confirm the real numbers before use.
-5. The real Terms and Privacy Policy text before launch.
-6. Hide the tabs that are not built (proposal), or keep Find until Chat and Feed exist.
+4. Crisis helpline numbers: confirm the real numbers before use (HEAL 15555 and Talian Kasih 15999 are in the app and the server; Befrienders is left out until its number is confirmed). The crisis wording rules (English and Malay) also need a review by someone who knows how young Malaysians write.
+5. The real Terms and Privacy Policy text before launch (the sign-up form has no terms tick until then).
+6. ~~Hide the tabs that are not built~~ No dead tab today (Home, Find, Chat, Bookings, Account). Revisit when Feed is built (Find can stay).
+7. New: the AI-processing agreement is **required** at sign-up (as specified) and also withdrawable in Account. Keep it required, or make it optional (safer for PDPA, "freely given")?
+8. New: the chat model. It is `claude-opus-5-5` at low effort (about 4 seconds a reply). A cheaper or faster model can be set with `ANTHROPIC_CHAT_MODEL` in the server's `.env`; there is no spend limit except 200 messages a day per person.
 
 ## Suggested order (by dependency)
 
-1. Booking confirmed (real) → Session details → My bookings (list, details, cancel, reschedule). This also makes the slot-restore contract real.
-2. Mode B + the counselor portal (needed to approve requests) → Request status.
-3. Chat (with the AI consent, crisis detection on the server) → history → cards.
-4. Feed + Moderate Feed together.
-5. Onboarding, Choose account type, Invite code, Choose context, settings and static pages.
+1. ✅ Booking confirmed (real) → Session details → My bookings (list, details, cancel, reschedule).
+2. ✅ Mode B + the counselor portal (sessions, planner, weekly hours, requests) → Request status.
+3. ✅ Chat (with the AI consent, crisis detection on the server) → history → cards.
+4. ❌ **Next:** Feed + Moderate Feed together (needs decision 2).
+5. ❌ Onboarding, Choose account type, Invite code, Choose context, Notification settings, Data and privacy, Help / Terms / Privacy (needs decision 5), Reset password deep link, Home's upcoming-booking card. Delete account waits for decision 3.
+
+Nothing built after the Pick a slot step has been viewed on a screen yet; the emulator checklist in APP_ARCHITECTURE.md is the first thing to do with eyes.
