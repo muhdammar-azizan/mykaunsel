@@ -679,7 +679,7 @@ abstract class AppLocalizations {
   /// No description provided for @sessionInPerson.
   ///
   /// In en, this message translates to:
-  /// **'In person'**
+  /// **'In-person'**
   String get sessionInPerson;
 
   /// No description provided for @filtersCount.
@@ -787,7 +787,7 @@ abstract class AppLocalizations {
   /// No description provided for @inPersonIn.
   ///
   /// In en, this message translates to:
-  /// **'In person · {place}'**
+  /// **'In-person · {place}'**
   String inPersonIn(String place);
 
   /// No description provided for @minutesShort.
@@ -844,17 +844,209 @@ abstract class AppLocalizations {
   /// **'Also takes session requests.'**
   String get profileAcceptsRequests;
 
-  /// No description provided for @profileBookingSoon.
+  /// No description provided for @seeAvailableTimes.
   ///
   /// In en, this message translates to:
-  /// **'Booking is coming soon.'**
-  String get profileBookingSoon;
+  /// **'See available times'**
+  String get seeAvailableTimes;
 
   /// No description provided for @profileNotFoundTitle.
   ///
   /// In en, this message translates to:
   /// **'Counselor not available'**
   String get profileNotFoundTitle;
+
+  /// No description provided for @pickSlotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a time'**
+  String get pickSlotTitle;
+
+  /// No description provided for @pickSlotModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Session type'**
+  String get pickSlotModeLabel;
+
+  /// No description provided for @pickSlotDatesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a date'**
+  String get pickSlotDatesLabel;
+
+  /// No description provided for @pickSlotTimesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Times on {date}'**
+  String pickSlotTimesLabel(String date);
+
+  /// No description provided for @pickSlotDateCard.
+  ///
+  /// In en, this message translates to:
+  /// **'{weekday} {day} {month}, {count, plural, =0{no times} =1{1 time} other{{count} times}}'**
+  String pickSlotDateCard(String weekday, String day, String month, int count);
+
+  /// No description provided for @pickSlotSlotLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{time}, {duration} minutes, {mode}'**
+  String pickSlotSlotLabel(String time, int duration, String mode);
+
+  /// No description provided for @pickSlotBooked.
+  ///
+  /// In en, this message translates to:
+  /// **'Booked'**
+  String get pickSlotBooked;
+
+  /// No description provided for @pickSlotSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get pickSlotSelected;
+
+  /// No description provided for @pickSlotContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get pickSlotContinue;
+
+  /// No description provided for @pickSlotContinueAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with {when}'**
+  String pickSlotContinueAt(String when);
+
+  /// No description provided for @pickSlotPickFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a time to continue'**
+  String get pickSlotPickFirst;
+
+  /// No description provided for @pickSlotNoTimesDay.
+  ///
+  /// In en, this message translates to:
+  /// **'No times on this day.'**
+  String get pickSlotNoTimesDay;
+
+  /// No description provided for @pickSlotNoTimesDayMode.
+  ///
+  /// In en, this message translates to:
+  /// **'No {mode} times on this day.'**
+  String pickSlotNoTimesDayMode(String mode);
+
+  /// No description provided for @pickSlotTryMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Try {mode}'**
+  String pickSlotTryMode(String mode);
+
+  /// No description provided for @pickSlotNoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No times available'**
+  String get pickSlotNoneTitle;
+
+  /// No description provided for @pickSlotNoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This counselor has no free times in the next 30 days. Please check again later.'**
+  String get pickSlotNoneBody;
+
+  /// No description provided for @pickSlotGoBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to counselor'**
+  String get pickSlotGoBack;
+
+  /// No description provided for @pickSlotLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Show later dates'**
+  String get pickSlotLoadMore;
+
+  /// No description provided for @pickSlotLoadMoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load later dates.'**
+  String get pickSlotLoadMoreFailed;
+
+  /// No description provided for @pickSlotRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not refresh. Showing the last times we loaded.'**
+  String get pickSlotRefreshFailed;
+
+  /// No description provided for @pickSlotSelectionLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Your selected time is no longer available.'**
+  String get pickSlotSelectionLost;
+
+  /// No description provided for @pickSlotTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone else just booked that time. Please pick another.'**
+  String get pickSlotTaken;
+
+  /// No description provided for @pickSlotUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Counselor not available'**
+  String get pickSlotUnavailableTitle;
+
+  /// No description provided for @pickSlotUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This counselor cannot be booked right now.'**
+  String get pickSlotUnavailableBody;
+
+  /// No description provided for @pickSlotVerifyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your email first'**
+  String get pickSlotVerifyTitle;
+
+  /// No description provided for @pickSlotVerifyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your email address before booking a session.'**
+  String get pickSlotVerifyBody;
+
+  /// No description provided for @pickSlotVerifyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify my email'**
+  String get pickSlotVerifyButton;
+
+  /// No description provided for @pickSlotWaitSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait {seconds} seconds before trying again.'**
+  String pickSlotWaitSeconds(int seconds);
+
+  /// No description provided for @pickSlotTimeZoneNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Times are in Malaysian time (UTC+8). Your phone is set to a different time zone.'**
+  String get pickSlotTimeZoneNote;
+
+  /// No description provided for @pickSlotRefreshing.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating times…'**
+  String get pickSlotRefreshing;
+
+  /// No description provided for @confirmBookingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm booking'**
+  String get confirmBookingTitle;
+
+  /// No description provided for @confirmBookingComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking confirmation is coming next.'**
+  String get confirmBookingComingSoon;
 
   /// No description provided for @accountTitle.
   ///

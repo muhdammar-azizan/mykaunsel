@@ -327,7 +327,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionOnline => 'Online';
 
   @override
-  String get sessionInPerson => 'In person';
+  String get sessionInPerson => 'In-person';
 
   @override
   String filtersCount(int count) {
@@ -398,7 +398,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String inPersonIn(String place) {
-    return 'In person · $place';
+    return 'In-person · $place';
   }
 
   @override
@@ -432,10 +432,134 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileAcceptsRequests => 'Also takes session requests.';
 
   @override
-  String get profileBookingSoon => 'Booking is coming soon.';
+  String get seeAvailableTimes => 'See available times';
 
   @override
   String get profileNotFoundTitle => 'Counselor not available';
+
+  @override
+  String get pickSlotTitle => 'Pick a time';
+
+  @override
+  String get pickSlotModeLabel => 'Session type';
+
+  @override
+  String get pickSlotDatesLabel => 'Choose a date';
+
+  @override
+  String pickSlotTimesLabel(String date) {
+    return 'Times on $date';
+  }
+
+  @override
+  String pickSlotDateCard(String weekday, String day, String month, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times',
+      one: '1 time',
+      zero: 'no times',
+    );
+    return '$weekday $day $month, $_temp0';
+  }
+
+  @override
+  String pickSlotSlotLabel(String time, int duration, String mode) {
+    return '$time, $duration minutes, $mode';
+  }
+
+  @override
+  String get pickSlotBooked => 'Booked';
+
+  @override
+  String get pickSlotSelected => 'Selected';
+
+  @override
+  String get pickSlotContinue => 'Continue';
+
+  @override
+  String pickSlotContinueAt(String when) {
+    return 'Continue with $when';
+  }
+
+  @override
+  String get pickSlotPickFirst => 'Pick a time to continue';
+
+  @override
+  String get pickSlotNoTimesDay => 'No times on this day.';
+
+  @override
+  String pickSlotNoTimesDayMode(String mode) {
+    return 'No $mode times on this day.';
+  }
+
+  @override
+  String pickSlotTryMode(String mode) {
+    return 'Try $mode';
+  }
+
+  @override
+  String get pickSlotNoneTitle => 'No times available';
+
+  @override
+  String get pickSlotNoneBody =>
+      'This counselor has no free times in the next 30 days. Please check again later.';
+
+  @override
+  String get pickSlotGoBack => 'Back to counselor';
+
+  @override
+  String get pickSlotLoadMore => 'Show later dates';
+
+  @override
+  String get pickSlotLoadMoreFailed => 'Could not load later dates.';
+
+  @override
+  String get pickSlotRefreshFailed =>
+      'Could not refresh. Showing the last times we loaded.';
+
+  @override
+  String get pickSlotSelectionLost =>
+      'Your selected time is no longer available.';
+
+  @override
+  String get pickSlotTaken =>
+      'Someone else just booked that time. Please pick another.';
+
+  @override
+  String get pickSlotUnavailableTitle => 'Counselor not available';
+
+  @override
+  String get pickSlotUnavailableBody =>
+      'This counselor cannot be booked right now.';
+
+  @override
+  String get pickSlotVerifyTitle => 'Verify your email first';
+
+  @override
+  String get pickSlotVerifyBody =>
+      'Please confirm your email address before booking a session.';
+
+  @override
+  String get pickSlotVerifyButton => 'Verify my email';
+
+  @override
+  String pickSlotWaitSeconds(int seconds) {
+    return 'Please wait $seconds seconds before trying again.';
+  }
+
+  @override
+  String get pickSlotTimeZoneNote =>
+      'Times are in Malaysian time (UTC+8). Your phone is set to a different time zone.';
+
+  @override
+  String get pickSlotRefreshing => 'Updating times…';
+
+  @override
+  String get confirmBookingTitle => 'Confirm booking';
+
+  @override
+  String get confirmBookingComingSoon => 'Booking confirmation is coming next.';
 
   @override
   String get accountTitle => 'Account';

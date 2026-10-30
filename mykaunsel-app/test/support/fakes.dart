@@ -14,6 +14,8 @@ import 'package:mykaunsel/features/account/domain/signed_in_device.dart';
 import 'package:mykaunsel/features/auth/data/auth_api.dart';
 import 'package:mykaunsel/features/auth/domain/app_user.dart';
 import 'package:mykaunsel/features/auth/domain/sign_in_result.dart';
+import 'package:mykaunsel/features/booking/data/availability_api.dart';
+import 'package:mykaunsel/features/booking/domain/availability.dart';
 import 'package:mykaunsel/features/counselors/data/counselor_api.dart';
 import 'package:mykaunsel/features/counselors/domain/counselor.dart';
 import 'package:mykaunsel/features/counselors/domain/counselor_query.dart';
@@ -269,6 +271,19 @@ class FakeAccountApi implements AccountApi {
   }
 }
 
+class FakeAvailabilityApi implements AvailabilityApi {
+  final calls = <({String id, String? from})>[];
+
+  Future<Availability> Function(String id, String? from) handler = (id, from) async => throw StateError('no availability handler set');
+
+  @override
+  Future<Availability> fetch(String counselorId, {String? from}) {
+    calls.add((id: counselorId, from: from));
+
+    return handler(counselorId, from);
+  }
+}
+
 /// Finds text however the phone writes the space before AM/PM (newer intl uses a narrow no-break space).
 Finder findText(String text) => find.byWidgetPredicate((Widget w) => w is Text && (w.data ?? '').replaceAll(' ', ' ') == text, description: 'text "$text"');
 
@@ -281,6 +296,7 @@ List<Override> testOverrides({
   FakeTokenStorage? storage,
   FakeCounselorApi? counselorApi,
   FakeAccountApi? accountApi,
+  FakeAvailabilityApi? availabilityApi,
 }) {
   return [
     appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://test.local')),
@@ -290,6 +306,7 @@ List<Override> testOverrides({
     authApiProvider.overrideWithValue(authApi ?? FakeAuthApi()),
     counselorApiProvider.overrideWithValue(counselorApi ?? FakeCounselorApi()),
     accountApiProvider.overrideWithValue(accountApi ?? FakeAccountApi()),
+    availabilityApiProvider.overrideWithValue(availabilityApi ?? FakeAvailabilityApi()),
     clockProvider.overrideWithValue(() => testNow),
   ];
 }

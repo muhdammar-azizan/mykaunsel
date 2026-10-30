@@ -98,7 +98,7 @@ void main() {
       expect(find.text('Kemurungan'), findsOneWidget);
       expect(find.text('+2 more'), findsOneWidget);
       expect(findTextContaining('English, Bahasa Malaysia'), findsOneWidget);
-      expect(findTextContaining('Online / In person'), findsOneWidget);
+      expect(findTextContaining('Online / In-person'), findsOneWidget);
       expect(findTextContaining('Kuantan, Pahang'), findsOneWidget);
       expect(findText('Next free time: Tomorrow, 10:00 AM'), findsOneWidget);
       expect(find.text('KA'), findsNothing); // "Kaunselor" is a title, not an initial
@@ -293,7 +293,7 @@ void main() {
       expect(find.text('Mandarin'), findsOneWidget);
       expect(find.text('Pahang'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'In person'));
+      await tester.tap(find.widgetWithText(ChoiceChip, 'In-person'));
       await tester.tap(find.widgetWithText(ChoiceChip, 'Trauma'));
       await tester.pump();
       await tester.tap(find.text('Show results'));
@@ -408,11 +408,11 @@ void main() {
       expect(find.text('Trauma'), findsOneWidget);
       expect(find.text('Hubungan'), findsOneWidget); // all of them, not just the first three
       expect(find.text('Languages'), findsOneWidget);
-      expect(find.text('Online / In person'), findsOneWidget);
+      expect(find.text('Online / In-person'), findsOneWidget);
       expect(find.text('Kuantan, Pahang'), findsWidgets);
       expect(find.text('Independent · Klinik Damai'), findsOneWidget);
       expect(find.text('Also takes session requests.'), findsOneWidget);
-      expect(find.text('Booking is coming soon.'), findsOneWidget);
+      expect(find.text('See available times'), findsOneWidget);
     });
 
     testWidgets('free times are grouped by day, in Malaysian time, with where in person ones are', (tester) async {
@@ -422,7 +422,7 @@ void main() {
       expect(find.text('Thursday 5 November'), findsOneWidget);
       expect(findText('10:00 AM'), findsOneWidget);
       expect(findText('2:00 PM'), findsOneWidget);
-      expect(findTextContaining('60 min  ·  In person · Kuantan, Pahang  ·  Klinik Damai'), findsOneWidget);
+      expect(findTextContaining('60 min  ·  In-person · Kuantan, Pahang  ·  Klinik Damai'), findsOneWidget);
       expect(findTextContaining('60 min  ·  Online  ·  Independent'), findsNWidgets(2));
       expect(find.text('All times are Malaysian time.'), findsOneWidget);
     });

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/account/data/account_api.dart';
 import '../features/auth/data/auth_api.dart';
+import '../features/booking/data/availability_api.dart';
 import '../features/counselors/data/counselor_api.dart';
 import '../features/platform_status/data/platform_status_api.dart';
 import 'config/app_config.dart';
@@ -40,6 +41,8 @@ final authApiProvider = Provider<AuthApi>((ref) => HttpAuthApi(ref.watch(apiClie
 final accountApiProvider = Provider<AccountApi>((ref) => HttpAccountApi(ref.watch(apiClientProvider)));
 
 final counselorApiProvider = Provider<CounselorApi>((ref) => HttpCounselorApi(ref.watch(apiClientProvider)));
+
+final availabilityApiProvider = Provider<AvailabilityApi>((ref) => HttpAvailabilityApi(ref.watch(apiClientProvider)));
 
 /// "What time is it now" for anything that says "today" or "tomorrow"; tests replace it.
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);

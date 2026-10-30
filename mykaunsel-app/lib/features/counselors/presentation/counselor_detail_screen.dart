@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/error/app_failure.dart';
 import '../../../core/error/failure_message.dart';
+import '../../../core/router/app_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/format/slot_time.dart';
+import '../../booking/presentation/booking_args.dart';
 import '../domain/counselor.dart';
 import 'counselor_labels.dart';
 import 'counselor_list_controller.dart';
@@ -143,17 +146,10 @@ class _Profile extends ConsumerWidget {
                 ),
         ),
         const SizedBox(height: 24),
-        // Booking is the next feature: say so rather than show a button that does nothing.
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: scheme.onSurface.withValues(alpha: .05), borderRadius: BorderRadius.circular(16)),
-          child: Row(
-            children: [
-              const Icon(Icons.event_available_outlined),
-              const SizedBox(width: 12),
-              Expanded(child: Text(l10n.profileBookingSoon, style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600))),
-            ],
-          ),
+        FilledButton.icon(
+          onPressed: () => context.push(AppRoutes.pickSlotPath(counselor.id), extra: BookingCounselorSummary.fromCounselor(counselor)),
+          icon: const Icon(Icons.event_available_outlined),
+          label: Text(l10n.seeAvailableTimes),
         ),
       ],
     );

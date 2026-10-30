@@ -12,6 +12,9 @@ import '../../features/account/presentation/account_screen.dart';
 import '../../features/account/presentation/change_password_screen.dart';
 import '../../features/account/presentation/devices_screen.dart';
 import '../../features/account/presentation/profile_screen.dart';
+import '../../features/booking/presentation/booking_args.dart';
+import '../../features/booking/presentation/confirm_booking_screen.dart';
+import '../../features/booking/presentation/pick_slot_screen.dart';
 import '../../features/counselors/presentation/counselor_detail_screen.dart';
 import '../../features/counselors/presentation/counselors_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -41,6 +44,10 @@ abstract final class AppRoutes {
   static const accountDevices = '/account/devices';
 
   static String counselorPath(String id) => '/counselors/${Uri.encodeComponent(id)}';
+
+  static String pickSlotPath(String id) => '/book/${Uri.encodeComponent(id)}';
+
+  static String confirmBookingPath(String id) => '/book/${Uri.encodeComponent(id)}/confirm';
 
   /// Pages a signed-out person may be on.
   static const signedOutPages = {signIn, twoFactor, verifyEmail, signUp, forgotPassword};
@@ -125,6 +132,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: AppRoutes.verifyEmail, builder: (_, _) => const VerifyEmailScreen()),
       GoRoute(path: AppRoutes.signUp, builder: (_, _) => const SignUpScreen()),
       GoRoute(path: AppRoutes.forgotPassword, builder: (_, _) => const ForgotPasswordScreen()),
+      // Booking sits on top of the tabs (no bottom bar), so it is a short, focused flow. Counselor details come in `extra`.
+      GoRoute(
+        path: '/book/:id',
+        builder: (_, state) {
+          final id = state.pathParameters['id']!;
+          final extra = state.extra;
+
+          return PickSlotScreen(counselor: extra is BookingCounselorSummary ? extra : BookingCounselorSummary(id: id, name: ''));
+        },
+        routes: [
+          GoRoute(
+            path: 'confirm',
+            redirect: (_, state) => state.extra is ConfirmBookingArgs ? null : AppRoutes.pickSlotPath(state.pathParameters['id']!),
+            builder: (_, state) => ConfirmBookingScreen(args: state.extra! as ConfirmBookingArgs),
+          ),
+        ],
+      ),
       // The signed-in app: three tabs, each keeping its own place.
       StatefulShellRoute.indexedStack(
         builder: (_, _, navigationShell) => AppShell(navigationShell: navigationShell),
