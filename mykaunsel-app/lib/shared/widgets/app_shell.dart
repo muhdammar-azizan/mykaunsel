@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../l10n/app_localizations.dart';
 
-/// The frame of the signed-in app: a bar at the bottom to move between Home, Find a counselor and Account. Each tab keeps
+/// The frame of the signed-in app: a bar at the bottom to move between Home, Find a counselor, Bookings and Account. Each tab keeps
 /// its own place (scroll position, open profile) while you visit another.
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
@@ -23,6 +23,7 @@ class AppShell extends StatelessWidget {
         destinations: [
           NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: l10n.navHome),
           NavigationDestination(icon: const Icon(Icons.search), selectedIcon: const Icon(Icons.search), label: l10n.navFind),
+          NavigationDestination(icon: const Icon(Icons.event_note_outlined), selectedIcon: const Icon(Icons.event_note), label: l10n.navBookings),
           NavigationDestination(icon: const Icon(Icons.person_outline), selectedIcon: const Icon(Icons.person), label: l10n.navAccount),
         ],
       ),

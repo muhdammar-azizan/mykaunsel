@@ -135,7 +135,7 @@ Accessibility already covered: every field has a label, headings are marked, err
 - Anything that checks the password is limited by the server to 5 tries a minute and 20 an hour, so a stolen token cannot be used to guess it.
 - Not built here: changing the email, two-step verification setup, deleting the account (needs a data policy and a backend fix first).
 
-**The signed-in app** has three tabs (bottom bar): Home, Find, Account. Each tab keeps its own place while you visit another (`StatefulShellRoute`); tapping the tab you are on returns to its first page.
+**The signed-in app** has four tabs (bottom bar): Home, Find, Bookings, Account. Each tab keeps its own place while you visit another (`StatefulShellRoute`); tapping the tab you are on returns to its first page.
 
 **Find a counselor** (`features/counselors`; privacy rules in `docs/PUBLIC_COUNSELOR_DATA.md`):
 
@@ -177,7 +177,7 @@ Accessibility already covered: every field has a label, headings are marked, err
 - **The tick and the button are together in a sticky bar at the bottom**, so the reason the button is off is always on screen. The button is on only when the box is ticked AND the check is good AND nothing is wrong. While submitting: "Confirming…", the tick is locked and Back (the bar's and the phone's) does nothing.
 - **Idempotency-Key:** a version 4 UUID made when the screen opens, **in memory only**. Reused for automatic retries (timeout, no connection, 5xx, 409 `request_in_progress`; up to 3 retries with 1, 2, 4 s). Replaced only after a definite refusal (4xx), so the next tap is a new request. Never stored, printed or logged (a test reads the sources to prove it).
 - **Unknown outcome** (no answer after the retries): "We couldn't confirm your booking. Check My Bookings before trying again." with a button to Home (My Bookings does not exist yet). **Never assumed failed**; the booking button stays off. When the app comes back to the front, the same key is sent once more to resolve it. A 5xx that does not clear shows "Try again" with the same key.
-- Success replaces everything with a **placeholder** "Booking confirmed" (`booking_confirmed_placeholder.dart`, clearly marked; Back goes Home). It is replaced by its own specification later.
+- Success replaces everything with "Booking confirmed" (`features/bookings/presentation/booking_confirmed_screen.dart`; Back goes Home).
 - Every refusal has its words: `time_conflict`, `upcoming_limit_reached` (with the server's limit), `email_not_verified` ("Verify my email"), 404 ("Find another counselor"), 429 (with the wait), 422 (the server's words), 503 (the global maintenance screen).
 - **401:** the person goes to sign-in and, after signing in (and the code step), comes back to this screen; **nothing is resent**, they tap Confirm again. The return destination (`returnPathProvider`) is in memory only and accepted only if it is exactly `/book/<id>` or `/book/<id>/confirm?slot=<id>` (`isSafeReturnPath`: no scheme, no host, no `..`, no other query), so it cannot be an external address.
 - Accessibility: each row announced as its own item ("Date: Tuesday, 3 November 2026"); the tick is one checkbox whose whole row taps and whose state is announced; the off button says why ("Checking availability", "No internet connection", "Tick the box to continue"); banners and errors are live regions and focus goes to a new problem; warnings are words + an icon (+ a spoken "Important"); targets at least 44 px, 8 apart; tested at text size ×2 on a 320 px screen. **Found by the tests:** a hint on a wrapper around the button did not reach the button's own item, so a screen reader would not have said why it was off; the wrapper is now merged with the button.
@@ -195,6 +195,13 @@ Accessibility already covered: every field has a label, headings are marked, err
 8. Sign in as `unverified`: "Verify your email…" and the button works. Delete the token on the server (or wait out the session): you land on sign-in, and after signing in (and the code) you are back on this screen; nothing was resent.
 9. TalkBack: Date/Time/Duration/Type are read as separate items; the tick reads "checked/not checked" and the whole row toggles; the off button says why; the banner is announced; warnings start with "Important".
 10. Largest font and display size: nothing is cut off, the bottom bar stays usable, the list scrolls.
+
+**Bookings** (`features/bookings`; the server side is `docs/AVAILABILITY.md`, "My bookings"):
+
+- The **Bookings tab** has Upcoming and Past. A card says when (Today / Tomorrow / date, Malaysian time), who, in person or online, and its state as a **word and an icon** (Confirmed, Completed, Cancelled, No-show; "Starting soon" when the server says so). Past has "Book again" (opens that counselor's page; hidden when the counselor no longer has one). Pull to refresh; Past loads 20 at a time and also asks for the next page by itself when a page is too short to scroll; empty states and "Try again". The list is asked for again after a booking is made.
+- **Booking details** (`/bookings/:id`, inside the Bookings tab): state, the facts as separate labelled items, the **reference** (the public id, never a counter), and **Session details**: online shows when the link will appear, "Join session" (only when the server sent a link, i.e. inside its window), "not added yet" or "ended"; in person shows the full address and "Get directions" (a map search by coordinates, or by the address). The screen **asks the server again at the moment the window opens or closes** (a timer) and when the app returns to the front. It never works the window out itself. A link is opened only if it is an http(s) address; anything else is refused with a message. A cancelled booking shows neither link nor address. A line says until when it can be cancelled (read only: the Cancel button comes with its own step).
+- Tests: `bookings_flow_test.dart`, `my_bookings_api_test.dart`.
+- Opening `/bookings/<id>` by address works on its own (the details are fetched by id).
 
 ## Adding a feature (the recipe)
 

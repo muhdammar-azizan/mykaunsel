@@ -62,6 +62,7 @@ Configurable in `config/booking.php`:
 |---|---|---|
 | `min_lead_hours` | 2 | A slot starting sooner than this from now is not offered. Exactly 2 hours is allowed. |
 | `horizon_days` | 30 | The last bookable day is today + 30 (Malaysian time). |
+| `starting_soon_minutes` | 60 | The "Starting soon" badge on My bookings. |
 | `max_upcoming_sessions` | 3 | Per person. Not enforced by this screen; the confirm step does. |
 | `availability_days_per_request` | 14 | The longest range of one request. |
 
@@ -139,6 +140,21 @@ A cancelled booking row stays, and its slot may be booked again, so an index ove
 ### Configuration
 
 `config/booking.php`: `cancellation_default_hours` (24; used only when the slot's organization has no value of its own: `organizations.cancellation_deadline_hours`, which defaults to 24 and is what the virtual platform organization has), `max_reschedules` (2), `meeting_link_visible_minutes` (15), `idempotency_ttl_hours` (24), `idempotency_processing_seconds` (60), `create_rate_per_minute` (10) / `_per_hour` (60), `preview_rate_per_minute` (60) / `_per_hour` (600), `max_upcoming_sessions` (3).
+
+## My bookings (read only)
+
+`GET /api/v1/bookings?scope=upcoming|past&page=` and `GET /api/v1/bookings/{id}` (token, confirmed email, the general `api-user` limit). Code: `MyBookingController`, `MyBookings`. Tests: `MyBookingsApiTest`.
+
+- **Only the person's own bookings.** Another person's booking and one that does not exist are the same `404 booking_not_found`. The id is the booking's random public id (26 characters); the route only matches that shape, which also keeps it apart from `/bookings/preview`.
+- **Upcoming** = `confirmed` and the session has not ended (a session under way is still upcoming, so "Join session" works), soonest first, all in one answer (the upcoming cap keeps it small). **Past** = everything else (completed, cancelled, no-show, and confirmed ones that have ended), newest first, 20 a page: `{data, page, last_page, total}`. Past excludes exactly the ids of the upcoming set, so no booking is in both or in neither.
+- **A line** (`data[]`): `id`, `status` (`confirmed|completed|cancelled|no_show`), `starting_soon` (a confirmed session starting within `booking.starting_soon_minutes`, 60, or under way), `starts_at` / `ends_at` (+08:00), `duration_minutes`, `mode`, `counselor{id (the counselor's public id, null if they have no profile), display_name}`, `location{name, city}|null`.
+- **The details** (`booking`) add: `cancellation_hours`, `cancellation_deadline_at` (null when passed or not confirmed), `can_cancel`, `reschedules_left`, `meeting` and `place`.
+- **`meeting`** (online and confirmed only): `state` is `opens_later` (before the window), `available` (inside it and a link was added: the ONLY time `url` and `provider` are sent), `not_added` (inside it, no link yet) or `ended`; plus `opens_at` (`booking.meeting_link_visible_minutes` before the start) and `closes_at` (the end). The server decides; the app never works the window out for itself.
+- **`place`** (in person and confirmed only): the FULL address (name, address, city, state, postcode, coordinates), for the owner only. A cancelled booking has neither a meeting nor a place.
+- **Never in the answers:** an organization name, the person's own email or phone, the counselor's email, a row id, a price.
+- **Cost:** a fixed number of queries however many bookings (a test counts them).
+- **Nothing is cached:** `Cache-Control: private, no-store` (the answer can hold a meeting link).
+- **In the app:** the Bookings tab (Upcoming / Past), Booking details with the session details, and "Booking confirmed" after a booking. Cancel and reschedule are separate steps; their buttons do not exist yet.
 
 ## Findings that shaped this
 

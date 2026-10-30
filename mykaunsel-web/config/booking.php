@@ -29,6 +29,9 @@ return [
     // A request that never finished (the server died) stops blocking its key after this many seconds.
     'idempotency_processing_seconds' => 60,
 
+    // "Starting soon" badge: a confirmed session that starts within this many minutes (or is under way).
+    'starting_soon_minutes' => (int) env('BOOKING_STARTING_SOON_MINUTES', 60),
+
     // Rate limits per person.
     'create_rate_per_minute' => (int) env('BOOKING_CREATE_RATE_PER_MINUTE', 10),
     'create_rate_per_hour' => (int) env('BOOKING_CREATE_RATE_PER_HOUR', 60),

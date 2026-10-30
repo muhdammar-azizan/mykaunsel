@@ -14,7 +14,7 @@ Status: ✅ built · ⚠️ partly built or a placeholder · ❌ not built.
 - Touch targets 44 px, screen-reader labels, never colour alone.
 - The server enforces every rule. The app is not trusted.
 
-**Bottom navigation (5 tabs):** Home, Chat, Bookings, Feed, Profile. **Now 3 tabs** (Home, Find, Account). Proposal: do not show a tab that is not built, so there is no dead tab. The Find tab can stay until Chat and Feed are built.
+**Bottom navigation (5 tabs):** Home, Chat, Bookings, Feed, Profile. **Now 4 tabs** (Home, Find, Bookings, Account). Proposal: do not show a tab that is not built, so there is no dead tab. The Find tab can stay until Chat and Feed are built.
 
 ## 1. Auth and start
 
@@ -59,8 +59,8 @@ The only AI component. The API key lives only in the Laravel `.env`; the app nev
 | ✅ | Pick a slot (Mode A) | Done, per the spec and the availability API. |
 | ❌ | Send a time request (Mode B) | Date and time inside the counselor's working hours, optional note. A pending request expires automatically after 48 hours. The `booking_requests` table exists; the endpoint and the scheduler do not. The counselor needs a portal to approve, so build it together with the counselor portal. |
 | ✅ | Confirm booking | Done, including idempotency and the concurrency tests (MariaDB). |
-| ⚠️ | Booking confirmed | Replace the placeholder: summary, "View booking", "Back to home". A "request sent" variant for Mode B later. "Add to calendar" is optional. |
-| ❌ | Session details | Online: the meeting link appears 15 minutes before until the end of the session, and "link not added yet" if the counselor has not pasted one. In person: the full address and "Get directions". |
+| ✅ | Booking confirmed | Summary, "View booking", "Back to home". A "request sent" variant for Mode B later. "Add to calendar" is optional. (Built; the Mode B variant waits for Mode B.) |
+| ✅ | Session details | (Built as a section of Booking details.) Online: the meeting link appears 15 minutes before until the end of the session, and "link not added yet" if the counselor has not pasted one. In person: the full address and "Get directions". |
 
 ## 5. My bookings
 
@@ -68,8 +68,8 @@ Closes the booking loop and makes the slot-restore contract (B9) real.
 
 | | Screen | Details |
 |---|---|---|
-| ❌ | Booking list | Upcoming and Past tabs. Badges: Confirmed, Pending, Starting soon. Past: Completed, Cancelled, No-show, and "Book again". Completed and No-show exist only when the counselor marks them, so Past will be limited for now. |
-| ❌ | Booking details | Summary, status, a public reference number (not a sequential id). Actions by state: Join session, Reschedule, Cancel. |
+| ✅ | Booking list | Upcoming and Past tabs. Badges: Confirmed, Pending, Starting soon. Past: Completed, Cancelled, No-show, and "Book again". Completed and No-show exist only when the counselor marks them, so Past will be limited for now. |
+| ⚠️ | Booking details | (Built read only: no Reschedule or Cancel buttons yet.) Summary, status, a public reference number (not a sequential id). Actions by state: Join session, Reschedule, Cancel. |
 | ❌ | Cancel booking | A confirmation sheet with two states (inside or outside the allowed period; the deadline comes from the server per organization). The server restores `is_available`, tells the counselor by email, and is idempotent. |
 | ❌ | Reschedule | Reuses the slot picker. At most 2 times, the remainder shown. Claim the new slot and release the old one in one transaction, with the same lock order as booking. **Decision for the owner:** is it subject to the same cancellation time limit? Proposal: yes. |
 | ❌ | Request status | Pending, Approved, Declined (with an optional reason). "Withdraw request" while pending. Depends on Mode B. |

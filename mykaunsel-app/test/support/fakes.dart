@@ -18,6 +18,8 @@ import 'package:mykaunsel/features/booking/data/availability_api.dart';
 import 'package:mykaunsel/features/booking/data/booking_api.dart';
 import 'package:mykaunsel/features/booking/domain/availability.dart';
 import 'package:mykaunsel/features/booking/domain/booking_preview.dart';
+import 'package:mykaunsel/features/bookings/data/my_bookings_api.dart';
+import 'package:mykaunsel/features/bookings/domain/my_booking.dart';
 import 'package:mykaunsel/features/counselors/data/counselor_api.dart';
 import 'package:mykaunsel/features/counselors/domain/counselor.dart';
 import 'package:mykaunsel/features/counselors/domain/counselor_query.dart';
@@ -308,6 +310,97 @@ class FakeBookingApi implements BookingApi {
   }
 }
 
+class FakeMyBookingsApi implements MyBookingsApi {
+  final lists = <({BookingsScope scope, int page})>[];
+  final details = <String>[];
+
+  Future<BookingsPage> Function(BookingsScope scope, int page) listHandler = (scope, page) async => const BookingsPage(items: [], page: 1, lastPage: 1);
+  Future<MyBookingDetail> Function(String id) detailHandler = (id) async => aBookingDetail(id: id);
+
+  @override
+  Future<BookingsPage> list(BookingsScope scope, {int page = 1}) {
+    lists.add((scope: scope, page: page));
+
+    return listHandler(scope, page);
+  }
+
+  @override
+  Future<MyBookingDetail> detail(String id) {
+    details.add(id);
+
+    return detailHandler(id);
+  }
+}
+
+/// One line of the list: a session `days` after [testNow]'s day at `hour`:00 Malaysian time.
+MyBooking aMyBooking({
+  String id = 'bk1',
+  BookingState status = BookingState.confirmed,
+  int days = 1,
+  int hour = 10,
+  int minutes = 50,
+  SessionMode mode = SessionMode.online,
+  SlotLocation? location,
+  String counselorName = 'Kaunselor Aina Syazwani',
+  String? counselorId = 'c1',
+  bool startingSoon = false,
+}) {
+  final start = DateTime.utc(2026, 11, 2 + days, hour - 8);
+
+  return MyBooking(
+    id: id,
+    status: status,
+    startingSoon: startingSoon,
+    startsAt: start,
+    endsAt: start.add(Duration(minutes: minutes)),
+    durationMinutes: minutes,
+    mode: mode,
+    counselor: BookingCounselorRef(id: counselorId, displayName: counselorName),
+    location: location,
+  );
+}
+
+MyBookingDetail aBookingDetail({
+  String id = 'bk1',
+  BookingState status = BookingState.confirmed,
+  int days = 1,
+  int hour = 10,
+  int minutes = 50,
+  SessionMode mode = SessionMode.online,
+  SlotLocation? location,
+  MeetingInfo? meeting,
+  BookingPlace? place,
+  bool canCancel = true,
+  bool withDeadline = true,
+}) {
+  final start = DateTime.utc(2026, 11, 2 + days, hour - 8);
+
+  return MyBookingDetail(
+    id: id,
+    status: status,
+    startsAt: start,
+    endsAt: start.add(Duration(minutes: minutes)),
+    durationMinutes: minutes,
+    mode: mode,
+    counselor: const BookingCounselorRef(id: 'c1', displayName: 'Kaunselor Aina Syazwani'),
+    location: location,
+    cancellationHours: 24,
+    cancellationDeadlineAt: withDeadline ? start.subtract(const Duration(hours: 24)) : null,
+    canCancel: canCancel,
+    reschedulesLeft: 2,
+    meeting: meeting ?? (mode == SessionMode.online && status == BookingState.confirmed ? aMeeting(start, minutes) : null),
+    place: place,
+  );
+}
+
+MeetingInfo aMeeting(DateTime start, int minutes, {MeetingState state = MeetingState.opensLater, String? url}) => MeetingInfo(
+      state: state,
+      opensAt: start.subtract(const Duration(minutes: 15)),
+      closesAt: start.add(Duration(minutes: minutes)),
+      provider: state == MeetingState.available ? 'Google Meet' : null,
+      url: state == MeetingState.available ? (url ?? 'https://meet.example/room-1') : null,
+    );
+
 /// What the server says about a slot that can be booked (the details of `GET /bookings/preview`).
 BookingDetails someDetails({
   String slot = 's1',
@@ -366,6 +459,7 @@ List<Override> testOverrides({
   FakeAccountApi? accountApi,
   FakeAvailabilityApi? availabilityApi,
   FakeBookingApi? bookingApi,
+  FakeMyBookingsApi? myBookingsApi,
 }) {
   return [
     appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://test.local')),
@@ -377,6 +471,7 @@ List<Override> testOverrides({
     accountApiProvider.overrideWithValue(accountApi ?? FakeAccountApi()),
     availabilityApiProvider.overrideWithValue(availabilityApi ?? FakeAvailabilityApi()),
     bookingApiProvider.overrideWithValue(bookingApi ?? FakeBookingApi()),
+    myBookingsApiProvider.overrideWithValue(myBookingsApi ?? FakeMyBookingsApi()),
     clockProvider.overrideWithValue(() => testNow),
   ];
 }

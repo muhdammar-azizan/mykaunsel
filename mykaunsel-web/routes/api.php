@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\CounselorDirectoryController;
+use App\Http\Controllers\Api\V1\MyBookingController;
 use App\Http\Controllers\Api\V1\StatusController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +49,13 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     // made. Each has its own limit.
     Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-booking-preview'])->get('/bookings/preview', [BookingController::class, 'preview'])->name('bookings.preview');
     Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-booking-create'])->post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+
+    // My bookings: the person's own, read only (docs/AVAILABILITY.md, "My bookings"). The id is a 26 character public id, which keeps it apart
+    // from /bookings/preview.
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-user'])->prefix('bookings')->name('bookings.')->group(function () {
+        Route::get('/', [MyBookingController::class, 'index'])->name('index');
+        Route::get('/{publicId}', [MyBookingController::class, 'show'])->where('publicId', '[0-9A-Za-z]{26}')->name('show');
+    });
 
     // Counselor search (docs/PUBLIC_COUNSELOR_DATA.md). Signed in with a confirmed email only, with its own limit.
     // Which times of one counselor can be picked (read only; the booking itself is a later step). Its own, roomier limit.

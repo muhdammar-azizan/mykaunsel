@@ -742,16 +742,132 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmGoHome => 'Go to Home';
 
   @override
-  String get confirmPlaceholderTitle => 'Booking confirmed';
+  String get navBookings => 'Bookings';
 
   @override
-  String get confirmPlaceholderNote =>
-      'Placeholder screen. The full booking page comes later.';
+  String get bookingsTitle => 'Bookings';
 
   @override
-  String confirmPlaceholderWith(String name) {
+  String get bookingsTabUpcoming => 'Upcoming';
+
+  @override
+  String get bookingsTabPast => 'Past';
+
+  @override
+  String get bookingsEmptyUpcomingTitle => 'No upcoming sessions';
+
+  @override
+  String get bookingsEmptyUpcomingBody =>
+      'When you book a session, it will appear here.';
+
+  @override
+  String get bookingsEmptyPastTitle => 'No past sessions yet';
+
+  @override
+  String get bookingsEmptyPastBody =>
+      'Your finished and cancelled sessions will appear here.';
+
+  @override
+  String get bookingsLoadMoreFailed => 'Could not load more bookings.';
+
+  @override
+  String get bookingStatusConfirmed => 'Confirmed';
+
+  @override
+  String get bookingStatusCompleted => 'Completed';
+
+  @override
+  String get bookingStatusCancelled => 'Cancelled';
+
+  @override
+  String get bookingStatusNoShow => 'No-show';
+
+  @override
+  String get bookingStatusUnknown => 'Updated';
+
+  @override
+  String get bookingStartingSoon => 'Starting soon';
+
+  @override
+  String get bookAgain => 'Book again';
+
+  @override
+  String bookingItemLabel(
+    String when,
+    String counselor,
+    String type,
+    String status,
+  ) {
+    return '$when, $counselor, $type, $status';
+  }
+
+  @override
+  String get bookingDetailTitle => 'Booking details';
+
+  @override
+  String get bookingNotFound => 'We couldn\'t find this booking.';
+
+  @override
+  String get bookingReference => 'Reference';
+
+  @override
+  String get bookingSessionDetails => 'Session details';
+
+  @override
+  String bookingMeetingOpensLater(String time) {
+    return 'Your meeting link will appear at $time.';
+  }
+
+  @override
+  String get bookingMeetingAvailable =>
+      'Your session is open. Join when you are ready.';
+
+  @override
+  String get bookingMeetingNotAdded =>
+      'Your counselor has not added the meeting link yet. Please check again shortly.';
+
+  @override
+  String get bookingMeetingEnded => 'This session has ended.';
+
+  @override
+  String get bookingJoinSession => 'Join session';
+
+  @override
+  String get bookingLinkFailed => 'Could not open the link.';
+
+  @override
+  String get bookingAddress => 'Address';
+
+  @override
+  String get bookingGetDirections => 'Get directions';
+
+  @override
+  String get bookingCancelledNote => 'This booking was cancelled.';
+
+  @override
+  String bookingCanCancelUntil(String when) {
+    return 'You can cancel until $when.';
+  }
+
+  @override
+  String get bookingCannotCancel => 'This booking can no longer be cancelled.';
+
+  @override
+  String get bookingConfirmedTitle => 'Booking confirmed';
+
+  @override
+  String get bookingConfirmedSubtitle => 'Your session is booked.';
+
+  @override
+  String bookingConfirmedWith(String name) {
     return 'Your session with $name';
   }
+
+  @override
+  String get bookingViewBooking => 'View booking';
+
+  @override
+  String get bookingBackHome => 'Back to home';
 
   @override
   String get accountTitle => 'Account';

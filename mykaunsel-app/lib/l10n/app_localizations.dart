@@ -1288,23 +1288,232 @@ abstract class AppLocalizations {
   /// **'Go to Home'**
   String get confirmGoHome;
 
-  /// No description provided for @confirmPlaceholderTitle.
+  /// No description provided for @navBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookings'**
+  String get navBookings;
+
+  /// No description provided for @bookingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookings'**
+  String get bookingsTitle;
+
+  /// No description provided for @bookingsTabUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get bookingsTabUpcoming;
+
+  /// No description provided for @bookingsTabPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Past'**
+  String get bookingsTabPast;
+
+  /// No description provided for @bookingsEmptyUpcomingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming sessions'**
+  String get bookingsEmptyUpcomingTitle;
+
+  /// No description provided for @bookingsEmptyUpcomingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When you book a session, it will appear here.'**
+  String get bookingsEmptyUpcomingBody;
+
+  /// No description provided for @bookingsEmptyPastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No past sessions yet'**
+  String get bookingsEmptyPastTitle;
+
+  /// No description provided for @bookingsEmptyPastBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your finished and cancelled sessions will appear here.'**
+  String get bookingsEmptyPastBody;
+
+  /// No description provided for @bookingsLoadMoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load more bookings.'**
+  String get bookingsLoadMoreFailed;
+
+  /// No description provided for @bookingStatusConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get bookingStatusConfirmed;
+
+  /// No description provided for @bookingStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get bookingStatusCompleted;
+
+  /// No description provided for @bookingStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get bookingStatusCancelled;
+
+  /// No description provided for @bookingStatusNoShow.
+  ///
+  /// In en, this message translates to:
+  /// **'No-show'**
+  String get bookingStatusNoShow;
+
+  /// No description provided for @bookingStatusUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated'**
+  String get bookingStatusUnknown;
+
+  /// No description provided for @bookingStartingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting soon'**
+  String get bookingStartingSoon;
+
+  /// No description provided for @bookAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Book again'**
+  String get bookAgain;
+
+  /// No description provided for @bookingItemLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{when}, {counselor}, {type}, {status}'**
+  String bookingItemLabel(
+    String when,
+    String counselor,
+    String type,
+    String status,
+  );
+
+  /// No description provided for @bookingDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking details'**
+  String get bookingDetailTitle;
+
+  /// No description provided for @bookingNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find this booking.'**
+  String get bookingNotFound;
+
+  /// No description provided for @bookingReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference'**
+  String get bookingReference;
+
+  /// No description provided for @bookingSessionDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Session details'**
+  String get bookingSessionDetails;
+
+  /// No description provided for @bookingMeetingOpensLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Your meeting link will appear at {time}.'**
+  String bookingMeetingOpensLater(String time);
+
+  /// No description provided for @bookingMeetingAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session is open. Join when you are ready.'**
+  String get bookingMeetingAvailable;
+
+  /// No description provided for @bookingMeetingNotAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your counselor has not added the meeting link yet. Please check again shortly.'**
+  String get bookingMeetingNotAdded;
+
+  /// No description provided for @bookingMeetingEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'This session has ended.'**
+  String get bookingMeetingEnded;
+
+  /// No description provided for @bookingJoinSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Join session'**
+  String get bookingJoinSession;
+
+  /// No description provided for @bookingLinkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the link.'**
+  String get bookingLinkFailed;
+
+  /// No description provided for @bookingAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get bookingAddress;
+
+  /// No description provided for @bookingGetDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Get directions'**
+  String get bookingGetDirections;
+
+  /// No description provided for @bookingCancelledNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking was cancelled.'**
+  String get bookingCancelledNote;
+
+  /// No description provided for @bookingCanCancelUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'You can cancel until {when}.'**
+  String bookingCanCancelUntil(String when);
+
+  /// No description provided for @bookingCannotCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking can no longer be cancelled.'**
+  String get bookingCannotCancel;
+
+  /// No description provided for @bookingConfirmedTitle.
   ///
   /// In en, this message translates to:
   /// **'Booking confirmed'**
-  String get confirmPlaceholderTitle;
+  String get bookingConfirmedTitle;
 
-  /// No description provided for @confirmPlaceholderNote.
+  /// No description provided for @bookingConfirmedSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Placeholder screen. The full booking page comes later.'**
-  String get confirmPlaceholderNote;
+  /// **'Your session is booked.'**
+  String get bookingConfirmedSubtitle;
 
-  /// No description provided for @confirmPlaceholderWith.
+  /// No description provided for @bookingConfirmedWith.
   ///
   /// In en, this message translates to:
   /// **'Your session with {name}'**
-  String confirmPlaceholderWith(String name);
+  String bookingConfirmedWith(String name);
+
+  /// No description provided for @bookingViewBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'View booking'**
+  String get bookingViewBooking;
+
+  /// No description provided for @bookingBackHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to home'**
+  String get bookingBackHome;
 
   /// No description provided for @accountTitle.
   ///

@@ -25,6 +25,8 @@ Laravel Sanctum bearer tokens. Base path `/api/v1`. Everything answers in JSON (
 | GET | `/counselors/{id}/availability` | token | The times of one counselor that can be picked: `from`, `days` (1–14), `mode` (`online`/`physical`). Read only. See [AVAILABILITY.md](AVAILABILITY.md). `404` + `code: counselor_unavailable` for every reason the counselor cannot be booked. |
 | GET | `/bookings/preview?slot=` | token | Read-only check for the confirm screen: `valid`, `reason` and the details (time, mode, place, cancellation deadline, limits). Claims nothing. See [AVAILABILITY.md](AVAILABILITY.md#the-confirm-step-built). |
 | POST | `/bookings` | token | **Books a Mode A slot.** Header `Idempotency-Key` (UUID); body `slot`, `acknowledged_policy: true`, `expected_starts_at`, `expected_duration_minutes`, `expected_mode`. `201` with the booking; `404 counselor_unavailable`, `409 slot_taken` / `slot_changed` / `time_conflict` / `upcoming_limit_reached` / `request_in_progress`, `422` (also `idempotency_key_reuse`), `429` with `Retry-After`. |
+| GET | `/bookings?scope=upcoming\|past&page=` | token | The person's OWN bookings. Upcoming: confirmed and not ended, soonest first. Past: the rest, newest first, 20 a page. See [AVAILABILITY.md](AVAILABILITY.md#my-bookings-read-only). |
+| GET | `/bookings/{id}` | token | One of them, with the meeting link (only inside its window, only when added) or the full address. Someone else's or unknown: `404 booking_not_found`. |
 
 Send the token as `Authorization: Bearer <token>`. Tokens start with `<id>|mkp_` and last 30 days (`SANCTUM_EXPIRATION_MINUTES`); each device name gets its own token, at most 10 per person (the oldest are removed).
 

@@ -437,7 +437,7 @@ void main() {
       await confirm(tester);
 
       expect(find.text('Booking confirmed'), findsWidgets);
-      expect(find.text('Placeholder screen. The full booking page comes later.'), findsOneWidget);
+      expect(find.text('Your session is booked.'), findsOneWidget);
       expect(api.creates.single.slot, 's1');
       expect(api.creates.single.mode, 'online');
       expect(api.creates.single.minutes, 50);
@@ -449,10 +449,10 @@ void main() {
       expect(find.text('Confirm booking'), findsNothing);
     });
 
-    testWidgets('the placeholder\'s button goes Home', (tester) async {
+    testWidgets('"Back to home" goes Home', (tester) async {
       await openConfirm(tester, valid());
       await confirm(tester);
-      await tester.tap(find.text('Go to Home'));
+      await tester.tap(find.text('Back to home'));
       await tester.pumpAndSettle();
 
       expect(find.text('Hello, Siti'), findsOneWidget);
