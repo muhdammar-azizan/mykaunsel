@@ -13,6 +13,7 @@ import '../../../shared/format/slot_time.dart';
 import '../../counselors/domain/counselor.dart';
 import '../domain/my_booking.dart';
 import 'booking_labels.dart';
+import 'cancel_booking_sheet.dart';
 import 'my_bookings_controller.dart';
 
 /// One booking: what, when, with whom, its state, and the SESSION DETAILS: the meeting link (online, inside its window) or the full address
@@ -197,6 +198,18 @@ class _Body extends ConsumerWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: AppSpacing.m),
+          // Always there for a booking still ahead: the server decides what the sheet says (cancel, or why it is too late).
+          OutlinedButton.icon(
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              final cancelled = await showCancelBookingSheet(context, booking);
+
+              if (cancelled) messenger.showSnackBar(SnackBar(content: Text(l10n.bookingCancelledSnack)));
+            },
+            icon: const Icon(Icons.event_busy_outlined),
+            label: Text(l10n.bookingCancelButton),
           ),
         ],
         const SizedBox(height: AppSpacing.s),

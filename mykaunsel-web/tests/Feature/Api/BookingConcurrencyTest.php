@@ -43,6 +43,7 @@ class BookingConcurrencyTest extends TestCase
         if ($this->userIds !== []) {
             $profileIds = CounselorProfile::query()->whereIn('user_id', $this->userIds)->pluck('id');
 
+            DB::table('jobs')->where('payload', 'like', '%BookingCancelledCounselor%')->delete();
             DB::table('booking_idempotency_keys')->whereIn('user_id', $this->userIds)->delete();
             DB::table('bookings')->whereIn('user_id', $this->userIds)->orWhereIn('counselor_user_id', $this->userIds)->delete();
             DB::table('calendar_entries')->whereIn('counselor_user_id', $this->userIds)->delete();
@@ -179,5 +180,72 @@ class BookingConcurrencyTest extends TestCase
         foreach ($answers as $answer) {
             $this->assertContains($answer, ['201 -', '409 request_in_progress'], json_encode($answers));
         }
+    }
+
+    /**
+     * Start commands (already built as argument lists, the last argument being the shared start time) at the same moment.
+     *
+     * @param  list<list<string>>  $commands
+     * @return list<string>
+     */
+    private function raceCommands(array $commands): array
+    {
+        $start = microtime(true) + 4.0;
+        $children = [];
+
+        foreach ($commands as $cmd) {
+            $cmd[] = (string) $start;
+            // The children do not read phpunit.xml: ask for the database queue, so the e-mails they queue can be counted.
+            $process = proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, base_path(), array_merge(getenv(), ['QUEUE_CONNECTION' => 'database']));
+            $children[] = [$process, $pipes];
+        }
+
+        $answers = [];
+
+        foreach ($children as [$process, $pipes]) {
+            $answers[] = trim(stream_get_contents($pipes[1]));
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            proc_close($process);
+        }
+
+        return $answers;
+    }
+
+    public function test_cancelling_the_same_booking_twice_at_once_changes_it_once_and_tells_the_counselor_once(): void
+    {
+        [, $orgA, , $aina] = $this->world();
+        $slot = $this->slot($aina, $orgA, $this->when(5, '10:00'));
+        $person = $this->person();
+        $booking = $this->book($slot, $person);
+        DB::table('jobs')->where('payload', 'like', '%BookingCancelledCounselor%')->delete();
+
+        $cmd = [PHP_BINARY, base_path('tests/Support/cancel_child.php'), (string) $person->id, $booking->public_id];
+        $answers = $this->raceCommands([$cmd, $cmd]);
+
+        $this->assertSame(['200 -', '200 -'], $answers, json_encode($answers));
+        $this->assertSame('cancelled', $booking->fresh()->status->value);
+        $this->assertTrue($slot->fresh()->is_available);
+        $this->assertSame(1, DB::table('jobs')->where('payload', 'like', '%BookingCancelledCounselor%')->count(), 'one e-mail, not two');
+    }
+
+    public function test_cancelling_while_someone_books_another_time_of_the_same_counselor_does_not_deadlock(): void
+    {
+        [, $orgA, , $aina] = $this->world();
+        $held = $this->slot($aina, $orgA, $this->when(5, '10:00'));
+        $other = $this->slot($aina, $orgA, $this->when(6, '10:00'));
+        [$canceller, $booker] = [$this->person(), $this->person()];
+        $booking = $this->book($held, $canceller);
+
+        $at = Carbon::parse($other->entry_date->format('Y-m-d').' '.$other->start_time, 'Asia/Kuala_Lumpur');
+        $answers = $this->raceCommands([
+            [PHP_BINARY, base_path('tests/Support/cancel_child.php'), (string) $canceller->id, $booking->public_id],
+            [PHP_BINARY, base_path('tests/Support/book_child.php'), (string) $booker->id, $other->public_id, (string) Str::uuid(), $at->toIso8601String(), '60', 'online'],
+        ]);
+
+        sort($answers);
+        $this->assertSame(['200 -', '201 -'], $answers, json_encode($answers));
+        $this->assertTrue($held->fresh()->is_available);
+        $this->assertFalse($other->fresh()->is_available);
     }
 }

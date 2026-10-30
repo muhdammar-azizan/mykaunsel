@@ -27,6 +27,7 @@ Laravel Sanctum bearer tokens. Base path `/api/v1`. Everything answers in JSON (
 | POST | `/bookings` | token | **Books a Mode A slot.** Header `Idempotency-Key` (UUID); body `slot`, `acknowledged_policy: true`, `expected_starts_at`, `expected_duration_minutes`, `expected_mode`. `201` with the booking; `404 counselor_unavailable`, `409 slot_taken` / `slot_changed` / `time_conflict` / `upcoming_limit_reached` / `request_in_progress`, `422` (also `idempotency_key_reuse`), `429` with `Retry-After`. |
 | GET | `/bookings?scope=upcoming\|past&page=` | token | The person's OWN bookings. Upcoming: confirmed and not ended, soonest first. Past: the rest, newest first, 20 a page. See [AVAILABILITY.md](AVAILABILITY.md#my-bookings-read-only). |
 | GET | `/bookings/{id}` | token | One of them, with the meeting link (only inside its window, only when added) or the full address. Someone else's or unknown: `404 booking_not_found`. |
+| POST | `/bookings/{id}/cancel` | token | Cancels the person's own booking before its deadline and gives the time back, in one transaction. Safe to repeat. `409 cancellation_closed` / `not_cancellable`, `404 booking_not_found`. See [AVAILABILITY.md](AVAILABILITY.md#cancelling). |
 
 Send the token as `Authorization: Bearer <token>`. Tokens start with `<id>|mkp_` and last 30 days (`SANCTUM_EXPIRATION_MINUTES`); each device name gets its own token, at most 10 per person (the oldest are removed).
 

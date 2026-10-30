@@ -69,8 +69,8 @@ Closes the booking loop and makes the slot-restore contract (B9) real.
 | | Screen | Details |
 |---|---|---|
 | ✅ | Booking list | Upcoming and Past tabs. Badges: Confirmed, Pending, Starting soon. Past: Completed, Cancelled, No-show, and "Book again". Completed and No-show exist only when the counselor marks them, so Past will be limited for now. |
-| ⚠️ | Booking details | (Built read only: no Reschedule or Cancel buttons yet.) Summary, status, a public reference number (not a sequential id). Actions by state: Join session, Reschedule, Cancel. |
-| ❌ | Cancel booking | A confirmation sheet with two states (inside or outside the allowed period; the deadline comes from the server per organization). The server restores `is_available`, tells the counselor by email, and is idempotent. |
+| ⚠️ | Booking details | (Built: Cancel works; no Reschedule button yet.) Summary, status, a public reference number (not a sequential id). Actions by state: Join session, Reschedule, Cancel. |
+| ✅ | Cancel booking | A confirmation sheet with two states (inside or outside the allowed period; the deadline comes from the server per organization). The server restores `is_available`, tells the counselor by email, and is idempotent. |
 | ❌ | Reschedule | Reuses the slot picker. At most 2 times, the remainder shown. Claim the new slot and release the old one in one transaction, with the same lock order as booking. **Decision for the owner:** is it subject to the same cancellation time limit? Proposal: yes. |
 | ❌ | Request status | Pending, Approved, Declined (with an optional reason). "Withdraw request" while pending. Depends on Mode B. |
 

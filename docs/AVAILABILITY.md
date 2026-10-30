@@ -125,9 +125,9 @@ The e-mails (`BookingConfirmedClient`, `NewBookingCounselor`) are queued after t
 
 Table `booking_idempotency_keys`, unique on (person, key); keeps a hash of the normalised request (never the request, a token or headers) and the answer of a successful booking for `booking.idempotency_ttl_hours` (24). The key is **reserved in its own short transaction before** the booking transaction. Same key + same request after a success: the stored answer, with the original status and `Idempotent-Replayed: true`. Different request: `422 idempotency_key_reuse`. Same key still running: `409 request_in_progress`. A refusal or a rollback **releases** the key (the person may try again with it). A reservation left "processing" (the server died) stops blocking after 60 seconds. `php artisan bookings:purge-idempotency [--dry-run]` (daily 03:30) deletes expired keys and writes one system audit entry with counts.
 
-### Cancel, reschedule, offboard (the contract; none of them exists yet)
+### Cancel, reschedule, offboard (the contract; cancelling by the client is built, the others are not)
 
-Every action that ends a booking **must give the time back in the same transaction as the status change**: set `calendar_entries.is_available` back to 1. Cancel, reschedule, and a counselor or member leaving all do this. Otherwise the slot would stay "booked" forever (the flag is one of the two layers). Tests can use `AvailabilityFixtures::cancelBooking()` to say what "given back" means.
+Every action that ends a booking **must give the time back in the same transaction as the status change**: set `calendar_entries.is_available` back to 1. Cancel, reschedule, and a counselor or member leaving all do this. Otherwise the slot would stay "booked" forever (the flag is one of the two layers). Cancelling by the client does this (see "Cancelling" below). Tests can use `AvailabilityFixtures::cancelBooking()` to say what "given back" means for the paths that do not exist yet.
 
 ### No ordinary unique index on `bookings.calendar_entry_id`, on purpose
 
@@ -154,7 +154,20 @@ A cancelled booking row stays, and its slot may be booked again, so an index ove
 - **Never in the answers:** an organization name, the person's own email or phone, the counselor's email, a row id, a price.
 - **Cost:** a fixed number of queries however many bookings (a test counts them).
 - **Nothing is cached:** `Cache-Control: private, no-store` (the answer can hold a meeting link).
-- **In the app:** the Bookings tab (Upcoming / Past), Booking details with the session details, and "Booking confirmed" after a booking. Cancel and reschedule are separate steps; their buttons do not exist yet.
+- **In the app:** the Bookings tab (Upcoming / Past), Booking details with the session details, and "Booking confirmed" after a booking. Cancel is built (see "Cancelling"); reschedule is a later step.
+
+## Cancelling
+
+`POST /api/v1/bookings/{id}/cancel` (token, confirmed email; own limit `api-booking-cancel`: 10 a minute and 60 an hour). Code: `BookingCancellation`, `MyBookingController::cancel`. Tests: `BookingCancelApiTest`, and on MySQL/MariaDB only two real-process races in `BookingConcurrencyTest`.
+
+- **The contract (B9) is real:** the status change (`confirmed` to `cancelled`) and giving the time back (`calendar_entries.is_available` on) happen in **one transaction**. A failure while giving the time back rolls the status back too (tested).
+- **Only the person's own booking.** Someone else's and an unknown one are the same `404 booking_not_found`, and nothing changes.
+- **The deadline** is the session's start minus the slot's organization's cancellation hours (`organizations.cancellation_deadline_hours`; `booking.cancellation_default_hours` when it has none). Exactly at the deadline it is closed; a second before it is open. Inside the window: `409 cancellation_closed` (with `cancellation_hours`), nothing changes, no e-mail. Completed, no-show, or a session that is already over: `409 not_cancellable`. **The same rule** (`BookingCancellation::rule`) gives the details' `can_cancel`, so the page and the action cannot disagree.
+- **Safe to repeat, so no Idempotency-Key.** Cancelling a booking that is already cancelled answers the same booking again (`200`), **changes nothing and sends no second e-mail.** It must not touch the slot: someone else may have booked the freed time meanwhile (tested). A lost answer is simply asked again.
+- **Lock order** is the same as booking a time (the person, the counselor's profile, then the booking), so a cancel and a booking of the same counselor never wait for each other in a circle (tested with real processes).
+- **The e-mail** to the counselor (`BookingCancelledCounselor`): queued after the commit, the client's display name only, the date, time and kind, and that the time is open again. It can never undo or fail the cancellation. No e-mail to the client (they just did it), no audit entry (B12), no push (B11).
+- **Answer:** `200 {booking: <the details, now cancelled: no meeting, no place, can_cancel false>}`.
+- **Not built:** a cancelled booking is not "refunded" (there is no payment), and the counselor cancelling or offboarding is a separate path that must follow the same contract.
 
 ## Findings that shaped this
 

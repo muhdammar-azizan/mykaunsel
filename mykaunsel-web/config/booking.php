@@ -35,6 +35,8 @@ return [
     // Rate limits per person.
     'create_rate_per_minute' => (int) env('BOOKING_CREATE_RATE_PER_MINUTE', 10),
     'create_rate_per_hour' => (int) env('BOOKING_CREATE_RATE_PER_HOUR', 60),
+    'cancel_rate_per_minute' => (int) env('BOOKING_CANCEL_RATE_PER_MINUTE', 10),
+    'cancel_rate_per_hour' => (int) env('BOOKING_CANCEL_RATE_PER_HOUR', 60),
     'preview_rate_per_minute' => (int) env('BOOKING_PREVIEW_RATE_PER_MINUTE', 60),
     'preview_rate_per_hour' => (int) env('BOOKING_PREVIEW_RATE_PER_HOUR', 600),
 

@@ -1485,6 +1485,66 @@ abstract class AppLocalizations {
   /// **'This booking can no longer be cancelled.'**
   String get bookingCannotCancel;
 
+  /// No description provided for @bookingCancelButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel booking'**
+  String get bookingCancelButton;
+
+  /// No description provided for @bookingCancelSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this booking?'**
+  String get bookingCancelSheetTitle;
+
+  /// No description provided for @bookingCancelSheetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session with {name} on {when} will be cancelled and the time will be released.'**
+  String bookingCancelSheetBody(String name, String when);
+
+  /// No description provided for @bookingKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep booking'**
+  String get bookingKeep;
+
+  /// No description provided for @bookingCancelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelling…'**
+  String get bookingCancelling;
+
+  /// No description provided for @bookingCancelClosedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking can\'t be cancelled'**
+  String get bookingCancelClosedTitle;
+
+  /// No description provided for @bookingCancelOk.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get bookingCancelOk;
+
+  /// No description provided for @bookingCancelledSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking cancelled.'**
+  String get bookingCancelledSnack;
+
+  /// No description provided for @bookingCancelNotCancellable.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking can\'t be cancelled any more.'**
+  String get bookingCancelNotCancellable;
+
+  /// No description provided for @bookingCancelServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong on our side. Your booking may or may not have been cancelled. Try again: it is safe to repeat.'**
+  String get bookingCancelServer;
+
   /// No description provided for @bookingConfirmedTitle.
   ///
   /// In en, this message translates to:

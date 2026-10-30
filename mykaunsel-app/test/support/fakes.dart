@@ -313,7 +313,9 @@ class FakeBookingApi implements BookingApi {
 class FakeMyBookingsApi implements MyBookingsApi {
   final lists = <({BookingsScope scope, int page})>[];
   final details = <String>[];
+  final cancels = <String>[];
 
+  Future<MyBookingDetail> Function(String id) cancelHandler = (id) async => aBookingDetail(id: id, status: BookingState.cancelled, canCancel: false, withDeadline: false);
   Future<BookingsPage> Function(BookingsScope scope, int page) listHandler = (scope, page) async => const BookingsPage(items: [], page: 1, lastPage: 1);
   Future<MyBookingDetail> Function(String id) detailHandler = (id) async => aBookingDetail(id: id);
 
@@ -329,6 +331,13 @@ class FakeMyBookingsApi implements MyBookingsApi {
     details.add(id);
 
     return detailHandler(id);
+  }
+
+  @override
+  Future<MyBookingDetail> cancel(String id) {
+    cancels.add(id);
+
+    return cancelHandler(id);
   }
 }
 

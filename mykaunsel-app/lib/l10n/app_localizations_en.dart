@@ -853,6 +853,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookingCannotCancel => 'This booking can no longer be cancelled.';
 
   @override
+  String get bookingCancelButton => 'Cancel booking';
+
+  @override
+  String get bookingCancelSheetTitle => 'Cancel this booking?';
+
+  @override
+  String bookingCancelSheetBody(String name, String when) {
+    return 'Your session with $name on $when will be cancelled and the time will be released.';
+  }
+
+  @override
+  String get bookingKeep => 'Keep booking';
+
+  @override
+  String get bookingCancelling => 'Cancelling…';
+
+  @override
+  String get bookingCancelClosedTitle => 'This booking can\'t be cancelled';
+
+  @override
+  String get bookingCancelOk => 'OK';
+
+  @override
+  String get bookingCancelledSnack => 'Booking cancelled.';
+
+  @override
+  String get bookingCancelNotCancellable =>
+      'This booking can\'t be cancelled any more.';
+
+  @override
+  String get bookingCancelServer =>
+      'Something went wrong on our side. Your booking may or may not have been cancelled. Try again: it is safe to repeat.';
+
+  @override
   String get bookingConfirmedTitle => 'Booking confirmed';
 
   @override

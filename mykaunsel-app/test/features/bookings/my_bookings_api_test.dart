@@ -106,4 +106,28 @@ void main() {
     await expectLater(build(adapter).detail('a/b?c'), throwsA(isA<NotFoundFailure>()));
     expect(adapter.requests.single.path, contains('a%2Fb%3Fc'));
   });
+
+  test('cancelling posts to the own path of the booking and reads the cancelled booking back', () async {
+    final adapter = FakeHttpAdapter((_) => FakeHttpAdapter.json(200, {
+          'booking': {...item(status: 'cancelled'), 'cancellation_hours': 24, 'can_cancel': false, 'reschedules_left': 2, 'meeting': null, 'place': null},
+        }));
+
+    final detail = await build(adapter).cancel('01bk');
+
+    expect(adapter.requests.single.method, 'POST');
+    expect(adapter.requests.single.path, '/bookings/01bk/cancel');
+    expect(adapter.requests.single.data, anyOf(isNull, isEmpty));
+    expect(detail.status, BookingState.cancelled);
+    expect(detail.canCancel, isFalse);
+    expect(detail.meeting, isNull);
+  });
+
+  test('a refusal to cancel keeps its code and the window the server named', () async {
+    final adapter = FakeHttpAdapter((_) => FakeHttpAdapter.json(409, {'message': 'x', 'code': 'cancellation_closed', 'cancellation_hours': 48}));
+
+    await expectLater(
+      build(adapter).cancel('01bk'),
+      throwsA(isA<ConflictFailure>().having((f) => f.code, 'code', 'cancellation_closed').having((f) => f.body['cancellation_hours'], 'hours', 48)),
+    );
+  });
 }

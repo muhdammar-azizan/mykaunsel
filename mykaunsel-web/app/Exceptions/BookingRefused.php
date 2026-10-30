@@ -20,6 +20,9 @@ class BookingRefused extends RuntimeException
         'time_conflict' => [409, 'You already have a session at this time.'],
         'upcoming_limit_reached' => [409, 'You have reached the limit of upcoming sessions. Cancel or complete one to book another.'],
         'request_in_progress' => [409, 'This request is still being processed.'],
+        'booking_not_found' => [404, 'This booking was not found.'],
+        'cancellation_closed' => [409, "This session starts too soon, so it can't be cancelled."],
+        'not_cancellable' => [409, "This booking can't be cancelled."],
         'idempotency_key_reuse' => [422, 'This Idempotency-Key was already used for a different request.'],
     ];
 

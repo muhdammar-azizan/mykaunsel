@@ -29,7 +29,7 @@ class MyBookings
     public function __construct(
         private readonly AvailabilityService $availability,
         private readonly CounselorDirectory $directory,
-        private readonly BookingService $bookings,
+        private readonly BookingCancellation $cancellation,
     ) {}
 
     /** @return list<array<string, mixed>> */
@@ -160,15 +160,14 @@ class MyBookings
         $end = $this->endOf($entry);
         $now = $this->availability->now();
         $confirmed = $booking->status === BookingStatus::Confirmed;
-        $hours = $this->bookings->cancellationHours($entry);
-        $deadline = $start->subHours($hours);
+        $rule = $this->cancellation->rule($booking, $entry);
         $maxReschedules = (int) config('booking.max_reschedules');
 
         return $this->summary($booking, $orgIds) + [
-            'cancellation_hours' => $hours,
-            'cancellation_deadline_at' => $confirmed && $deadline->gt($now) ? $deadline->toIso8601String() : null,
-            // What the rules say now (the server decides; the app only shows). Cancel and reschedule themselves come with their own screens.
-            'can_cancel' => $confirmed && $start->gt($now) && $deadline->gt($now),
+            'cancellation_hours' => $rule['hours'],
+            'cancellation_deadline_at' => $confirmed && $rule['deadline']->gt($now) ? $rule['deadline']->toIso8601String() : null,
+            // What the rules say now (the server decides; the app only shows). The same rule cancelling itself uses.
+            'can_cancel' => $rule['allowed'],
             'reschedules_left' => max(0, $maxReschedules - (int) $booking->reschedule_count),
             'meeting' => $this->meeting($booking, $start, $end, $now),
             'place' => $this->place($booking, $entry),
