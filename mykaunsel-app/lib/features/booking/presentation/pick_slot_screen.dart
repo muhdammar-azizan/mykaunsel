@@ -503,7 +503,11 @@ class _Skeleton extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [for (var i = 0; i < 5; i++) Padding(padding: const EdgeInsets.only(right: AppSpacing.s), child: bar(AppSizes.dateCardWidth, AppSizes.dateCardHeight))]),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const NeverScrollableScrollPhysics(),
+                child: Row(children: [for (var i = 0; i < 5; i++) Padding(padding: const EdgeInsets.only(right: AppSpacing.s), child: bar(AppSizes.dateCardWidth, AppSizes.dateCardHeight))]),
+              ),
               const SizedBox(height: AppSpacing.xl),
               Wrap(spacing: AppSpacing.s, runSpacing: AppSpacing.s, children: [for (var i = 0; i < 6; i++) bar(104, AppSizes.minTouch + 12)]),
             ],

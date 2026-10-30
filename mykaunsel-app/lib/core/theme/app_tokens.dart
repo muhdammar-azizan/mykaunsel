@@ -30,7 +30,7 @@ abstract final class AppSizes {
 
   static const double dateCardWidth = 68;
 
-  static const double dateCardHeight = 80;
+  static const double dateCardHeight = 92;
 
   static const double borderThin = 1;
 

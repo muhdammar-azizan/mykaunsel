@@ -141,11 +141,33 @@ Accessibility already covered: every field has a label, headings are marked, err
 
 - Search by name (waits 400 ms after typing stops; never searches for a single letter), filter sheet (session type, focus area, language, state: the choices come from what this person can really find, so no filter gives an empty list), endless scrolling (20 at a time), pull to refresh.
 - Cards: name, "Verified registered counselor", where they work (independent / organization), focus areas (3 + "+N more"), languages, session types, city and state, next free time ("Today, 2:00 PM" / "Tomorrow, 10:00 AM" / "Thu 5 Nov, 10:30 AM").
-- Profile: all focus areas, languages, session types, places (city and state only), "also takes requests", free times grouped by day. Booking is the next feature, so the page says "Booking is coming soon" instead of a dead button.
+- Profile: all focus areas, languages, session types, places (city and state only), "also takes requests", free times grouped by day. "See available times" opens Pick a slot (below).
 - **Times are always Malaysian time** (UTC+8, no daylight saving), whatever the phone's clock or zone says: the counselor and an in-person session are in Malaysia. The server sends `+08:00`; `shared/format/slot_time.dart` does the reading.
 - **One person's results never reach the next person.** The list watches `currentUserIdProvider` and is `autoDispose`: signing out throws it away, signing in as someone else fetches again, and a slow answer for the previous person is discarded (a member of a closed organization sees counselors a stranger must not).
 - A counselor that is hidden from this person and one that does not exist are both "Counselor not available" (404 → `NotFoundFailure`).
 - Unknown values from a newer server (a new session type, a new kind of workplace) become `unknown` and are simply not shown: an old app does not crash.
+
+**Pick a slot** (`features/booking`; the server side is `docs/AVAILABILITY.md`):
+
+- Opened from a counselor's page at `/book/:id` (outside the tabs, no bottom bar). The next step is `/book/:id/confirm`, which is still a placeholder that books nothing.
+- Mode toggle (only when the counselor offers both; the mode is filtered in the app, never sent to the server), a strip of dates (14 days per request; "Show later dates" until the 30-day horizon), and the day's times. Nothing is picked at the start; one time at a time; a booked time is dimmed, struck through, says "Booked" and cannot be tapped (never colour alone: the picked time also has a check mark).
+- A refresh (pull down) that finds the picked time gone drops the pick and says "Your selected time is no longer available." A failed refresh keeps what is on screen and says so. After "too many requests" nothing is asked again until the wait is over.
+- Every "no" (hidden, suspended, not accepting bookings) is the same 404, shown as "Counselor not available". An unverified email shows "Verify my email": it signs out and opens "check your email" (a signed-in person cannot open that page).
+- The pure rules (first mode and date, what a tap clears, refresh reconciliation) are in `pick_slot_state.dart` and tested alone; the screen is `pick_slot_screen.dart`.
+- Tokens: the new screens take spacing, sizes and booking colours from `core/theme/app_tokens.dart` and the theme's `ColorScheme`, never a hex.
+- **Known debt:** 10 places in older screens still use `Colors.white` / `Colors.green` / `Colors.grey` directly (spinners on buttons in sign-in, sign-up, two-step, forgot-password, profile and change-password; the cards in devices, counselor card and home; the password checklist). Move them to the theme when those screens are next touched.
+
+**Manual check on the emulator (Pick a slot)** — nothing here has been viewed on a screen yet:
+
+1. Run the server (`php artisan serve --host=0.0.0.0`) and seed the demo (`AvailabilityDemoSeeder`); the Android emulator reaches it at `http://10.0.2.2:8000`.
+2. Sign in, Find, open a counselor, "See available times". Check the skeleton, the nearest date is selected, nothing is picked, Continue is off.
+3. Pick a time: Continue shows the day and time. Pick another: the first is released. Change the date or the mode: the pick clears.
+4. A counselor with both modes: the toggle appears; a mode with nothing that day moves to the nearest day that has something.
+5. Pull down to refresh; then book that time from the web or another account and refresh again: the notice appears and the pick is gone.
+6. Switch off the network: "Try again" on first load; "Could not refresh" with the old times kept after a refresh.
+7. Phone zone not UTC+8: the "Times are in Malaysian time" note shows; times still read as the counselor's clock.
+8. TalkBack: a date reads "Thursday 5 November, 1 time"; a time reads "10:00 AM, 60 minutes, Online"; a booked one adds "Booked"; the picked one adds "Selected".
+9. Settings → Display size / Font size at the largest: nothing is cut off and Continue stays reachable.
 
 ## Adding a feature (the recipe)
 

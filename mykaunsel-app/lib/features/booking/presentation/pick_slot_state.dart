@@ -167,7 +167,10 @@ abstract final class PickSlotRules {
     for (final day in days) {
       for (final slot in day.slots) {
         if (!modes.contains(slot.mode) || !asShown(slot, taken).isAvailable) continue;
-        if (earliest == null || slot.startsAt.isBefore(earliest.startsAt)) earliest = slot;
+        final sooner = earliest == null || slot.startsAt.isBefore(earliest.startsAt);
+        final tieForOnline = earliest != null && slot.startsAt == earliest.startsAt && modes.indexOf(slot.mode) < modes.indexOf(earliest.mode);
+
+        if (sooner || tieForOnline) earliest = slot;
       }
     }
 

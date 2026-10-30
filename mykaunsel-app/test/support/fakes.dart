@@ -339,3 +339,24 @@ class FakeHttpAdapter implements HttpClientAdapter {
     );
   }
 }
+
+AvailabilitySlot anAvailabilitySlot(String id, {int days = 0, int hour = 10, int minute = 0, SessionMode mode = SessionMode.online, SlotState state = SlotState.available, SlotLocation? location}) {
+  return AvailabilitySlot(id: id, startsAt: DateTime.utc(2026, 11, 2 + days, hour - 8, minute), durationMinutes: 60, mode: mode, state: state, location: location);
+}
+
+AvailabilityDay anAvailabilityDay(int days, List<AvailabilitySlot> slots) {
+  final date = DateTime.utc(2026, 11, 2 + days);
+  final text = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+  return AvailabilityDay(date: text, slots: slots);
+}
+
+Availability anAvailability(List<AvailabilityDay> days, {List<SessionMode> modes = const [SessionMode.online], String? nextFrom}) {
+  return Availability(
+    counselor: AvailabilityCounselor(id: 'c1', displayName: 'Kaunselor Aina Syazwani', modesOffered: modes),
+    timeZone: 'Asia/Kuala_Lumpur',
+    bookingWindow: BookingWindow(earliestStart: DateTime.utc(2026, 11, 2, 3), lastDate: '2026-12-02', minLeadHours: 2),
+    days: days,
+    nextFrom: nextFrom,
+  );
+}
