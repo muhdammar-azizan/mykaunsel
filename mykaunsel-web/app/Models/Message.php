@@ -16,12 +16,23 @@ class Message extends Model
         'sender',
         'message_text',
         'sent_at',
+        'crisis',
+        'client_id',
     ];
+
+    /** Every row gets its random public id the moment it is inserted (never a counter, never mass-assignable). */
+    protected function performInsert(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        $this->public_id ??= strtolower((string) \Illuminate\Support\Str::ulid());
+
+        return parent::performInsert($query);
+    }
 
     protected function casts(): array
     {
         return [
             'sent_at' => 'datetime',
+            'crisis' => 'boolean',
         ];
     }
 

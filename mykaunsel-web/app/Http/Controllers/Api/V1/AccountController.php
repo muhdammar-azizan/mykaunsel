@@ -38,6 +38,31 @@ class AccountController extends Controller
         return response()->json(['user' => $this->auth->present($user->fresh())]);
     }
 
+    /**
+     * Agreeing to (or withdrawing) AI processing, which the chatbot needs. Every real change is recorded (`ai_consent_events`); asking for the state
+     * the person already has changes nothing and records nothing. Withdrawing turns the chat off at once; the history stays readable.
+     */
+    public function updateAiConsent(Request $request): JsonResponse
+    {
+        $data = $request->validate(['consent' => ['required', 'boolean']]);
+
+        $user = $request->user();
+        $grant = (bool) $data['consent'];
+
+        DB::transaction(function () use ($user, $grant) {
+            $locked = \App\Models\User::query()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
+
+            if (($locked->ai_consent_at !== null) === $grant) {
+                return;
+            }
+
+            $locked->forceFill(['ai_consent_at' => $grant ? now() : null])->save();
+            DB::table('ai_consent_events')->insert(['user_id' => $locked->getKey(), 'granted' => $grant, 'source' => 'app', 'created_at' => now()]);
+        });
+
+        return response()->json(['user' => $this->auth->present($user->fresh())]);
+    }
+
     /** New password: needs the current one; every OTHER phone (and web session) is signed out, this one stays. */
     public function updatePassword(Request $request): JsonResponse
     {

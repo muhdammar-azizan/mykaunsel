@@ -37,3 +37,7 @@ Schedule::command('counselors:check-pa-expiry')->dailyAt('00:10')->withoutOverla
 
 // Time requests nobody answered in time are closed, and the people who asked are told.
 Schedule::command('requests:expire')->everyTenMinutes()->withoutOverlapping();
+
+// Chat: end conversations nobody wrote in for a while (storing their dominant emotion), and delete old ones after the retention period.
+Schedule::command('chat:end-idle')->everyFifteenMinutes()->withoutOverlapping();
+Schedule::command('chat:purge')->dailyAt('03:40')->withoutOverlapping();

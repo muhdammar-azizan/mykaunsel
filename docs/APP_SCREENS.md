@@ -45,10 +45,10 @@ The only AI component. The API key lives only in the Laravel `.env`; the app nev
 
 | | Screen | Details |
 |---|---|---|
-| ❌ | Chat | The app calls Laravel and Laravel calls the model. Text only, no personal identification sent. Blocked if the AI consent is withdrawn. Rate limit and message length limit. **Crisis detection on the server**, not depending on the model alone. Sessions and messages are stored. Ending a session stores the dominant emotion. Auto-purge after 12 months. A model failure is shown as a friendly message, not a technical error. |
-| ❌ | Chat history | Sessions grouped Today, This week, Earlier. Read only, open the whole conversation. Empty state. No delete. |
-| ❌ | Counselor suggestion card | A component inside chat. Only eligible counselors, from the same rules as search. Tap goes to the Profile. |
-| ❌ | Crisis card and helplines | Amber, calm tone. Direct call buttons (HEAL 15555, Talian Kasih 15999, and Befrienders: **confirm the real numbers before use**). Buttons "Find a counselor" and "Continue chatting". It never blocks the chat and is always reachable. |
+| ⚠️ | Chat | **Server side built** (see [CHAT.md](CHAT.md)): consent, crisis detection, the model, history, ending with the dominant emotion, purge. The app screen is not built yet. Original spec: The app calls Laravel and Laravel calls the model. Text only, no personal identification sent. Blocked if the AI consent is withdrawn. Rate limit and message length limit. **Crisis detection on the server**, not depending on the model alone. Sessions and messages are stored. Ending a session stores the dominant emotion. Auto-purge after 12 months. A model failure is shown as a friendly message, not a technical error. |
+| ⚠️ | Chat history | (API built, screen not.) Sessions grouped Today, This week, Earlier. Read only, open the whole conversation. Empty state. No delete. |
+| ⚠️ | Counselor suggestion card | (API built, component not.) A component inside chat. Only eligible counselors, from the same rules as search. Tap goes to the Profile. |
+| ⚠️ | Crisis card and helplines | (API built, card not.) Amber, calm tone. Direct call buttons (HEAL 15555, Talian Kasih 15999, and Befrienders: **confirm the real numbers before use**). Buttons "Find a counselor" and "Continue chatting". It never blocks the chat and is always reachable. |
 
 ## 4. Find and book
 

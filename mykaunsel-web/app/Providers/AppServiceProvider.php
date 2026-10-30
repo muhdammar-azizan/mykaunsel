@@ -26,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AuditContext::class);
         $this->app->singleton(AuditLogger::class);
         $this->app->singleton(\App\Services\PlatformSettings::class);
+        // The one door to the language model; tests replace it with a fake.
+        $this->app->bind(\App\Services\Chat\AssistantModel::class, \App\Services\Chat\AnthropicAssistantModel::class);
         // The in-app notification types: the core ones here; a later page registers its own on this same registry.
         $this->app->singleton(\App\Support\Inbox\NotificationRegistry::class, function () {
             $registry = new \App\Support\Inbox\NotificationRegistry;
@@ -126,6 +128,11 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api-booking-request', fn (Request $request) => [
             Limit::perMinute((int) config('booking.request_rate_per_minute'))->by('booking-request|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
             Limit::perHour((int) config('booking.request_rate_per_hour'))->by('booking-request-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+        ]);
+
+        RateLimiter::for('api-chat', fn (Request $request) => [
+            Limit::perMinute((int) config('chat.rate_per_minute'))->by('chat|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+            Limit::perHour((int) config('chat.rate_per_hour'))->by('chat-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
         ]);
 
         RateLimiter::for('api-user', fn (Request $request) => Limit::perMinute(120)->by('user|'.($request->user()?->getAuthIdentifier() ?? $request->ip())));

@@ -33,6 +33,12 @@ Laravel Sanctum bearer tokens. Base path `/api/v1`. Everything answers in JSON (
 | POST | `/counselors/{id}/requests` | token | Ask for a time inside the weekly hours (`date`, `time`, optional `message`). `201`, or `200` with the same request when repeated while it waits. `422 request_time_invalid`, `409 requests_closed` / `slot_taken` / `time_conflict` / `request_limit_reached`. |
 | GET | `/requests`, `/requests/{id}` | token | The person's own time requests (`pending`, `approved`, `rejected`, `expired`, `withdrawn`). |
 | POST | `/requests/{id}/withdraw` | token | Withdraw a request that still waits. Safe to repeat. `409 request_not_pending`. |
+| PUT | `/account/ai-consent` | token | Gives or withdraws the consent to AI processing the chatbot needs (`consent`). Recorded; the user object carries `ai_consent`. |
+| POST | `/chat/messages` | token | Sends a chat message (`text`, optional `session`, `client_id`) and returns the model's answer in the same call, with `crisis`, `helplines` and an optional counselor `suggestion`. `403 ai_consent_required`. See [CHAT.md](CHAT.md). |
+| POST | `/chat/sessions/{id}/reply` | token | Asks again for the answer to the last message (when the model could not answer). |
+| POST | `/chat/sessions/{id}/end` | token | Ends the conversation and stores its dominant emotion. Safe to repeat. |
+| GET | `/chat/sessions`, `/chat/sessions/{id}` | token | The person's own chat history, read only. |
+| GET | `/chat/helplines` | none | Where to get help in a crisis; needs no sign-in and no consent. |
 
 Send the token as `Authorization: Bearer <token>`. Tokens start with `<id>|mkp_` and last 30 days (`SANCTUM_EXPIRATION_MINUTES`); each device name gets its own token, at most 10 per person (the oldest are removed).
 

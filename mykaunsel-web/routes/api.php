@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\BookingController;
+use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\CounselorDirectoryController;
 use App\Http\Controllers\Api\V1\MyBookingController;
 use App\Http\Controllers\Api\V1\TimeRequestController;
@@ -39,6 +40,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-user'])->prefix('account')->name('account.')->group(function () {
         Route::patch('/profile', [AccountController::class, 'updateProfile'])->name('profile');
         Route::get('/devices', [AccountController::class, 'devices'])->name('devices');
+        Route::put('/ai-consent', [AccountController::class, 'updateAiConsent'])->name('ai-consent');
 
         Route::middleware('throttle:api-sensitive')->group(function () {
             Route::put('/password', [AccountController::class, 'updatePassword'])->name('password');
@@ -65,6 +67,19 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     // Moving one's own booking to another time of the same counselor. Its own limit; safe to repeat.
     Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-booking-reschedule'])
         ->post('/bookings/{publicId}/reschedule', [MyBookingController::class, 'reschedule'])->where('publicId', '[0-9A-Za-z]{26}')->name('bookings.reschedule');
+
+    // The chatbot (docs/CHAT.md). Sending, asking again and ending share one limit; reading the history is an ordinary read. The helplines need no
+    // sign-in at all: help is never behind a setting.
+    Route::get('/chat/helplines', [ChatController::class, 'helplines'])->middleware('throttle:60,1')->name('chat.helplines');
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-chat'])->prefix('chat')->name('chat.')->group(function () {
+        Route::post('/messages', [ChatController::class, 'send'])->name('send');
+        Route::post('/sessions/{publicId}/reply', [ChatController::class, 'reply'])->where('publicId', '[0-9A-Za-z]{26}')->name('reply');
+        Route::post('/sessions/{publicId}/end', [ChatController::class, 'end'])->where('publicId', '[0-9A-Za-z]{26}')->name('end');
+    });
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-user'])->prefix('chat')->name('chat.')->group(function () {
+        Route::get('/sessions', [ChatController::class, 'index'])->name('index');
+        Route::get('/sessions/{publicId}', [ChatController::class, 'show'])->where('publicId', '[0-9A-Za-z]{26}')->name('show');
+    });
 
     // Mode B: asking a counselor for a time (docs/AVAILABILITY.md, "Time requests"). Asking and withdrawing share one limit.
     Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-availability'])->get('/counselors/{publicId}/working-hours', [TimeRequestController::class, 'hours'])->where('publicId', '[0-9A-Za-z]{26}')->name('counselors.working-hours');

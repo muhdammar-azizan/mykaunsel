@@ -162,6 +162,8 @@ class ApiAuthService
             'email_verified' => $user->hasVerifiedEmail(),
             'avatar_url' => $user->avatar_url,
             'timezone' => $user->display_timezone,
+            // Whether the person has agreed to AI processing (the chatbot needs it).
+            'ai_consent' => $user->ai_consent_at !== null,
         ];
     }
 
