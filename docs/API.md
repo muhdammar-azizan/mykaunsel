@@ -29,6 +29,10 @@ Laravel Sanctum bearer tokens. Base path `/api/v1`. Everything answers in JSON (
 | GET | `/bookings/{id}` | token | One of them, with the meeting link (only inside its window, only when added) or the full address. Someone else's or unknown: `404 booking_not_found`. |
 | POST | `/bookings/{id}/cancel` | token | Cancels the person's own booking before its deadline and gives the time back, in one transaction. Safe to repeat. `409 cancellation_closed` / `not_cancellable`, `404 booking_not_found`. See [AVAILABILITY.md](AVAILABILITY.md#cancelling). |
 | POST | `/bookings/{id}/reschedule` | token | Moves the person's own booking to another time of the SAME counselor (body: `slot`, `expected_starts_at`, `expected_duration_minutes`, `expected_mode`), under the same time limit as cancelling, at most `max_reschedules` times; claims the new time and gives the old one back in one transaction. Safe to repeat. `409 reschedule_closed` / `reschedule_limit_reached` / `not_reschedulable` / `slot_taken` / `slot_changed` / `time_conflict`, `422 different_counselor`, `404 booking_not_found` / `counselor_unavailable`. See [AVAILABILITY.md](AVAILABILITY.md#rescheduling). |
+| GET | `/counselors/{id}/working-hours` | token | The counselor's weekly hours the person may see, to pick a request time from. See [AVAILABILITY.md](AVAILABILITY.md#time-requests-mode-b). |
+| POST | `/counselors/{id}/requests` | token | Ask for a time inside the weekly hours (`date`, `time`, optional `message`). `201`, or `200` with the same request when repeated while it waits. `422 request_time_invalid`, `409 requests_closed` / `slot_taken` / `time_conflict` / `request_limit_reached`. |
+| GET | `/requests`, `/requests/{id}` | token | The person's own time requests (`pending`, `approved`, `rejected`, `expired`, `withdrawn`). |
+| POST | `/requests/{id}/withdraw` | token | Withdraw a request that still waits. Safe to repeat. `409 request_not_pending`. |
 
 Send the token as `Authorization: Bearer <token>`. Tokens start with `<id>|mkp_` and last 30 days (`SANCTUM_EXPIRATION_MINUTES`); each device name gets its own token, at most 10 per person (the oldest are removed).
 

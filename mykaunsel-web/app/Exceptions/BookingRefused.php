@@ -41,6 +41,12 @@ class BookingRefused extends RuntimeException
         'weekly_time_invalid' => [422, 'Choose a weekday, a start and end on 5-minute marks (the end after the start, with room for at least one time) and an allowed length.'],
         'weekly_overlap' => [409, 'That overlaps another line of your weekly hours on the same day.'],
         'weekly_limit' => [409, 'You have reached the most lines of weekly hours.'],
+        'requests_closed' => [409, "This counselor isn't taking time requests right now."],
+        'request_time_invalid' => [422, "Choose a time inside the counselor's working hours, far enough ahead."],
+        'request_limit_reached' => [409, 'You have reached the limit of requests waiting for an answer. Wait for an answer or withdraw one.'],
+        'request_not_found' => [404, 'This request was not found.'],
+        'request_not_pending' => [409, 'This request was already answered, withdrawn or has expired.'],
+        'request_cannot_approve' => [409, "This request can't be approved any more: the time no longer fits."],
         'idempotency_key_reuse' => [422, 'This Idempotency-Key was already used for a different request.'],
     ];
 

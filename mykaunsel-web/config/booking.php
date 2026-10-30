@@ -42,6 +42,12 @@ return [
     'preview_rate_per_minute' => (int) env('BOOKING_PREVIEW_RATE_PER_MINUTE', 60),
     'preview_rate_per_hour' => (int) env('BOOKING_PREVIEW_RATE_PER_HOUR', 600),
 
+    // Mode B: a request nobody answers is closed after this many hours; one person may wait on at most this many answers at once.
+    'request_expiry_hours' => (int) env('BOOKING_REQUEST_EXPIRY_HOURS', 48),
+    'max_pending_requests' => (int) env('BOOKING_MAX_PENDING_REQUESTS', 3),
+    'request_rate_per_minute' => (int) env('BOOKING_REQUEST_RATE_PER_MINUTE', 10),
+    'request_rate_per_hour' => (int) env('BOOKING_REQUEST_RATE_PER_HOUR', 60),
+
     // The counselor's planner: how far ahead a time may be opened (days from today), and the session lengths offered (minutes).
     'planner_horizon_days' => (int) env('BOOKING_PLANNER_HORIZON_DAYS', 180),
     'planner_durations' => [30, 45, 50, 60, 90],

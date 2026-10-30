@@ -8,4 +8,5 @@ enum BookingRequestStatus: string
     case Approved = 'approved';
     case Rejected = 'rejected';
     case Expired = 'expired';
+    case Withdrawn = 'withdrawn';
 }

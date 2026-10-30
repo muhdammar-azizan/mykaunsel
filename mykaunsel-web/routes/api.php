@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\CounselorDirectoryController;
 use App\Http\Controllers\Api\V1\MyBookingController;
+use App\Http\Controllers\Api\V1\TimeRequestController;
 use App\Http\Controllers\Api\V1\StatusController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +65,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     // Moving one's own booking to another time of the same counselor. Its own limit; safe to repeat.
     Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-booking-reschedule'])
         ->post('/bookings/{publicId}/reschedule', [MyBookingController::class, 'reschedule'])->where('publicId', '[0-9A-Za-z]{26}')->name('bookings.reschedule');
+
+    // Mode B: asking a counselor for a time (docs/AVAILABILITY.md, "Time requests"). Asking and withdrawing share one limit.
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-availability'])->get('/counselors/{publicId}/working-hours', [TimeRequestController::class, 'hours'])->where('publicId', '[0-9A-Za-z]{26}')->name('counselors.working-hours');
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-booking-request'])->post('/counselors/{publicId}/requests', [TimeRequestController::class, 'store'])->where('publicId', '[0-9A-Za-z]{26}')->name('requests.store');
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-user'])->prefix('requests')->name('requests.')->group(function () {
+        Route::get('/', [TimeRequestController::class, 'index'])->name('index');
+        Route::get('/{publicId}', [TimeRequestController::class, 'show'])->where('publicId', '[0-9A-Za-z]{26}')->name('show');
+    });
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-booking-request'])->post('/requests/{publicId}/withdraw', [TimeRequestController::class, 'withdraw'])->where('publicId', '[0-9A-Za-z]{26}')->name('requests.withdraw');
 
     // Counselor search (docs/PUBLIC_COUNSELOR_DATA.md). Signed in with a confirmed email only, with its own limit.
     // Which times of one counselor can be picked (read only; the booking itself is a later step). Its own, roomier limit.

@@ -144,8 +144,17 @@ class BookingService
     /** The person's own limits: no overlapping session with ANY counselor, and no more than the cap of upcoming sessions. */
     private function limitsRefusal(User $user, CalendarEntry $slot): ?string
     {
-        $start = $this->availability->startOf($slot);
-        $end = $start->addMinutes((int) $slot->duration_minutes);
+        return $this->limitsRefusalAt($user, $this->availability->startOf($slot), (int) $slot->duration_minutes);
+    }
+
+    /**
+     * The same two limits for a stretch of time that is not a slot (a requested time being approved).
+     *
+     * @return 'time_conflict'|'upcoming_limit_reached'|null
+     */
+    public function limitsRefusalAt(User $user, CarbonImmutable $start, int $minutes): ?string
+    {
+        $end = $start->addMinutes($minutes);
         $upcoming = $this->upcomingSessions($user);
 
         foreach ($upcoming as [$otherStart, $otherEnd]) {
@@ -204,6 +213,20 @@ class BookingService
         }
 
         return null;
+    }
+
+    /** Does the stretch overlap an upcoming confirmed session of the person? (No cap: used when a request is made.) */
+    public function overlapsUpcoming(User $user, CarbonImmutable $start, int $minutes): bool
+    {
+        $end = $start->addMinutes($minutes);
+
+        foreach ($this->upcomingSessions($user) as [$otherStart, $otherEnd]) {
+            if ($start->getTimestamp() < $otherEnd && $end->getTimestamp() > $otherStart) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function cap(): int

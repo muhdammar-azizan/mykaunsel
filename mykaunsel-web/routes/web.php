@@ -154,6 +154,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::delete('/planner/hours/{publicId}', [CounselorPlannerController::class, 'destroyHours'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('planner.hours.destroy');
         Route::get('/appointments', [CounselorAppointmentController::class, 'index'])->name('appointments');
         Route::put('/appointments/{publicId}/meeting', [CounselorAppointmentController::class, 'meeting'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('appointments.meeting');
+        Route::post('/requests/{publicId}/approve', [CounselorAppointmentController::class, 'approveRequest'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('requests.approve');
+        Route::post('/requests/{publicId}/decline', [CounselorAppointmentController::class, 'declineRequest'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('requests.decline');
         Route::post('/appointments/{publicId}/outcome', [CounselorAppointmentController::class, 'outcome'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('appointments.outcome');
         Route::get('/profile', [CounselorProfileController::class, 'index'])->name('profile');
     });

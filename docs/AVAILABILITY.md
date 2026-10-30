@@ -217,6 +217,29 @@ On the same page. Code: `CounselorWeeklyHours`, table `counselor_weekly_hours` (
 - **Lines** may not overlap on the same weekday (any context); at most 30 per counselor; the window must hold at least one time; 5-minute marks; the same lengths as the planner. Removing a line leaves the times it opened alone.
 - **Not automatic.** Nothing opens new weeks by itself (no scheduler), so the counselor presses the button again as the weeks pass. A scheduled top-up is a later decision. These lines are also what "inside the counselor's working hours" will mean for Mode B.
 
+## Time requests (Mode B)
+
+"Ask this counselor for a time inside their weekly hours; they approve or decline." Code: `BookingRequests` (the client), `CounselorRequests` (the counselor), `Api\V1\TimeRequestController`, `Counselor\CounselorAppointmentController`, `requests:expire`. Table `booking_requests` extended by migration `2026_11_08_000001` (needs `php artisan migrate`). Tests: `TimeRequestApiTest`, `CounselorRequestsTest`, `ExpireTimeRequestsTest`. The app screens for this are a later step.
+
+**The client** (token, confirmed email):
+- `GET /counselors/{id}/working-hours`: the counselor's weekly hours the person may see (weekday 1 to 7, from, to, `duration_minutes`, `mode`, `location{name, city}`), `accepts_requests`, the booking window and `answer_within_hours`. Hours of an organization the person may not see are left out; a counselor they may not see is the same `404 counselor_unavailable`.
+- `POST /counselors/{id}/requests` with `date`, `time` (HH:MM, Malaysian time) and an optional `message` (500 characters). **The time must fall inside one weekly-hours line** (the whole length inside its window) and inside the booking window (not sooner than `min_lead_hours`, not beyond `horizon_days`), on a 5-minute mark: otherwise `422 request_time_invalid`. That line decides the **length, online or in person, the place and the organization**, so the client picks only the time. Other refusals: `409 requests_closed` (the counselor takes no requests), `409 slot_taken` (the time is not free on the counselor's calendar: buffer and blocks included, one answer for every reason), `409 time_conflict` (overlaps an upcoming session or another waiting request of the person), `409 request_limit_reached` (at most `booking.max_pending_requests`, 3, wait at once). `201` with `{request}`; **the same request again while it waits answers `200` with the same one** (no second e-mail).
+- It waits `booking.request_expiry_hours` (48) or until the time itself if that comes first. Nothing is booked, claimed or held by asking.
+- `GET /requests` (paged, newest first) and `GET /requests/{id}`: the person's own. `status`: `pending`, `approved`, `rejected` (declined), `expired`, `withdrawn`; **a request past its time to answer is shown as `expired` even before the command runs**. Also `starts_at`, `ends_at`, `duration_minutes`, `mode`, `location`, `message`, `response_reason`, `expires_at`, `responded_at` and `booking_id` once approved. Another person's request is the same `404 request_not_found` as an unknown one.
+- `POST /requests/{id}/withdraw`: while it waits. Repeating answers the same. `409 request_not_pending` once answered or expired. Asking and withdrawing share the limit `api-booking-request` (10 a minute, 60 an hour).
+
+**The counselor** (web, Appointments page, "Time requests"): the waiting requests, soonest first, with the client's display name and their note (never e-mail or phone, B3), and until when to answer.
+- **Approve BOOKS the session**: a calendar entry of the new type `requested_session` plus a confirmed `request_based` booking, in **one transaction** with the request's new status, under the booking lock order (the client, the counselor's profile, then the request). It is refused (`request_cannot_approve`, nothing changes) unless the time **still fits**: free on the counselor's calendar, the client has no overlapping session and is under the upcoming-session cap, the counselor still works in that organization, and it has not started. A `requested_session` is **never a slot**: nobody is offered it, but while its booking stands it blocks the calendar with the buffer like any booked time. After that the booking is an ordinary one in the client's app (details, cancel, reschedule). Cancelling it gives the time back (B9) but, not being a slot, it does not become something others can book.
+- **Decline** with an optional reason (300 characters) the client is shown.
+- Both are safe to repeat (no second booking, no second e-mail); answering the other way round, or a request that expired or was withdrawn, is `request_not_pending`. Someone else's request is the same 404.
+- **E-mails** (queued after commit, a queue worker is needed): the counselor on a new request (client name, date, time, kind, answer-by; the note is read in the portal, not mailed); the client on approve, decline (with the reason) and expiry. No push, no in-app notice (B11). No audit entry (B12).
+
+**`requests:expire`** (every ten minutes, needs the scheduler): closes every request past its time to answer and tells the person once. Safe to run again.
+
+**Stored times:** the request's `expires_at` and `responded_at` are stored in the application timezone (UTC), not Malaysian wall time; `requested_date` and `requested_time` are Malaysian wall time, like the calendar.
+
+**Not built:** the app screens (Send a request, Request status), a counselor-facing history of answered requests, and expiring a request when the counselor is suspended is already done by the suspension (`CounselorStatusService`).
+
 ## For the app
 
 The Flutter side is described with its own screen. Keep the mapping of `physical` → "In-person" in **one** place in the app, and show Malaysian time (the offset in the string), never the phone's time zone.

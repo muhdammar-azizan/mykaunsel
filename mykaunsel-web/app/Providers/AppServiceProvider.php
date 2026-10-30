@@ -123,6 +123,11 @@ class AppServiceProvider extends ServiceProvider
             Limit::perHour((int) config('booking.reschedule_rate_per_hour'))->by('booking-reschedule-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
         ]);
 
+        RateLimiter::for('api-booking-request', fn (Request $request) => [
+            Limit::perMinute((int) config('booking.request_rate_per_minute'))->by('booking-request|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+            Limit::perHour((int) config('booking.request_rate_per_hour'))->by('booking-request-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+        ]);
+
         RateLimiter::for('api-user', fn (Request $request) => Limit::perMinute(120)->by('user|'.($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
 }

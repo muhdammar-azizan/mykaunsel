@@ -34,3 +34,6 @@ Schedule::command('lkm:purge-review-evidence')->dailyAt('02:45')->withoutOverlap
 // Practising certificate (PA): reminders before it runs out, automatic suspension once it has expired.
 // Runs in the application timezone, just after the last valid second of the "valid until" day (see PaValidity).
 Schedule::command('counselors:check-pa-expiry')->dailyAt('00:10')->withoutOverlapping();
+
+// Time requests nobody answered in time are closed, and the people who asked are told.
+Schedule::command('requests:expire')->everyTenMinutes()->withoutOverlapping();

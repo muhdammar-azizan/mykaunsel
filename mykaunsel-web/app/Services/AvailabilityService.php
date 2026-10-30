@@ -244,7 +244,7 @@ class AvailabilityService
             ->whereDate('entry_date', '<=', $to->format('Y-m-d'))
             ->where(fn ($query) => $query
                 ->where('entry_type', CalendarEntryType::PersonalBlock->value)
-                ->orWhere(fn ($slot) => $slot->where('entry_type', CalendarEntryType::AvailableSlot->value)
+                ->orWhere(fn ($slot) => $slot->whereIn('entry_type', [CalendarEntryType::AvailableSlot->value, CalendarEntryType::RequestedSession->value])
                     ->where(fn ($booked) => $booked
                         ->where('is_available', false)
                         ->orWhereExists(fn ($booking) => $booking->select(DB::raw(1))->from('bookings')

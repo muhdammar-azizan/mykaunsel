@@ -57,7 +57,7 @@ The only AI component. The API key lives only in the Laravel `.env`; the app nev
 | ✅ | Counselor list | Search, filters (language, focus area, mode, availability), the no-results state. **(check: built filters are session type, focus area, language, state; no availability filter)** |
 | ✅ | Counselor profile | LKM verification prominent, an About tab. Availability and Reviews tabs are placeholders. **(check: built as one page, no tabs; has a "See available times" button)** |
 | ✅ | Pick a slot (Mode A) | Done, per the spec and the availability API. |
-| ❌ | Send a time request (Mode B) | Date and time inside the counselor's working hours, optional note. A pending request expires automatically after 48 hours. The `booking_requests` table exists; the endpoint and the scheduler do not. The counselor needs a portal to approve, so build it together with the counselor portal. |
+| ⚠️ | Send a time request (Mode B) | **Backend built** (working hours, request, withdraw, expiry, the counselor's approve and decline on the web). The app screen is not built yet. Original spec: Date and time inside the counselor's working hours, optional note. A pending request expires automatically after 48 hours. The `booking_requests` table exists; the endpoint and the scheduler do not. The counselor needs a portal to approve, so build it together with the counselor portal. |
 | ✅ | Confirm booking | Done, including idempotency and the concurrency tests (MariaDB). |
 | ✅ | Booking confirmed | Summary, "View booking", "Back to home". A "request sent" variant for Mode B later. "Add to calendar" is optional. (Built; the Mode B variant waits for Mode B.) |
 | ✅ | Session details | (Built as a section of Booking details.) Online: the meeting link appears 15 minutes before until the end of the session, and "link not added yet" if the counselor has not pasted one (the counselor now pastes it on the web portal, Appointments page). In person: the full address and "Get directions". |
@@ -72,7 +72,7 @@ Closes the booking loop and makes the slot-restore contract (B9) real.
 | ✅ | Booking details | (Built: Join session, Reschedule, Cancel.) Summary, status, a public reference number (not a sequential id). Actions by state: Join session, Reschedule, Cancel. |
 | ✅ | Cancel booking | A confirmation sheet with two states (inside or outside the allowed period; the deadline comes from the server per organization). The server restores `is_available`, tells the counselor by email, and is idempotent. |
 | ✅ | Reschedule | Reuses the slot picker (same counselor only). At most 2 times, the remainder shown. Claims the new slot and releases the old one in one transaction, with the same lock order as booking. **Decided (the owner said yes):** the same cancellation time limit as cancelling. The counselor is told by e-mail. Safe to repeat. |
-| ❌ | Request status | Pending, Approved, Declined (with an optional reason). "Withdraw request" while pending. Depends on Mode B. |
+| ⚠️ | Request status | **Backend built** (`GET /requests`, withdraw); the app screen is not built yet. Original spec: Pending, Approved, Declined (with an optional reason). "Withdraw request" while pending. Depends on Mode B. |
 
 ## 6. Wellness Feed
 
