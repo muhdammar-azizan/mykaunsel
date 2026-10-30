@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/error/app_failure.dart';
 import '../../../core/error/failure_message.dart';
 import '../../../core/providers.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/format/slot_time.dart';
@@ -15,6 +17,7 @@ import '../domain/my_booking.dart';
 import 'booking_labels.dart';
 import 'cancel_booking_sheet.dart';
 import 'my_bookings_controller.dart';
+import 'reschedule_args.dart';
 
 /// One booking: what, when, with whom, its state, and the SESSION DETAILS: the meeting link (online, inside its window) or the full address
 /// (in person). The server decides when the link exists; this screen only shows what it was sent, and asks again when the window opens.
@@ -200,6 +203,26 @@ class _Body extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.m),
+          if (booking.canReschedule && booking.counselor.id != null) ...[
+            Text(l10n.bookingRescheduleLeft(booking.reschedulesLeft), style: text.bodySmall?.copyWith(color: scheme.mutedText)),
+            const SizedBox(height: AppSpacing.s),
+            FilledButton.icon(
+              onPressed: () => context.push<void>(AppRoutes.reschedulePath(booking.id), extra: RescheduleTarget.from(booking)),
+              icon: const Icon(Icons.event_repeat_outlined),
+              label: Text(l10n.bookingRescheduleButton),
+            ),
+            const SizedBox(height: AppSpacing.s),
+          ] else ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, size: AppSizes.icon, color: scheme.mutedText),
+                const SizedBox(width: AppSpacing.m),
+                Expanded(child: Text(booking.reschedulesLeft == 0 ? l10n.bookingRescheduleLimit : l10n.bookingRescheduleUnavailable)),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.m),
+          ],
           // Always there for a booking still ahead: the server decides what the sheet says (cancel, or why it is too late).
           OutlinedButton.icon(
             onPressed: () async {

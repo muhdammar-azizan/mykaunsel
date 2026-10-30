@@ -147,6 +147,7 @@ _MyBookingDetail _$MyBookingDetailFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['cancellation_deadline_at'] as String),
       canCancel: json['can_cancel'] as bool? ?? false,
       reschedulesLeft: (json['reschedules_left'] as num?)?.toInt() ?? 0,
+      canReschedule: json['can_reschedule'] as bool? ?? false,
       meeting: json['meeting'] == null
           ? null
           : MeetingInfo.fromJson(json['meeting'] as Map<String, dynamic>),
@@ -171,6 +172,7 @@ Map<String, dynamic> _$MyBookingDetailToJson(_MyBookingDetail instance) =>
           ?.toIso8601String(),
       'can_cancel': instance.canCancel,
       'reschedules_left': instance.reschedulesLeft,
+      'can_reschedule': instance.canReschedule,
       'meeting': instance.meeting,
       'place': instance.place,
     };

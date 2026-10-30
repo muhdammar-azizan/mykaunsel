@@ -17,6 +17,7 @@ import '../../features/booking/presentation/booking_args.dart';
 import '../../features/booking/presentation/confirm_booking_screen.dart';
 import '../../features/booking/presentation/pick_slot_screen.dart';
 import '../../features/bookings/presentation/booking_confirmed_screen.dart';
+import '../../features/bookings/presentation/reschedule_args.dart';
 import '../../features/bookings/presentation/booking_detail_screen.dart';
 import '../../features/bookings/presentation/bookings_screen.dart';
 import '../../features/counselors/presentation/counselor_detail_screen.dart';
@@ -58,6 +59,10 @@ abstract final class AppRoutes {
   static const bookings = '/bookings';
 
   static String bookingPath(String id) => '/bookings/${Uri.encodeComponent(id)}';
+
+  /// Moving a booking: the time picker for the same counselor. The booking and its current time come in `extra`; without them (an old
+  /// link) the route goes back to the booking.
+  static String reschedulePath(String id) => '/reschedule/${Uri.encodeComponent(id)}';
 
   /// Pages a signed-out person may be on.
   static const signedOutPages = {signIn, twoFactor, verifyEmail, signUp, forgotPassword};
@@ -162,6 +167,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.bookingConfirmed,
         redirect: (_, state) => state.extra is CreatedBooking ? null : AppRoutes.home,
         builder: (_, state) => BookingConfirmedScreen(booking: state.extra! as CreatedBooking),
+      ),
+      GoRoute(
+        path: '/reschedule/:id',
+        redirect: (_, state) {
+          final target = state.extra;
+
+          return target is RescheduleTarget && target.counselor.id.isNotEmpty ? null : AppRoutes.bookingPath(state.pathParameters['id']!);
+        },
+        builder: (_, state) {
+          final target = state.extra! as RescheduleTarget;
+
+          return PickSlotScreen(counselor: target.counselor, reschedule: target);
+        },
       ),
       // Booking sits on top of the tabs (no bottom bar), so it is a short, focused flow. Counselor details come in `extra`.
       GoRoute(

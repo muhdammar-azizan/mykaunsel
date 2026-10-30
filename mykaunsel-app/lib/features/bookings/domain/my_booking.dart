@@ -108,6 +108,9 @@ abstract class MyBookingDetail with _$MyBookingDetail {
     DateTime? cancellationDeadlineAt,
     @Default(false) bool canCancel,
     @Default(0) int reschedulesLeft,
+
+    /// The same time limit as cancelling, and moves left (the server decides).
+    @Default(false) bool canReschedule,
     MeetingInfo? meeting,
     BookingPlace? place,
   }) = _MyBookingDetail;

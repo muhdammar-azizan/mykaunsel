@@ -61,6 +61,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-booking-cancel'])
         ->post('/bookings/{publicId}/cancel', [MyBookingController::class, 'cancel'])->where('publicId', '[0-9A-Za-z]{26}')->name('bookings.cancel');
 
+    // Moving one's own booking to another time of the same counselor. Its own limit; safe to repeat.
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-booking-reschedule'])
+        ->post('/bookings/{publicId}/reschedule', [MyBookingController::class, 'reschedule'])->where('publicId', '[0-9A-Za-z]{26}')->name('bookings.reschedule');
+
     // Counselor search (docs/PUBLIC_COUNSELOR_DATA.md). Signed in with a confirmed email only, with its own limit.
     // Which times of one counselor can be picked (read only; the booking itself is a later step). Its own, roomier limit.
     Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-availability'])->get('/counselors/{publicId}/availability', AvailabilityController::class)->name('counselors.availability');

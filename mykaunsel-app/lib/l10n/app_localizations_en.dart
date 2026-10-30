@@ -887,6 +887,88 @@ class AppLocalizationsEn extends AppLocalizations {
       'Something went wrong on our side. Your booking may or may not have been cancelled. Try again: it is safe to repeat.';
 
   @override
+  String get bookingRescheduleButton => 'Reschedule';
+
+  @override
+  String bookingRescheduleLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You can reschedule this booking $count more times.',
+      one: 'You can reschedule this booking 1 more time.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bookingRescheduleUnavailable =>
+      'This booking can\'t be rescheduled.';
+
+  @override
+  String get bookingRescheduleLimit =>
+      'This booking has already been rescheduled the most times it can be.';
+
+  @override
+  String get rescheduleTitle => 'Choose a new time';
+
+  @override
+  String get rescheduleSheetTitle => 'Move to this time?';
+
+  @override
+  String rescheduleSheetBody(String name, String from, String to) {
+    return 'Your session with $name will move from $from to $to. The time you have now will be released.';
+  }
+
+  @override
+  String get rescheduleMove => 'Move booking';
+
+  @override
+  String get rescheduleMoving => 'Moving…';
+
+  @override
+  String get rescheduleKeepCurrent => 'Keep current time';
+
+  @override
+  String get rescheduleChooseAnother => 'Choose another time';
+
+  @override
+  String get rescheduleEndedTitle => 'This booking can\'t be rescheduled';
+
+  @override
+  String get rescheduleSlotTaken =>
+      'That time was just taken. Please choose another.';
+
+  @override
+  String get rescheduleSlotChanged =>
+      'This time changed while you were looking. Please choose again.';
+
+  @override
+  String rescheduleClosed(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours hours',
+      one: '1 hour',
+    );
+    return 'This session starts in under $_temp0, so it can\'t be rescheduled.';
+  }
+
+  @override
+  String get rescheduleNotPossible =>
+      'This booking can\'t be rescheduled any more.';
+
+  @override
+  String get rescheduleGone =>
+      'This booking, or this time, is no longer available.';
+
+  @override
+  String get rescheduleServer =>
+      'Something went wrong on our side. Your booking may or may not have been moved. Try again: it is safe to repeat.';
+
+  @override
+  String get rescheduledSnack => 'Booking rescheduled.';
+
+  @override
   String get bookingConfirmedTitle => 'Booking confirmed';
 
   @override

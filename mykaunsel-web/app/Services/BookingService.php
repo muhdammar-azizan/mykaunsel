@@ -163,13 +163,14 @@ class BookingService
      *
      * @return list<array{0: int, 1: int}>
      */
-    private function upcomingSessions(User $user): array
+    private function upcomingSessions(User $user, ?int $exceptEntryId = null): array
     {
         $now = $this->availability->now();
 
         $entries = CalendarEntry::query()
             ->whereIn('id', Booking::query()->where('user_id', $user->getKey())->where('status', BookingStatus::Confirmed->value)->whereNotNull('calendar_entry_id')->select('calendar_entry_id'))
             ->whereDate('entry_date', '>=', $now->format('Y-m-d'))
+            ->when($exceptEntryId !== null, fn ($q) => $q->whereKeyNot($exceptEntryId))
             ->get();
 
         $sessions = [];
@@ -185,13 +186,33 @@ class BookingService
         return $sessions;
     }
 
+    /**
+     * For moving a booking: would [slot] overlap another upcoming session of the person? The session being moved (its slot [exceptEntryId])
+     * does not count against itself, and the cap does not apply (one session is replaced by another).
+     *
+     * @return 'time_conflict'|null
+     */
+    public function overlapRefusal(User $user, CalendarEntry $slot, int $exceptEntryId): ?string
+    {
+        $start = $this->availability->startOf($slot);
+        $end = $start->addMinutes((int) $slot->duration_minutes);
+
+        foreach ($this->upcomingSessions($user, $exceptEntryId) as [$otherStart, $otherEnd]) {
+            if ($start->getTimestamp() < $otherEnd && $end->getTimestamp() > $otherStart) {
+                return 'time_conflict';
+            }
+        }
+
+        return null;
+    }
+
     private function cap(): int
     {
         return max(1, (int) config('booking.max_upcoming_sessions'));
     }
 
     /** Does what the person saw differ from the slot as it is now? (The counselor edited it meanwhile.) */
-    private function differs(CalendarEntry $slot, array $input): bool
+    public function differs(CalendarEntry $slot, array $input): bool
     {
         return $this->availability->startOf($slot)->getTimestamp() !== CarbonImmutable::parse($input['expected_starts_at'])->getTimestamp()
             || (int) $slot->duration_minutes !== (int) $input['expected_duration_minutes']

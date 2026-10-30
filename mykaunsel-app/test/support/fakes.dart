@@ -314,8 +314,10 @@ class FakeMyBookingsApi implements MyBookingsApi {
   final lists = <({BookingsScope scope, int page})>[];
   final details = <String>[];
   final cancels = <String>[];
+  final reschedules = <({String id, String slotId, DateTime startsAt, int minutes, String mode})>[];
 
   Future<MyBookingDetail> Function(String id) cancelHandler = (id) async => aBookingDetail(id: id, status: BookingState.cancelled, canCancel: false, withDeadline: false);
+  Future<MyBookingDetail> Function(String id, String slotId) rescheduleHandler = (id, slotId) async => aBookingDetail(id: id, days: 3, reschedulesLeft: 1);
   Future<BookingsPage> Function(BookingsScope scope, int page) listHandler = (scope, page) async => const BookingsPage(items: [], page: 1, lastPage: 1);
   Future<MyBookingDetail> Function(String id) detailHandler = (id) async => aBookingDetail(id: id);
 
@@ -338,6 +340,19 @@ class FakeMyBookingsApi implements MyBookingsApi {
     cancels.add(id);
 
     return cancelHandler(id);
+  }
+
+  @override
+  Future<MyBookingDetail> reschedule(
+    String id, {
+    required String slotId,
+    required DateTime expectedStartsAt,
+    required int expectedDurationMinutes,
+    required String expectedMode,
+  }) {
+    reschedules.add((id: id, slotId: slotId, startsAt: expectedStartsAt, minutes: expectedDurationMinutes, mode: expectedMode));
+
+    return rescheduleHandler(id, slotId);
   }
 }
 
@@ -380,6 +395,8 @@ MyBookingDetail aBookingDetail({
   MeetingInfo? meeting,
   BookingPlace? place,
   bool canCancel = true,
+  bool canReschedule = true,
+  int reschedulesLeft = 2,
   bool withDeadline = true,
 }) {
   final start = DateTime.utc(2026, 11, 2 + days, hour - 8);
@@ -396,7 +413,8 @@ MyBookingDetail aBookingDetail({
     cancellationHours: 24,
     cancellationDeadlineAt: withDeadline ? start.subtract(const Duration(hours: 24)) : null,
     canCancel: canCancel,
-    reschedulesLeft: 2,
+    reschedulesLeft: reschedulesLeft,
+    canReschedule: canReschedule,
     meeting: meeting ?? (mode == SessionMode.online && status == BookingState.confirmed ? aMeeting(start, minutes) : null),
     place: place,
   );

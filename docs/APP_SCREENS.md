@@ -69,9 +69,9 @@ Closes the booking loop and makes the slot-restore contract (B9) real.
 | | Screen | Details |
 |---|---|---|
 | ✅ | Booking list | Upcoming and Past tabs. Badges: Confirmed, Pending, Starting soon. Past: Completed, Cancelled, No-show, and "Book again". Completed and No-show exist only when the counselor marks them, so Past will be limited for now. |
-| ⚠️ | Booking details | (Built: Cancel works; no Reschedule button yet.) Summary, status, a public reference number (not a sequential id). Actions by state: Join session, Reschedule, Cancel. |
+| ✅ | Booking details | (Built: Join session, Reschedule, Cancel.) Summary, status, a public reference number (not a sequential id). Actions by state: Join session, Reschedule, Cancel. |
 | ✅ | Cancel booking | A confirmation sheet with two states (inside or outside the allowed period; the deadline comes from the server per organization). The server restores `is_available`, tells the counselor by email, and is idempotent. |
-| ❌ | Reschedule | Reuses the slot picker. At most 2 times, the remainder shown. Claim the new slot and release the old one in one transaction, with the same lock order as booking. **Decision for the owner:** is it subject to the same cancellation time limit? Proposal: yes. |
+| ✅ | Reschedule | Reuses the slot picker (same counselor only). At most 2 times, the remainder shown. Claims the new slot and releases the old one in one transaction, with the same lock order as booking. **Decided (the owner said yes):** the same cancellation time limit as cancelling. The counselor is told by e-mail. Safe to repeat. |
 | ❌ | Request status | Pending, Approved, Declined (with an optional reason). "Withdraw request" while pending. Depends on Mode B. |
 
 ## 6. Wellness Feed
@@ -116,7 +116,7 @@ B1 no fee text anywhere. B2 the no-recording acknowledgement is required and not
 
 ## Open decisions (for the owner)
 
-1. Reschedule: same cancellation time limit? (proposal: yes)
+1. ~~Reschedule: same cancellation time limit?~~ Decided: yes (built).
 2. Anonymous post: can an admin see the real identity? (FYP1 says yes; say so in the toggle text)
 3. Delete account: the data policy is not decided, so do not build it.
 4. Crisis helpline numbers: confirm the real numbers before use.

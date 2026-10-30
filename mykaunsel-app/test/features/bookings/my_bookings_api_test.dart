@@ -130,4 +130,40 @@ void main() {
       throwsA(isA<ConflictFailure>().having((f) => f.code, 'code', 'cancellation_closed').having((f) => f.body['cancellation_hours'], 'hours', 48)),
     );
   });
+
+  test('rescheduling posts the new time with what the person saw, and reads the moved booking back', () async {
+    final adapter = FakeHttpAdapter((_) => FakeHttpAdapter.json(200, {
+          'booking': {...item(), 'cancellation_hours': 24, 'can_cancel': true, 'can_reschedule': true, 'reschedules_left': 1, 'meeting': null, 'place': null},
+        }));
+
+    final detail = await build(adapter).reschedule('01bk', slotId: '01slot', expectedStartsAt: DateTime.utc(2026, 11, 5, 6), expectedDurationMinutes: 60, expectedMode: 'online');
+
+    expect(adapter.requests.single.method, 'POST');
+    expect(adapter.requests.single.path, '/bookings/01bk/reschedule');
+    expect(adapter.requests.single.data, {
+      'slot': '01slot',
+      'expected_starts_at': '2026-11-05T06:00:00.000Z',
+      'expected_duration_minutes': 60,
+      'expected_mode': 'online',
+    });
+    expect(detail.canReschedule, isTrue);
+    expect(detail.reschedulesLeft, 1);
+  });
+
+  test('a refusal to reschedule keeps its code and the window the server named', () async {
+    final adapter = FakeHttpAdapter((_) => FakeHttpAdapter.json(409, {'message': 'x', 'code': 'reschedule_closed', 'cancellation_hours': 48}));
+
+    await expectLater(
+      build(adapter).reschedule('01bk', slotId: 's', expectedStartsAt: DateTime.utc(2026, 11, 5), expectedDurationMinutes: 60, expectedMode: 'online'),
+      throwsA(isA<ConflictFailure>().having((f) => f.code, 'code', 'reschedule_closed').having((f) => f.body['cancellation_hours'], 'hours', 48)),
+    );
+  });
+
+  test('a detail without can_reschedule (an older server) is not offered the move', () async {
+    final adapter = FakeHttpAdapter((_) => FakeHttpAdapter.json(200, {
+          'booking': {...item(), 'cancellation_hours': 24, 'can_cancel': true, 'reschedules_left': 2},
+        }));
+
+    expect((await build(adapter).detail('01bk')).canReschedule, isFalse);
+  });
 }

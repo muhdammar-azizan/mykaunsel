@@ -1171,7 +1171,8 @@ as double?,
 mixin _$MyBookingDetail {
 
  String get id;@JsonKey(unknownEnumValue: BookingState.unknown) BookingState get status; bool get startingSoon; DateTime get startsAt; DateTime get endsAt; int get durationMinutes;@JsonKey(unknownEnumValue: SessionMode.unknown) SessionMode get mode; BookingCounselorRef get counselor; SlotLocation? get location; int get cancellationHours;/// Null once the deadline has passed (or the booking is not confirmed).
- DateTime? get cancellationDeadlineAt; bool get canCancel; int get reschedulesLeft; MeetingInfo? get meeting; BookingPlace? get place;
+ DateTime? get cancellationDeadlineAt; bool get canCancel; int get reschedulesLeft;/// The same time limit as cancelling, and moves left (the server decides).
+ bool get canReschedule; MeetingInfo? get meeting; BookingPlace? get place;
 /// Create a copy of MyBookingDetail
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1184,16 +1185,16 @@ $MyBookingDetailCopyWith<MyBookingDetail> get copyWith => _$MyBookingDetailCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MyBookingDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&(identical(other.startingSoon, startingSoon) || other.startingSoon == startingSoon)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.durationMinutes, durationMinutes) || other.durationMinutes == durationMinutes)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.counselor, counselor) || other.counselor == counselor)&&(identical(other.location, location) || other.location == location)&&(identical(other.cancellationHours, cancellationHours) || other.cancellationHours == cancellationHours)&&(identical(other.cancellationDeadlineAt, cancellationDeadlineAt) || other.cancellationDeadlineAt == cancellationDeadlineAt)&&(identical(other.canCancel, canCancel) || other.canCancel == canCancel)&&(identical(other.reschedulesLeft, reschedulesLeft) || other.reschedulesLeft == reschedulesLeft)&&(identical(other.meeting, meeting) || other.meeting == meeting)&&(identical(other.place, place) || other.place == place));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MyBookingDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&(identical(other.startingSoon, startingSoon) || other.startingSoon == startingSoon)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.durationMinutes, durationMinutes) || other.durationMinutes == durationMinutes)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.counselor, counselor) || other.counselor == counselor)&&(identical(other.location, location) || other.location == location)&&(identical(other.cancellationHours, cancellationHours) || other.cancellationHours == cancellationHours)&&(identical(other.cancellationDeadlineAt, cancellationDeadlineAt) || other.cancellationDeadlineAt == cancellationDeadlineAt)&&(identical(other.canCancel, canCancel) || other.canCancel == canCancel)&&(identical(other.reschedulesLeft, reschedulesLeft) || other.reschedulesLeft == reschedulesLeft)&&(identical(other.canReschedule, canReschedule) || other.canReschedule == canReschedule)&&(identical(other.meeting, meeting) || other.meeting == meeting)&&(identical(other.place, place) || other.place == place));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,status,startingSoon,startsAt,endsAt,durationMinutes,mode,counselor,location,cancellationHours,cancellationDeadlineAt,canCancel,reschedulesLeft,meeting,place);
+int get hashCode => Object.hash(runtimeType,id,status,startingSoon,startsAt,endsAt,durationMinutes,mode,counselor,location,cancellationHours,cancellationDeadlineAt,canCancel,reschedulesLeft,canReschedule,meeting,place);
 
 @override
 String toString() {
-  return 'MyBookingDetail(id: $id, status: $status, startingSoon: $startingSoon, startsAt: $startsAt, endsAt: $endsAt, durationMinutes: $durationMinutes, mode: $mode, counselor: $counselor, location: $location, cancellationHours: $cancellationHours, cancellationDeadlineAt: $cancellationDeadlineAt, canCancel: $canCancel, reschedulesLeft: $reschedulesLeft, meeting: $meeting, place: $place)';
+  return 'MyBookingDetail(id: $id, status: $status, startingSoon: $startingSoon, startsAt: $startsAt, endsAt: $endsAt, durationMinutes: $durationMinutes, mode: $mode, counselor: $counselor, location: $location, cancellationHours: $cancellationHours, cancellationDeadlineAt: $cancellationDeadlineAt, canCancel: $canCancel, reschedulesLeft: $reschedulesLeft, canReschedule: $canReschedule, meeting: $meeting, place: $place)';
 }
 
 
@@ -1204,7 +1205,7 @@ abstract mixin class $MyBookingDetailCopyWith<$Res>  {
   factory $MyBookingDetailCopyWith(MyBookingDetail value, $Res Function(MyBookingDetail) _then) = _$MyBookingDetailCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(unknownEnumValue: BookingState.unknown) BookingState status, bool startingSoon, DateTime startsAt, DateTime endsAt, int durationMinutes,@JsonKey(unknownEnumValue: SessionMode.unknown) SessionMode mode, BookingCounselorRef counselor, SlotLocation? location, int cancellationHours, DateTime? cancellationDeadlineAt, bool canCancel, int reschedulesLeft, MeetingInfo? meeting, BookingPlace? place
+ String id,@JsonKey(unknownEnumValue: BookingState.unknown) BookingState status, bool startingSoon, DateTime startsAt, DateTime endsAt, int durationMinutes,@JsonKey(unknownEnumValue: SessionMode.unknown) SessionMode mode, BookingCounselorRef counselor, SlotLocation? location, int cancellationHours, DateTime? cancellationDeadlineAt, bool canCancel, int reschedulesLeft, bool canReschedule, MeetingInfo? meeting, BookingPlace? place
 });
 
 
@@ -1221,7 +1222,7 @@ class _$MyBookingDetailCopyWithImpl<$Res>
 
 /// Create a copy of MyBookingDetail
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? status = null,Object? startingSoon = null,Object? startsAt = null,Object? endsAt = null,Object? durationMinutes = null,Object? mode = null,Object? counselor = null,Object? location = freezed,Object? cancellationHours = null,Object? cancellationDeadlineAt = freezed,Object? canCancel = null,Object? reschedulesLeft = null,Object? meeting = freezed,Object? place = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? status = null,Object? startingSoon = null,Object? startsAt = null,Object? endsAt = null,Object? durationMinutes = null,Object? mode = null,Object? counselor = null,Object? location = freezed,Object? cancellationHours = null,Object? cancellationDeadlineAt = freezed,Object? canCancel = null,Object? reschedulesLeft = null,Object? canReschedule = null,Object? meeting = freezed,Object? place = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
@@ -1236,7 +1237,8 @@ as SlotLocation?,cancellationHours: null == cancellationHours ? _self.cancellati
 as int,cancellationDeadlineAt: freezed == cancellationDeadlineAt ? _self.cancellationDeadlineAt : cancellationDeadlineAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,canCancel: null == canCancel ? _self.canCancel : canCancel // ignore: cast_nullable_to_non_nullable
 as bool,reschedulesLeft: null == reschedulesLeft ? _self.reschedulesLeft : reschedulesLeft // ignore: cast_nullable_to_non_nullable
-as int,meeting: freezed == meeting ? _self.meeting : meeting // ignore: cast_nullable_to_non_nullable
+as int,canReschedule: null == canReschedule ? _self.canReschedule : canReschedule // ignore: cast_nullable_to_non_nullable
+as bool,meeting: freezed == meeting ? _self.meeting : meeting // ignore: cast_nullable_to_non_nullable
 as MeetingInfo?,place: freezed == place ? _self.place : place // ignore: cast_nullable_to_non_nullable
 as BookingPlace?,
   ));
@@ -1368,10 +1370,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(unknownEnumValue: BookingState.unknown)  BookingState status,  bool startingSoon,  DateTime startsAt,  DateTime endsAt,  int durationMinutes, @JsonKey(unknownEnumValue: SessionMode.unknown)  SessionMode mode,  BookingCounselorRef counselor,  SlotLocation? location,  int cancellationHours,  DateTime? cancellationDeadlineAt,  bool canCancel,  int reschedulesLeft,  MeetingInfo? meeting,  BookingPlace? place)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(unknownEnumValue: BookingState.unknown)  BookingState status,  bool startingSoon,  DateTime startsAt,  DateTime endsAt,  int durationMinutes, @JsonKey(unknownEnumValue: SessionMode.unknown)  SessionMode mode,  BookingCounselorRef counselor,  SlotLocation? location,  int cancellationHours,  DateTime? cancellationDeadlineAt,  bool canCancel,  int reschedulesLeft,  bool canReschedule,  MeetingInfo? meeting,  BookingPlace? place)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MyBookingDetail() when $default != null:
-return $default(_that.id,_that.status,_that.startingSoon,_that.startsAt,_that.endsAt,_that.durationMinutes,_that.mode,_that.counselor,_that.location,_that.cancellationHours,_that.cancellationDeadlineAt,_that.canCancel,_that.reschedulesLeft,_that.meeting,_that.place);case _:
+return $default(_that.id,_that.status,_that.startingSoon,_that.startsAt,_that.endsAt,_that.durationMinutes,_that.mode,_that.counselor,_that.location,_that.cancellationHours,_that.cancellationDeadlineAt,_that.canCancel,_that.reschedulesLeft,_that.canReschedule,_that.meeting,_that.place);case _:
   return orElse();
 
 }
@@ -1389,10 +1391,10 @@ return $default(_that.id,_that.status,_that.startingSoon,_that.startsAt,_that.en
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(unknownEnumValue: BookingState.unknown)  BookingState status,  bool startingSoon,  DateTime startsAt,  DateTime endsAt,  int durationMinutes, @JsonKey(unknownEnumValue: SessionMode.unknown)  SessionMode mode,  BookingCounselorRef counselor,  SlotLocation? location,  int cancellationHours,  DateTime? cancellationDeadlineAt,  bool canCancel,  int reschedulesLeft,  MeetingInfo? meeting,  BookingPlace? place)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(unknownEnumValue: BookingState.unknown)  BookingState status,  bool startingSoon,  DateTime startsAt,  DateTime endsAt,  int durationMinutes, @JsonKey(unknownEnumValue: SessionMode.unknown)  SessionMode mode,  BookingCounselorRef counselor,  SlotLocation? location,  int cancellationHours,  DateTime? cancellationDeadlineAt,  bool canCancel,  int reschedulesLeft,  bool canReschedule,  MeetingInfo? meeting,  BookingPlace? place)  $default,) {final _that = this;
 switch (_that) {
 case _MyBookingDetail():
-return $default(_that.id,_that.status,_that.startingSoon,_that.startsAt,_that.endsAt,_that.durationMinutes,_that.mode,_that.counselor,_that.location,_that.cancellationHours,_that.cancellationDeadlineAt,_that.canCancel,_that.reschedulesLeft,_that.meeting,_that.place);case _:
+return $default(_that.id,_that.status,_that.startingSoon,_that.startsAt,_that.endsAt,_that.durationMinutes,_that.mode,_that.counselor,_that.location,_that.cancellationHours,_that.cancellationDeadlineAt,_that.canCancel,_that.reschedulesLeft,_that.canReschedule,_that.meeting,_that.place);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1409,10 +1411,10 @@ return $default(_that.id,_that.status,_that.startingSoon,_that.startsAt,_that.en
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(unknownEnumValue: BookingState.unknown)  BookingState status,  bool startingSoon,  DateTime startsAt,  DateTime endsAt,  int durationMinutes, @JsonKey(unknownEnumValue: SessionMode.unknown)  SessionMode mode,  BookingCounselorRef counselor,  SlotLocation? location,  int cancellationHours,  DateTime? cancellationDeadlineAt,  bool canCancel,  int reschedulesLeft,  MeetingInfo? meeting,  BookingPlace? place)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(unknownEnumValue: BookingState.unknown)  BookingState status,  bool startingSoon,  DateTime startsAt,  DateTime endsAt,  int durationMinutes, @JsonKey(unknownEnumValue: SessionMode.unknown)  SessionMode mode,  BookingCounselorRef counselor,  SlotLocation? location,  int cancellationHours,  DateTime? cancellationDeadlineAt,  bool canCancel,  int reschedulesLeft,  bool canReschedule,  MeetingInfo? meeting,  BookingPlace? place)?  $default,) {final _that = this;
 switch (_that) {
 case _MyBookingDetail() when $default != null:
-return $default(_that.id,_that.status,_that.startingSoon,_that.startsAt,_that.endsAt,_that.durationMinutes,_that.mode,_that.counselor,_that.location,_that.cancellationHours,_that.cancellationDeadlineAt,_that.canCancel,_that.reschedulesLeft,_that.meeting,_that.place);case _:
+return $default(_that.id,_that.status,_that.startingSoon,_that.startsAt,_that.endsAt,_that.durationMinutes,_that.mode,_that.counselor,_that.location,_that.cancellationHours,_that.cancellationDeadlineAt,_that.canCancel,_that.reschedulesLeft,_that.canReschedule,_that.meeting,_that.place);case _:
   return null;
 
 }
@@ -1424,7 +1426,7 @@ return $default(_that.id,_that.status,_that.startingSoon,_that.startsAt,_that.en
 @JsonSerializable()
 
 class _MyBookingDetail extends MyBookingDetail {
-  const _MyBookingDetail({required this.id, @JsonKey(unknownEnumValue: BookingState.unknown) required this.status, this.startingSoon = false, required this.startsAt, required this.endsAt, required this.durationMinutes, @JsonKey(unknownEnumValue: SessionMode.unknown) required this.mode, required this.counselor, this.location, required this.cancellationHours, this.cancellationDeadlineAt, this.canCancel = false, this.reschedulesLeft = 0, this.meeting, this.place}): super._();
+  const _MyBookingDetail({required this.id, @JsonKey(unknownEnumValue: BookingState.unknown) required this.status, this.startingSoon = false, required this.startsAt, required this.endsAt, required this.durationMinutes, @JsonKey(unknownEnumValue: SessionMode.unknown) required this.mode, required this.counselor, this.location, required this.cancellationHours, this.cancellationDeadlineAt, this.canCancel = false, this.reschedulesLeft = 0, this.canReschedule = false, this.meeting, this.place}): super._();
   factory _MyBookingDetail.fromJson(Map<String, dynamic> json) => _$MyBookingDetailFromJson(json);
 
 @override final  String id;
@@ -1441,6 +1443,8 @@ class _MyBookingDetail extends MyBookingDetail {
 @override final  DateTime? cancellationDeadlineAt;
 @override@JsonKey() final  bool canCancel;
 @override@JsonKey() final  int reschedulesLeft;
+/// The same time limit as cancelling, and moves left (the server decides).
+@override@JsonKey() final  bool canReschedule;
 @override final  MeetingInfo? meeting;
 @override final  BookingPlace? place;
 
@@ -1457,16 +1461,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MyBookingDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&(identical(other.startingSoon, startingSoon) || other.startingSoon == startingSoon)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.durationMinutes, durationMinutes) || other.durationMinutes == durationMinutes)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.counselor, counselor) || other.counselor == counselor)&&(identical(other.location, location) || other.location == location)&&(identical(other.cancellationHours, cancellationHours) || other.cancellationHours == cancellationHours)&&(identical(other.cancellationDeadlineAt, cancellationDeadlineAt) || other.cancellationDeadlineAt == cancellationDeadlineAt)&&(identical(other.canCancel, canCancel) || other.canCancel == canCancel)&&(identical(other.reschedulesLeft, reschedulesLeft) || other.reschedulesLeft == reschedulesLeft)&&(identical(other.meeting, meeting) || other.meeting == meeting)&&(identical(other.place, place) || other.place == place));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MyBookingDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status)&&(identical(other.startingSoon, startingSoon) || other.startingSoon == startingSoon)&&(identical(other.startsAt, startsAt) || other.startsAt == startsAt)&&(identical(other.endsAt, endsAt) || other.endsAt == endsAt)&&(identical(other.durationMinutes, durationMinutes) || other.durationMinutes == durationMinutes)&&(identical(other.mode, mode) || other.mode == mode)&&(identical(other.counselor, counselor) || other.counselor == counselor)&&(identical(other.location, location) || other.location == location)&&(identical(other.cancellationHours, cancellationHours) || other.cancellationHours == cancellationHours)&&(identical(other.cancellationDeadlineAt, cancellationDeadlineAt) || other.cancellationDeadlineAt == cancellationDeadlineAt)&&(identical(other.canCancel, canCancel) || other.canCancel == canCancel)&&(identical(other.reschedulesLeft, reschedulesLeft) || other.reschedulesLeft == reschedulesLeft)&&(identical(other.canReschedule, canReschedule) || other.canReschedule == canReschedule)&&(identical(other.meeting, meeting) || other.meeting == meeting)&&(identical(other.place, place) || other.place == place));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,status,startingSoon,startsAt,endsAt,durationMinutes,mode,counselor,location,cancellationHours,cancellationDeadlineAt,canCancel,reschedulesLeft,meeting,place);
+int get hashCode => Object.hash(runtimeType,id,status,startingSoon,startsAt,endsAt,durationMinutes,mode,counselor,location,cancellationHours,cancellationDeadlineAt,canCancel,reschedulesLeft,canReschedule,meeting,place);
 
 @override
 String toString() {
-  return 'MyBookingDetail(id: $id, status: $status, startingSoon: $startingSoon, startsAt: $startsAt, endsAt: $endsAt, durationMinutes: $durationMinutes, mode: $mode, counselor: $counselor, location: $location, cancellationHours: $cancellationHours, cancellationDeadlineAt: $cancellationDeadlineAt, canCancel: $canCancel, reschedulesLeft: $reschedulesLeft, meeting: $meeting, place: $place)';
+  return 'MyBookingDetail(id: $id, status: $status, startingSoon: $startingSoon, startsAt: $startsAt, endsAt: $endsAt, durationMinutes: $durationMinutes, mode: $mode, counselor: $counselor, location: $location, cancellationHours: $cancellationHours, cancellationDeadlineAt: $cancellationDeadlineAt, canCancel: $canCancel, reschedulesLeft: $reschedulesLeft, canReschedule: $canReschedule, meeting: $meeting, place: $place)';
 }
 
 
@@ -1477,7 +1481,7 @@ abstract mixin class _$MyBookingDetailCopyWith<$Res> implements $MyBookingDetail
   factory _$MyBookingDetailCopyWith(_MyBookingDetail value, $Res Function(_MyBookingDetail) _then) = __$MyBookingDetailCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(unknownEnumValue: BookingState.unknown) BookingState status, bool startingSoon, DateTime startsAt, DateTime endsAt, int durationMinutes,@JsonKey(unknownEnumValue: SessionMode.unknown) SessionMode mode, BookingCounselorRef counselor, SlotLocation? location, int cancellationHours, DateTime? cancellationDeadlineAt, bool canCancel, int reschedulesLeft, MeetingInfo? meeting, BookingPlace? place
+ String id,@JsonKey(unknownEnumValue: BookingState.unknown) BookingState status, bool startingSoon, DateTime startsAt, DateTime endsAt, int durationMinutes,@JsonKey(unknownEnumValue: SessionMode.unknown) SessionMode mode, BookingCounselorRef counselor, SlotLocation? location, int cancellationHours, DateTime? cancellationDeadlineAt, bool canCancel, int reschedulesLeft, bool canReschedule, MeetingInfo? meeting, BookingPlace? place
 });
 
 
@@ -1494,7 +1498,7 @@ class __$MyBookingDetailCopyWithImpl<$Res>
 
 /// Create a copy of MyBookingDetail
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? status = null,Object? startingSoon = null,Object? startsAt = null,Object? endsAt = null,Object? durationMinutes = null,Object? mode = null,Object? counselor = null,Object? location = freezed,Object? cancellationHours = null,Object? cancellationDeadlineAt = freezed,Object? canCancel = null,Object? reschedulesLeft = null,Object? meeting = freezed,Object? place = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? status = null,Object? startingSoon = null,Object? startsAt = null,Object? endsAt = null,Object? durationMinutes = null,Object? mode = null,Object? counselor = null,Object? location = freezed,Object? cancellationHours = null,Object? cancellationDeadlineAt = freezed,Object? canCancel = null,Object? reschedulesLeft = null,Object? canReschedule = null,Object? meeting = freezed,Object? place = freezed,}) {
   return _then(_MyBookingDetail(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
@@ -1509,7 +1513,8 @@ as SlotLocation?,cancellationHours: null == cancellationHours ? _self.cancellati
 as int,cancellationDeadlineAt: freezed == cancellationDeadlineAt ? _self.cancellationDeadlineAt : cancellationDeadlineAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,canCancel: null == canCancel ? _self.canCancel : canCancel // ignore: cast_nullable_to_non_nullable
 as bool,reschedulesLeft: null == reschedulesLeft ? _self.reschedulesLeft : reschedulesLeft // ignore: cast_nullable_to_non_nullable
-as int,meeting: freezed == meeting ? _self.meeting : meeting // ignore: cast_nullable_to_non_nullable
+as int,canReschedule: null == canReschedule ? _self.canReschedule : canReschedule // ignore: cast_nullable_to_non_nullable
+as bool,meeting: freezed == meeting ? _self.meeting : meeting // ignore: cast_nullable_to_non_nullable
 as MeetingInfo?,place: freezed == place ? _self.place : place // ignore: cast_nullable_to_non_nullable
 as BookingPlace?,
   ));

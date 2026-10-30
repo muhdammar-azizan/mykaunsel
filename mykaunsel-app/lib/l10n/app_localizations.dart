@@ -1545,6 +1545,120 @@ abstract class AppLocalizations {
   /// **'Something went wrong on our side. Your booking may or may not have been cancelled. Try again: it is safe to repeat.'**
   String get bookingCancelServer;
 
+  /// No description provided for @bookingRescheduleButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule'**
+  String get bookingRescheduleButton;
+
+  /// No description provided for @bookingRescheduleLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You can reschedule this booking 1 more time.} other{You can reschedule this booking {count} more times.}}'**
+  String bookingRescheduleLeft(int count);
+
+  /// No description provided for @bookingRescheduleUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking can\'t be rescheduled.'**
+  String get bookingRescheduleUnavailable;
+
+  /// No description provided for @bookingRescheduleLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking has already been rescheduled the most times it can be.'**
+  String get bookingRescheduleLimit;
+
+  /// No description provided for @rescheduleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new time'**
+  String get rescheduleTitle;
+
+  /// No description provided for @rescheduleSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to this time?'**
+  String get rescheduleSheetTitle;
+
+  /// No description provided for @rescheduleSheetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session with {name} will move from {from} to {to}. The time you have now will be released.'**
+  String rescheduleSheetBody(String name, String from, String to);
+
+  /// No description provided for @rescheduleMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Move booking'**
+  String get rescheduleMove;
+
+  /// No description provided for @rescheduleMoving.
+  ///
+  /// In en, this message translates to:
+  /// **'Moving…'**
+  String get rescheduleMoving;
+
+  /// No description provided for @rescheduleKeepCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep current time'**
+  String get rescheduleKeepCurrent;
+
+  /// No description provided for @rescheduleChooseAnother.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another time'**
+  String get rescheduleChooseAnother;
+
+  /// No description provided for @rescheduleEndedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking can\'t be rescheduled'**
+  String get rescheduleEndedTitle;
+
+  /// No description provided for @rescheduleSlotTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'That time was just taken. Please choose another.'**
+  String get rescheduleSlotTaken;
+
+  /// No description provided for @rescheduleSlotChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'This time changed while you were looking. Please choose again.'**
+  String get rescheduleSlotChanged;
+
+  /// No description provided for @rescheduleClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'This session starts in under {hours, plural, =1{1 hour} other{{hours} hours}}, so it can\'t be rescheduled.'**
+  String rescheduleClosed(int hours);
+
+  /// No description provided for @rescheduleNotPossible.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking can\'t be rescheduled any more.'**
+  String get rescheduleNotPossible;
+
+  /// No description provided for @rescheduleGone.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking, or this time, is no longer available.'**
+  String get rescheduleGone;
+
+  /// No description provided for @rescheduleServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong on our side. Your booking may or may not have been moved. Try again: it is safe to repeat.'**
+  String get rescheduleServer;
+
+  /// No description provided for @rescheduledSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking rescheduled.'**
+  String get rescheduledSnack;
+
   /// No description provided for @bookingConfirmedTitle.
   ///
   /// In en, this message translates to:

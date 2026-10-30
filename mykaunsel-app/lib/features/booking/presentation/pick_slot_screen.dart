@@ -13,6 +13,8 @@ import '../../../shared/format/slot_time.dart';
 import '../../auth/presentation/start_email_verification.dart';
 import '../../counselors/domain/counselor.dart';
 import '../../counselors/presentation/counselor_labels.dart';
+import '../../bookings/presentation/reschedule_args.dart';
+import '../../bookings/presentation/reschedule_booking_sheet.dart';
 import '../domain/availability.dart';
 import 'booking_args.dart';
 import 'pick_slot_controller.dart';
@@ -25,9 +27,13 @@ const _malaysiaUtcOffset = Duration(hours: 8);
 
 /// "Pick a slot": choose a mode, a date and a time. Nothing is booked or held here; the next screen checks again.
 class PickSlotScreen extends ConsumerStatefulWidget {
-  const PickSlotScreen({super.key, required this.counselor});
+  const PickSlotScreen({super.key, required this.counselor, this.reschedule});
 
   final BookingCounselorSummary counselor;
+
+  /// Set when the person is moving an existing booking: the same screen, but picking a time opens "Move to this time?" instead of the confirm
+  /// screen.
+  final RescheduleTarget? reschedule;
 
   @override
   ConsumerState<PickSlotScreen> createState() => _PickSlotScreenState();
@@ -57,10 +63,42 @@ class _PickSlotScreenState extends ConsumerState<PickSlotScreen> {
 
     if (slot == null) return;
 
+    final target = widget.reschedule;
+
+    if (target != null) {
+      await _move(target, slot);
+
+      return;
+    }
+
     await context.push<void>(
       AppRoutes.confirmBookingPath(widget.counselor.id, slot.id),
       extra: ConfirmBookingArgs.from(widget.counselor, slot),
     );
+  }
+
+  Future<void> _move(RescheduleTarget target, AvailabilitySlot slot) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
+    final controller = ref.read(pickSlotControllerProvider(widget.counselor.id).notifier);
+    final outcome = await showRescheduleBookingSheet(context, target: target, slot: slot);
+
+    if (!mounted) return;
+
+    switch (outcome) {
+      case RescheduleOutcome.moved:
+        messenger.showSnackBar(SnackBar(content: Text(l10n.rescheduledSnack)));
+        context.pop();
+      case RescheduleOutcome.leave:
+        context.pop();
+      case RescheduleOutcome.taken:
+        controller.markTaken(slot.id);
+      case RescheduleOutcome.changed:
+        await controller.refresh();
+      case RescheduleOutcome.pickAnother:
+      case RescheduleOutcome.dismissed:
+        break;
+    }
   }
 
   @override
@@ -71,7 +109,7 @@ class _PickSlotScreenState extends ConsumerState<PickSlotScreen> {
     final controller = ref.read(pickSlotControllerProvider(id).notifier);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.pickSlotTitle)),
+      appBar: AppBar(title: Text(widget.reschedule == null ? l10n.pickSlotTitle : l10n.rescheduleTitle)),
       body: SafeArea(
         child: Column(
           children: [

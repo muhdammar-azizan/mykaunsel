@@ -169,6 +169,8 @@ class MyBookings
             // What the rules say now (the server decides; the app only shows). The same rule cancelling itself uses.
             'can_cancel' => $rule['allowed'],
             'reschedules_left' => max(0, $maxReschedules - (int) $booking->reschedule_count),
+            // Same time limit as cancelling, and moves left. The same rule rescheduling itself uses.
+            'can_reschedule' => $rule['allowed'] && (int) $booking->reschedule_count < $maxReschedules,
             'meeting' => $this->meeting($booking, $start, $end, $now),
             'place' => $this->place($booking, $entry),
         ];

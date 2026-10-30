@@ -125,9 +125,9 @@ The e-mails (`BookingConfirmedClient`, `NewBookingCounselor`) are queued after t
 
 Table `booking_idempotency_keys`, unique on (person, key); keeps a hash of the normalised request (never the request, a token or headers) and the answer of a successful booking for `booking.idempotency_ttl_hours` (24). The key is **reserved in its own short transaction before** the booking transaction. Same key + same request after a success: the stored answer, with the original status and `Idempotent-Replayed: true`. Different request: `422 idempotency_key_reuse`. Same key still running: `409 request_in_progress`. A refusal or a rollback **releases** the key (the person may try again with it). A reservation left "processing" (the server died) stops blocking after 60 seconds. `php artisan bookings:purge-idempotency [--dry-run]` (daily 03:30) deletes expired keys and writes one system audit entry with counts.
 
-### Cancel, reschedule, offboard (the contract; cancelling by the client is built, the others are not)
+### Cancel, reschedule, offboard (the contract; cancelling and rescheduling by the client are built, the others are not)
 
-Every action that ends a booking **must give the time back in the same transaction as the status change**: set `calendar_entries.is_available` back to 1. Cancel, reschedule, and a counselor or member leaving all do this. Otherwise the slot would stay "booked" forever (the flag is one of the two layers). Cancelling by the client does this (see "Cancelling" below). Tests can use `AvailabilityFixtures::cancelBooking()` to say what "given back" means for the paths that do not exist yet.
+Every action that ends a booking **must give the time back in the same transaction as the status change**: set `calendar_entries.is_available` back to 1. Cancel, reschedule, and a counselor or member leaving all do this. Otherwise the slot would stay "booked" forever (the flag is one of the two layers). Cancelling and rescheduling by the client do this (see "Cancelling" and "Rescheduling" below). Tests can use `AvailabilityFixtures::cancelBooking()` to say what "given back" means for the paths that do not exist yet.
 
 ### No ordinary unique index on `bookings.calendar_entry_id`, on purpose
 
@@ -148,13 +148,13 @@ A cancelled booking row stays, and its slot may be booked again, so an index ove
 - **Only the person's own bookings.** Another person's booking and one that does not exist are the same `404 booking_not_found`. The id is the booking's random public id (26 characters); the route only matches that shape, which also keeps it apart from `/bookings/preview`.
 - **Upcoming** = `confirmed` and the session has not ended (a session under way is still upcoming, so "Join session" works), soonest first, all in one answer (the upcoming cap keeps it small). **Past** = everything else (completed, cancelled, no-show, and confirmed ones that have ended), newest first, 20 a page: `{data, page, last_page, total}`. Past excludes exactly the ids of the upcoming set, so no booking is in both or in neither.
 - **A line** (`data[]`): `id`, `status` (`confirmed|completed|cancelled|no_show`), `starting_soon` (a confirmed session starting within `booking.starting_soon_minutes`, 60, or under way), `starts_at` / `ends_at` (+08:00), `duration_minutes`, `mode`, `counselor{id (the counselor's public id, null if they have no profile), display_name}`, `location{name, city}|null`.
-- **The details** (`booking`) add: `cancellation_hours`, `cancellation_deadline_at` (null when passed or not confirmed), `can_cancel`, `reschedules_left`, `meeting` and `place`.
+- **The details** (`booking`) add: `cancellation_hours`, `cancellation_deadline_at` (null when passed or not confirmed), `can_cancel`, `reschedules_left`, `can_reschedule` (the cancelling rule AND moves left), `meeting` and `place`.
 - **`meeting`** (online and confirmed only): `state` is `opens_later` (before the window), `available` (inside it and a link was added: the ONLY time `url` and `provider` are sent), `not_added` (inside it, no link yet) or `ended`; plus `opens_at` (`booking.meeting_link_visible_minutes` before the start) and `closes_at` (the end). The server decides; the app never works the window out for itself.
 - **`place`** (in person and confirmed only): the FULL address (name, address, city, state, postcode, coordinates), for the owner only. A cancelled booking has neither a meeting nor a place.
 - **Never in the answers:** an organization name, the person's own email or phone, the counselor's email, a row id, a price.
 - **Cost:** a fixed number of queries however many bookings (a test counts them).
 - **Nothing is cached:** `Cache-Control: private, no-store` (the answer can hold a meeting link).
-- **In the app:** the Bookings tab (Upcoming / Past), Booking details with the session details, and "Booking confirmed" after a booking. Cancel is built (see "Cancelling"); reschedule is a later step.
+- **In the app:** the Bookings tab (Upcoming / Past), Booking details with the session details, and "Booking confirmed" after a booking. Cancel and reschedule are built (see "Cancelling" and "Rescheduling").
 
 ## Cancelling
 
@@ -168,6 +168,20 @@ A cancelled booking row stays, and its slot may be booked again, so an index ove
 - **The e-mail** to the counselor (`BookingCancelledCounselor`): queued after the commit, the client's display name only, the date, time and kind, and that the time is open again. It can never undo or fail the cancellation. No e-mail to the client (they just did it), no audit entry (B12), no push (B11).
 - **Answer:** `200 {booking: <the details, now cancelled: no meeting, no place, can_cancel false>}`.
 - **Not built:** a cancelled booking is not "refunded" (there is no payment), and the counselor cancelling or offboarding is a separate path that must follow the same contract.
+
+## Rescheduling
+
+`POST /api/v1/bookings/{id}/reschedule` (token, confirmed email; own limit `api-booking-reschedule`: 10 a minute and 60 an hour). Body: `slot` (the new time's public id) and what the person saw: `expected_starts_at`, `expected_duration_minutes`, `expected_mode`. Code: `BookingRescheduling`, `MyBookingController::reschedule`. Tests: `BookingRescheduleApiTest`.
+
+- **The contract (B9) is real:** the new time is claimed (the same conditional UPDATE as booking) and the old time given back (`is_available` on) in **one transaction**. A failure at any step rolls the whole move back (tested).
+- **Same booking, new time.** The booking keeps its public id and counselor; its time, mode, place and organization follow the new slot, and `reschedule_count` goes up by one. Another counselor: `422 different_counselor`. (Booking another counselor is a new booking.)
+- **The same time limit as cancelling** (decided by the owner): `BookingCancellation::rule` decides both, measured from the OLD session's start. Inside the window: `409 reschedule_closed` (with `cancellation_hours`). At most `max_reschedules` moves: `409 reschedule_limit_reached` (with `max_reschedules`). Completed, no-show, cancelled or already over: `409 not_reschedulable`. The details' `can_reschedule` is the same rule plus moves left.
+- **The new time** goes through the same checks as a booking: who may see the counselor (`404 counselor_unavailable`, the same "no" for everything private), whether the time can be booked (`409 slot_taken`, one answer for every reason), whether it was edited after the person saw it (`409 slot_changed` with the fresh details), and whether it overlaps another upcoming session of the person (`409 time_conflict`; the session being moved does not count against itself). The upcoming-session cap does not apply: one session replaces another.
+- **Safe to repeat, so no Idempotency-Key.** Asking for the time the booking already has answers the same booking (`200`), changes nothing, counts nothing and sends no second e-mail. It must not touch the old time: someone else may have booked it meanwhile (tested).
+- **Lock order** is the same as booking and cancelling (the person, the counselor's profile, then the booking).
+- **The e-mail** to the counselor (`BookingRescheduledCounselor`): queued after the commit, the client's display name only, the old and new date and time and kind, and that the old time is open again. It can never undo or fail the move. No e-mail to the client, no audit entry (B12), no push (B11).
+- **Answer:** `200 {booking: <the details at the new time>}`.
+- **Not built:** the counselor moving a booking, and a MariaDB race test for moving (the claim and the locks are the ones booking and cancelling already have race tests for).
 
 ## Findings that shaped this
 

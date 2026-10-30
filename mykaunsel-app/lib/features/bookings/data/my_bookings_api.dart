@@ -12,6 +12,17 @@ abstract class MyBookingsApi {
   /// booking and changes nothing, so a lost answer can simply be asked again. A [ConflictFailure] says why not (`cancellation_closed`,
   /// `not_cancellable`).
   Future<MyBookingDetail> cancel(String id);
+
+  /// Moves the person's own booking to another time of the same counselor. Safe to repeat: asking for the time the booking already has
+  /// answers the same booking and changes nothing, so a lost answer can simply be asked again. A [ConflictFailure] says why not
+  /// (`slot_taken`, `slot_changed`, `time_conflict`, `reschedule_closed`, `reschedule_limit_reached`, `not_reschedulable`).
+  Future<MyBookingDetail> reschedule(
+    String id, {
+    required String slotId,
+    required DateTime expectedStartsAt,
+    required int expectedDurationMinutes,
+    required String expectedMode,
+  });
 }
 
 class HttpMyBookingsApi implements MyBookingsApi {
@@ -36,6 +47,27 @@ class HttpMyBookingsApi implements MyBookingsApi {
   @override
   Future<MyBookingDetail> cancel(String id) async {
     final response = await _client.post('/bookings/${Uri.encodeComponent(id)}/cancel');
+
+    return MyBookingDetail.fromResponse(response.data);
+  }
+
+  @override
+  Future<MyBookingDetail> reschedule(
+    String id, {
+    required String slotId,
+    required DateTime expectedStartsAt,
+    required int expectedDurationMinutes,
+    required String expectedMode,
+  }) async {
+    final response = await _client.post(
+      '/bookings/${Uri.encodeComponent(id)}/reschedule',
+      data: {
+        'slot': slotId,
+        'expected_starts_at': expectedStartsAt.toUtc().toIso8601String(),
+        'expected_duration_minutes': expectedDurationMinutes,
+        'expected_mode': expectedMode,
+      },
+    );
 
     return MyBookingDetail.fromResponse(response.data);
   }
