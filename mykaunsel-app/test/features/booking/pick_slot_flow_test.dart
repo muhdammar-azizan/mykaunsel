@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mykaunsel/app.dart';
 import 'package:mykaunsel/core/error/app_failure.dart';
 import 'package:mykaunsel/features/booking/domain/availability.dart';
+import 'package:mykaunsel/features/booking/domain/booking_preview.dart';
 import 'package:mykaunsel/features/booking/presentation/pick_slot_screen.dart';
 import 'package:mykaunsel/features/counselors/domain/counselor.dart';
 
@@ -18,6 +19,7 @@ Future<void> openPicker(
   double textScale = 1,
   Size size = const Size(400, 800),
   Duration deviceOffset = const Duration(hours: 8),
+  FakeBookingApi? bookingApi,
 }) async {
   tester.view.physicalSize = size * 2;
   tester.view.devicePixelRatio = 2;
@@ -26,7 +28,7 @@ Future<void> openPicker(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        ...testOverrides(availabilityApi: api, storage: FakeTokenStorage('5|mkp_abc')),
+        ...testOverrides(availabilityApi: api, bookingApi: bookingApi, storage: FakeTokenStorage('5|mkp_abc')),
         deviceUtcOffsetProvider.overrideWithValue(() => deviceOffset),
       ],
       child: MediaQuery(data: MediaQueryData(size: size, textScaler: TextScaler.linear(textScale)), child: const MyKaunselApp()),
@@ -149,15 +151,16 @@ void main() {
     });
 
     testWidgets('Continue opens the next step with what was picked, and coming back keeps the pick', (tester) async {
-      await openPicker(tester, answering(twoDays()));
+      final booking = FakeBookingApi()..previewHandler = (slot) async => BookingPreview(valid: true, details: someDetails(slot: slot));
+      await openPicker(tester, answering(twoDays()), bookingApi: booking);
       await tester.pumpAndSettle();
       await tester.tap(findText('10:00 AM'));
       await tester.pumpAndSettle();
       await tester.tap(continueButton());
       await tester.pumpAndSettle();
 
-      expect(find.text('Confirm booking'), findsOneWidget);
-      expect(find.text('Booking confirmation is coming next.'), findsOneWidget);
+      expect(find.text('Before you confirm'), findsOneWidget);
+      expect(booking.previews, ['a']); // the slot the person picked
 
       await tester.pageBack();
       await tester.pumpAndSettle();

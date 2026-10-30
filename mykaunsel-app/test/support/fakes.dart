@@ -15,7 +15,9 @@ import 'package:mykaunsel/features/auth/data/auth_api.dart';
 import 'package:mykaunsel/features/auth/domain/app_user.dart';
 import 'package:mykaunsel/features/auth/domain/sign_in_result.dart';
 import 'package:mykaunsel/features/booking/data/availability_api.dart';
+import 'package:mykaunsel/features/booking/data/booking_api.dart';
 import 'package:mykaunsel/features/booking/domain/availability.dart';
+import 'package:mykaunsel/features/booking/domain/booking_preview.dart';
 import 'package:mykaunsel/features/counselors/data/counselor_api.dart';
 import 'package:mykaunsel/features/counselors/domain/counselor.dart';
 import 'package:mykaunsel/features/counselors/domain/counselor_query.dart';
@@ -284,6 +286,72 @@ class FakeAvailabilityApi implements AvailabilityApi {
   }
 }
 
+class FakeBookingApi implements BookingApi {
+  final previews = <String>[];
+  final creates = <({String key, String slot, DateTime startsAt, int minutes, String mode})>[];
+
+  Future<BookingPreview> Function(String slot) previewHandler = (slot) async => throw StateError('no preview handler set');
+  Future<CreatedBooking> Function(String key) createHandler = (key) async => throw StateError('no create handler set');
+
+  @override
+  Future<BookingPreview> preview(String slotId) {
+    previews.add(slotId);
+
+    return previewHandler(slotId);
+  }
+
+  @override
+  Future<CreatedBooking> create({required String idempotencyKey, required String slotId, required DateTime expectedStartsAt, required int expectedDurationMinutes, required String expectedMode}) {
+    creates.add((key: idempotencyKey, slot: slotId, startsAt: expectedStartsAt, minutes: expectedDurationMinutes, mode: expectedMode));
+
+    return createHandler(idempotencyKey);
+  }
+}
+
+/// What the server says about a slot that can be booked (the details of `GET /bookings/preview`).
+BookingDetails someDetails({
+  String slot = 's1',
+  int days = 1,
+  int hour = 10,
+  int minutes = 50,
+  SessionMode mode = SessionMode.online,
+  SlotLocation? location,
+  int? hoursToCancel = 24,
+  bool insideWindow = false,
+  int maxReschedules = 2,
+  int linkMinutes = 15,
+  int? upcoming,
+  int? maxUpcoming,
+}) {
+  final start = DateTime.utc(2026, 11, 2 + days, hour - 8);
+
+  return BookingDetails(
+    slot: slot,
+    counselor: const BookingCounselorInfo(id: 'c1', displayName: 'Kaunselor Aina Syazwani'),
+    startsAt: start,
+    endsAt: start.add(Duration(minutes: minutes)),
+    durationMinutes: minutes,
+    mode: mode,
+    location: location,
+    cancellationDeadlineAt: insideWindow ? null : start.subtract(Duration(hours: hoursToCancel ?? 24)),
+    cancellationHours: hoursToCancel ?? 24,
+    maxReschedules: maxReschedules,
+    meetingLinkVisibleMinutes: linkMinutes,
+    upcomingSessions: upcoming,
+    maxUpcomingSessions: maxUpcoming,
+  );
+}
+
+CreatedBooking aCreatedBooking({SessionMode mode = SessionMode.online}) => CreatedBooking(
+      id: '01bk',
+      status: 'confirmed',
+      startsAt: DateTime.utc(2026, 11, 3, 2),
+      endsAt: DateTime.utc(2026, 11, 3, 2, 50),
+      durationMinutes: 50,
+      mode: mode,
+      counselorName: 'Kaunselor Aina Syazwani',
+    );
+
 /// Finds text however the phone writes the space before AM/PM (newer intl uses a narrow no-break space).
 Finder findText(String text) => find.byWidgetPredicate((Widget w) => w is Text && (w.data ?? '').replaceAll(' ', ' ') == text, description: 'text "$text"');
 
@@ -297,6 +365,7 @@ List<Override> testOverrides({
   FakeCounselorApi? counselorApi,
   FakeAccountApi? accountApi,
   FakeAvailabilityApi? availabilityApi,
+  FakeBookingApi? bookingApi,
 }) {
   return [
     appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://test.local')),
@@ -307,6 +376,7 @@ List<Override> testOverrides({
     counselorApiProvider.overrideWithValue(counselorApi ?? FakeCounselorApi()),
     accountApiProvider.overrideWithValue(accountApi ?? FakeAccountApi()),
     availabilityApiProvider.overrideWithValue(availabilityApi ?? FakeAvailabilityApi()),
+    bookingApiProvider.overrideWithValue(bookingApi ?? FakeBookingApi()),
     clockProvider.overrideWithValue(() => testNow),
   ];
 }

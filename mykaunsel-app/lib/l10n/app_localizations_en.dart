@@ -559,7 +559,199 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmBookingTitle => 'Confirm booking';
 
   @override
-  String get confirmBookingComingSoon => 'Booking confirmation is coming next.';
+  String get confirmBannerChecking => 'Checking availability…';
+
+  @override
+  String get confirmBannerOffline => 'No internet connection';
+
+  @override
+  String get confirmBannerChanged =>
+      'Details changed. Please review and confirm again.';
+
+  @override
+  String get confirmCheckAgain => 'Check again';
+
+  @override
+  String get confirmVerifiedBadge => 'Verified';
+
+  @override
+  String get confirmRowDate => 'Date';
+
+  @override
+  String get confirmRowTime => 'Time';
+
+  @override
+  String get confirmRowDuration => 'Duration';
+
+  @override
+  String get confirmRowType => 'Type';
+
+  @override
+  String confirmRowLabelled(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String confirmTimeValue(String start, String end) {
+    return '$start – $end, Malaysia time';
+  }
+
+  @override
+  String confirmTimeSpoken(String start, String end) {
+    return '$start to $end, Malaysia time';
+  }
+
+  @override
+  String confirmDuration(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get confirmChooseOtherTime => 'Choose a different time';
+
+  @override
+  String get confirmBeforeTitle => 'Before you confirm';
+
+  @override
+  String confirmPolicyCancel(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours hours',
+      one: '1 hour',
+    );
+    return 'You can cancel up to $_temp0 before the session.';
+  }
+
+  @override
+  String confirmPolicyNoCancel(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours hours',
+      one: '1 hour',
+    );
+    return 'This session starts in under $_temp0, so it can\'t be cancelled after booking.';
+  }
+
+  @override
+  String confirmPolicyReschedule(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times',
+      one: '1 time',
+    );
+    return 'You can reschedule up to $_temp0.';
+  }
+
+  @override
+  String get confirmPolicyNoReschedule => 'This session can\'t be rescheduled.';
+
+  @override
+  String confirmPolicyLinkOnline(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes',
+      one: '1 minute',
+    );
+    return 'Your meeting link will appear in your booking $_temp0 before the session.';
+  }
+
+  @override
+  String get confirmPolicyAddressInPerson =>
+      'The full address is shown in your booking after you confirm.';
+
+  @override
+  String get confirmWarning => 'Important';
+
+  @override
+  String confirmUpcomingCount(int count, int max) {
+    return 'You have $count of $max upcoming sessions.';
+  }
+
+  @override
+  String get confirmAcknowledge =>
+      'I understand this session will not be recorded, per platform policy.';
+
+  @override
+  String get confirmButton => 'Confirm booking';
+
+  @override
+  String get confirmButtonBusy => 'Confirming…';
+
+  @override
+  String get confirmWhyChecking => 'Checking availability';
+
+  @override
+  String get confirmWhyOffline => 'No internet connection';
+
+  @override
+  String get confirmWhyUnavailable => 'This session can\'t be booked right now';
+
+  @override
+  String get confirmWhyTick => 'Tick the box to continue';
+
+  @override
+  String get confirmBackBusy => 'Please wait while we confirm your booking';
+
+  @override
+  String get confirmErrTimeConflict =>
+      'You already have a session at this time.';
+
+  @override
+  String confirmErrLimit(int max) {
+    return 'You can have up to $max upcoming sessions. Cancel or complete one to book another.';
+  }
+
+  @override
+  String get confirmErrVerify => 'Verify your email to book a session.';
+
+  @override
+  String get confirmErrCounselor =>
+      'This counselor is no longer available for booking.';
+
+  @override
+  String get confirmFindAnother => 'Find another counselor';
+
+  @override
+  String confirmErrWait(int seconds) {
+    return 'Too many attempts. Please wait $seconds seconds and try again.';
+  }
+
+  @override
+  String get confirmErrWaitGeneric =>
+      'Too many attempts. Please wait a moment and try again.';
+
+  @override
+  String get confirmErrServer =>
+      'Something went wrong on our side. Your booking may or may not have been made. Try again: you will not be booked twice.';
+
+  @override
+  String get confirmErrUnknown =>
+      'We couldn\'t confirm your booking. Check My Bookings before trying again.';
+
+  @override
+  String get confirmGoHome => 'Go to Home';
+
+  @override
+  String get confirmPlaceholderTitle => 'Booking confirmed';
+
+  @override
+  String get confirmPlaceholderNote =>
+      'Placeholder screen. The full booking page comes later.';
+
+  @override
+  String confirmPlaceholderWith(String name) {
+    return 'Your session with $name';
+  }
 
   @override
   String get accountTitle => 'Account';

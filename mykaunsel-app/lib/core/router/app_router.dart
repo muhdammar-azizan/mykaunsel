@@ -12,7 +12,9 @@ import '../../features/account/presentation/account_screen.dart';
 import '../../features/account/presentation/change_password_screen.dart';
 import '../../features/account/presentation/devices_screen.dart';
 import '../../features/account/presentation/profile_screen.dart';
+import '../../features/booking/domain/booking_preview.dart';
 import '../../features/booking/presentation/booking_args.dart';
+import '../../features/booking/presentation/booking_confirmed_placeholder.dart';
 import '../../features/booking/presentation/confirm_booking_screen.dart';
 import '../../features/booking/presentation/pick_slot_screen.dart';
 import '../../features/counselors/presentation/counselor_detail_screen.dart';
@@ -47,7 +49,10 @@ abstract final class AppRoutes {
 
   static String pickSlotPath(String id) => '/book/${Uri.encodeComponent(id)}';
 
-  static String confirmBookingPath(String id) => '/book/${Uri.encodeComponent(id)}/confirm';
+  /// The slot id is in the address so the screen can restore itself after a sign-in. It is a random public id, nothing private.
+  static String confirmBookingPath(String id, String slotId) => '/book/${Uri.encodeComponent(id)}/confirm?slot=${Uri.encodeQueryComponent(slotId)}';
+
+  static const bookingConfirmed = '/booking-confirmed';
 
   /// Pages a signed-out person may be on.
   static const signedOutPages = {signIn, twoFactor, verifyEmail, signUp, forgotPassword};
@@ -56,9 +61,10 @@ abstract final class AppRoutes {
   static const gatePages = {splash, maintenance, updateRequired, startupError};
 }
 
-/// Where the person has to be for this session state, or null when they are already in the right place.
+/// Where the person has to be for this session state, or null when they are already in the right place. [returnTo] (already checked by
+/// [isSafeReturnPath]) is where a person goes after signing in again, instead of Home.
 /// A plain function, so every rule is unit-tested without any screen.
-String? sessionRedirect(SessionState session, String location) {
+String? sessionRedirect(SessionState session, String location, {String? returnTo}) {
   final target = switch (session) {
     SessionStarting() => AppRoutes.splash,
     SessionMaintenance() => AppRoutes.maintenance,
@@ -66,7 +72,7 @@ String? sessionRedirect(SessionState session, String location) {
     SessionStartupFailed() => AppRoutes.startupError,
     SessionSignedOut() => AppRoutes.signedOutPages.contains(location) ? location : AppRoutes.signIn,
     SessionSignedIn() =>
-      AppRoutes.gatePages.contains(location) || AppRoutes.signedOutPages.contains(location) ? AppRoutes.home : location,
+      AppRoutes.gatePages.contains(location) || AppRoutes.signedOutPages.contains(location) ? (returnTo ?? AppRoutes.home) : location,
   };
 
   return target == location ? null : target;
@@ -114,8 +120,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: session,
     redirect: (context, state) {
       final location = state.matchedLocation;
+      final current = session.state;
 
-      return sessionRedirect(session.state, location) ??
+      // The session ended on a booking screen: remember (in memory) where to come back to, once the person has signed in again.
+      if (current is SessionSignedOut && current.reason == SignedOutReason.sessionExpired && isSafeReturnPath(state.uri.toString())) {
+        final place = state.uri.toString();
+        Future.microtask(() => ref.read(returnPathProvider.notifier).set(place));
+      }
+
+      final saved = ref.read(returnPathProvider);
+      final returnTo = isSafeReturnPath(saved) ? saved : null;
+      final target = sessionRedirect(current, location, returnTo: returnTo);
+
+      if (target != null && target == returnTo && current is SessionSignedIn) {
+        Future.microtask(() => ref.read(returnPathProvider.notifier).set(null)); // used once
+      }
+
+      return target ??
           pendingRedirect(
             location,
             hasChallenge: ref.read(pendingTwoFactorProvider) != null,
@@ -132,6 +153,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: AppRoutes.verifyEmail, builder: (_, _) => const VerifyEmailScreen()),
       GoRoute(path: AppRoutes.signUp, builder: (_, _) => const SignUpScreen()),
       GoRoute(path: AppRoutes.forgotPassword, builder: (_, _) => const ForgotPasswordScreen()),
+      GoRoute(
+        path: AppRoutes.bookingConfirmed,
+        redirect: (_, state) => state.extra is CreatedBooking ? null : AppRoutes.home,
+        builder: (_, state) => BookingConfirmedPlaceholderScreen(booking: state.extra! as CreatedBooking),
+      ),
       // Booking sits on top of the tabs (no bottom bar), so it is a short, focused flow. Counselor details come in `extra`.
       GoRoute(
         path: '/book/:id',
@@ -144,8 +170,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'confirm',
-            redirect: (_, state) => state.extra is ConfirmBookingArgs ? null : AppRoutes.pickSlotPath(state.pathParameters['id']!),
-            builder: (_, state) => ConfirmBookingScreen(args: state.extra! as ConfirmBookingArgs),
+            // Needs the slot's public id in the address (so it can restore itself after a sign-in); without one there is nothing to confirm.
+            redirect: (_, state) => RegExp(r'^[A-Za-z0-9_-]{1,64}$').hasMatch(state.uri.queryParameters['slot'] ?? '') ? null : AppRoutes.pickSlotPath(state.pathParameters['id']!),
+            builder: (_, state) => ConfirmBookingScreen(
+              counselorId: state.pathParameters['id']!,
+              slotId: state.uri.queryParameters['slot']!,
+              snapshot: state.extra is ConfirmBookingArgs ? state.extra! as ConfirmBookingArgs : null,
+            ),
           ),
         ],
       ),

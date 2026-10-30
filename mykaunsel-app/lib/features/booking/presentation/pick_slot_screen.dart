@@ -7,12 +7,10 @@ import '../../../core/error/app_failure.dart';
 import '../../../core/error/failure_message.dart';
 import '../../../core/providers.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/session/session_controller.dart';
-import '../../../core/session/session_state.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/format/slot_time.dart';
-import '../../auth/presentation/pending_auth.dart';
+import '../../auth/presentation/start_email_verification.dart';
 import '../../counselors/domain/counselor.dart';
 import '../../counselors/presentation/counselor_labels.dart';
 import '../domain/availability.dart';
@@ -60,7 +58,7 @@ class _PickSlotScreenState extends ConsumerState<PickSlotScreen> {
     if (slot == null) return;
 
     final outcome = await context.push<ConfirmOutcome>(
-      AppRoutes.confirmBookingPath(widget.counselor.id),
+      AppRoutes.confirmBookingPath(widget.counselor.id, slot.id),
       extra: ConfirmBookingArgs.from(widget.counselor, slot),
     );
 
@@ -581,25 +579,12 @@ class _FailureView extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xl),
             switch (failure) {
               NotFoundFailure() => OutlinedButton(onPressed: () => context.pop(), child: Text(l10n.pickSlotGoBack)),
-              EmailNotVerifiedFailure() => FilledButton(onPressed: () => _verify(context, ref), child: Text(l10n.pickSlotVerifyButton)),
+              EmailNotVerifiedFailure() => FilledButton(onPressed: () => startEmailVerification(context, ref), child: Text(l10n.pickSlotVerifyButton)),
               _ => FilledButton(onPressed: waiting ? null : onRetry, child: Text(l10n.tryAgain)),
             },
           ],
         ),
       ),
     );
-  }
-
-  /// A signed-in person cannot open "check your email" (signed-in people are sent home), so: remember the address, sign out, go there.
-  Future<void> _verify(BuildContext context, WidgetRef ref) async {
-    final session = ref.read(sessionControllerProvider);
-    final email = session is SessionSignedIn ? session.user.email : null;
-
-    if (email == null) return;
-
-    ref.read(pendingVerificationEmailProvider.notifier).set(email);
-    await ref.read(sessionControllerProvider.notifier).signOut();
-
-    if (context.mounted) context.go(AppRoutes.verifyEmail);
   }
 }

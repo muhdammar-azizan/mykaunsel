@@ -1042,11 +1042,269 @@ abstract class AppLocalizations {
   /// **'Confirm booking'**
   String get confirmBookingTitle;
 
-  /// No description provided for @confirmBookingComingSoon.
+  /// No description provided for @confirmBannerChecking.
   ///
   /// In en, this message translates to:
-  /// **'Booking confirmation is coming next.'**
-  String get confirmBookingComingSoon;
+  /// **'Checking availability…'**
+  String get confirmBannerChecking;
+
+  /// No description provided for @confirmBannerOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get confirmBannerOffline;
+
+  /// No description provided for @confirmBannerChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Details changed. Please review and confirm again.'**
+  String get confirmBannerChanged;
+
+  /// No description provided for @confirmCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get confirmCheckAgain;
+
+  /// No description provided for @confirmVerifiedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get confirmVerifiedBadge;
+
+  /// No description provided for @confirmRowDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get confirmRowDate;
+
+  /// No description provided for @confirmRowTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get confirmRowTime;
+
+  /// No description provided for @confirmRowDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get confirmRowDuration;
+
+  /// No description provided for @confirmRowType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get confirmRowType;
+
+  /// No description provided for @confirmRowLabelled.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {value}'**
+  String confirmRowLabelled(String label, String value);
+
+  /// No description provided for @confirmTimeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}, Malaysia time'**
+  String confirmTimeValue(String start, String end);
+
+  /// No description provided for @confirmTimeSpoken.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} to {end}, Malaysia time'**
+  String confirmTimeSpoken(String start, String end);
+
+  /// No description provided for @confirmDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, =1{1 minute} other{{minutes} minutes}}'**
+  String confirmDuration(int minutes);
+
+  /// No description provided for @confirmChooseOtherTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a different time'**
+  String get confirmChooseOtherTime;
+
+  /// No description provided for @confirmBeforeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you confirm'**
+  String get confirmBeforeTitle;
+
+  /// No description provided for @confirmPolicyCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'You can cancel up to {hours, plural, =1{1 hour} other{{hours} hours}} before the session.'**
+  String confirmPolicyCancel(int hours);
+
+  /// No description provided for @confirmPolicyNoCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'This session starts in under {hours, plural, =1{1 hour} other{{hours} hours}}, so it can\'t be cancelled after booking.'**
+  String confirmPolicyNoCancel(int hours);
+
+  /// No description provided for @confirmPolicyReschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'You can reschedule up to {count, plural, =1{1 time} other{{count} times}}.'**
+  String confirmPolicyReschedule(int count);
+
+  /// No description provided for @confirmPolicyNoReschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'This session can\'t be rescheduled.'**
+  String get confirmPolicyNoReschedule;
+
+  /// No description provided for @confirmPolicyLinkOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your meeting link will appear in your booking {minutes, plural, =1{1 minute} other{{minutes} minutes}} before the session.'**
+  String confirmPolicyLinkOnline(int minutes);
+
+  /// No description provided for @confirmPolicyAddressInPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'The full address is shown in your booking after you confirm.'**
+  String get confirmPolicyAddressInPerson;
+
+  /// No description provided for @confirmWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Important'**
+  String get confirmWarning;
+
+  /// No description provided for @confirmUpcomingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} of {max} upcoming sessions.'**
+  String confirmUpcomingCount(int count, int max);
+
+  /// No description provided for @confirmAcknowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand this session will not be recorded, per platform policy.'**
+  String get confirmAcknowledge;
+
+  /// No description provided for @confirmButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm booking'**
+  String get confirmButton;
+
+  /// No description provided for @confirmButtonBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming…'**
+  String get confirmButtonBusy;
+
+  /// No description provided for @confirmWhyChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking availability'**
+  String get confirmWhyChecking;
+
+  /// No description provided for @confirmWhyOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get confirmWhyOffline;
+
+  /// No description provided for @confirmWhyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This session can\'t be booked right now'**
+  String get confirmWhyUnavailable;
+
+  /// No description provided for @confirmWhyTick.
+  ///
+  /// In en, this message translates to:
+  /// **'Tick the box to continue'**
+  String get confirmWhyTick;
+
+  /// No description provided for @confirmBackBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait while we confirm your booking'**
+  String get confirmBackBusy;
+
+  /// No description provided for @confirmErrTimeConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a session at this time.'**
+  String get confirmErrTimeConflict;
+
+  /// No description provided for @confirmErrLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You can have up to {max} upcoming sessions. Cancel or complete one to book another.'**
+  String confirmErrLimit(int max);
+
+  /// No description provided for @confirmErrVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your email to book a session.'**
+  String get confirmErrVerify;
+
+  /// No description provided for @confirmErrCounselor.
+  ///
+  /// In en, this message translates to:
+  /// **'This counselor is no longer available for booking.'**
+  String get confirmErrCounselor;
+
+  /// No description provided for @confirmFindAnother.
+  ///
+  /// In en, this message translates to:
+  /// **'Find another counselor'**
+  String get confirmFindAnother;
+
+  /// No description provided for @confirmErrWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please wait {seconds} seconds and try again.'**
+  String confirmErrWait(int seconds);
+
+  /// No description provided for @confirmErrWaitGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please wait a moment and try again.'**
+  String get confirmErrWaitGeneric;
+
+  /// No description provided for @confirmErrServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong on our side. Your booking may or may not have been made. Try again: you will not be booked twice.'**
+  String get confirmErrServer;
+
+  /// No description provided for @confirmErrUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t confirm your booking. Check My Bookings before trying again.'**
+  String get confirmErrUnknown;
+
+  /// No description provided for @confirmGoHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Home'**
+  String get confirmGoHome;
+
+  /// No description provided for @confirmPlaceholderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking confirmed'**
+  String get confirmPlaceholderTitle;
+
+  /// No description provided for @confirmPlaceholderNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Placeholder screen. The full booking page comes later.'**
+  String get confirmPlaceholderNote;
+
+  /// No description provided for @confirmPlaceholderWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session with {name}'**
+  String confirmPlaceholderWith(String name);
 
   /// No description provided for @accountTitle.
   ///

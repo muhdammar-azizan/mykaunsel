@@ -15,6 +15,7 @@ String failureMessage(AppLocalizations l10n, AppFailure failure) {
     UpdateRequiredFailure(:final message) => message.isEmpty ? l10n.updateRequiredBody : message,
     UnauthorizedFailure() => l10n.sessionExpired,
     NotFoundFailure() => l10n.notFoundBody,
+    ConflictFailure(:final message) => message.isEmpty ? l10n.somethingWentWrongBody : message,
     ServerFailure() => l10n.somethingWentWrongBody,
   };
 }

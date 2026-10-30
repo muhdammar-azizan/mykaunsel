@@ -41,6 +41,8 @@ AppFailure mapResponse(Response<dynamic> response) {
       return code == 'email_not_verified' ? EmailNotVerifiedFailure(message) : ForbiddenFailure(message, code: code);
     case 404:
       return const NotFoundFailure();
+    case 409:
+      return ConflictFailure(code: code ?? '', message: message, body: body, retryAfterSeconds: int.tryParse(response.headers.value('retry-after') ?? ''));
     case 422:
       return ValidationFailure(message, fieldErrors: _fieldErrors(body['errors']));
     case 426:

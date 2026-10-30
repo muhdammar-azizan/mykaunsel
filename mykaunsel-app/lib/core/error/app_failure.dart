@@ -55,6 +55,17 @@ class NotFoundFailure extends AppFailure {
   const NotFoundFailure();
 }
 
+/// 409: the request was understood but cannot be done now. [code] says why (`slot_taken`, `slot_changed`, `time_conflict`, ...) and [body]
+/// is the whole answer (a changed slot carries its fresh details there). Only the screen that made the request knows what each code means.
+class ConflictFailure extends AppFailure {
+  const ConflictFailure({required this.code, this.message = '', this.body = const {}, this.retryAfterSeconds});
+
+  final String code;
+  final String message;
+  final Map<String, dynamic> body;
+  final int? retryAfterSeconds;
+}
+
 /// 429: too many attempts.
 class RateLimitedFailure extends AppFailure {
   const RateLimitedFailure({this.retryAfterSeconds});

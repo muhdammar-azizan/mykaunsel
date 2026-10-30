@@ -51,13 +51,14 @@ class ApiClient {
 
   Future<ApiResponse> get(String path, {Map<String, dynamic>? query}) => _send('GET', path, query: query);
 
-  Future<ApiResponse> post(String path, {Map<String, dynamic>? data}) => _send('POST', path, data: data);
+  /// [headers] are extra headers for this one request (the booking sends its Idempotency-Key this way). They are never logged.
+  Future<ApiResponse> post(String path, {Map<String, dynamic>? data, Map<String, String>? headers}) => _send('POST', path, data: data, headers: headers);
 
   Future<ApiResponse> put(String path, {Map<String, dynamic>? data}) => _send('PUT', path, data: data);
 
   Future<ApiResponse> patch(String path, {Map<String, dynamic>? data}) => _send('PATCH', path, data: data);
 
-  Future<ApiResponse> _send(String method, String path, {Map<String, dynamic>? data, Map<String, dynamic>? query}) async {
+  Future<ApiResponse> _send(String method, String path, {Map<String, dynamic>? data, Map<String, dynamic>? query, Map<String, String>? headers}) async {
     final token = await _readToken();
 
     try {
@@ -65,7 +66,7 @@ class ApiClient {
         path,
         data: data,
         queryParameters: query,
-        options: Options(method: method, headers: {if (token != null) 'Authorization': 'Bearer $token'}),
+        options: Options(method: method, headers: {if (token != null) 'Authorization': 'Bearer $token', ...?headers}),
       );
 
       return ApiResponse(
