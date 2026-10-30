@@ -120,21 +120,7 @@ class CounselorPlanner
             // The same lock booking takes: opening a time and booking one of this counselor never interleave.
             CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
 
-            $context = collect($this->contexts($counselor))->firstWhere('id', (int) $input['context']);
-
-            if ($context === null) {
-                throw new BookingRefused('planner_context_invalid');
-            }
-
-            $locationId = null;
-
-            if ($mode === SessionMode::Physical) {
-                $locationId = $input['location'] ?? null;
-
-                if ($locationId === null || ! in_array((int) $locationId, array_column($context['locations'], 'id'), true)) {
-                    throw new BookingRefused('planner_place_invalid');
-                }
-            }
+            ['context' => $contextId, 'location' => $locationId] = $this->placement($counselor, (int) $input['context'], $mode, isset($input['location']) ? (int) $input['location'] : null);
 
             $minutes = (int) $input['duration'];
 
@@ -145,15 +131,42 @@ class CounselorPlanner
             return CalendarEntry::create([
                 'counselor_user_id' => $counselor->getKey(),
                 'entry_type' => CalendarEntryType::AvailableSlot,
-                'context_org_id' => $context['id'],
+                'context_org_id' => $contextId,
                 'entry_date' => $start->format('Y-m-d'),
                 'start_time' => $start->format('H:i:s'),
                 'duration_minutes' => $minutes,
                 'session_mode' => $mode,
-                'location_id' => $locationId === null ? null : (int) $locationId,
+                'location_id' => $locationId,
                 'is_available' => true,
             ]);
         });
+    }
+
+    /**
+     * Where a time is held: a context the counselor works in and, for in person, one of THAT organization's places. An online time keeps no
+     * place. Also used to check a weekly-hours line.
+     *
+     * @return array{context: int, location: int|null}
+     *
+     * @throws BookingRefused planner_context_invalid | planner_place_invalid
+     */
+    public function placement(User $counselor, int $contextId, SessionMode $mode, ?int $locationId): array
+    {
+        $context = collect($this->contexts($counselor))->firstWhere('id', $contextId);
+
+        if ($context === null) {
+            throw new BookingRefused('planner_context_invalid');
+        }
+
+        if ($mode !== SessionMode::Physical) {
+            return ['context' => $contextId, 'location' => null];
+        }
+
+        if ($locationId === null || ! in_array($locationId, array_column($context['locations'], 'id'), true)) {
+            throw new BookingRefused('planner_place_invalid');
+        }
+
+        return ['context' => $contextId, 'location' => $locationId];
     }
 
     /**

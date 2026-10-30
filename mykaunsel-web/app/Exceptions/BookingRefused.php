@@ -38,6 +38,9 @@ class BookingRefused extends RuntimeException
         'planner_overlap' => [409, 'That time overlaps something else on your calendar (including the buffer around booked sessions).'],
         'planner_not_found' => [404, 'This time was not found.'],
         'planner_has_booking' => [409, 'This time is booked, or has had a booking, so it can\'t be removed.'],
+        'weekly_time_invalid' => [422, 'Choose a weekday, a start and end on 5-minute marks (the end after the start, with room for at least one time) and an allowed length.'],
+        'weekly_overlap' => [409, 'That overlaps another line of your weekly hours on the same day.'],
+        'weekly_limit' => [409, 'You have reached the most lines of weekly hours.'],
         'idempotency_key_reuse' => [422, 'This Idempotency-Key was already used for a different request.'],
     ];
 

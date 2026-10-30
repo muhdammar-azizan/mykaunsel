@@ -198,6 +198,25 @@ A cancelled booking row stays, and its slot may be booked again, so an index ove
 - **Random ids for slots:** `calendar_entries.public_id` (a lowercase ULID, unique, required, never mass-assignable). The migration is safe to repeat, fills existing rows in batches without model events or audit entries, then makes the column required. The model sets the id when an entry is inserted (not in a model event), so it also holds in the database seeders, which switch events off. **Counselor profiles had the same hole:** after the full seed their `public_id` stayed empty. That is fixed the same way; a development database seeded before this change can still hold profiles without an id: `php artisan migrate:fresh --seed` rebuilds it.
 - **`accepts_requests`** is returned so the app can offer "Request a time" later; the Mode B screen does not exist, so the app hides that link until it does.
 
+## The planner (web portal)
+
+`/counselor/planner` (role counselor). Code: `CounselorPlanner`, `Counselor\CounselorPlannerController`. Tests: `CounselorPlannerTest`. Before this, times only existed through seeders.
+
+- **Opening a time** (`POST /counselor/planner`): a context (an organization the counselor works in, or the platform for an independent), date, start, length (`booking.planner_durations`: 30, 45, 50, 60, 90), online or in person. In person needs a place of THAT organization (`owner_type` organization); an organization without one offers online only. An online time never keeps a place.
+- **Rules:** start on a 5-minute mark; later than now; not beyond `booking.planner_horizon_days` (180); clear of personal blocks and booked times with the counselor's buffer (`AvailabilityService::isFree`, the rule booking itself uses); and not on top of another **open** time of theirs in any context (touching at the edge is fine).
+- **Same lock as booking** (the counselor's profile row), so opening a time and booking one never interleave.
+- **Removing** (`DELETE /counselor/planner/{id}`): only a time that has **never had a booking** (even a cancelled one is history that points at it, so it stays for good). A booked time cannot be touched. Someone else's, a personal block and an unknown id are the same 404. Nothing is edited in place: remove and open again.
+- **Not built:** personal blocks in the portal, editing a time, and moving a booked session (the counselor cancelling must give the time back, B9).
+
+### Weekly hours
+
+On the same page. Code: `CounselorWeeklyHours`, table `counselor_weekly_hours` (needs `php artisan migrate`). Tests: `CounselorWeeklyHoursTest`.
+
+- **A pattern, not times.** A line is "every Monday 09:00 to 12:00, one-hour times, online or in person, for this organization". Nothing is bookable until the counselor presses **Open the next weeks** (1 to 8 weeks, today included).
+- **Opening goes through the planner.** Each time is made by `CounselorPlanner::open`, so every planner rule applies to each one (not in the past, buffer, personal blocks, no overlap, place of that organization). One that does not fit is **skipped and counted**, never an error; a time already gone by today is not counted. **Pressing it again opens nothing twice** (what is already open overlaps itself and is skipped).
+- **Lines** may not overlap on the same weekday (any context); at most 30 per counselor; the window must hold at least one time; 5-minute marks; the same lengths as the planner. Removing a line leaves the times it opened alone.
+- **Not automatic.** Nothing opens new weeks by itself (no scheduler), so the counselor presses the button again as the weeks pass. A scheduled top-up is a later decision. These lines are also what "inside the counselor's working hours" will mean for Mode B.
+
 ## For the app
 
 The Flutter side is described with its own screen. Keep the mapping of `physical` → "In-person" in **one** place in the app, and show Malaysian time (the offset in the string), never the phone's time zone.
