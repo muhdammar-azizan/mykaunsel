@@ -42,6 +42,10 @@ return [
     'preview_rate_per_minute' => (int) env('BOOKING_PREVIEW_RATE_PER_MINUTE', 60),
     'preview_rate_per_hour' => (int) env('BOOKING_PREVIEW_RATE_PER_HOUR', 600),
 
+    // The counselor's planner: how far ahead a time may be opened (days from today), and the session lengths offered (minutes).
+    'planner_horizon_days' => (int) env('BOOKING_PLANNER_HORIZON_DAYS', 180),
+    'planner_durations' => [30, 45, 50, 60, 90],
+
     // The longest stretch of days one availability request may ask for.
     'availability_days_per_request' => 14,
 ];

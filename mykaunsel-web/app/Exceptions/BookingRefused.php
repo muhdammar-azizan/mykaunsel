@@ -30,6 +30,14 @@ class BookingRefused extends RuntimeException
         'meeting_closed' => [409, "The meeting link can't be changed for this session."],
         'session_not_ended' => [409, "This session hasn't ended yet."],
         'outcome_set' => [409, 'This session was already marked differently.'],
+        'planner_time_invalid' => [422, 'Choose a start time on a 5-minute mark and one of the allowed lengths.'],
+        'planner_in_past' => [422, 'That time has already passed.'],
+        'planner_too_far' => [422, 'That is too far ahead to open yet.'],
+        'planner_context_invalid' => [422, 'Choose where you work from the list.'],
+        'planner_place_invalid' => [422, 'An in-person time needs one of that organization\'s places.'],
+        'planner_overlap' => [409, 'That time overlaps something else on your calendar (including the buffer around booked sessions).'],
+        'planner_not_found' => [404, 'This time was not found.'],
+        'planner_has_booking' => [409, 'This time is booked, or has had a booking, so it can\'t be removed.'],
         'idempotency_key_reuse' => [422, 'This Idempotency-Key was already used for a different request.'],
     ];
 
