@@ -95,6 +95,39 @@ dart run flutter_native_splash:create       # the splash for Android and iOS
 - Config: `flutter_launcher_icons.yaml` (real), `tool/flutter_launcher_icons-dev.yaml` (copied in by the script, because the icon tool ignores the main file when a flavor file sits in the project folder), `flutter_native_splash.yaml`.
 - iOS has one icon for both flavors (iOS flavors are not set up yet).
 
+## Manual check on the emulator: My bookings, Cancel, Reschedule, Mode B, Chat
+
+**Nothing in this list has been viewed on a screen yet.** Everything below passes its automated tests (server and app); this is the first look with eyes. Setup, once: `php artisan migrate`, `php artisan serve --host=0.0.0.0`, `php artisan queue:work` (otherwise no e-mail), `php artisan schedule:work` (for the expiry, idle-end and purge jobs), `MAIL_MAILER=log`, seed `AvailabilityDemoSeeder`, and put the Anthropic key in the server's `.env` (never in the app). The Android emulator reaches the laptop at `http://10.0.2.2:8000`. For the counselor side use the web portal as a seeded counselor (`/counselor/appointments`, `/counselor/planner`).
+
+**My bookings and details**
+1. Book a time (see the Confirm list above), open Bookings: it is under Upcoming with a "Confirmed" word and icon; a session within the hour says "Starting soon". Pull to refresh. The Past tab is empty with a plain message.
+2. Open it: Date, Time, Duration, Type and Reference are read as separate items. An online session says the link appears 15 minutes before. As the counselor, paste a meeting link on `/counselor/appointments`; inside the 15 minutes the app shows **Join session** by itself (no refresh). An in-person session shows the full address and **Get directions**.
+
+**Cancel**
+3. **Cancel booking** opens the sheet: what will happen and until when. "Keep booking" asks nothing. Confirm: "Cancelling…", the sheet cannot be closed (not by Back either), then "Booking cancelled." and the booking is under Past as Cancelled. The counselor gets one e-mail in the log; the time is bookable again from another account.
+4. A session inside the cancellation window: the sheet is the plain explanation with one OK button. Airplane mode while cancelling: the words, then **Try again** works after reconnecting.
+
+**Reschedule**
+5. **Reschedule** (with "You can reschedule this booking 2 more times.") opens "Choose a new time" for the same counselor. Pick a time, Continue: "Move to this time?" shows the old and the new time. Move: back on the booking at the new time, "Booking rescheduled."; the old time is bookable again and the counselor gets one e-mail with both times.
+6. Move twice: the button is replaced by "…rescheduled the most times it can be." Pick a time another account just booked: "That time was just taken…" and the picker marks it. A time that overlaps another session of yours: "You already have a session at this time."
+
+**Counselor portal (web)**
+7. `/counselor/planner`: add a weekly line (for example Thursday 10:00 to 13:00, one-hour times, online) and press "Open the next weeks": the times appear below and are bookable from the app. A time that overlaps one already open, a booked one or a personal block is skipped and counted. Press it again: nothing opens twice. Try to remove a time that has ever been booked: it is refused.
+8. `/counselor/appointments`: "Needs marking" lists ended sessions; Mark completed / no-show; the app shows it under Past. A link must start with `https://`.
+
+**Ask for a time (Mode B)**
+9. On a counselor's page that takes requests, **Ask for a different time**: the days and times come from their weekly lines; pick one, add a note, **Ask for …**. The request opens as "Waiting for an answer"; the Requests tab (third tab of Bookings) lists it. The counselor gets an e-mail.
+10. As the counselor, Approve on `/counselor/appointments` ("Time requests"): the app shows Approved and **View booking** opens an ordinary booking (cancel and reschedule work). Decline with a reason: the app shows "Declined" and the counselor's message, and **Choose another time**. Withdraw a waiting request: the sheet, then "Withdrawn".
+11. Make the second request overlap your own session, or ask for more than three: the words, nothing created. Run `php artisan requests:expire` after setting `expires_at` in the past: the request becomes Expired and the person gets one e-mail.
+
+**Chat**
+12. Sign up a new account: the sign-up form has the agreement tick; "What this means" shows the four lines and saves nothing; Create account is refused without the tick. A person who signed up before has no agreement: the Chat tab shows "Before you chat"; "I agree" opens the conversation; Account shows the "AI chat" switch on; turning it off asks first, and the Chat tab asks again.
+13. Say hello: "Thinking…", then a short, kind reply in your language. Say something stressful in Malay and in English. Leave the tab and come back: it is still there. **New conversation** clears it; Chat history lists it (after the first minute it is "Today") and it opens read only. Quiet for an hour with the scheduler on: the conversation ends and shows how you mostly felt.
+14. **Worrying words** (try only on a test account, for example "saya rasa tak nak hidup lagi"): the amber card appears under the reply with "Call HEAL 15555" and "Call Talian Kasih 15999"; a tap opens the phone's dialler; the chat still works; **Continue chatting** puts the card away. **Need help now?** (app bar and Home) opens the same lines. Turn off the server: the lines are still there.
+15. Remove the key from `.env` (or go offline): the message stays, "I can't reply right now…" with **Try again**. Offline then online: **Send again** sends it once (check the database: one message).
+16. Say "I would like to see a counselor": up to three counselor cards appear in the chat and one opens that counselor's page.
+17. TalkBack: each bubble reads "You said: …" or "Companion said: …"; the card is announced; the call buttons read "Call HEAL 15555". Largest font and display size: nothing is cut off, the box and the Send button stay reachable.
+
 ## Release checklist (not done yet)
 
 - Real upload keystore in `android/key.properties` (see `android/app/build.gradle.kts`; until then release builds are debug-signed and cannot go to Play).

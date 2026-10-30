@@ -96,12 +96,14 @@ class FakeAuthApi implements AuthApi {
   final twoFactorCalls = <({String challenge, String? code, String? recoveryCode})>[];
   final resendCalls = <String>[];
   final registerCalls = <({String name, String email, String password})>[];
+  final registerConsents = <bool>[];
   final forgotPasswordCalls = <String>[];
   int logoutAllCalls = 0;
 
   @override
-  Future<void> register({required String name, required String email, required String password}) {
+  Future<void> register({required String name, required String email, required String password, required bool aiConsent}) {
     registerCalls.add((name: name, email: email, password: password));
+    registerConsents.add(aiConsent);
 
     return registerHandler(name, email, password);
   }

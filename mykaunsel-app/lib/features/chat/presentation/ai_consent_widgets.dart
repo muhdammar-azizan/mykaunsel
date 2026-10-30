@@ -37,6 +37,20 @@ class AiConsentPoints extends StatelessWidget {
   }
 }
 
+/// The same four lines, to read only (from the sign-up form): nothing is saved here.
+Future<void> showAiConsentInfo(BuildContext context) {
+  final l10n = AppLocalizations.of(context);
+
+  return showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(l10n.chatConsentTitle),
+      content: const SingleChildScrollView(child: AiConsentPoints()),
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.bookingCancelOk))],
+    ),
+  );
+}
+
 /// "Before you chat" with "I agree": asked in Account when the person turns the chat on. True once the server has their yes.
 Future<bool> showAiConsentDialog(BuildContext context) async {
   final agreed = await showDialog<bool>(context: context, builder: (_) => const _ConsentDialog());

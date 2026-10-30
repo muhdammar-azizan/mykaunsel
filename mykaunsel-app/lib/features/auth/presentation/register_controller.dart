@@ -22,7 +22,7 @@ class RegisterController extends Notifier<SubmitState> {
   @override
   SubmitState build() => SubmitState.idle;
 
-  Future<RegisterOutcome> submit({required String name, required String email, required String password}) async {
+  Future<RegisterOutcome> submit({required String name, required String email, required String password, required bool aiConsent}) async {
     if (state.submitting) {
       return RegisterOutcome.failed;
     }
@@ -31,7 +31,7 @@ class RegisterController extends Notifier<SubmitState> {
     final cleanEmail = email.trim().toLowerCase();
 
     try {
-      await ref.read(authApiProvider).register(name: name.trim(), email: cleanEmail, password: password);
+      await ref.read(authApiProvider).register(name: name.trim(), email: cleanEmail, password: password, aiConsent: aiConsent);
 
       // The next page ("check your email") reads this.
       ref.read(pendingVerificationEmailProvider.notifier).set(cleanEmail);

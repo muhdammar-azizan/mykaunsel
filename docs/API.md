@@ -7,7 +7,7 @@ Laravel Sanctum bearer tokens. Base path `/api/v1`. Everything answers in JSON (
 | Method | Path | Needs | What it does |
 |---|---|---|---|
 | GET | `/status` | nothing | Is MyKaunsel in maintenance (`maintenance.on` + `message` + `reopens_at`, when it is expected to end), which sign-ups are open (`registration.organization / counselor / individual` → `open`, `message`), and must this app version update (`app.update_required`, `app.min_version`, `app.message`, `app.store_url`). **Call this first.** It is the only route that still answers during maintenance or to an outdated app. |
-| POST | `/auth/register` | open sign-up | `name`, `email` (lowercase), `password`, `password_confirmation` → 201. **No token yet**: a confirmation email is sent. |
+| POST | `/auth/register` | open sign-up | `name`, `email` (lowercase), `password`, `password_confirmation`, `ai_consent` (must be true: the agreement to AI processing, recorded; see [CHAT.md](CHAT.md)) → 201. **No token yet**: a confirmation email is sent. |
 | POST | `/auth/login` | – | `email`, `password`, `device_name` → 200 `{token, token_type: "Bearer", user}`. |
 | POST | `/auth/two-factor` | – | For accounts with two-factor on: `challenge`, `code` (or `recovery_code`), `device_name` → 200 like login. |
 | POST | `/auth/email/resend` | – | `email` → 202, the same answer for every address. |

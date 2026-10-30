@@ -6,6 +6,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/session/session_controller.dart';
 import '../../../core/session/session_state.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../chat/presentation/help_lines.dart';
 
 /// The home tab of a signed-in person. The first thing on it is the way to a counselor; more is added as features are built.
 class HomeScreen extends ConsumerWidget {
@@ -52,6 +53,66 @@ class HomeScreen extends ConsumerWidget {
                             Text(l10n.homeFindTitle, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
                             const SizedBox(height: 4),
                             Text(l10n.homeFindBody, style: text.bodyMedium),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              elevation: 0,
+              color: Colors.white,
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .1))),
+              child: InkWell(
+                onTap: () => context.go(AppRoutes.chat),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Icon(Icons.chat_bubble_outline, size: 32, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l10n.homeChatTitle, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 4),
+                            Text(l10n.homeChatBody, style: text.bodyMedium),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              elevation: 0,
+              color: Colors.white,
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .1))),
+              child: InkWell(
+                onTap: () => showHelpSheet(context),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Icon(Icons.support_agent_outlined, size: 32, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l10n.homeHelpTitle, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 4),
+                            Text(l10n.homeHelpBody, style: text.bodyMedium),
                           ],
                         ),
                       ),

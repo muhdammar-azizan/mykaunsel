@@ -11,6 +11,7 @@ import '../../../shared/password_rules.dart';
 import '../../../shared/widgets/auth_scaffold.dart';
 import '../../../shared/widgets/password_checklist.dart';
 import '../../../shared/widgets/password_field.dart';
+import '../../chat/presentation/ai_consent_widgets.dart';
 import 'register_controller.dart';
 
 /// Creating an individual account. First asks the server whether sign-up is open (a Platform Admin can close it from
@@ -71,6 +72,7 @@ class _SignUpFormState extends ConsumerState<_SignUpForm> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+  bool _aiConsent = false;
 
   @override
   void dispose() {
@@ -86,7 +88,7 @@ class _SignUpFormState extends ConsumerState<_SignUpForm> {
       return;
     }
 
-    final outcome = await ref.read(registerControllerProvider.notifier).submit(name: _name.text, email: _email.text, password: _password.text);
+    final outcome = await ref.read(registerControllerProvider.notifier).submit(name: _name.text, email: _email.text, password: _password.text, aiConsent: _aiConsent);
 
     if (!mounted || outcome != RegisterOutcome.created) {
       return;
@@ -169,6 +171,34 @@ class _SignUpFormState extends ConsumerState<_SignUpForm> {
                     return value == _password.text ? null : l10n.passwordsDontMatch;
                   },
                   onSubmitted: (_) => _submit(),
+                ),
+                const SizedBox(height: 8),
+                // Agreeing to AI processing is part of making an account (the chat needs it); it can be withdrawn later in Account.
+                FormField<bool>(
+                  initialValue: _aiConsent,
+                  validator: (value) => value == true ? null : l10n.signUpConsentRequired,
+                  builder: (field) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        enabled: !form.submitting,
+                        value: field.value ?? false,
+                        title: Text(l10n.signUpConsent),
+                        onChanged: (value) {
+                          field.didChange(value);
+                          setState(() => _aiConsent = value ?? false);
+                        },
+                      ),
+                      Align(alignment: AlignmentDirectional.centerStart, child: TextButton(onPressed: () => showAiConsentInfo(context), child: Text(l10n.signUpConsentMore))),
+                      if (field.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12),
+                          child: Semantics(liveRegion: true, child: Text(field.errorText!, style: TextStyle(color: Theme.of(context).colorScheme.error))),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -87,13 +87,33 @@ class ApiAuthTest extends TestCase
         Notification::fake();
 
         $this->postJson('/api/v1/auth/register', [
-            'name' => 'Siti Aminah', 'email' => 'siti@example.com', 'password' => self::PASSWORD, 'password_confirmation' => self::PASSWORD,
+            'name' => 'Siti Aminah', 'email' => 'siti@example.com', 'password' => self::PASSWORD, 'password_confirmation' => self::PASSWORD, 'ai_consent' => true,
         ])->assertCreated()->assertJsonMissingPath('token');
 
         $user = User::where('email', 'siti@example.com')->firstOrFail();
         $this->assertFalse($user->hasVerifiedEmail());
         $this->assertTrue($user->memberships()->doesntExist());
         Notification::assertSentTo($user, VerifyEmailForApp::class, fn ($n) => str_contains($n->toMail($user)->actionUrl, '/email/verify-app/'));
+    }
+
+    public function test_registering_records_the_agreement_to_ai_processing_and_it_is_required(): void
+    {
+        Notification::fake();
+        $body = ['name' => 'Siti Aminah', 'email' => 'siti@example.com', 'password' => self::PASSWORD, 'password_confirmation' => self::PASSWORD];
+
+        foreach ([[], ['ai_consent' => false], ['ai_consent' => 'no']] as $extra) {
+            $this->postJson('/api/v1/auth/register', $body + $extra)->assertUnprocessable()->assertJsonValidationErrors('ai_consent')
+                ->assertJsonPath('errors.ai_consent.0', 'You need to agree to AI processing to create an account.');
+        }
+        $this->assertNull(User::where('email', 'siti@example.com')->first(), 'nothing was created without it');
+
+        $this->postJson('/api/v1/auth/register', $body + ['ai_consent' => true])->assertCreated();
+
+        $user = User::where('email', 'siti@example.com')->firstOrFail();
+        $this->assertNotNull($user->ai_consent_at);
+        $event = \Illuminate\Support\Facades\DB::table('ai_consent_events')->where('user_id', $user->id)->sole();
+        $this->assertSame('signup', $event->source);
+        $this->assertTrue((bool) $event->granted);
     }
 
     public function test_registration_is_validated(): void
@@ -109,7 +129,7 @@ class ApiAuthTest extends TestCase
         $this->setting()->setRegistration(User::first(), ['individual'], false);
 
         $this->postJson('/api/v1/auth/register', [
-            'name' => 'Siti Aminah', 'email' => 'siti@example.com', 'password' => self::PASSWORD, 'password_confirmation' => self::PASSWORD,
+            'name' => 'Siti Aminah', 'email' => 'siti@example.com', 'password' => self::PASSWORD, 'password_confirmation' => self::PASSWORD, 'ai_consent' => true,
         ])->assertForbidden()->assertJsonPath('message', 'We are not accepting new individual sign-ups right now. Please check back soon.');
 
         $this->assertNull(User::where('email', 'siti@example.com')->first());
@@ -120,7 +140,7 @@ class ApiAuthTest extends TestCase
         $this->setting()->setRegistration(User::first(), ['organization', 'counselor'], false);
 
         $this->postJson('/api/v1/auth/register', [
-            'name' => 'Siti Aminah', 'email' => 'siti@example.com', 'password' => self::PASSWORD, 'password_confirmation' => self::PASSWORD,
+            'name' => 'Siti Aminah', 'email' => 'siti@example.com', 'password' => self::PASSWORD, 'password_confirmation' => self::PASSWORD, 'ai_consent' => true,
         ])->assertCreated();
     }
 
@@ -128,7 +148,7 @@ class ApiAuthTest extends TestCase
     {
         Notification::fake();
         $this->postJson('/api/v1/auth/register', [
-            'name' => 'Siti Aminah', 'email' => 'siti@example.com', 'password' => self::PASSWORD, 'password_confirmation' => self::PASSWORD,
+            'name' => 'Siti Aminah', 'email' => 'siti@example.com', 'password' => self::PASSWORD, 'password_confirmation' => self::PASSWORD, 'ai_consent' => true,
         ]);
         $user = User::where('email', 'siti@example.com')->firstOrFail();
 

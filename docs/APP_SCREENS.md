@@ -24,7 +24,7 @@ Status: ✅ built · ⚠️ partly built or a placeholder · ❌ not built.
 | ❌ | ★ Onboarding | 3 short screens, first time only, can be skipped. Keep a local "already seen" marker. |
 | ✅ | Log in | Email and password, Forgot password link. The same error for a wrong email or password. Rate limited. |
 | ❌ | Choose account type | Individual goes straight to Create account. Organization and Counselor open a sheet "we will email you a link to sign up on a computer". The email-link endpoint is rate limited and answers the same whether the email exists or not. Respect Registration Control (a closed type is shown as closed). |
-| ✅ | Create account | Name, email, password (4 live rules), terms, **required AI-processing consent**. The closed message is shown before the form. **(check: the built form has no terms or AI-consent tick)** |
+| ⚠️ | Create account | Name, email, password (4 live rules), terms, **required AI-processing consent**. The closed message is shown before the form. **(Built: the AI-processing tick, required by the form and by the server, with "What this means". Terms are not on the form: the real text is an open decision.)** |
 | ❌ | Invite code | Skipping allowed. Automatic capitals, rate-limited code check, the same "invalid or expired" message for every reason. Joins the organization through the existing membership service. |
 | ⚠️ | Sign up success | Title "One more step", the list of next steps, a button to Verify email. May be merged with Verify email if easier. (Now: sign-up goes straight to Verify email.) |
 | ✅ | Verify email | Resend (30 second wait), change email, pull to check the status. **(check: built with a 60 second wait; no change-email; no pull to check)** |
@@ -36,7 +36,7 @@ Status: ✅ built · ⚠️ partly built or a placeholder · ❌ not built.
 
 | | Screen | Details |
 |---|---|---|
-| ⚠️ | Home | Two states: a new user (a Chat card and an invitation to find a counselor) and a user with an upcoming booking (a session card; "Join session" only within 15 minutes before). A quick-help strip "Call HEAL 15555". The Chat card is hidden until Chat exists. A Feed snippet is added when Feed exists. (Now: greeting and the way to Find only.) |
+| ⚠️ | Home | Two states: a new user (a Chat card and an invitation to find a counselor) and a user with an upcoming booking (a session card; "Join session" only within 15 minutes before). A quick-help strip "Call HEAL 15555". A Feed snippet is added when Feed exists. (Now: greeting, the way to Find, a Chat card, and a "Need help right now?" card that opens the phone lines. The upcoming-booking session card is not built.) |
 | ❌ | Notification panel | Postponed, and the bell hidden. No in-app notifications, email only (decision B11). |
 
 ## 3. Chatbot

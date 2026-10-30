@@ -46,11 +46,18 @@ Future<void> fillSignUp(
   String email = 'Siti@Example.com ',
   String password = 'Str0ng-Pass-123',
   String? confirm,
+  bool agree = true,
 }) async {
   await tester.enterText(find.widgetWithText(TextFormField, 'Full name'), name);
   await tester.enterText(find.widgetWithText(TextFormField, 'Email'), email);
   await tester.enterText(find.widgetWithText(TextFormField, 'Password'), password);
   await tester.enterText(find.widgetWithText(TextFormField, 'Confirm password'), confirm ?? password);
+
+  if (agree) {
+    await tester.ensureVisible(find.byType(CheckboxListTile));
+    await tester.tap(find.byType(CheckboxListTile));
+    await tester.pump();
+  }
 }
 
 Future<void> tapCreate(WidgetTester tester) async {
@@ -90,6 +97,43 @@ void main() {
       expect(api.registerCalls.single, (name: 'Siti Aminah', email: 'siti@example.com', password: 'Str0ng-Pass-123'));
       expect(find.text('Confirm your email'), findsOneWidget);
       expect(find.textContaining('siti@example.com'), findsOneWidget);
+    });
+
+    testWidgets('the agreement to AI processing is asked for, sent with the account, and needed to go on', (tester) async {
+      final api = FakeAuthApi();
+      await open(tester, authApi: api);
+      await goToSignUp(tester);
+
+      await fillSignUp(tester, agree: false);
+      await tapCreate(tester);
+
+      expect(find.text('Please agree to continue.'), findsOneWidget);
+      expect(api.registerCalls, isEmpty);
+
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pump();
+      await tapCreate(tester);
+
+      expect(api.registerConsents, [true]);
+      expect(find.text('Confirm your email'), findsOneWidget);
+    });
+
+    testWidgets('"What this means" explains it and saves nothing', (tester) async {
+      final api = FakeAuthApi();
+      await open(tester, authApi: api);
+      await goToSignUp(tester);
+
+      await tester.ensureVisible(find.text('What this means'));
+      await tester.tap(find.text('What this means'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('It is an AI, not a counselor or a doctor'), findsOneWidget);
+      expect(find.text('I agree'), findsNothing);
+
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(find.text('Create your account'), findsOneWidget);
+      expect(api.registerCalls, isEmpty);
     });
 
     testWidgets('nothing is sent while the form has problems, and each says what to fix', (tester) async {

@@ -94,7 +94,7 @@ class WebIndividualRegistrationTest extends CounselorTestCase
     {
         $this->off();
 
-        $this->postJson('/api/v1/auth/register', ['name' => 'Aina Syazwani', 'email' => 'aina.app@example.com', 'password' => 'Str0ng-Pass-123', 'password_confirmation' => 'Str0ng-Pass-123'])
+        $this->postJson('/api/v1/auth/register', ['name' => 'Aina Syazwani', 'email' => 'aina.app@example.com', 'password' => 'Str0ng-Pass-123', 'password_confirmation' => 'Str0ng-Pass-123', 'ai_consent' => true])
             ->assertSuccessful();
         $this->assertNotNull(User::where('email', 'aina.app@example.com')->first());
     }

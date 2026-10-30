@@ -15,7 +15,7 @@ Code: `App\Services\Chat\*` (`ChatService`, `CrisisDetector`, `PromptScrubber`, 
 
 ## Consent
 
-The chat needs the person's AI-processing consent: `users.ai_consent_at` (null = none). Without it `403 ai_consent_required` and nothing is stored or sent. `PUT /account/ai-consent` `{consent: bool}` gives or withdraws it; every real change is recorded in `ai_consent_events` (who, granted or withdrawn, when); asking for the state already held records nothing. The user object (`/auth/me`, sign-in) carries `ai_consent`. Withdrawing turns the chat off at once; the history stays readable. **Not done yet:** the tick at registration (the switch in Account and the gate in Chat are built), and existing accounts have no consent until they give it.
+The chat needs the person's AI-processing consent: `users.ai_consent_at` (null = none). Without it `403 ai_consent_required` and nothing is stored or sent. `PUT /account/ai-consent` `{consent: bool}` gives or withdraws it; every real change is recorded in `ai_consent_events` (who, granted or withdrawn, when); asking for the state already held records nothing. The user object (`/auth/me`, sign-in) carries `ai_consent`. Withdrawing turns the chat off at once; the history stays readable. The sign-up form has a required tick (`POST /auth/register` refuses without `ai_consent: true`, and records it with source `signup`; the web registration is unchanged). Existing accounts have no consent until they give it, in the Chat tab or in Account.
 
 ## Crisis detection (on the server, not the model)
 
@@ -41,4 +41,4 @@ The chat needs the person's AI-processing consent: `users.ai_consent_at` (null =
 
 ## Not built
 
-The tick at registration, a Chat card on Home, resuming an old conversation after the app was closed, a way for the owner to see that the key works other than trying the chat, per-account spend limits (the daily message cap is the only brake), and streaming of the reply (the app waits for the whole answer, a few seconds).
+Resuming an old conversation after the app was closed, a way for the owner to see that the key works other than trying the chat, per-account spend limits (the daily message cap is the only brake), and streaming of the reply (the app waits for the whole answer, a few seconds).

@@ -8,6 +8,7 @@ use App\Notifications\VerifyEmailForApp;
 use App\Services\ApiAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rules;
 
@@ -23,9 +24,18 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+            // The sign-up form asks for it and the chat needs it (docs/CHAT.md). It can be withdrawn later in Account.
+            'ai_consent' => ['accepted'],
+        ], ['ai_consent.accepted' => 'You need to agree to AI processing to create an account.']);
 
-        $user = User::create($data);
+        $user = DB::transaction(function () use ($data) {
+            $user = User::create(collect($data)->except('ai_consent')->all());
+
+            $user->forceFill(['ai_consent_at' => now()])->save();
+            DB::table('ai_consent_events')->insert(['user_id' => $user->getKey(), 'granted' => true, 'source' => 'signup', 'created_at' => now()]);
+
+            return $user;
+        });
 
         // Sent straight away (not through the "Registered" event, which would send the web version of this email).
         $user->notify(new VerifyEmailForApp);

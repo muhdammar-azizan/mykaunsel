@@ -1923,6 +1923,48 @@ abstract class AppLocalizations {
   /// **'We couldn\'t find this request.'**
   String get requestNotFound;
 
+  /// No description provided for @signUpConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree that my chat messages are processed by an AI service to write replies. I can turn this off at any time in Account.'**
+  String get signUpConsent;
+
+  /// No description provided for @signUpConsentMore.
+  ///
+  /// In en, this message translates to:
+  /// **'What this means'**
+  String get signUpConsentMore;
+
+  /// No description provided for @signUpConsentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please agree to continue.'**
+  String get signUpConsentRequired;
+
+  /// No description provided for @homeChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk it through'**
+  String get homeChatTitle;
+
+  /// No description provided for @homeChatBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with an AI companion about how you feel. It listens; it is not a counselor.'**
+  String get homeChatBody;
+
+  /// No description provided for @homeHelpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Need help right now?'**
+  String get homeHelpTitle;
+
+  /// No description provided for @homeHelpBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See phone lines you can call.'**
+  String get homeHelpBody;
+
   /// No description provided for @navChat.
   ///
   /// In en, this message translates to:

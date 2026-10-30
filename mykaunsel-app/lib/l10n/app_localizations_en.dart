@@ -1130,6 +1130,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get requestNotFound => 'We couldn\'t find this request.';
 
   @override
+  String get signUpConsent =>
+      'I agree that my chat messages are processed by an AI service to write replies. I can turn this off at any time in Account.';
+
+  @override
+  String get signUpConsentMore => 'What this means';
+
+  @override
+  String get signUpConsentRequired => 'Please agree to continue.';
+
+  @override
+  String get homeChatTitle => 'Talk it through';
+
+  @override
+  String get homeChatBody =>
+      'Chat with an AI companion about how you feel. It listens; it is not a counselor.';
+
+  @override
+  String get homeHelpTitle => 'Need help right now?';
+
+  @override
+  String get homeHelpBody => 'See phone lines you can call.';
+
+  @override
   String get navChat => 'Chat';
 
   @override
