@@ -64,8 +64,18 @@ class CounselorPublicPresenter
         ]);
     }
 
-    // ---- pieces ----------------------------------------------------------------------------
+    /**
+     * The name this viewer sees for a counselor: exactly the one the list and the profile show (the booking screen uses it too, so a
+     * counselor never has two names).
+     *
+     * @param  list<int>  $orgIds  organizations the viewer may see
+     */
+    public static function displayName(CounselorProfile $profile, array $orgIds): string
+    {
+        return self::name($profile, self::contexts($profile, $orgIds));
+    }
 
+    // ---- pieces ----------------------------------------------------------------------------
     /**
      * Where this counselor works, as far as THIS viewer may know: "independent", and/or an organization by name.
      *

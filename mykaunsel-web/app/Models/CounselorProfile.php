@@ -63,12 +63,15 @@ class CounselorProfile extends Model
         'buffer_minutes',
     ];
 
-    protected static function booted(): void
+    /**
+     * Every profile gets its public id the moment it is inserted (see the add_public_id migration). Done here, not in a model event, so it
+     * also holds when events are switched off (the database seeders do that: profiles they made had no id and could not be named by the app).
+     */
+    protected function performInsert(\Illuminate\Database\Eloquent\Builder $query)
     {
-        // Every profile gets its public id the moment it is created (see the add_public_id migration).
-        static::creating(function (self $profile) {
-            $profile->public_id ??= strtolower((string) \Illuminate\Support\Str::ulid());
-        });
+        $this->public_id ??= strtolower((string) \Illuminate\Support\Str::ulid());
+
+        return parent::performInsert($query);
     }
 
     protected function casts(): array

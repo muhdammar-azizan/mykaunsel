@@ -32,6 +32,8 @@ use Illuminate\Support\Collection;
  */
 class CounselorDirectory
 {
+    public function __construct(private readonly AvailabilityService $availability) {}
+
     /** @return list<int> organizations this person may see counselors and slots of */
     public function visibleOrganizationIds(User $viewer): array
     {
@@ -121,6 +123,44 @@ class CounselorDirectory
     }
 
     /**
+     * The counselor for the booking screen, or null: unknown, not listable, a closed organization's counselor this person may not see,
+     * AND the person themselves (a counselor cannot book their own sessions). One and the same "no" for all of them.
+     *
+     * @return array{profile: CounselorProfile, orgIds: list<int>}|null
+     */
+    public function resolveBookable(User $viewer, string $publicId): ?array
+    {
+        $orgIds = $this->visibleOrganizationIds($viewer);
+
+        $profile = $this->eligible($orgIds)
+            ->where('counselor_profiles.public_id', $publicId)
+            ->where('counselor_profiles.user_id', '!=', $viewer->getKey())
+            ->with(['user:id,name', 'memberships' => fn ($m) => $m
+                ->where('role', MembershipRole::Counselor->value)->where('status', MembershipStatus::Active->value)->with('organization:id,name,org_type')])
+            ->first();
+
+        return $profile === null ? null : ['profile' => $profile, 'orgIds' => $orgIds];
+    }
+
+    /**
+     * Every slot of one counselor this person may see inside the booking window, booked ones too (for the "Booked" state), with whether a
+     * booking that is not cancelled points at it. Clashes are removed later by AvailabilityService::present.
+     *
+     * @return Collection<int, CalendarEntry>
+     */
+    public function windowSlots(array $orgIds, int $counselorUserId): Collection
+    {
+        return $this->windowQuery($orgIds)
+            ->where('calendar_entries.counselor_user_id', $counselorUserId)
+            ->withExists(['bookings as has_active_booking' => fn ($q) => $q->where('status', '!=', 'cancelled')])
+            ->with('location:id,name,city')
+            ->orderBy('calendar_entries.entry_date')
+            ->orderBy('calendar_entries.start_time')
+            ->orderBy('calendar_entries.id')
+            ->get();
+    }
+
+    /**
      * The choices for the filter screen, taken from what is really on offer to this person (so no filter ever gives an
      * empty list).
      *
@@ -207,27 +247,37 @@ class CounselorDirectory
     }
 
     /**
-     * Slots a person may see: available, in the future (Malaysian time), not already booked, in an organization this
-     * person may see where the counselor still works.
+     * Every slot a person may see inside the BOOKING WINDOW, booked or not: an available slot that starts at least booking.min_lead_hours
+     * from now and is on or before booking.horizon_days from today (Malaysian time), in an organization this person may see where the
+     * counselor still works. The window is the same one the booking screen uses (AvailabilityService), so a time shown anywhere can be
+     * booked there.
      */
-    private function slotQuery(array $orgIds): Builder
+    private function windowQuery(array $orgIds): Builder
     {
-        $now = Carbon::now(config('counselors.directory.slot_timezone'));
+        $earliest = $this->availability->earliestStart();
+        $last = $this->availability->lastDate();
 
         return CalendarEntry::query()
             ->where('calendar_entries.entry_type', CalendarEntryType::AvailableSlot->value)
-            ->where('calendar_entries.is_available', true)
             ->whereIn('calendar_entries.context_org_id', $orgIds)
             ->where(fn (Builder $q) => $q
-                ->whereDate('calendar_entries.entry_date', '>', $now->toDateString())
-                ->orWhere(fn (Builder $today) => $today
-                    ->whereDate('calendar_entries.entry_date', '=', $now->toDateString())
-                    ->where('calendar_entries.start_time', '>', $now->format('H:i:s'))))
+                ->whereDate('calendar_entries.entry_date', '>', $earliest->format('Y-m-d'))
+                ->orWhere(fn (Builder $day) => $day
+                    ->whereDate('calendar_entries.entry_date', '=', $earliest->format('Y-m-d'))
+                    ->where('calendar_entries.start_time', '>=', $earliest->format('H:i:s'))))
+            ->whereDate('calendar_entries.entry_date', '<=', $last->format('Y-m-d'))
             ->whereExists(fn ($m) => $m->selectRaw('1')->from('memberships')
                 ->whereColumn('memberships.user_id', 'calendar_entries.counselor_user_id')
                 ->whereColumn('memberships.org_id', 'calendar_entries.context_org_id')
                 ->where('memberships.role', MembershipRole::Counselor->value)
-                ->where('memberships.status', MembershipStatus::Active->value))
+                ->where('memberships.status', MembershipStatus::Active->value));
+    }
+
+    /** The slots a person can still take: in the window and not booked (the flag is on and no booking that is not cancelled). */
+    private function slotQuery(array $orgIds): Builder
+    {
+        return $this->windowQuery($orgIds)
+            ->where('calendar_entries.is_available', true)
             ->whereNotExists(fn ($b) => $b->selectRaw('1')->from('bookings')
                 ->whereColumn('bookings.calendar_entry_id', 'calendar_entries.id')
                 ->where('bookings.status', '!=', 'cancelled'));
@@ -240,16 +290,17 @@ class CounselorDirectory
             return collect();
         }
 
-        $horizon = Carbon::now(config('counselors.directory.slot_timezone'))->addDays((int) config('counselors.directory.slot_horizon_days', 60));
-
-        return $this->slotQuery($orgIds)
+        $slots = $this->slotQuery($orgIds)
             ->whereIn('calendar_entries.counselor_user_id', $userIds)
-            ->whereDate('calendar_entries.entry_date', '<=', $horizon->toDateString())
             ->with('location:id,city,state')
             ->orderBy('calendar_entries.entry_date')
             ->orderBy('calendar_entries.start_time')
-            ->get(['calendar_entries.counselor_user_id', 'calendar_entries.context_org_id', 'calendar_entries.entry_date', 'calendar_entries.start_time',
+            ->get(['calendar_entries.id', 'calendar_entries.counselor_user_id', 'calendar_entries.context_org_id', 'calendar_entries.entry_date', 'calendar_entries.start_time',
                 'calendar_entries.duration_minutes', 'calendar_entries.session_mode', 'calendar_entries.location_id']);
+
+        // A time that clashes with the counselor's other calendar entries (a personal block, a booked slot in any context, with the
+        // buffer) is not offered anywhere, so the profile never shows a time the booking screen would not.
+        return $this->availability->withoutConflicts($slots);
     }
 
     /** Sortable "when is the first free slot"; no slot sorts last. */

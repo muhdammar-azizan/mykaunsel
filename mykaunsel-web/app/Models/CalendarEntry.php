@@ -26,6 +26,17 @@ class CalendarEntry extends Model
         'is_available',
     ];
 
+    /**
+     * Every entry gets its random public id the moment it is inserted (see the add_public_id migration). It is never mass-assignable.
+     * Done here, not in a model event, so it also holds when events are switched off (the database seeders do that).
+     */
+    protected function performInsert(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        $this->public_id ??= strtolower((string) \Illuminate\Support\Str::ulid());
+
+        return parent::performInsert($query);
+    }
+
     protected function casts(): array
     {
         return [

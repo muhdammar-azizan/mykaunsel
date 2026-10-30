@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\CounselorDirectoryController;
 use App\Http\Controllers\Api\V1\StatusController;
 use Illuminate\Support\Facades\Route;
@@ -25,14 +26,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:api-email')->name('auth.forgot-password');
 
     // Signed in with a token and with a confirmed email address.
-    Route::middleware(['auth:sanctum', 'verified', 'throttle:api-user'])->group(function () {
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-user'])->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me'])->name('auth.me');
         Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
         Route::post('/auth/logout-all', [AuthController::class, 'logoutAll'])->name('auth.logout-all');
     });
 
     // The signed-in person's own account. Anything that asks for the current password is limited to a few tries a minute.
-    Route::middleware(['auth:sanctum', 'verified', 'throttle:api-user'])->prefix('account')->name('account.')->group(function () {
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-user'])->prefix('account')->name('account.')->group(function () {
         Route::patch('/profile', [AccountController::class, 'updateProfile'])->name('profile');
         Route::get('/devices', [AccountController::class, 'devices'])->name('devices');
 
@@ -43,7 +44,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     });
 
     // Counselor search (docs/PUBLIC_COUNSELOR_DATA.md). Signed in with a confirmed email only, with its own limit.
-    Route::middleware(['auth:sanctum', 'verified', 'throttle:api-directory'])->prefix('counselors')->name('counselors.')->group(function () {
+    // Which times of one counselor can be picked (read only; the booking itself is a later step). Its own, roomier limit.
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-availability'])->get('/counselors/{publicId}/availability', AvailabilityController::class)->name('counselors.availability');
+
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-directory'])->prefix('counselors')->name('counselors.')->group(function () {
         Route::get('/', [CounselorDirectoryController::class, 'index'])->name('index');
         // Before {id}, so "filters" is never read as a counselor id.
         Route::get('/filters', [CounselorDirectoryController::class, 'filters'])->name('filters');

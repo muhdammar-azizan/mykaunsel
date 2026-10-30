@@ -43,8 +43,8 @@ the closed organization's name, display name and slots never reach them.
 | Whether they take requests | – | ✅ |
 | Upcoming slots (up to 10) | – | ✅ |
 
-**A slot is shown only if:** it is marked available, is in the future (Malaysian time), within 60 days, is not booked
-(a cancelled booking frees it), belongs to an organization the asker may see, and the counselor still works there.
+**A slot is shown only if:** it is marked available, is inside the **booking window** (starts at least 2 hours from now and is no later than 30 days from today, Malaysian time: `config/booking.php`), is not booked
+(a cancelled booking frees it), does not clash with another entry on the counselor's calendar (a personal block or a booked session, with the buffer: [AVAILABILITY.md](AVAILABILITY.md)), belongs to an organization the asker may see, and the counselor still works there. It is the same rule the booking screen uses, so a time shown here can always be booked there. (It used to be 60 days and any time in the future.)
 
 ## What is NEVER shown (and why)
 
@@ -73,7 +73,8 @@ and a number are `404` too.
 
 - Sorting happens in PHP over the asker's candidates (fine for hundreds of counselors; when there are thousands,
   precompute "next available" on the profile).
-- The 60-day horizon, 20 per page and slot time zone are in `config/counselors.php` → `directory`.
+- 20 per page and the slot time zone are in `config/counselors.php` → `directory`. The lead time and the horizon are in `config/booking.php`.
+- The session-type and state filters ask "has a bookable time" before clashes with the counselor's other entries are taken off, so in a rare case a counselor can match a filter while their card shows no time.
 - Slots with no organization (`context_org_id` empty) are never shown (their visibility cannot be decided).
 - Specializations and languages are free text. The filter lists are built from real data, case-insensitively, so
   "Grief" and "grief " are one choice; a controlled list can be added later.

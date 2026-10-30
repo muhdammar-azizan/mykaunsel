@@ -22,6 +22,7 @@ Laravel Sanctum bearer tokens. Base path `/api/v1`. Everything answers in JSON (
 | GET | `/counselors` | token | Search counselors: `q` (name, 2+ letters), `specialization`, `language`, `mode` (`online`/`physical`), `state`, `page`. 20 per page, `{data: [card], meta: {page, per_page, total, last_page}}`. Soonest free slot first, then by name. |
 | GET | `/counselors/filters` | token | The choices for the filter screen (`specializations`, `languages`, `session_modes`, `states`), from what this person can really find. |
 | GET | `/counselors/{id}` | token | One counselor (the card plus `accepts_requests` and `upcoming_slots`). `id` is the random public id from the list. Hidden and non-existent are both `404`. |
+| GET | `/counselors/{id}/availability` | token | The times of one counselor that can be picked: `from`, `days` (1–14), `mode` (`online`/`physical`). Read only. See [AVAILABILITY.md](AVAILABILITY.md). `404` + `code: counselor_unavailable` for every reason the counselor cannot be booked. |
 
 Send the token as `Authorization: Bearer <token>`. Tokens start with `<id>|mkp_` and last 30 days (`SANCTUM_EXPIRATION_MINUTES`); each device name gets its own token, at most 10 per person (the oldest are removed).
 
@@ -29,7 +30,7 @@ Send the token as `Authorization: Bearer <token>`. Tokens start with `<id>|mkp_`
 
 - **422** validation (`errors.<field>`), including wrong email/password (`errors.email`, the same text for a wrong password and an unknown email) and wrong/expired two-factor codes.
 - **202 + `code: "two_factor_required"` + `challenge`** from `/auth/login`: ask for the 6-digit code, then call `/auth/two-factor` (the challenge works for 10 minutes; after 5 wrong codes sign in again).
-- **403 + `code: "email_not_verified"`** from `/auth/login`: tell the person to confirm their email (offer `/auth/email/resend`). A token is never given before the address is confirmed.
+- **403 + `code: "email_not_verified"`** from `/auth/login`, **and from every signed-in route** if the address is not confirmed: tell the person to confirm their email (offer `/auth/email/resend`). A token is never given before the address is confirmed.
 - **403** from `/auth/register`: individual sign-up is closed; `message` is the text the Platform Admin wrote.
 - **503** on every route except `/status`: maintenance mode; `message` is the Platform Admin's text, and `reopens_at` (ISO-8601, UTC) says when it is expected to end, or is `null` if no time was set or it has passed. `Retry-After` (seconds) is sent: the time left until `reopens_at`, or 600 without one. `/status` carries the same time as `maintenance.reopens_at`.
 - **426 + `code: "app_update_required"`** (`min_version`, `store_url`) on every route except `/status`: this app version is older than `API_MIN_APP_VERSION`. Show an update screen with the store link.

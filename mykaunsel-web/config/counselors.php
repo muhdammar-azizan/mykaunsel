@@ -31,8 +31,8 @@ return [
         // Slots are stored as a date and a time with no zone: they are Malaysian time (where every counselor works).
         'slot_timezone' => 'Asia/Kuala_Lumpur',
 
-        // "Next available" looks this far ahead; further slots are not shown.
-        'slot_horizon_days' => 60,
+        // How far ahead slots are shown (and the minimum lead time) is the BOOKING window: config/booking.php. It used to be 60 days here;
+        // it is now the same 30 days as the booking screen, so a time shown on a profile can always be booked.
 
         // Slots listed on a counselor's own page.
         'profile_slots' => 10,

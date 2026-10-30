@@ -21,7 +21,7 @@ class SeederGuardTest extends TestCase
     use RefreshDatabase;
 
     /** Sample seeders that are run by hand with --class and are not part of `db:seed`. They are guarded all the same. */
-    private const MANUAL = ['DirectorySampleSeeder'];
+    private const MANUAL = ['DirectorySampleSeeder', 'AvailabilityDemoSeeder'];
 
     /** @return list<class-string<Seeder>> */
     private function seeders(): array

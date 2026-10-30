@@ -369,14 +369,14 @@ class CounselorDirectoryTest extends TestCase
         $booked = $this->slot($aina, $this->open, '2026-11-03 10:00');                    // booked by someone
         Booking::create(['org_id' => $this->open->id, 'user_id' => $client->id, 'counselor_user_id' => $aina->user_id, 'calendar_entry_id' => $booked->id,
             'booking_mode' => 'slot_based', 'status' => 'confirmed', 'session_mode' => 'online']);
-        $freed = $this->slot($aina, $this->open, '2026-11-03 11:00');                     // booking cancelled: free again
+        $freed = $this->slot($aina, $this->open, '2026-11-03 12:00');                     // booking cancelled: free again (an hour clear of the booked 10:00 slot and its buffer)
         Booking::create(['org_id' => $this->open->id, 'user_id' => $client->id, 'counselor_user_id' => $aina->user_id, 'calendar_entry_id' => $freed->id,
             'booking_mode' => 'slot_based', 'status' => 'cancelled', 'session_mode' => 'online']);
         $this->slot($aina, $this->open, '2026-11-04 10:00');
 
-        $this->assertSame('2026-11-03T11:00:00+08:00', $this->list()->json('data.0.next_available.starts_at'));
+        $this->assertSame('2026-11-03T12:00:00+08:00', $this->list()->json('data.0.next_available.starts_at'));
 
-        // Beyond the 60-day horizon nothing is shown.
+        // Beyond the 30-day booking horizon (config/booking.php) nothing is shown.
         $later = $this->counselor('Later Person', [$this->open]);
         $this->slot($later, $this->open, '2027-03-01 10:00');
         $this->assertNull(collect($this->list()->json('data'))->firstWhere('name', 'Later Person')['next_available']);
