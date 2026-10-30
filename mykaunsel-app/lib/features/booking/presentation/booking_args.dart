@@ -44,9 +44,3 @@ class ConfirmBookingArgs {
   final int durationMinutes;
   final SlotLocation? location;
 }
-
-/// What "Confirm booking" can send back when it closes without a booking.
-enum ConfirmOutcome {
-  /// Someone else took the time first: "Pick a slot" marks it and asks the person to choose another.
-  slotTaken,
-}

@@ -16,6 +16,21 @@ DioException badResponse(int status, [Object? body, Map<String, List<String>>? h
 }
 
 void main() {
+  test('409 keeps the code, the message, the body and the wait: the screen that asked decides what each code means', () {
+    final failure = mapDioException(badResponse(409, {'message': 'Busy.', 'code': 'request_in_progress', 'extra': 1}, {'retry-after': ['2']}));
+
+    expect(failure, isA<ConflictFailure>());
+    failure as ConflictFailure;
+    expect(failure.code, 'request_in_progress');
+    expect(failure.message, 'Busy.');
+    expect(failure.body['extra'], 1);
+    expect(failure.retryAfterSeconds, 2);
+  });
+
+  test('409 without a code or a JSON body is still a conflict, with an empty code', () {
+    expect((mapDioException(badResponse(409, '<html>')) as ConflictFailure).code, '');
+  });
+
   test('401 means the person must sign in again', () {
     expect(mapDioException(badResponse(401, {'message': 'Unauthenticated.'})), isA<UnauthorizedFailure>());
   });

@@ -149,7 +149,7 @@ Accessibility already covered: every field has a label, headings are marked, err
 
 **Pick a slot** (`features/booking`; the server side is `docs/AVAILABILITY.md`):
 
-- Opened from a counselor's page at `/book/:id` (outside the tabs, no bottom bar). The next step is `/book/:id/confirm`, which is still a placeholder that books nothing.
+- Opened from a counselor's page at `/book/:id` (outside the tabs, no bottom bar). The next step is Confirm booking (below).
 - Mode toggle (only when the counselor offers both; the mode is filtered in the app, never sent to the server), a strip of dates (14 days per request; "Show later dates" until the 30-day horizon), and the day's times. Nothing is picked at the start; one time at a time; a booked time is dimmed, struck through, says "Booked" and cannot be tapped (never colour alone: the picked time also has a check mark).
 - A refresh (pull down) that finds the picked time gone drops the pick and says "Your selected time is no longer available." A failed refresh keeps what is on screen and says so. After "too many requests" nothing is asked again until the wait is over.
 - Every "no" (hidden, suspended, not accepting bookings) is the same 404, shown as "Counselor not available". An unverified email shows "Verify my email": it signs out and opens "check your email" (a signed-in person cannot open that page).
@@ -168,6 +168,33 @@ Accessibility already covered: every field has a label, headings are marked, err
 7. Phone zone not UTC+8: the "Times are in Malaysian time" note shows; times still read as the counselor's clock.
 8. TalkBack: a date reads "Thursday 5 November, 1 time"; a time reads "10:00 AM, 60 minutes, Online"; a booked one adds "Booked"; the picked one adds "Selected".
 9. Settings → Display size / Font size at the largest: nothing is cut off and Continue stays reachable.
+
+**Confirm booking** (`features/booking`; the server side is `docs/AVAILABILITY.md`, "The confirm step"):
+
+- Opened from Pick a slot at `/book/:id/confirm?slot=<slot public id>`. The slot id is in the address so the screen can **restore itself from the two ids alone** (after a sign-in); the snapshot from the picker (`ConfirmBookingArgs`) only lets something show at once. Opened by address, the picker is built underneath, so Back works.
+- On open it shows the snapshot, then calls the **preview** (claims nothing). Valid: the rules appear. The time is gone (`slot_taken`): back to the picker, which dims the time and says "That time was just taken. Please choose another." (a signal, `slot_taken_signal.dart`, because the picker may not have opened this screen itself). Details differ from what was shown: the summary follows the server, a tick already given is taken back and the banner says so.
+- Summary card (avatar initials, name, Verified, Date, Time "9:00 AM – 9:50 AM, Malaysia time", Duration, Type), "Choose a different time", "Before you confirm" (cancel hours, reschedules, meeting-link wait or the address rule: **every number from the server**; inside the cancellation window the warning variant, with an icon), and "You have 2 of 3 upcoming sessions." only when the server sends it. No price anywhere.
+- **The tick and the button are together in a sticky bar at the bottom**, so the reason the button is off is always on screen. The button is on only when the box is ticked AND the check is good AND nothing is wrong. While submitting: "Confirming…", the tick is locked and Back (the bar's and the phone's) does nothing.
+- **Idempotency-Key:** a version 4 UUID made when the screen opens, **in memory only**. Reused for automatic retries (timeout, no connection, 5xx, 409 `request_in_progress`; up to 3 retries with 1, 2, 4 s). Replaced only after a definite refusal (4xx), so the next tap is a new request. Never stored, printed or logged (a test reads the sources to prove it).
+- **Unknown outcome** (no answer after the retries): "We couldn't confirm your booking. Check My Bookings before trying again." with a button to Home (My Bookings does not exist yet). **Never assumed failed**; the booking button stays off. When the app comes back to the front, the same key is sent once more to resolve it. A 5xx that does not clear shows "Try again" with the same key.
+- Success replaces everything with a **placeholder** "Booking confirmed" (`booking_confirmed_placeholder.dart`, clearly marked; Back goes Home). It is replaced by its own specification later.
+- Every refusal has its words: `time_conflict`, `upcoming_limit_reached` (with the server's limit), `email_not_verified` ("Verify my email"), 404 ("Find another counselor"), 429 (with the wait), 422 (the server's words), 503 (the global maintenance screen).
+- **401:** the person goes to sign-in and, after signing in (and the code step), comes back to this screen; **nothing is resent**, they tap Confirm again. The return destination (`returnPathProvider`) is in memory only and accepted only if it is exactly `/book/<id>` or `/book/<id>/confirm?slot=<id>` (`isSafeReturnPath`: no scheme, no host, no `..`, no other query), so it cannot be an external address.
+- Accessibility: each row announced as its own item ("Date: Tuesday, 3 November 2026"); the tick is one checkbox whose whole row taps and whose state is announced; the off button says why ("Checking availability", "No internet connection", "Tick the box to continue"); banners and errors are live regions and focus goes to a new problem; warnings are words + an icon (+ a spoken "Important"); targets at least 44 px, 8 apart; tested at text size ×2 on a 320 px screen. **Found by the tests:** a hint on a wrapper around the button did not reach the button's own item, so a screen reader would not have said why it was off; the wrapper is now merged with the button.
+- Tests: `confirm_booking_flow_test.dart` (states, key rules, outcomes, every refusal, 401 and return), `confirm_booking_a11y_test.dart` (semantics, targets, no colours or sentences in widgets, nothing stored or logged), `booking_api_test.dart`, `return_path_test.dart`.
+
+**Manual check on the emulator (Confirm booking).** Nothing here has been viewed on a screen yet. The Android emulator reaches the laptop at `http://10.0.2.2:8000` (not `localhost`); run the server with `php artisan serve --host=0.0.0.0`, the queue worker with `php artisan queue:work` (otherwise no e-mail), and seed `AvailabilityDemoSeeder`. Demo people: `demo.availability.atcap` (at the limit), `.overlap` (an overlapping session), `.member`, `.nonmember`, `.unverified`; the counselors "Demo Booking Lab One" (target) and "Two".
+
+1. Pick a time, Continue: the card shows at once, "Checking availability…" disappears, the rules appear. The tick and the button sit together at the bottom; the button is off until the tick.
+2. Tick, Confirm: "Confirming…", then "Booking confirmed" (placeholder). Back goes Home, never to the confirm screen. Check the two e-mails in the log (`MAIL_MAILER=log`): the client's has no link and no address; the counselor's has the client's name and the meeting-link reminder.
+3. Book the same time from another account between preview and Confirm: back at the picker with "That time was just taken…" and the time dimmed.
+4. Change the slot's length in the database between the preview and Confirm: "Details changed…", the tick is cleared, the new time shows.
+5. As `atcap`: the limit message. As `overlap`: "You already have a session at this time."
+6. The slot "in 5 hours": the warning "can't be cancelled after booking" with an icon.
+7. Airplane mode on open: the snapshot stays, "No internet connection", the button is off. Switch it on, "Check again". Airplane mode right after tapping Confirm: it retries; if it never answers you see "We couldn't confirm…", not "failed". Come back online and bring the app to the front: it resolves.
+8. Sign in as `unverified`: "Verify your email…" and the button works. Delete the token on the server (or wait out the session): you land on sign-in, and after signing in (and the code) you are back on this screen; nothing was resent.
+9. TalkBack: Date/Time/Duration/Type are read as separate items; the tick reads "checked/not checked" and the whole row toggles; the off button says why; the banner is announced; warnings start with "Important".
+10. Largest font and display size: nothing is cut off, the bottom bar stays usable, the list scrolls.
 
 ## Adding a feature (the recipe)
 

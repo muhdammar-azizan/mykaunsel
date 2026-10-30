@@ -57,16 +57,10 @@ class _PickSlotScreenState extends ConsumerState<PickSlotScreen> {
 
     if (slot == null) return;
 
-    final outcome = await context.push<ConfirmOutcome>(
+    await context.push<void>(
       AppRoutes.confirmBookingPath(widget.counselor.id, slot.id),
       extra: ConfirmBookingArgs.from(widget.counselor, slot),
     );
-
-    if (!mounted) return;
-
-    if (outcome == ConfirmOutcome.slotTaken) {
-      ref.read(pickSlotControllerProvider(widget.counselor.id).notifier).markTaken(slot.id);
-    }
   }
 
   @override

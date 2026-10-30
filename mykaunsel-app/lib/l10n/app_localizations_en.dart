@@ -524,7 +524,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pickSlotTaken =>
-      'Someone else just booked that time. Please pick another.';
+      'That time was just taken. Please choose another.';
 
   @override
   String get pickSlotUnavailableTitle => 'Counselor not available';

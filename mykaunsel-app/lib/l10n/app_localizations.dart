@@ -985,7 +985,7 @@ abstract class AppLocalizations {
   /// No description provided for @pickSlotTaken.
   ///
   /// In en, this message translates to:
-  /// **'Someone else just booked that time. Please pick another.'**
+  /// **'That time was just taken. Please choose another.'**
   String get pickSlotTaken;
 
   /// No description provided for @pickSlotUnavailableTitle.

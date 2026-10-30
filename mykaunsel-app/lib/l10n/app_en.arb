@@ -244,7 +244,7 @@
   "pickSlotLoadMoreFailed": "Could not load later dates.",
   "pickSlotRefreshFailed": "Could not refresh. Showing the last times we loaded.",
   "pickSlotSelectionLost": "Your selected time is no longer available.",
-  "pickSlotTaken": "Someone else just booked that time. Please pick another.",
+  "pickSlotTaken": "That time was just taken. Please choose another.",
   "pickSlotUnavailableTitle": "Counselor not available",
   "pickSlotUnavailableBody": "This counselor cannot be booked right now.",
   "pickSlotVerifyTitle": "Verify your email first",

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/error/app_failure.dart';
 import '../../../core/providers.dart';
+import '../../../core/router/app_router.dart';
+import '../../auth/presentation/pending_auth.dart';
 import '../../counselors/domain/counselor.dart';
 import '../domain/availability.dart';
 import '../domain/booking_preview.dart';
@@ -288,7 +290,7 @@ class ConfirmBookingController extends Notifier<ConfirmState> {
       NotFoundFailure() => base.copyWith(problem: ConfirmProblem.counselorUnavailable),
       EmailNotVerifiedFailure() => base.copyWith(problem: ConfirmProblem.emailNotVerified),
       RateLimitedFailure(:final retryAfterSeconds) => base.copyWith(problem: ConfirmProblem.rateLimited, waitSeconds: retryAfterSeconds),
-      UnauthorizedFailure() => base, // the session ends and the router takes the person to sign-in
+      UnauthorizedFailure() => _signInThenComeBack(base), // the session ends and the router takes the person to sign-in
       ServerFailure() => base.copyWith(problem: ConfirmProblem.serverError),
       _ => base.copyWith(problem: ConfirmProblem.other),
     };
@@ -405,10 +407,17 @@ class ConfirmBookingController extends Notifier<ConfirmState> {
       NotFoundFailure() => base.copyWith(problem: ConfirmProblem.counselorUnavailable),
       EmailNotVerifiedFailure() => base.copyWith(problem: ConfirmProblem.emailNotVerified),
       RateLimitedFailure(:final retryAfterSeconds) => base.copyWith(problem: ConfirmProblem.rateLimited, waitSeconds: retryAfterSeconds),
-      UnauthorizedFailure() => base, // the router takes the person to sign-in; they tap Confirm again after, nothing is resent
+      UnauthorizedFailure() => _signInThenComeBack(base), // they tap Confirm again after signing in; nothing is resent
       ValidationFailure(:final message) => base.copyWith(problem: ConfirmProblem.other, problemMessage: message),
       _ => base.copyWith(problem: ConfirmProblem.other),
     };
+  }
+
+  /// The session ended: after signing in again the person comes back to THIS screen (an in-app route with two plain ids, kept in memory).
+  ConfirmState _signInThenComeBack(ConfirmState base) {
+    ref.read(returnPathProvider.notifier).set(AppRoutes.confirmBookingPath(target.counselorId, target.slotId));
+
+    return base;
   }
 
   ConfirmState _afterSlotChanged(ConfirmState base, Map<String, dynamic> body) {

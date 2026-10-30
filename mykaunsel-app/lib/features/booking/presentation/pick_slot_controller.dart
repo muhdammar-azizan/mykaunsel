@@ -5,6 +5,7 @@ import '../../../core/providers.dart';
 import '../../counselors/domain/counselor.dart';
 import '../domain/availability.dart';
 import 'pick_slot_state.dart';
+import 'slot_taken_signal.dart';
 
 /// One "Pick a slot" screen per counselor; leaving the screen (or signing out) throws it away, so nothing outlives the person.
 final pickSlotControllerProvider =
@@ -22,9 +23,20 @@ class PickSlotController extends Notifier<PickSlotState> {
     ref.watch(currentUserIdProvider); // a different person starts again from nothing
     _ticket++;
 
+    // Said while this picker exists: hear it. Said BEFORE it was built (the address opened the confirm screen first): read it once built.
+    ref.listen(slotTakenProvider, (_, signal) => _hear(signal));
+    Future.microtask(() => _hear(ref.read(slotTakenProvider)));
+
     Future.microtask(_loadFirst);
 
     return const PickSlotState();
+  }
+
+  void _hear(SlotTaken? signal) {
+    if (!ref.mounted || signal == null || signal.counselorId != counselorId) return;
+
+    markTaken(signal.slotId);
+    ref.read(slotTakenProvider.notifier).clear(); // heard once: a later visit to this counselor does not repeat it
   }
 
   DateTime get _now => ref.read(clockProvider)();

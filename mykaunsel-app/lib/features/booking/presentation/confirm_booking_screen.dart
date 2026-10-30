@@ -12,6 +12,7 @@ import '../../counselors/domain/counselor.dart';
 import '../../counselors/presentation/counselor_labels.dart';
 import 'booking_args.dart';
 import 'confirm_booking_controller.dart';
+import 'slot_taken_signal.dart';
 
 /// "Confirm booking": the summary, the policies, the no-recording tick and the button. The time is NOT held while this is open: the server
 /// claims it at the moment of confirming, so the screen checks first (a preview that claims nothing) and the server checks again.
@@ -67,9 +68,9 @@ class _ConfirmBookingScreenState extends ConsumerState<ConfirmBookingScreen>
   }
 
   /// Back to the picker. When this screen was opened on its own (after a sign-in) there is nothing below it, so go to the picker.
-  void _backToPicker([ConfirmOutcome? outcome]) {
+  void _backToPicker() {
     if (context.canPop()) {
-      context.pop(outcome);
+      context.pop();
     } else {
       context.go(AppRoutes.pickSlotPath(widget.counselorId));
     }
@@ -86,7 +87,10 @@ class _ConfirmBookingScreenState extends ConsumerState<ConfirmBookingScreen>
     }
 
     if (now.slotTaken && before?.slotTaken != true) {
-      _backToPicker(ConfirmOutcome.slotTaken);
+      ref
+          .read(slotTakenProvider.notifier)
+          .say(widget.counselorId, widget.slotId);
+      _backToPicker();
 
       return;
     }
@@ -263,25 +267,29 @@ class _Status extends ConsumerWidget {
     );
   }
 
-  String _problemText(AppLocalizations l10n, ConfirmState state) =>
-      switch (state.problem!) {
-        ConfirmProblem.timeConflict => l10n.confirmErrTimeConflict,
-        ConfirmProblem.upcomingLimit => l10n.confirmErrLimit(
-          state.maxUpcoming ?? state.details?.maxUpcomingSessions ?? 3,
-        ),
-        ConfirmProblem.emailNotVerified => l10n.confirmErrVerify,
-        ConfirmProblem.counselorUnavailable => l10n.confirmErrCounselor,
-        ConfirmProblem.rateLimited =>
-          state.waitSeconds == null
-              ? l10n.confirmErrWaitGeneric
-              : l10n.confirmErrWait(state.waitSeconds!),
-        ConfirmProblem.serverError => l10n.confirmErrServer,
-        ConfirmProblem.unknownOutcome => l10n.confirmErrUnknown,
-        ConfirmProblem.other =>
-          (state.problemMessage ?? '').isEmpty
-              ? l10n.somethingWentWrongBody
-              : state.problemMessage!,
-      };
+  String _problemText(
+    AppLocalizations l10n,
+    ConfirmState state,
+  ) => switch (state.problem!) {
+    ConfirmProblem.timeConflict => l10n.confirmErrTimeConflict,
+    ConfirmProblem.upcomingLimit => l10n.confirmErrLimit(
+      state.maxUpcoming ?? state.details?.maxUpcomingSessions ?? 3,
+    ),
+    ConfirmProblem.emailNotVerified => l10n.confirmErrVerify,
+    ConfirmProblem.counselorUnavailable => l10n.confirmErrCounselor,
+    ConfirmProblem.rateLimited =>
+      state.waitSeconds == null
+          ? l10n.confirmErrWaitGeneric
+          : l10n.confirmErrWait(state.waitSeconds!),
+    // Failing to CHECK is a plain error; failing to BOOK may have booked, so it says the careful thing.
+    ConfirmProblem.serverError =>
+      state.valid ? l10n.confirmErrServer : l10n.somethingWentWrongBody,
+    ConfirmProblem.unknownOutcome => l10n.confirmErrUnknown,
+    ConfirmProblem.other =>
+      (state.problemMessage ?? '').isEmpty
+          ? l10n.somethingWentWrongBody
+          : state.problemMessage!,
+  };
 
   Widget? _action(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     Widget button(String label, VoidCallback onPressed) => Align(
@@ -312,7 +320,7 @@ class _Status extends ConsumerWidget {
         button(l10n.tryAgain, onRetry),
       ConfirmProblem.serverError ||
       ConfirmProblem.other ||
-      ConfirmProblem.rateLimited when !state.valid => button(
+      ConfirmProblem.rateLimited => button(
         l10n.confirmCheckAgain,
         onCheckAgain,
       ),
@@ -729,30 +737,33 @@ class _ConfirmBar extends StatelessWidget {
               onChanged: onAcknowledge,
             ),
             const SizedBox(height: AppSpacing.s),
-            Semantics(
-              // The button says WHY it is off, so it is never a silent dead end.
-              hint: why,
-              liveRegion: state.submitting,
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: state.canConfirm ? onConfirm : null,
-                  child: state.submitting
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
+            // Merged into the button's own item, so a screen reader hears the button AND why it is off in one go.
+            MergeSemantics(
+              child: Semantics(
+                // The button says WHY it is off, so it is never a silent dead end.
+                hint: why,
+                liveRegion: state.submitting,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: state.canConfirm ? onConfirm : null,
+                    child: state.submitting
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: AppSpacing.s),
-                            Text(l10n.confirmButtonBusy),
-                          ],
-                        )
-                      : Text(l10n.confirmButton),
+                              const SizedBox(width: AppSpacing.s),
+                              Text(l10n.confirmButtonBusy),
+                            ],
+                          )
+                        : Text(l10n.confirmButton),
+                  ),
                 ),
               ),
             ),
