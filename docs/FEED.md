@@ -33,6 +33,10 @@ A comment: `{id, text, created_at, author: {name, counselor}, mine}`.
 
 Refusals carry `code`: `post_not_found`, `comment_not_found`, `mute_not_found` (404), `cannot_report_own`, `cannot_mute_self` (409), `daily_post_limit` (429, `Retry-After`), `text_empty` (422).
 
+## The app
+
+The Feed tab (`features/feed`): the feed with pull-to-refresh and paging, a New post screen (live count to 500, says it posts under the person's name, also used to edit), the post page with comments and the comment box at the bottom, the post menu (edit/delete for the owner, report with five reasons and mute for others), a Muted people list (the volume icon in the Feed's bar), and the calm help card after a flagged post or comment. A post or comment that did not go stays on screen and goes again with the same client id.
+
 ## Not built yet
 
 - Moderate Feed (Platform Admin web): the queue of `feed_reports`, dismiss / remove / warn.

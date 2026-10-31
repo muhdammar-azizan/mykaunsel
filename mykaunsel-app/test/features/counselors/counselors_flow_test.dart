@@ -28,7 +28,9 @@ Future<void> open(WidgetTester tester, {FakeCounselorApi? api, FakeAuthApi? auth
 }
 
 Future<void> goToFind(WidgetTester tester) async {
-  await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Find')));
+  await tester.ensureVisible(find.text('Find a counselor'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Find a counselor'));
   await tester.pumpAndSettle();
 }
 
@@ -122,7 +124,7 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(ProviderScope(overrides: testOverrides(counselorApi: api, storage: FakeTokenStorage('t')), child: const MyKaunselApp()));
       await tester.pumpAndSettle();
-      await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Find')));
+      await tester.tap(find.text('Find a counselor'));
       await tester.pump(const Duration(milliseconds: 400)); // (a spinner never "settles")
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);

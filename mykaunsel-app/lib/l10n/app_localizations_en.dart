@@ -1654,4 +1654,233 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get neverUsed => 'Not used yet';
+
+  @override
+  String get navFeed => 'Feed';
+
+  @override
+  String get feedTitle => 'Feed';
+
+  @override
+  String get feedNewPost => 'New post';
+
+  @override
+  String get feedEmptyTitle => 'No posts yet';
+
+  @override
+  String get feedEmptyBody => 'Be the first to share how you are doing today.';
+
+  @override
+  String get feedMutedPeople => 'Muted people';
+
+  @override
+  String get feedPostOptions => 'Post options';
+
+  @override
+  String get feedCommentOptions => 'Comment options';
+
+  @override
+  String get feedLike => 'Like';
+
+  @override
+  String get feedUnlike => 'Remove like';
+
+  @override
+  String feedLikesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count likes',
+      one: '1 like',
+      zero: 'No likes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String feedCommentsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count comments',
+      one: '1 comment',
+      zero: 'No comments',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get feedCounselorBadge => 'Counselor';
+
+  @override
+  String get feedEdited => 'edited';
+
+  @override
+  String get feedJustNow => 'Just now';
+
+  @override
+  String feedMinutesAgo(int n) {
+    return '$n min ago';
+  }
+
+  @override
+  String feedHoursAgo(int n) {
+    return '$n h ago';
+  }
+
+  @override
+  String get feedOpenPost => 'Open post';
+
+  @override
+  String get feedNewPostTitle => 'New post';
+
+  @override
+  String get feedEditPostTitle => 'Edit post';
+
+  @override
+  String get feedPostHint => 'What\'s on your mind?';
+
+  @override
+  String get feedPostAction => 'Post';
+
+  @override
+  String get feedSaveAction => 'Save';
+
+  @override
+  String feedCharCount(int used, int max) {
+    return '$used/$max';
+  }
+
+  @override
+  String feedPostingAs(String name) {
+    return 'Posting as $name. Everyone who uses MyKaunsel can see your name and this post.';
+  }
+
+  @override
+  String get feedPostTitle => 'Post';
+
+  @override
+  String get feedCommentsHeader => 'Comments';
+
+  @override
+  String get feedNoComments => 'No comments yet. Be the first to reply.';
+
+  @override
+  String get feedCommentHint => 'Write a comment…';
+
+  @override
+  String get feedSendComment => 'Send comment';
+
+  @override
+  String get feedShowMoreComments => 'Show more comments';
+
+  @override
+  String get feedPostGoneTitle => 'This post is no longer available';
+
+  @override
+  String get feedPostGoneBody => 'The author may have deleted it.';
+
+  @override
+  String get feedMenuEdit => 'Edit post';
+
+  @override
+  String get feedMenuDelete => 'Delete post';
+
+  @override
+  String get feedMenuReport => 'Report post';
+
+  @override
+  String feedMenuMute(String name) {
+    return 'Mute $name';
+  }
+
+  @override
+  String get feedMenuDeleteComment => 'Delete comment';
+
+  @override
+  String get feedMenuReportComment => 'Report comment';
+
+  @override
+  String get feedDeleteTitle => 'Delete this post?';
+
+  @override
+  String get feedDeleteBody =>
+      'It will be removed for everyone. This can\'t be undone.';
+
+  @override
+  String get feedDeleteConfirm => 'Delete';
+
+  @override
+  String get feedDeleteCommentTitle => 'Delete this comment?';
+
+  @override
+  String get feedDeleted => 'Deleted.';
+
+  @override
+  String get feedReportTitle => 'Why are you reporting this?';
+
+  @override
+  String get feedReportSpam => 'Spam';
+
+  @override
+  String get feedReportHarassment => 'Harassment or bullying';
+
+  @override
+  String get feedReportSelfHarm => 'Self-harm or someone in danger';
+
+  @override
+  String get feedReportInappropriate => 'Inappropriate content';
+
+  @override
+  String get feedReportOther => 'Something else';
+
+  @override
+  String get feedReported => 'Thank you. Our team will look at it.';
+
+  @override
+  String feedMuteTitle(String name) {
+    return 'Mute $name?';
+  }
+
+  @override
+  String get feedMuteBody =>
+      'You will no longer see their posts or comments. They are not told. You can undo this in Muted people.';
+
+  @override
+  String get feedMuteConfirm => 'Mute';
+
+  @override
+  String feedMutedDone(String name) {
+    return '$name is muted.';
+  }
+
+  @override
+  String get feedMutedTitle => 'Muted people';
+
+  @override
+  String get feedMutedEmptyTitle => 'No one is muted';
+
+  @override
+  String get feedMutedEmptyBody => 'People you mute will appear here.';
+
+  @override
+  String get feedUnmute => 'Unmute';
+
+  @override
+  String feedUnmuteName(String name) {
+    return 'Unmute $name';
+  }
+
+  @override
+  String get feedDailyLimit =>
+      'You have reached today\'s limit of posts. Please come back tomorrow.';
+
+  @override
+  String get feedGone => 'This is no longer available.';
+
+  @override
+  String get feedCrisisContinue => 'OK, continue';
+
+  @override
+  String get feedLoadMoreFailed => 'Could not load more.';
 }

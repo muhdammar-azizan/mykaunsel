@@ -35,6 +35,7 @@ Future<ProviderContainer> start(
   FakeMyBookingsApi? bookings,
   FakeRequestsApi? requests,
   FakeAvailabilityApi? availability,
+  FakeFeedApi? feed,
   double textScale = 1,
   Size size = const Size(400, 800),
 }) async {
@@ -49,6 +50,7 @@ Future<ProviderContainer> start(
         myBookingsApi: bookings,
         requestsApi: requests,
         availabilityApi: availability,
+        feedApi: feed,
         authApi: FakeAuthApi(me: () async => consent ? _agreed : testUser),
         statusApi: signedIn ? null : null,
         storage: signedIn ? FakeTokenStorage('5|mkp_abc') : FakeTokenStorage(),
@@ -231,6 +233,46 @@ void main() {
     await shot(tester, '19-requests-list');
     await go(tester, c, AppRoutes.requestPath('a'));
     await shot(tester, '20-request-details');
+  });
+
+  testWidgets('feed: list, new post, post with comments, menu, report', (tester) async {
+    final feed = FakeFeedApi(posts: [
+      aFeedPost('p1', text: 'Exams are close and I keep feeling my chest tighten. Any tips that helped you?', name: 'Aiman', likes: 3, liked: true, comments: 2),
+      aFeedPost('p2', text: 'A small habit that helps: write down three things that went okay today, even tiny ones.', name: 'Dr Hana', counselor: true, likes: 12, comments: 1, minutesAgo: 190),
+      aFeedPost('p3', text: 'My own post, written a moment ago.', name: 'Siti Aminah', mine: true, minutesAgo: 1),
+    ]);
+    feed.commentsByPost['p1'] = [
+      aFeedComment('c1', text: 'Slow breathing worked for me. In for four, out for six.', name: 'Nurul', minutesAgo: 30),
+      aFeedComment('c2', text: 'You are not alone in this. Please consider booking a session if it continues.', name: 'Dr Hana', counselor: true, minutesAgo: 10),
+    ];
+    final c = await start(tester, feed: feed);
+    await go(tester, c, AppRoutes.feed);
+    await shot(tester, '24-feed');
+    await go(tester, c, AppRoutes.newPost);
+    await tester.enterText(find.byType(TextField), 'Feeling a bit better today, thank you all.');
+    await tester.pump();
+    await shot(tester, '25-new-post');
+    await go(tester, c, AppRoutes.feedPostPath('p1'));
+    await shot(tester, '26-post-details');
+    await tester.tap(find.byTooltip('Post options'));
+    await tester.pumpAndSettle();
+    await shot(tester, '27-post-menu');
+    await tester.tap(find.text('Report post'));
+    await tester.pumpAndSettle();
+    await shot(tester, '28-report-reasons');
+  });
+
+  testWidgets('feed: empty and a small phone with big text', (tester) async {
+    final c = await start(tester, feed: FakeFeedApi());
+    await go(tester, c, AppRoutes.feed);
+    await shot(tester, '29-feed-empty');
+  });
+
+  testWidgets('feed: small phone, big text', (tester) async {
+    final feed = FakeFeedApi(posts: [aFeedPost('p1', text: 'Exams are close and I keep feeling my chest tighten.', name: 'Aiman', likes: 3, comments: 2), aFeedPost('p2', text: 'A habit that helps.', name: 'Dr Hana', counselor: true)]);
+    final c = await start(tester, feed: feed, size: const Size(360, 640), textScale: 1.6);
+    await go(tester, c, AppRoutes.feed);
+    await shot(tester, '30-feed-small-big-text');
   });
 
   testWidgets('small phone, big text', (tester) async {

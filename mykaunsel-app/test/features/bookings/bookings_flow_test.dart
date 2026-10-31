@@ -71,7 +71,7 @@ void main() {
       await openBookings(tester, listing(), path: AppRoutes.home);
 
       final labels = tester.widgetList<NavigationDestination>(find.byType(NavigationDestination)).map((d) => d.label).toList();
-      expect(labels, ['Home', 'Find', 'Chat', 'Bookings', 'Account']);
+      expect(labels, ['Home', 'Chat', 'Bookings', 'Feed', 'Account']);
 
       await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Bookings')));
       await tester.pumpAndSettle();

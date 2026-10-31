@@ -649,7 +649,7 @@ void main() {
 
       final labels = tester.widgetList<NavigationDestination>(find.byType(NavigationDestination)).map((d) => d.label).toList();
 
-      expect(labels, ['Home', 'Find', 'Chat', 'Bookings', 'Account']);
+      expect(labels, ['Home', 'Chat', 'Bookings', 'Feed', 'Account']);
     });
   });
 

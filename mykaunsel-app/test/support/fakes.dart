@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart' show Finder, find;
 import 'package:mykaunsel/core/config/app_config.dart';
 import 'package:mykaunsel/core/config/app_info.dart';
+import 'package:mykaunsel/core/error/app_failure.dart';
 import 'package:mykaunsel/core/providers.dart';
 import 'package:mykaunsel/core/storage/token_storage.dart';
 import 'package:mykaunsel/features/account/data/account_api.dart';
@@ -22,6 +23,8 @@ import 'package:mykaunsel/features/booking/domain/booking_preview.dart';
 import 'package:mykaunsel/features/bookings/data/my_bookings_api.dart';
 import 'package:mykaunsel/features/chat/data/chat_api.dart';
 import 'package:mykaunsel/features/chat/domain/chat.dart';
+import 'package:mykaunsel/features/feed/data/feed_api.dart';
+import 'package:mykaunsel/features/feed/domain/feed.dart';
 import 'package:mykaunsel/features/requests/data/requests_api.dart';
 import 'package:mykaunsel/features/requests/domain/time_request.dart';
 import 'package:mykaunsel/features/bookings/domain/my_booking.dart';
@@ -529,6 +532,7 @@ List<Override> testOverrides({
   FakeMyBookingsApi? myBookingsApi,
   FakeRequestsApi? requestsApi,
   FakeChatApi? chatApi,
+  FakeFeedApi? feedApi,
 }) {
   return [
     appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://test.local')),
@@ -543,6 +547,7 @@ List<Override> testOverrides({
     myBookingsApiProvider.overrideWithValue(myBookingsApi ?? FakeMyBookingsApi()),
     requestsApiProvider.overrideWithValue(requestsApi ?? FakeRequestsApi()),
     chatApiProvider.overrideWithValue(chatApi ?? FakeChatApi()),
+    feedApiProvider.overrideWithValue(feedApi ?? FakeFeedApi()),
     clockProvider.overrideWithValue(() => testNow),
   ];
 }
@@ -777,4 +782,189 @@ ChatSendResult aChatResult({
     helplines: helplines,
     counselors: counselors,
   );
+}
+
+
+/// The Feed, kept in memory: posts newest first, comments oldest first. Every call is recorded; a handler can replace the answer to make it fail.
+class FakeFeedApi implements FeedApi {
+  FakeFeedApi({List<FeedPost>? posts}) : posts = posts ?? [];
+
+  final List<FeedPost> posts;
+  final commentsByPost = <String, List<FeedComment>>{};
+  final mutedPeople = <FeedMuted>[];
+  final calls = <String>[];
+  final creates = <({String text, String clientId})>[];
+  final commentCreates = <({String post, String text, String clientId})>[];
+  final reports = <({String id, bool isComment, String reason})>[];
+
+  /// Set to make a call fail or to change its answer; null = the normal in-memory behaviour.
+  Future<FeedPage<FeedPost>> Function(String? cursor)? feedHandler;
+  Future<FeedWrite<FeedPost>> Function(String text, String clientId)? createHandler;
+  Future<FeedWrite<FeedComment>> Function(String post, String text, String clientId)? commentHandler;
+  Future<FeedReactions> Function(String id, bool on)? reactHandler;
+  Future<FeedPost> Function(String id)? postHandler;
+  Future<void> Function()? deleteHandler;
+  Future<void> Function()? reportHandler;
+  Future<List<FeedMuted>> Function()? mutesHandler;
+
+  /// The crisis answer to give to the next writing.
+  bool flagNext = false;
+
+  int _next = 0;
+
+  @override
+  Future<FeedPage<FeedPost>> feed({String? cursor}) {
+    calls.add('feed:${cursor ?? ''}');
+
+    return feedHandler?.call(cursor) ?? Future.value(FeedPage(items: List.of(posts)));
+  }
+
+  @override
+  Future<FeedPost> post(String id) {
+    calls.add('post:$id');
+
+    return postHandler?.call(id) ?? (posts.any((p) => p.id == id) ? Future.value(posts.firstWhere((p) => p.id == id)) : Future.error(const NotFoundFailure()));
+  }
+
+  @override
+  Future<FeedWrite<FeedPost>> create(String text, {required String clientId}) {
+    calls.add('create');
+    creates.add((text: text, clientId: clientId));
+
+    if (createHandler != null) return createHandler!(text, clientId);
+
+    final post = aFeedPost('new-${++_next}', text: text, mine: true, name: 'Test User');
+    posts.insert(0, post);
+
+    return Future.value(_flagged(FeedWrite(item: post)));
+  }
+
+  FeedWrite<T> _flagged<T>(FeedWrite<T> made) {
+    if (!flagNext) return made;
+
+    flagNext = false;
+
+    return FeedWrite(item: made.item, crisis: true, helplines: fallbackHelplines);
+  }
+
+  @override
+  Future<FeedPost> edit(String id, String text) {
+    calls.add('edit:$id');
+
+    final i = posts.indexWhere((p) => p.id == id);
+
+    if (i < 0) return Future.error(const NotFoundFailure());
+
+    posts[i] = posts[i].copyWith(text: text, edited: true);
+
+    return Future.value(posts[i]);
+  }
+
+  @override
+  Future<void> delete(String id) {
+    calls.add('delete:$id');
+
+    if (deleteHandler != null) return deleteHandler!();
+
+    posts.removeWhere((p) => p.id == id);
+
+    return Future.value();
+  }
+
+  @override
+  Future<FeedReactions> react(String id, {required bool on}) {
+    calls.add('${on ? 'like' : 'unlike'}:$id');
+
+    if (reactHandler != null) return reactHandler!(id, on);
+
+    final i = posts.indexWhere((p) => p.id == id);
+
+    if (i < 0) return Future.error(const NotFoundFailure());
+
+    final reactions = FeedReactions(count: posts[i].reactions.count + (on == posts[i].reactions.mine ? 0 : (on ? 1 : -1)), mine: on);
+    posts[i] = posts[i].copyWith(reactions: reactions);
+
+    return Future.value(reactions);
+  }
+
+  @override
+  Future<FeedPage<FeedComment>> comments(String postId, {String? cursor}) {
+    calls.add('comments:$postId:${cursor ?? ''}');
+
+    return Future.value(FeedPage(items: List.of(commentsByPost[postId] ?? const [])));
+  }
+
+  @override
+  Future<FeedWrite<FeedComment>> comment(String postId, String text, {required String clientId}) {
+    calls.add('comment:$postId');
+    commentCreates.add((post: postId, text: text, clientId: clientId));
+
+    if (commentHandler != null) return commentHandler!(postId, text, clientId);
+
+    final made = aFeedComment('c-${++_next}', text: text, mine: true, name: 'Test User');
+    commentsByPost.putIfAbsent(postId, () => []).add(made);
+
+    return Future.value(_flagged(FeedWrite(item: made)));
+  }
+
+  @override
+  Future<void> deleteComment(String id) {
+    calls.add('deleteComment:$id');
+    commentsByPost.forEach((_, list) => list.removeWhere((c) => c.id == id));
+
+    return Future.value();
+  }
+
+  @override
+  Future<void> report({required String id, required bool isComment, required String reason}) {
+    calls.add('report:$id');
+    reports.add((id: id, isComment: isComment, reason: reason));
+
+    return reportHandler?.call() ?? Future.value();
+  }
+
+  @override
+  Future<FeedMuted> muteAuthor(String postId) {
+    calls.add('mute:$postId');
+
+    final post = posts.firstWhere((p) => p.id == postId);
+    final muted = FeedMuted(id: 'mute-${++_next}', name: post.author.name);
+
+    mutedPeople.add(muted);
+    posts.removeWhere((p) => p.author.name == post.author.name);
+
+    return Future.value(muted);
+  }
+
+  @override
+  Future<List<FeedMuted>> mutes() {
+    calls.add('mutes');
+
+    return mutesHandler?.call() ?? Future.value(List.of(mutedPeople));
+  }
+
+  @override
+  Future<void> unmute(String muteId) {
+    calls.add('unmute:$muteId');
+    mutedPeople.removeWhere((m) => m.id == muteId);
+
+    return Future.value();
+  }
+}
+
+FeedPost aFeedPost(String id, {String text = 'A post', String name = 'Aiman', bool counselor = false, bool mine = false, int likes = 0, bool liked = false, int comments = 0, int minutesAgo = 5, bool edited = false}) {
+  return FeedPost(
+    id: id,
+    text: text,
+    createdAt: testNow.subtract(Duration(minutes: minutesAgo)),
+    author: FeedAuthor(name: name, counselor: counselor),
+    edited: edited,
+    mine: mine,
+    reactions: FeedReactions(count: likes, mine: liked),
+    commentsCount: comments,
+  );
+}
+
+FeedComment aFeedComment(String id, {String text = 'A comment', String name = 'Hana', bool counselor = false, bool mine = false, int minutesAgo = 2}) {
+  return FeedComment(id: id, text: text, createdAt: testNow.subtract(Duration(minutes: minutesAgo)), author: FeedAuthor(name: name, counselor: counselor), mine: mine);
 }

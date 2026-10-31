@@ -29,6 +29,11 @@ import '../../features/counselors/presentation/counselor_detail_screen.dart';
 import '../../features/requests/presentation/request_detail_screen.dart';
 import '../../features/requests/presentation/send_request_screen.dart';
 import '../../features/counselors/presentation/counselors_screen.dart';
+import '../../features/feed/presentation/feed_screen.dart';
+import '../../features/feed/domain/feed.dart';
+import '../../features/feed/presentation/muted_people_screen.dart';
+import '../../features/feed/presentation/new_post_screen.dart';
+import '../../features/feed/presentation/post_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/startup/presentation/maintenance_screen.dart';
 import '../../features/startup/presentation/splash_screen.dart';
@@ -69,6 +74,14 @@ abstract final class AppRoutes {
   static const chatHistory = '/chat/history';
 
   static String chatSessionPath(String id) => '/chat/history/${Uri.encodeComponent(id)}';
+
+  static const feed = '/feed';
+  static const feedMuted = '/feed/muted';
+
+  /// Writing a post, or (with the post in `extra`) editing one. It sits on top of the tabs, so the keyboard and the words have the whole screen.
+  static const newPost = '/new-post';
+
+  static String feedPostPath(String id) => '/feed/posts/${Uri.encodeComponent(id)}';
 
   static const bookingConfirmed = '/booking-confirmed';
   static const bookings = '/bookings';
@@ -190,6 +203,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         redirect: (_, state) => state.extra is CreatedBooking ? null : AppRoutes.home,
         builder: (_, state) => BookingConfirmedScreen(booking: state.extra! as CreatedBooking),
       ),
+      GoRoute(path: AppRoutes.newPost, builder: (_, state) => NewPostScreen(editing: state.extra is FeedPost ? state.extra! as FeedPost : null)),
       GoRoute(
         path: '/request/:id',
         builder: (_, state) {
@@ -234,7 +248,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      // The signed-in app: five tabs, each keeping its own place.
+      // The signed-in app: six places (Find has no tab of its own: it opens from Home), each keeping its own place.
       StatefulShellRoute.indexedStack(
         builder: (_, _, navigationShell) => AppShell(navigationShell: navigationShell),
         branches: [
@@ -267,6 +281,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 // Before ':id', so "requests" is never read as a booking id.
                 GoRoute(path: 'requests/:requestId', builder: (_, state) => RequestDetailScreen(id: state.pathParameters['requestId']!)),
                 GoRoute(path: ':id', builder: (_, state) => BookingDetailScreen(id: state.pathParameters['id']!)),
+              ],
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: AppRoutes.feed,
+              builder: (_, _) => const FeedScreen(),
+              routes: [
+                // Before 'posts/:id' is not needed (different words), but 'muted' must never be read as an id.
+                GoRoute(path: 'muted', builder: (_, _) => const MutedPeopleScreen()),
+                GoRoute(path: 'posts/:id', builder: (_, state) => PostScreen(id: state.pathParameters['id']!)),
               ],
             ),
           ]),

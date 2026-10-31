@@ -149,7 +149,7 @@ class _ChatHistoryScreenState extends ConsumerState<ChatHistoryScreen> {
     final now = ref.watch(clockProvider)();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _scroll.hasClients && _scroll.position.maxScrollExtent <= 0 && state.hasMore && !state.loadingMore && state.failure == null) controller.loadMore();
+      if (mounted && _scroll.hasClients && _scroll.position.hasContentDimensions && _scroll.position.maxScrollExtent <= 0 && state.hasMore && !state.loadingMore && state.failure == null) controller.loadMore();
     });
 
     Widget body;

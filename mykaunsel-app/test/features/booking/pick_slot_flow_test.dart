@@ -35,7 +35,9 @@ Future<void> openPicker(
     ),
   );
   await tester.pumpAndSettle();
-  await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Find')));
+  await tester.ensureVisible(find.text('Find a counselor'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Find a counselor'));
   await tester.pumpAndSettle();
   await tester.tap(find.text('Kaunselor Aina Syazwani'));
   await tester.pumpAndSettle();

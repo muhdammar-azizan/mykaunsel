@@ -14,7 +14,7 @@ Status: ✅ built · ⚠️ partly built or a placeholder · ❌ not built.
 - Touch targets 44 px, screen-reader labels, never colour alone.
 - The server enforces every rule. The app is not trusted.
 
-**Bottom navigation (target: Home, Chat, Bookings, Feed, Profile).** **Now 5 tabs: Home, Find, Chat, Bookings, Account.** Feed is the only tab still to come. Proposal: do not show a tab that is not built, so there is no dead tab (none is dead today).
+**Bottom navigation (target: Home, Chat, Bookings, Feed, Profile).** **Now 5 tabs: Home, Chat, Bookings, Feed, Account.** Find has no tab any more: it opens from the Home card and from the help cards (while there, Home stays lit).
 
 ## 1. Auth and start
 
@@ -76,14 +76,14 @@ Closes the booking loop and makes the slot-restore contract (B9) real.
 
 ## 6. Wellness Feed
 
-Depends on Moderate Feed in the admin part. Build them together. **Decision (owner):** everyone posts as themselves, with their name, like Twitter/Threads. No anonymous posting for now. Server done (see [FEED.md](FEED.md)); app screens next.
+Depends on Moderate Feed in the admin part. Build them together. **Decision (owner):** everyone posts as themselves, with their name, like Twitter/Threads. No anonymous posting for now. Server and app screens done (see [FEED.md](FEED.md)); only Moderate Feed (admin web) is left.
 
 | | Screen | Details |
 |---|---|---|
-| ❌ | Feed | Open to every platform user, no AI. Reactions and comment counts. Empty state. |
-| ❌ | New post | Text only, 500 characters with a live count. Posted under the person's own name. (No anonymous toggle for now.) |
-| ❌ | Post details and comments | Full text, chronological comments, counselor replies with a badge. The comment input stays at the bottom. |
-| ❌ | Post menu and report | Owner: edit and delete. Others: report (five reasons) and mute. Reports go to the Moderate Feed queue. |
+| ✅ | Feed | **Built.** Open to every platform user, no AI. Reactions and comment counts. Empty state. |
+| ✅ | New post | **Built** (also used to edit). Text only, 500 characters with a live count. Posted under the person's own name. (No anonymous toggle for now.) |
+| ✅ | Post details and comments | **Built.**  | Full text, chronological comments, counselor replies with a badge. The comment input stays at the bottom. |
+| ✅ | Post menu and report | **Built** (plus a Muted people list).  | Owner: edit and delete. Others: report (five reasons) and mute. Reports go to the Moderate Feed queue. |
 
 ## 7. Profile and settings
 
@@ -132,7 +132,7 @@ B1 no fee text anywhere. B2 the no-recording acknowledgement is required and not
 3. Delete account: the data policy is not decided, so do not build it.
 4. Crisis helpline numbers: confirm the real numbers before use (HEAL 15555 and Talian Kasih 15999 are in the app and the server; Befrienders is left out until its number is confirmed). The crisis wording rules (English and Malay) also need a review by someone who knows how young Malaysians write.
 5. The real Terms and Privacy Policy text before launch (the sign-up form has no terms tick until then).
-6. ~~Hide the tabs that are not built~~ No dead tab today (Home, Find, Chat, Bookings, Account). Revisit when Feed is built (Find can stay).
+6. ~~Hide the tabs that are not built~~ Done: Feed built, Find left the bar (opens from Home).
 7. New: the AI-processing agreement is **required** at sign-up (as specified) and also withdrawable in Account. Keep it required, or make it optional (safer for PDPA, "freely given")?
 8. New: the chat model. It is `claude-opus-5-5` at low effort (about 4 seconds a reply). A cheaper or faster model can be set with `ANTHROPIC_CHAT_MODEL` in the server's `.env`; there is no spend limit except 200 messages a day per person.
 9. New: **Invite code.** There is no way yet to create a code (no org-admin page), and a code has no role: which role does someone get when they join with one (student, staff, employee), and who creates the codes (an org admin on the web, with a limit and an expiry)? The app screen is simple once this is decided.
@@ -143,7 +143,7 @@ B1 no fee text anywhere. B2 the no-recording acknowledgement is required and not
 1. ✅ Booking confirmed (real) → Session details → My bookings (list, details, cancel, reschedule).
 2. ✅ Mode B + the counselor portal (sessions, planner, weekly hours, requests) → Request status.
 3. ✅ Chat (with the AI consent, crisis detection on the server) → history → cards.
-4. ❌ **Next:** Feed + Moderate Feed together (needs decision 2).
+4. ✅ Feed built (identified posts). ❌ **Next:** Moderate Feed in the admin web (queue of reports).
 5. ✅ Choose account type, Notification settings, Data and privacy. ❌ Onboarding, Invite code (decision 9), Choose context (decision 10), Help / Terms / Privacy (needs decision 5), Reset password deep link, Home's upcoming-booking card. Delete account waits for decision 3.
 
 Nothing built after the Pick a slot step has been viewed on a screen yet; the emulator checklist in APP_ARCHITECTURE.md is the first thing to do with eyes.

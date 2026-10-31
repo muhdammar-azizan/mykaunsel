@@ -2804,6 +2804,390 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not used yet'**
   String get neverUsed;
+
+  /// No description provided for @navFeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed'**
+  String get navFeed;
+
+  /// No description provided for @feedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed'**
+  String get feedTitle;
+
+  /// No description provided for @feedNewPost.
+  ///
+  /// In en, this message translates to:
+  /// **'New post'**
+  String get feedNewPost;
+
+  /// No description provided for @feedEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No posts yet'**
+  String get feedEmptyTitle;
+
+  /// No description provided for @feedEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Be the first to share how you are doing today.'**
+  String get feedEmptyBody;
+
+  /// No description provided for @feedMutedPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Muted people'**
+  String get feedMutedPeople;
+
+  /// No description provided for @feedPostOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Post options'**
+  String get feedPostOptions;
+
+  /// No description provided for @feedCommentOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment options'**
+  String get feedCommentOptions;
+
+  /// No description provided for @feedLike.
+  ///
+  /// In en, this message translates to:
+  /// **'Like'**
+  String get feedLike;
+
+  /// No description provided for @feedUnlike.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove like'**
+  String get feedUnlike;
+
+  /// No description provided for @feedLikesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No likes} =1{1 like} other{{count} likes}}'**
+  String feedLikesCount(int count);
+
+  /// No description provided for @feedCommentsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No comments} =1{1 comment} other{{count} comments}}'**
+  String feedCommentsCount(int count);
+
+  /// No description provided for @feedCounselorBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Counselor'**
+  String get feedCounselorBadge;
+
+  /// No description provided for @feedEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'edited'**
+  String get feedEdited;
+
+  /// No description provided for @feedJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get feedJustNow;
+
+  /// No description provided for @feedMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min ago'**
+  String feedMinutesAgo(int n);
+
+  /// No description provided for @feedHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} h ago'**
+  String feedHoursAgo(int n);
+
+  /// No description provided for @feedOpenPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Open post'**
+  String get feedOpenPost;
+
+  /// No description provided for @feedNewPostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New post'**
+  String get feedNewPostTitle;
+
+  /// No description provided for @feedEditPostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit post'**
+  String get feedEditPostTitle;
+
+  /// No description provided for @feedPostHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s on your mind?'**
+  String get feedPostHint;
+
+  /// No description provided for @feedPostAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get feedPostAction;
+
+  /// No description provided for @feedSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get feedSaveAction;
+
+  /// No description provided for @feedCharCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{used}/{max}'**
+  String feedCharCount(int used, int max);
+
+  /// No description provided for @feedPostingAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Posting as {name}. Everyone who uses MyKaunsel can see your name and this post.'**
+  String feedPostingAs(String name);
+
+  /// No description provided for @feedPostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get feedPostTitle;
+
+  /// No description provided for @feedCommentsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get feedCommentsHeader;
+
+  /// No description provided for @feedNoComments.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet. Be the first to reply.'**
+  String get feedNoComments;
+
+  /// No description provided for @feedCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment…'**
+  String get feedCommentHint;
+
+  /// No description provided for @feedSendComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Send comment'**
+  String get feedSendComment;
+
+  /// No description provided for @feedShowMoreComments.
+  ///
+  /// In en, this message translates to:
+  /// **'Show more comments'**
+  String get feedShowMoreComments;
+
+  /// No description provided for @feedPostGoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This post is no longer available'**
+  String get feedPostGoneTitle;
+
+  /// No description provided for @feedPostGoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The author may have deleted it.'**
+  String get feedPostGoneBody;
+
+  /// No description provided for @feedMenuEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit post'**
+  String get feedMenuEdit;
+
+  /// No description provided for @feedMenuDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete post'**
+  String get feedMenuDelete;
+
+  /// No description provided for @feedMenuReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Report post'**
+  String get feedMenuReport;
+
+  /// No description provided for @feedMenuMute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute {name}'**
+  String feedMenuMute(String name);
+
+  /// No description provided for @feedMenuDeleteComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete comment'**
+  String get feedMenuDeleteComment;
+
+  /// No description provided for @feedMenuReportComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Report comment'**
+  String get feedMenuReportComment;
+
+  /// No description provided for @feedDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this post?'**
+  String get feedDeleteTitle;
+
+  /// No description provided for @feedDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It will be removed for everyone. This can\'t be undone.'**
+  String get feedDeleteBody;
+
+  /// No description provided for @feedDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get feedDeleteConfirm;
+
+  /// No description provided for @feedDeleteCommentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this comment?'**
+  String get feedDeleteCommentTitle;
+
+  /// No description provided for @feedDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted.'**
+  String get feedDeleted;
+
+  /// No description provided for @feedReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are you reporting this?'**
+  String get feedReportTitle;
+
+  /// No description provided for @feedReportSpam.
+  ///
+  /// In en, this message translates to:
+  /// **'Spam'**
+  String get feedReportSpam;
+
+  /// No description provided for @feedReportHarassment.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment or bullying'**
+  String get feedReportHarassment;
+
+  /// No description provided for @feedReportSelfHarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-harm or someone in danger'**
+  String get feedReportSelfHarm;
+
+  /// No description provided for @feedReportInappropriate.
+  ///
+  /// In en, this message translates to:
+  /// **'Inappropriate content'**
+  String get feedReportInappropriate;
+
+  /// No description provided for @feedReportOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Something else'**
+  String get feedReportOther;
+
+  /// No description provided for @feedReported.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you. Our team will look at it.'**
+  String get feedReported;
+
+  /// No description provided for @feedMuteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute {name}?'**
+  String feedMuteTitle(String name);
+
+  /// No description provided for @feedMuteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You will no longer see their posts or comments. They are not told. You can undo this in Muted people.'**
+  String get feedMuteBody;
+
+  /// No description provided for @feedMuteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get feedMuteConfirm;
+
+  /// No description provided for @feedMutedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is muted.'**
+  String feedMutedDone(String name);
+
+  /// No description provided for @feedMutedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Muted people'**
+  String get feedMutedTitle;
+
+  /// No description provided for @feedMutedEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No one is muted'**
+  String get feedMutedEmptyTitle;
+
+  /// No description provided for @feedMutedEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'People you mute will appear here.'**
+  String get feedMutedEmptyBody;
+
+  /// No description provided for @feedUnmute.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get feedUnmute;
+
+  /// No description provided for @feedUnmuteName.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute {name}'**
+  String feedUnmuteName(String name);
+
+  /// No description provided for @feedDailyLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached today\'s limit of posts. Please come back tomorrow.'**
+  String get feedDailyLimit;
+
+  /// No description provided for @feedGone.
+  ///
+  /// In en, this message translates to:
+  /// **'This is no longer available.'**
+  String get feedGone;
+
+  /// No description provided for @feedCrisisContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'OK, continue'**
+  String get feedCrisisContinue;
+
+  /// No description provided for @feedLoadMoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load more.'**
+  String get feedLoadMoreFailed;
 }
 
 class _AppLocalizationsDelegate
