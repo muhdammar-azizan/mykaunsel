@@ -16,6 +16,10 @@ How a person comes to belong to an organization, and what happens when they leav
 - An admin can not "remove" someone who is only waiting (use Decline), and can not remove a counselor or an admin this way.
 - No session quota per employee.
 
+## Where a new employee finds the code
+
+Nothing tells a new employee where a code is typed, so there are two nudges: (1) the Members page shows, under each working code, a message the admin can copy ("…open Account, then Your organization, and enter this code: …"); (2) Home shows a card until the person belongs to an organization or hides it: "Have a code from your organization?" (hideable, remembered on the phone), "[Name] invited you" (not hideable) or "Waiting for [Name]". The sign-up form has no code step.
+
 ## Web (organization admin): `/org/members`
 
 Waiting for approval (Approve / Decline), Invite by e-mail (send, list, cancel), Reference codes (create with expiry and number of people, switch off), Members (Remove). Always about the admin's current organization; an id from another organization is a 404. The page still uses the older look, like the counselor portal.
@@ -34,6 +38,6 @@ All of them go out **after** the change is saved, and a failing e-mail never und
 
 ## Not built
 
-- The Invite code step inside sign-up. The code is entered under Account > Your organization (open question: whether Home or the sign-up flow should offer it).
+- The Invite code step inside sign-up (decided: not added; instead Home nudges people with no organization, see below).
 - Edit or suspend a member, and other member roles (student, staff) from codes: a code gives **employee** only.
 - A bell notification for the admin when someone is waiting (the page lists them; the admins are e-mailed, see below).

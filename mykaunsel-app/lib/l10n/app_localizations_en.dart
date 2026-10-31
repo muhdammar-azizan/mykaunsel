@@ -1131,13 +1131,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signUpConsent =>
-      'I agree that my chat messages are processed by an AI service to write replies. I can turn this off at any time in Account.';
+      'Optional: I agree that my chat messages are processed by an AI service to write replies. I can use MyKaunsel without this, and change my mind at any time in Account.';
+
+  @override
+  String get signUpTerms =>
+      'I agree to the Terms of Use and the Privacy Policy.';
 
   @override
   String get signUpConsentMore => 'What this means';
 
   @override
-  String get signUpConsentRequired => 'Please agree to continue.';
+  String get signUpTermsRequired =>
+      'Please agree to the Terms of Use and the Privacy Policy to continue.';
 
   @override
   String get homeChatTitle => 'Talk it through';
@@ -2074,4 +2079,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pageOpenFailed => 'We couldn\'t open that page.';
+
+  @override
+  String get homeOrgCodeTitle => 'Have a code from your organization?';
+
+  @override
+  String get homeOrgCodeBody =>
+      'Enter it to book your organization\'s counselors.';
+
+  @override
+  String get homeOrgInvitedBody => 'Open to accept the invitation.';
+
+  @override
+  String get homeOrgWaitingBody =>
+      'Your organization has to approve you first.';
+
+  @override
+  String get homeHintHide => 'Hide this';
 }

@@ -42,6 +42,19 @@ class OnboardingSeen extends Notifier<bool> {
   }
 }
 
+/// Whether the person hid the "Have a code from your organization?" card on Home.
+final orgHintDismissedProvider = NotifierProvider<OrgHintDismissed, bool>(OrgHintDismissed.new);
+
+class OrgHintDismissed extends Notifier<bool> {
+  @override
+  bool build() => ref.read(onboardingStoreProvider).orgHintDismissed;
+
+  Future<void> dismiss() async {
+    state = true;
+    await ref.read(onboardingStoreProvider).dismissOrgHint();
+  }
+}
+
 final crashReporterProvider = Provider<CrashReporter>((ref) => const NoopCrashReporter());
 
 /// One client for the whole app. Every failed call is also passed to the session, which reacts in one place.

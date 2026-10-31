@@ -12,8 +12,9 @@ abstract class AuthApi {
 
   /// Creates an individual account. No sign-in yet: a confirmation email is sent first. Throws [ValidationFailure]
   /// (email taken, weak password…) or [ForbiddenFailure] when sign-up is closed (the message is the Platform Admin's).
-  /// [aiConsent] is the person's agreement to AI processing (the sign-up form will not send without it; the server refuses without it too).
-  Future<void> register({required String name, required String email, required String password, required bool aiConsent});
+  /// [termsAccepted] is the person's agreement to the Terms of Use and the Privacy Policy (the form will not send without it; the server refuses without it
+  /// too). [aiConsent] is their OPTIONAL agreement to AI processing: without it they can still book counselors, and the chat asks again.
+  Future<void> register({required String name, required String email, required String password, required bool termsAccepted, required bool aiConsent});
 
   /// Sends the confirmation email again. The server answers the same for every address.
   Future<void> resendVerification(String email);
@@ -66,8 +67,9 @@ class HttpAuthApi implements AuthApi {
   }
 
   @override
-  Future<void> register({required String name, required String email, required String password, required bool aiConsent}) async {
+  Future<void> register({required String name, required String email, required String password, required bool termsAccepted, required bool aiConsent}) async {
     await _client.post('/auth/register', data: {
+      'terms': termsAccepted,
       'ai_consent': aiConsent,
       'name': name,
       'email': email,

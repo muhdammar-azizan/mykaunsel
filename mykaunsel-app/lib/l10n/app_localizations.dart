@@ -1926,8 +1926,14 @@ abstract class AppLocalizations {
   /// No description provided for @signUpConsent.
   ///
   /// In en, this message translates to:
-  /// **'I agree that my chat messages are processed by an AI service to write replies. I can turn this off at any time in Account.'**
+  /// **'Optional: I agree that my chat messages are processed by an AI service to write replies. I can use MyKaunsel without this, and change my mind at any time in Account.'**
   String get signUpConsent;
+
+  /// No description provided for @signUpTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree to the Terms of Use and the Privacy Policy.'**
+  String get signUpTerms;
 
   /// No description provided for @signUpConsentMore.
   ///
@@ -1935,11 +1941,11 @@ abstract class AppLocalizations {
   /// **'What this means'**
   String get signUpConsentMore;
 
-  /// No description provided for @signUpConsentRequired.
+  /// No description provided for @signUpTermsRequired.
   ///
   /// In en, this message translates to:
-  /// **'Please agree to continue.'**
-  String get signUpConsentRequired;
+  /// **'Please agree to the Terms of Use and the Privacy Policy to continue.'**
+  String get signUpTermsRequired;
 
   /// No description provided for @homeChatTitle.
   ///
@@ -3482,6 +3488,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We couldn\'t open that page.'**
   String get pageOpenFailed;
+
+  /// No description provided for @homeOrgCodeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Have a code from your organization?'**
+  String get homeOrgCodeTitle;
+
+  /// No description provided for @homeOrgCodeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter it to book your organization\'s counselors.'**
+  String get homeOrgCodeBody;
+
+  /// No description provided for @homeOrgInvitedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to accept the invitation.'**
+  String get homeOrgInvitedBody;
+
+  /// No description provided for @homeOrgWaitingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your organization has to approve you first.'**
+  String get homeOrgWaitingBody;
+
+  /// No description provided for @homeHintHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide this'**
+  String get homeHintHide;
 }
 
 class _AppLocalizationsDelegate

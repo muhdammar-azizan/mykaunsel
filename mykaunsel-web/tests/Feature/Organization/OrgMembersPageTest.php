@@ -106,6 +106,20 @@ class OrgMembersPageTest extends TestCase
             ->assertDontSee('Hana HR</p>', false);
     }
 
+    public function test_each_working_code_comes_with_words_to_send_that_say_where_to_type_it(): void
+    {
+        $on = OrgInviteCode::issue($this->acme, $this->hr, null, null);
+        $off = OrgInviteCode::issue($this->acme, $this->hr, null, null);
+        $off->update(['revoked_at' => now()]);
+
+        $page = $this->hr()->get(route('org.members'))->assertOk()
+            ->assertSee('Message to send with this code')
+            ->assertSee('Open Account, then Your organization, and enter this code: '.$on->display());
+
+        $this->assertSame(1, substr_count($page->getContent(), 'Message to send with this code</summary>'), 'only for a code that still works');
+        $page->assertDontSee('enter this code: '.$off->display());
+    }
+
     public function test_creating_a_code_sets_its_limits_and_is_audited(): void
     {
         $this->hr()->post(route('org.codes.store'), ['expires' => '7', 'max_uses' => '25'])->assertSessionHas('status');

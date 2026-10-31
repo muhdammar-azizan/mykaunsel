@@ -10,6 +10,10 @@
 return [
     'draft' => (bool) env('LEGAL_DRAFT', true),
 
+    // The version of the Terms of Use and Privacy Policy that a new account agrees to. Change it whenever the text changes in a way that matters,
+    // so we can tell who agreed to which text (users.terms_version).
+    'terms_version' => '2026-10-31',
+
     // The date shown as "last updated". Change it whenever the text changes.
     'updated' => '31 October 2026',
 ];

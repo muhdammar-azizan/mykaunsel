@@ -35,6 +35,7 @@ Future<void> openPicker(
     ),
   );
   await tester.pumpAndSettle();
+  await tester.scrollUntilVisible(find.text('Find a counselor'), 200, scrollable: find.byType(Scrollable).first);
   await tester.ensureVisible(find.text('Find a counselor'));
   await tester.pumpAndSettle();
   await tester.tap(find.text('Find a counselor'));

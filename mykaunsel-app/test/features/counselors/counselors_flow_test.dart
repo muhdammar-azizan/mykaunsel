@@ -28,6 +28,7 @@ Future<void> open(WidgetTester tester, {FakeCounselorApi? api, FakeAuthApi? auth
 }
 
 Future<void> goToFind(WidgetTester tester) async {
+  await tester.scrollUntilVisible(find.text('Find a counselor'), 200, scrollable: find.byType(Scrollable).first);
   await tester.ensureVisible(find.text('Find a counselor'));
   await tester.pumpAndSettle();
   await tester.tap(find.text('Find a counselor'));

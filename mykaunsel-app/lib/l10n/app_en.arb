@@ -425,9 +425,10 @@
   "requestNotPending": "This request was already answered or has closed.",
   "requestWithdrawServer": "Something went wrong on our side. Your request may or may not have been withdrawn. Try again: it is safe to repeat.",
   "requestNotFound": "We couldn't find this request.",
-  "signUpConsent": "I agree that my chat messages are processed by an AI service to write replies. I can turn this off at any time in Account.",
+  "signUpConsent": "Optional: I agree that my chat messages are processed by an AI service to write replies. I can use MyKaunsel without this, and change my mind at any time in Account.",
+  "signUpTerms": "I agree to the Terms of Use and the Privacy Policy.",
   "signUpConsentMore": "What this means",
-  "signUpConsentRequired": "Please agree to continue.",
+  "signUpTermsRequired": "Please agree to the Terms of Use and the Privacy Policy to continue.",
   "homeChatTitle": "Talk it through",
   "homeChatBody": "Chat with an AI companion about how you feel. It listens; it is not a counselor.",
   "homeHelpTitle": "Need help right now?",
@@ -745,5 +746,10 @@
   "accountDeletedNote": "Your account has been deleted. We sent an e-mail to confirm.",
   "helpPage": "Help",
   "termsPage": "Terms of Use",
-  "pageOpenFailed": "We couldn't open that page."
+  "pageOpenFailed": "We couldn't open that page.",
+  "homeOrgCodeTitle": "Have a code from your organization?",
+  "homeOrgCodeBody": "Enter it to book your organization's counselors.",
+  "homeOrgInvitedBody": "Open to accept the invitation.",
+  "homeOrgWaitingBody": "Your organization has to approve you first.",
+  "homeHintHide": "Hide this"
 }

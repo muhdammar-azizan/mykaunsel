@@ -39,6 +39,15 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
+        <!-- Terms -->
+        <div class="mt-4">
+            <label for="terms" class="inline-flex items-start gap-2 text-sm text-gray-700">
+                <input id="terms" type="checkbox" name="terms" value="1" required @checked(old('terms')) class="mt-0.5 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                <span>{!! __('I agree to the :terms and the :privacy.', ['terms' => '<a class="underline" href="'.route('terms').'" target="_blank" rel="noopener">'.e(__('Terms of Use')).'</a>', 'privacy' => '<a class="underline" href="'.route('privacy').'" target="_blank" rel="noopener">'.e(__('Privacy Policy')).'</a>']) !!}</span>
+            </label>
+            <x-input-error :messages="$errors->get('terms')" class="mt-2" />
+        </div>
+
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
                 {{ __('Already registered?') }}

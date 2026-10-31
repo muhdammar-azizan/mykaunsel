@@ -11,6 +11,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../bookings/domain/my_booking.dart';
 import '../../bookings/presentation/booking_labels.dart';
 import '../../bookings/presentation/my_bookings_controller.dart';
+import '../../account/presentation/organization_controller.dart';
 import '../../chat/presentation/help_lines.dart';
 
 /// The home tab of a signed-in person. The first thing on it is the way to a counselor; more is added as features are built.
@@ -39,6 +40,7 @@ class HomeScreen extends ConsumerWidget {
             Text(l10n.signedInAs(fullName), style: text.bodyMedium),
             const SizedBox(height: 24),
             const _UpcomingSession(),
+            const _OrganizationHint(),
             Card(
               elevation: 0,
               color: Colors.white,
@@ -208,6 +210,101 @@ class _UpcomingSession extends ConsumerWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A nudge towards Account > Your organization, because nothing else tells a new employee where a reference code is typed: an invitation waiting for
+/// them, a request waiting for approval, or (until they hide it) "Have a code from your organization?". It says nothing once they belong to one,
+/// while loading, or if it could not be loaded: Home never waits on it or shows an error for it.
+class _OrganizationHint extends ConsumerWidget {
+  const _OrganizationHint();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(organizationControllerProvider);
+    final dismissed = ref.watch(orgHintDismissedProvider);
+
+    if (state.loading || state.loadFailure != null) {
+      return const SizedBox.shrink();
+    }
+
+    final l10n = AppLocalizations.of(context);
+    final organization = state.organization;
+    final invited = state.invitations.firstOrNull;
+
+    final String title;
+    final String body;
+    var canHide = false;
+
+    if (invited != null && (organization == null || organization.waiting)) {
+      title = l10n.orgInvitedTitle(invited.organization);
+      body = l10n.homeOrgInvitedBody;
+    } else if (organization != null && organization.waiting) {
+      title = l10n.orgWaitingTitle(organization.name);
+      body = l10n.homeOrgWaitingBody;
+    } else if (organization == null && !dismissed) {
+      title = l10n.homeOrgCodeTitle;
+      body = l10n.homeOrgCodeBody;
+      canHide = true;
+    } else {
+      return const SizedBox.shrink();
+    }
+
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.m),
+      child: Material(
+        color: scheme.cardFill,
+        shape: RoundedRectangleBorder(borderRadius: AppRadii.cardRadius, side: BorderSide(color: scheme.cardBorder)),
+        child: Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                borderRadius: AppRadii.cardRadius,
+                onTap: () => context.push(AppRoutes.accountOrganization),
+                child: Semantics(
+                  button: true,
+                  excludeSemantics: true,
+                  label: '$title. $body',
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: AppSizes.minTouch),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.l),
+                      child: Row(
+                        children: [
+                          Icon(Icons.business_outlined, size: 28, color: scheme.primary),
+                          const SizedBox(width: AppSpacing.l),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(title, style: text.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(body, style: text.bodyMedium),
+                              ],
+                            ),
+                          ),
+                          if (!canHide) const Icon(Icons.chevron_right),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            if (canHide)
+              IconButton(
+                tooltip: l10n.homeHintHide,
+                constraints: const BoxConstraints(minWidth: AppSizes.minTouch, minHeight: AppSizes.minTouch),
+                icon: const Icon(Icons.close),
+                onPressed: () => ref.read(orgHintDismissedProvider.notifier).dismiss(),
+              ),
+          ],
         ),
       ),
     );

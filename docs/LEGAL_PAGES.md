@@ -8,7 +8,7 @@ Three public pages on the website, linked from the app (Account > Help, Terms of
 - **Facts the owner has to supply are marked** with a yellow "To be confirmed:" (a `<mark>`), so they can be found by searching for it. Nothing was invented to fill them.
 - **Numbers come from the configuration**, not from the text: the Privacy Policy reads the chat retention (`chat.retention_months`), notice retention (`notifications.retention.*`), complaint text retention (`complaints.retention.closed_years`) and the days a deleted account's bookings are kept (`account.deleted_booking_days`). The helplines on Help and Terms come from `chat.helplines`; the support address from `SUPPORT_EMAIL`. If a number changes in the system, the page changes with it (`LegalPagesTest` checks this).
 - **They stay readable during maintenance**, because the phone numbers must always be there (`platform-settings.maintenance_allowed_routes`).
-- Change `config/legal.php` `updated` whenever the text changes.
+- Change `config/legal.php` `updated` whenever the text changes, and `terms_version` when it changes in a way people must agree to again (a new account stores it in `users.terms_version` with `terms_accepted_at`).
 
 ## To be confirmed (the owner supplies these)
 
@@ -35,6 +35,6 @@ These are written as the intended behaviour. Some depend on parts that are decid
 
 ## Not built
 
-- A terms tick on the sign-up form (the form has none until the text is final), and a record of which version of the terms each person agreed to.
+- Asking people who signed up before the tick existed (they have no `terms_version`) to agree, and asking everyone again when `terms_version` changes.
 - Malay versions of the three pages.
 - Telling people by e-mail or in the app when the text changes in a way that matters (the pages promise it).

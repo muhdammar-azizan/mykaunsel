@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/error/app_failure.dart';
 import '../../../core/error/failure_message.dart';
+import '../../../core/providers.dart';
 import '../../../core/router/app_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/password_rules.dart';
@@ -72,6 +73,7 @@ class _SignUpFormState extends ConsumerState<_SignUpForm> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+  bool _terms = false;
   bool _aiConsent = false;
 
   @override
@@ -88,7 +90,7 @@ class _SignUpFormState extends ConsumerState<_SignUpForm> {
       return;
     }
 
-    final outcome = await ref.read(registerControllerProvider.notifier).submit(name: _name.text, email: _email.text, password: _password.text, aiConsent: _aiConsent);
+    final outcome = await ref.read(registerControllerProvider.notifier).submit(name: _name.text, email: _email.text, password: _password.text, termsAccepted: _terms, aiConsent: _aiConsent);
 
     if (!mounted || outcome != RegisterOutcome.created) {
       return;
@@ -96,6 +98,14 @@ class _SignUpFormState extends ConsumerState<_SignUpForm> {
 
     TextInput.finishAutofillContext();
     context.go(AppRoutes.verifyEmail);
+  }
+
+  Future<void> _read(String path) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final failure = AppLocalizations.of(context).pageOpenFailed;
+    final ok = await ref.read(urlOpenerProvider)(Uri.parse('${ref.read(appConfigProvider).apiBaseUrl}$path'));
+
+    if (!ok) messenger.showSnackBar(SnackBar(content: Text(failure)));
   }
 
   @override
@@ -173,10 +183,10 @@ class _SignUpFormState extends ConsumerState<_SignUpForm> {
                   onSubmitted: (_) => _submit(),
                 ),
                 const SizedBox(height: 8),
-                // Agreeing to AI processing is part of making an account (the chat needs it); it can be withdrawn later in Account.
+                // The Terms of Use and the Privacy Policy: part of making an account. The version agreed to is recorded by the server.
                 FormField<bool>(
-                  initialValue: _aiConsent,
-                  validator: (value) => value == true ? null : l10n.signUpConsentRequired,
+                  initialValue: _terms,
+                  validator: (value) => value == true ? null : l10n.signUpTermsRequired,
                   builder: (field) => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -185,13 +195,18 @@ class _SignUpFormState extends ConsumerState<_SignUpForm> {
                         controlAffinity: ListTileControlAffinity.leading,
                         enabled: !form.submitting,
                         value: field.value ?? false,
-                        title: Text(l10n.signUpConsent),
+                        title: Text(l10n.signUpTerms),
                         onChanged: (value) {
                           field.didChange(value);
-                          setState(() => _aiConsent = value ?? false);
+                          setState(() => _terms = value ?? false);
                         },
                       ),
-                      Align(alignment: AlignmentDirectional.centerStart, child: TextButton(onPressed: () => showAiConsentInfo(context), child: Text(l10n.signUpConsentMore))),
+                      Wrap(
+                        children: [
+                          TextButton(onPressed: () => _read('/terms'), child: Text(l10n.termsPage)),
+                          TextButton(onPressed: () => _read('/privacy'), child: Text(l10n.privacyPolicyButton)),
+                        ],
+                      ),
                       if (field.hasError)
                         Padding(
                           padding: const EdgeInsets.only(left: 12),
@@ -200,6 +215,16 @@ class _SignUpFormState extends ConsumerState<_SignUpForm> {
                     ],
                   ),
                 ),
+                // Agreeing to AI processing is the person's choice: without it they can still book counselors, and the chat asks again.
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  enabled: !form.submitting,
+                  value: _aiConsent,
+                  title: Text(l10n.signUpConsent),
+                  onChanged: (value) => setState(() => _aiConsent = value ?? false),
+                ),
+                Align(alignment: AlignmentDirectional.centerStart, child: TextButton(onPressed: () => showAiConsentInfo(context), child: Text(l10n.signUpConsentMore))),
               ],
             ),
           ),

@@ -103,14 +103,16 @@ class FakeAuthApi implements AuthApi {
   final resendCalls = <String>[];
   final registerCalls = <({String name, String email, String password})>[];
   final registerConsents = <bool>[];
+  final registerTerms = <bool>[];
   final signupLinks = <({String type, String email})>[];
   Future<void> Function(String type, String email) signupLinkHandler = (type, email) async {};
   final forgotPasswordCalls = <String>[];
   int logoutAllCalls = 0;
 
   @override
-  Future<void> register({required String name, required String email, required String password, required bool aiConsent}) {
+  Future<void> register({required String name, required String email, required String password, required bool termsAccepted, required bool aiConsent}) {
     registerCalls.add((name: name, email: email, password: password));
+    registerTerms.add(termsAccepted);
     registerConsents.add(aiConsent);
 
     return registerHandler(name, email, password);
@@ -591,6 +593,12 @@ class FakeOnboardingStore implements OnboardingStore {
 
   @override
   Future<void> markSeen() async => seen = true;
+
+  @override
+  bool orgHintDismissed = false;
+
+  @override
+  Future<void> dismissOrgHint() async => orgHintDismissed = true;
 }
 
 List<Override> testOverrides({
@@ -606,6 +614,7 @@ List<Override> testOverrides({
   FakeChatApi? chatApi,
   FakeFeedApi? feedApi,
   bool onboardingSeen = true,
+  bool orgHintDismissed = false,
 }) {
   return [
     appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://test.local')),
@@ -621,7 +630,7 @@ List<Override> testOverrides({
     requestsApiProvider.overrideWithValue(requestsApi ?? FakeRequestsApi()),
     chatApiProvider.overrideWithValue(chatApi ?? FakeChatApi()),
     feedApiProvider.overrideWithValue(feedApi ?? FakeFeedApi()),
-    onboardingStoreProvider.overrideWithValue(FakeOnboardingStore(onboardingSeen)),
+    onboardingStoreProvider.overrideWithValue(FakeOnboardingStore(onboardingSeen)..orgHintDismissed = orgHintDismissed),
     clockProvider.overrideWithValue(() => testNow),
   ];
 }

@@ -16,7 +16,7 @@ use Tests\Feature\Counselor\CounselorTestCase;
  */
 class WebIndividualRegistrationTest extends CounselorTestCase
 {
-    private const NEW_USER = ['name' => 'Aina Syazwani', 'email' => 'aina.web@example.com', 'password' => 'Str0ng-Pass-123', 'password_confirmation' => 'Str0ng-Pass-123'];
+    private const NEW_USER = ['name' => 'Aina Syazwani', 'email' => 'aina.web@example.com', 'password' => 'Str0ng-Pass-123', 'password_confirmation' => 'Str0ng-Pass-123', 'terms' => '1'];
 
     protected function setUp(): void
     {
@@ -94,7 +94,7 @@ class WebIndividualRegistrationTest extends CounselorTestCase
     {
         $this->off();
 
-        $this->postJson('/api/v1/auth/register', ['name' => 'Aina Syazwani', 'email' => 'aina.app@example.com', 'password' => 'Str0ng-Pass-123', 'password_confirmation' => 'Str0ng-Pass-123', 'ai_consent' => true])
+        $this->postJson('/api/v1/auth/register', ['name' => 'Aina Syazwani', 'email' => 'aina.app@example.com', 'password' => 'Str0ng-Pass-123', 'password_confirmation' => 'Str0ng-Pass-123', 'terms' => true, 'ai_consent' => true])
             ->assertSuccessful();
         $this->assertNotNull(User::where('email', 'aina.app@example.com')->first());
     }

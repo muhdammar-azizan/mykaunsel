@@ -4,6 +4,12 @@
     </x-slot>
 
     @php
+        // The words an admin can copy to the people who should use a code: where to type it is not obvious to someone new.
+        $howTo = fn ($code) => "Hello,\n\n{$organization->name} now offers counselling through MyKaunsel. To use it:\n"
+            ."1. Install the MyKaunsel app and create an account.\n"
+            ."2. Confirm your e-mail address.\n"
+            ."3. Open Account, then Your organization, and enter this code: {$code->display()}\n"
+            ."4. Wait for us to approve you. You will get an e-mail.";
         $when = fn ($value) => $value ? \Illuminate\Support\Carbon::parse($value, 'UTC')->timezone($timezone)->format('j M Y, g:i A') : null;
     @endphp
 
@@ -150,6 +156,17 @@
                                             @endif
                                         </td>
                                     </tr>
+                                    @if ($code->isUsable())
+                                        <tr>
+                                            <td colspan="5" class="pb-3">
+                                                <details>
+                                                    <summary class="cursor-pointer text-sm font-semibold text-indigo-700">Message to send with this code</summary>
+                                                    <label for="howto-{{ $code->id }}" class="sr-only">Message to send with this code</label>
+                                                    <textarea id="howto-{{ $code->id }}" readonly rows="6" class="mt-2 block w-full rounded-md border-gray-300 text-sm" onclick="this.select()">{{ $howTo($code) }}</textarea>
+                                                </details>
+                                            </td>
+                                        </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>

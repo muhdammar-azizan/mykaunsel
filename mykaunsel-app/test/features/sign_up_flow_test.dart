@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mykaunsel/app.dart';
+import 'package:mykaunsel/core/providers.dart';
 import 'package:mykaunsel/features/account/presentation/account_screen.dart';
 import 'package:mykaunsel/core/error/app_failure.dart';
 import 'package:mykaunsel/features/platform_status/domain/platform_status.dart';
@@ -14,6 +15,7 @@ Future<void> open(
   FakeTokenStorage? storage,
   FakePlatformStatusApi? statusApi,
   double textScale = 1,
+  List<Uri>? opened,
 }) async {
   tester.view.physicalSize = const Size(800, 1600);
   tester.view.devicePixelRatio = 2;
@@ -21,7 +23,14 @@ Future<void> open(
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: testOverrides(authApi: authApi, storage: storage, statusApi: statusApi),
+      overrides: [
+        ...testOverrides(authApi: authApi, storage: storage, statusApi: statusApi),
+        urlOpenerProvider.overrideWithValue((uri) async {
+          opened?.add(uri);
+
+          return true;
+        }),
+      ],
       child: MediaQuery(
         data: MediaQueryData(size: const Size(400, 800), textScaler: TextScaler.linear(textScale)),
         child: const MyKaunselApp(),
@@ -52,16 +61,26 @@ Future<void> fillSignUp(
   String email = 'Siti@Example.com ',
   String password = 'Str0ng-Pass-123',
   String? confirm,
-  bool agree = true,
+  bool terms = true,
+  bool ai = false,
 }) async {
   await tester.enterText(find.widgetWithText(TextFormField, 'Full name'), name);
   await tester.enterText(find.widgetWithText(TextFormField, 'Email'), email);
   await tester.enterText(find.widgetWithText(TextFormField, 'Password'), password);
   await tester.enterText(find.widgetWithText(TextFormField, 'Confirm password'), confirm ?? password);
 
-  if (agree) {
-    await tester.ensureVisible(find.byType(CheckboxListTile));
-    await tester.tap(find.byType(CheckboxListTile));
+  // The first tick is the Terms and the Privacy Policy (needed), the second is the AI chat (optional).
+  if (terms) {
+    await tester.ensureVisible(find.byType(CheckboxListTile).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(CheckboxListTile).first);
+    await tester.pump();
+  }
+
+  if (ai) {
+    await tester.ensureVisible(find.byType(CheckboxListTile).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(CheckboxListTile).last);
     await tester.pump();
   }
 }
@@ -69,6 +88,7 @@ Future<void> fillSignUp(
 Future<void> tapCreate(WidgetTester tester) async {
   final button = find.widgetWithText(FilledButton, 'Create account');
   await tester.ensureVisible(button);
+  await tester.pumpAndSettle();
   await tester.tap(button);
   await tester.pumpAndSettle();
 }
@@ -110,23 +130,59 @@ void main() {
       expect(find.textContaining('siti@example.com'), findsOneWidget);
     });
 
-    testWidgets('the agreement to AI processing is asked for, sent with the account, and needed to go on', (tester) async {
+    testWidgets('the Terms and the Privacy Policy must be agreed to, and the agreement is sent', (tester) async {
       final api = FakeAuthApi();
       await open(tester, authApi: api);
       await goToSignUp(tester);
 
-      await fillSignUp(tester, agree: false);
+      await fillSignUp(tester, terms: false);
       await tapCreate(tester);
 
-      expect(find.text('Please agree to continue.'), findsOneWidget);
+      expect(find.text('Please agree to the Terms of Use and the Privacy Policy to continue.'), findsOneWidget);
       expect(api.registerCalls, isEmpty);
 
-      await tester.tap(find.byType(CheckboxListTile));
+      await tester.tap(find.byType(CheckboxListTile).first);
       await tester.pump();
       await tapCreate(tester);
 
-      expect(api.registerConsents, [true]);
+      expect(api.registerTerms, [true]);
       expect(find.text('Confirm your email'), findsOneWidget);
+    });
+
+    testWidgets('the AI chat agreement is optional: left alone it is sent as no and the account is made', (tester) async {
+      final api = FakeAuthApi();
+      await open(tester, authApi: api);
+      await goToSignUp(tester);
+
+      await fillSignUp(tester);
+      await tapCreate(tester);
+
+      expect(api.registerConsents, [false], reason: 'the account is made without it');
+      expect(find.text('Confirm your email'), findsOneWidget);
+    });
+
+    testWidgets('ticking the AI chat agreement sends it as yes', (tester) async {
+      final api = FakeAuthApi();
+      await open(tester, authApi: api);
+      await goToSignUp(tester);
+
+      await fillSignUp(tester, ai: true);
+      await tapCreate(tester);
+
+      expect(api.registerConsents, [true]);
+    });
+
+    testWidgets('the Terms and the Privacy Policy can be read from the form', (tester) async {
+      final opened = <Uri>[];
+      await open(tester, authApi: FakeAuthApi(), opened: opened);
+      await goToSignUp(tester);
+
+      for (final entry in {'Terms of Use': '/terms', 'Privacy Policy': '/privacy'}.entries) {
+        await tester.ensureVisible(find.widgetWithText(TextButton, entry.key));
+        await tester.tap(find.widgetWithText(TextButton, entry.key));
+        await tester.pumpAndSettle();
+        expect(opened.last.path, entry.value);
+      }
     });
 
     testWidgets('"What this means" explains it and saves nothing', (tester) async {
