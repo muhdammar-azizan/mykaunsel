@@ -17,4 +17,7 @@ return [
         'android' => env('APP_STORE_URL_ANDROID'),
         'ios' => env('APP_STORE_URL_IOS'),
     ],
+
+    // Where people write for a copy of their data and other help (shown in the app's Data and privacy). Empty = the app does not show a line for it.
+    'support_email' => env('SUPPORT_EMAIL'),
 ];

@@ -23,14 +23,14 @@ Status: ✅ built · ⚠️ partly built or a placeholder · ❌ not built.
 | ✅ | ★ Splash | Check the saved token and the maintenance status. Go to Home or Log in. |
 | ❌ | ★ Onboarding | 3 short screens, first time only, can be skipped. Keep a local "already seen" marker. |
 | ✅ | Log in | Email and password, Forgot password link. The same error for a wrong email or password. Rate limited. |
-| ❌ | Choose account type | Individual goes straight to Create account. Organization and Counselor open a sheet "we will email you a link to sign up on a computer". The email-link endpoint is rate limited and answers the same whether the email exists or not. Respect Registration Control (a closed type is shown as closed). |
+| ✅ | Choose account type | **Built** (Individual goes to the form; Organization and Counselor open a sheet that e-mails the link; a closed kind is marked and shows the admin's words). Original spec: Individual goes straight to Create account. Organization and Counselor open a sheet "we will email you a link to sign up on a computer". The email-link endpoint is rate limited and answers the same whether the email exists or not. Respect Registration Control (a closed type is shown as closed). |
 | ⚠️ | Create account | Name, email, password (4 live rules), terms, **required AI-processing consent**. The closed message is shown before the form. **(Built: the AI-processing tick, required by the form and by the server, with "What this means". Terms are not on the form: the real text is an open decision.)** |
-| ❌ | Invite code | Skipping allowed. Automatic capitals, rate-limited code check, the same "invalid or expired" message for every reason. Joins the organization through the existing membership service. |
+| ❌ | Invite code | **Blocked, needs the owner** (see open decisions 9): `MembershipService::joinViaInviteCode` is still an empty stub, `org_invite_codes` has no role and nothing can create a code yet. Skipping allowed. Automatic capitals, rate-limited code check, the same "invalid or expired" message for every reason. Joins the organization through the existing membership service. |
 | ⚠️ | Sign up success | Title "One more step", the list of next steps, a button to Verify email. May be merged with Verify email if easier. (Now: sign-up goes straight to Verify email.) |
 | ✅ | Verify email | Resend (30 second wait), change email, pull to check the status. **(check: built with a 60 second wait; no change-email; no pull to check)** |
 | ✅ | Forgot password | The same message whether the email exists or not, resend wait. |
 | ⚠️ | Reset password | Opening in the browser is accepted for now. An in-app link (deep link) is a later improvement. |
-| ❌ | Choose context | Only with 2 or more active memberships. Choose directly, no Continue button. Sets the session context. An ordinary individual never sees it. |
+| ❌ | Choose context | **Blocked, needs the owner** (see open decisions 10): the API has no "current context", so nothing in the app would change. Only with 2 or more active memberships. Choose directly, no Continue button. Sets the session context. An ordinary individual never sees it. |
 
 ## 2. Home
 
@@ -92,8 +92,8 @@ Depends on Moderate Feed in the admin part. Build them together.
 | ✅ | Profile | Done. |
 | ✅ | Edit profile | Name and time zone. Changing the email needs re-confirmation. **(check: the email is changed on the website, not in the app)** |
 | ⚠️ | Account settings | (The AI consent switch is built: off asks first, the server records it.) Add the AI consent toggle: turning it off disables Chat, with a confirmation dialog, and the change is recorded. (Now: change password and signed-in devices.) |
-| ❌ | Data and privacy | A static information card: chat deleted after 12 months, counselors and organizations cannot see chat content, PDPA. A link to the Privacy Policy. Data-copy requests: use the support email for now. |
-| ❌ | Notification settings | Email only. A bookings toggle (confirmation, reminders, changes). A community toggle only when Feed exists. **The email-sending code must read this choice.** |
+| ✅ | Data and privacy | **Built** (Account > Data and privacy; the Privacy Policy opens on the web, which is still a placeholder page; the "write to us" line shows only when the server has `SUPPORT_EMAIL` set). A static information card: chat deleted after 12 months, counselors and organizations cannot see chat content, PDPA. A link to the Privacy Policy. Data-copy requests: use the support email for now. |
+| ✅ | Notification settings | **Built** (Account > Notifications: one Bookings switch; the booking e-mails obey it; the community switch comes with Feed). Email only. A bookings toggle (confirmation, reminders, changes). A community toggle only when Feed exists. **The email-sending code must read this choice.** |
 | ✅ | Log out | Confirmation exists. |
 | ❌ | Delete account | Do not build before the data policy is decided. Needs: what is deleted, what stays (booking records 90 days, session notes stay with the organization), complaint reporters anonymized. Type "DELETE" to confirm. |
 
@@ -135,6 +135,8 @@ B1 no fee text anywhere. B2 the no-recording acknowledgement is required and not
 6. ~~Hide the tabs that are not built~~ No dead tab today (Home, Find, Chat, Bookings, Account). Revisit when Feed is built (Find can stay).
 7. New: the AI-processing agreement is **required** at sign-up (as specified) and also withdrawable in Account. Keep it required, or make it optional (safer for PDPA, "freely given")?
 8. New: the chat model. It is `claude-opus-5-5` at low effort (about 4 seconds a reply). A cheaper or faster model can be set with `ANTHROPIC_CHAT_MODEL` in the server's `.env`; there is no spend limit except 200 messages a day per person.
+9. New: **Invite code.** There is no way yet to create a code (no org-admin page), and a code has no role: which role does someone get when they join with one (student, staff, employee), and who creates the codes (an org admin on the web, with a limit and an expiry)? The app screen is simple once this is decided.
+10. New: **Choose context.** A person with two or more memberships sees counselors from all of them today. What should choosing one change in the app (only that organization's counselors? the name shown? nothing)? Until this is decided there is nothing for the screen to do.
 
 ## Suggested order (by dependency)
 
@@ -142,6 +144,6 @@ B1 no fee text anywhere. B2 the no-recording acknowledgement is required and not
 2. ✅ Mode B + the counselor portal (sessions, planner, weekly hours, requests) → Request status.
 3. ✅ Chat (with the AI consent, crisis detection on the server) → history → cards.
 4. ❌ **Next:** Feed + Moderate Feed together (needs decision 2).
-5. ❌ Onboarding, Choose account type, Invite code, Choose context, Notification settings, Data and privacy, Help / Terms / Privacy (needs decision 5), Reset password deep link, Home's upcoming-booking card. Delete account waits for decision 3.
+5. ✅ Choose account type, Notification settings, Data and privacy. ❌ Onboarding, Invite code (decision 9), Choose context (decision 10), Help / Terms / Privacy (needs decision 5), Reset password deep link, Home's upcoming-booking card. Delete account waits for decision 3.
 
 Nothing built after the Pick a slot step has been viewed on a screen yet; the emulator checklist in APP_ARCHITECTURE.md is the first thing to do with eyes.

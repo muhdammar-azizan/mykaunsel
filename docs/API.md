@@ -8,6 +8,7 @@ Laravel Sanctum bearer tokens. Base path `/api/v1`. Everything answers in JSON (
 |---|---|---|---|
 | GET | `/status` | nothing | Is MyKaunsel in maintenance (`maintenance.on` + `message` + `reopens_at`, when it is expected to end), which sign-ups are open (`registration.organization / counselor / individual` → `open`, `message`), and must this app version update (`app.update_required`, `app.min_version`, `app.message`, `app.store_url`). **Call this first.** It is the only route that still answers during maintenance or to an outdated app. |
 | POST | `/auth/register` | open sign-up | `name`, `email` (lowercase), `password`, `password_confirmation`, `ai_consent` (must be true: the agreement to AI processing, recorded; see [CHAT.md](CHAT.md)) → 201. **No token yet**: a confirmation email is sent. |
+| POST | `/auth/signup-link` | open | `type` (`organization` or `counselor`) and `email`: e-mails the public web sign-up address for that kind. Answers `202` with the same words for every address (and silently sends nothing after 3 an hour to one address); `403` with the admin's words when that kind is closed; `429` by the address limit. |
 | POST | `/auth/login` | – | `email`, `password`, `device_name` → 200 `{token, token_type: "Bearer", user}`. |
 | POST | `/auth/two-factor` | – | For accounts with two-factor on: `challenge`, `code` (or `recovery_code`), `device_name` → 200 like login. |
 | POST | `/auth/email/resend` | – | `email` → 202, the same answer for every address. |
@@ -34,6 +35,8 @@ Laravel Sanctum bearer tokens. Base path `/api/v1`. Everything answers in JSON (
 | GET | `/requests`, `/requests/{id}` | token | The person's own time requests (`pending`, `approved`, `rejected`, `expired`, `withdrawn`). |
 | POST | `/requests/{id}/withdraw` | token | Withdraw a request that still waits. Safe to repeat. `409 request_not_pending`. |
 | PUT | `/account/ai-consent` | token | Gives or withdraws the consent to AI processing the chatbot needs (`consent`). Recorded; the user object carries `ai_consent`. |
+| GET, PUT | `/account/notification-preferences` | token | The e-mails the person can switch off (`booking_emails`: confirmations, answers to time requests, changes). PUT `{key, enabled}` saves one choice and answers the list as it now is. E-mail only; essential notices (a session cancelled for them by the platform) are always sent. |
+| GET | `/status` | none | (also) `support_email`: where people write for help and a copy of their data, or null when `SUPPORT_EMAIL` is not set on the server. |
 | POST | `/chat/messages` | token | Sends a chat message (`text`, optional `session`, `client_id`) and returns the model's answer in the same call, with `crisis`, `helplines` and an optional counselor `suggestion`. `403 ai_consent_required`. See [CHAT.md](CHAT.md). |
 | POST | `/chat/sessions/{id}/reply` | token | Asks again for the answer to the last message (when the model could not answer). |
 | POST | `/chat/sessions/{id}/end` | token | Ends the conversation and stores its dominant emotion. Safe to repeat. |

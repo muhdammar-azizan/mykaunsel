@@ -1,5 +1,6 @@
 import '../../../core/network/api_client.dart';
 import '../../auth/domain/app_user.dart';
+import '../domain/notification_preference.dart';
 import '../domain/signed_in_device.dart';
 
 /// The signed-in person's own account (docs/API.md "Account"). Throws only an [AppFailure].
@@ -13,6 +14,12 @@ abstract class AccountApi {
 
   /// Agrees to (true) or withdraws (false) AI processing, which the chat needs. The server records every change. Returns the person as they now are.
   Future<AppUser> setAiConsent(bool consent);
+
+  /// The e-mails the person can switch off (e-mail only: the app has no push notifications).
+  Future<List<NotificationPreference>> notificationPreferences();
+
+  /// Saves one choice; answers the list as it now is on the server.
+  Future<List<NotificationPreference>> setNotificationPreference(String key, bool enabled);
 
   Future<List<SignedInDevice>> devices();
 
@@ -38,6 +45,23 @@ class HttpAccountApi implements AccountApi {
 
     return AppUser.fromJson(Map<String, dynamic>.from(response.data['user'] as Map));
   }
+
+  @override
+  Future<List<NotificationPreference>> notificationPreferences() async {
+    final response = await _client.get('/account/notification-preferences');
+
+    return _preferences(response.data);
+  }
+
+  @override
+  Future<List<NotificationPreference>> setNotificationPreference(String key, bool enabled) async {
+    final response = await _client.put('/account/notification-preferences', data: {'key': key, 'enabled': enabled});
+
+    return _preferences(response.data);
+  }
+
+  List<NotificationPreference> _preferences(dynamic body) =>
+      [for (final item in (body['preferences'] as List? ?? const [])) NotificationPreference.fromJson(Map<String, dynamic>.from(item as Map))];
 
   @override
   Future<void> changePassword({required String currentPassword, required String newPassword}) async {

@@ -117,7 +117,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(l10n.noAccountYet),
-            TextButton(onPressed: form.submitting ? null : () => context.push(AppRoutes.signUp), child: Text(l10n.createAccountLink)),
+            TextButton(onPressed: form.submitting ? null : () => context.push(AppRoutes.chooseAccountType), child: Text(l10n.createAccountLink)),
           ],
         ),
       ],

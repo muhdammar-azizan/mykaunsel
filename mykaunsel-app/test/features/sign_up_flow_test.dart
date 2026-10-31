@@ -38,7 +38,12 @@ Future<void> tapLink(WidgetTester tester, String text) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> goToSignUp(WidgetTester tester) => tapLink(tester, 'Create an account');
+/// Create an account, choose Individual: the form.
+Future<void> goToSignUp(WidgetTester tester) async {
+  await tapLink(tester, 'Create an account');
+  await tester.tap(find.text('Individual'));
+  await tester.pumpAndSettle();
+}
 
 Future<void> fillSignUp(
   WidgetTester tester, {
@@ -79,6 +84,11 @@ void main() {
       await goToSignUp(tester);
 
       expect(find.text('Create your account'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Full name'), findsOneWidget);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Who is signing up?'), findsOneWidget, reason: 'back goes to the choice, not past it');
 
       await tester.pageBack();
       await tester.pumpAndSettle();
@@ -217,15 +227,24 @@ void main() {
   });
 
   group('sign-up closed by the Platform Admin', () {
-    testWidgets('shows the admin\'s own message instead of the form', (tester) async {
+    Future<void> toChooser(WidgetTester tester) => tapLink(tester, 'Create an account');
+
+    testWidgets('the choice says so, and a tap on a closed kind shows the admin\'s own message instead of the form', (tester) async {
       await open(tester, statusApi: signUpStatus(open: false, message: 'Sign-ups reopen on 1 January.'));
-      await goToSignUp(tester);
+      await toChooser(tester);
+
+      expect(find.text('Closed for now'), findsOneWidget);
+
+      await tester.tap(find.text('Individual'));
+      await tester.pumpAndSettle();
 
       expect(find.text('Sign-up is closed for now'), findsOneWidget);
       expect(find.text('Sign-ups reopen on 1 January.'), findsOneWidget);
       expect(find.widgetWithText(TextFormField, 'Full name'), findsNothing);
 
-      await tester.tap(find.text('Back to sign in'));
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();
 
       expect(find.text('Welcome back'), findsOneWidget);
@@ -234,15 +253,15 @@ void main() {
     testWidgets('the app asks again each time the page opens, so reopening works without restarting', (tester) async {
       final statusApi = signUpStatus(open: false, message: 'Closed.');
       await open(tester, statusApi: statusApi);
-      await goToSignUp(tester);
-      expect(find.text('Sign-up is closed for now'), findsOneWidget);
+      await toChooser(tester);
+      expect(find.text('Closed for now'), findsOneWidget);
 
       statusApi.handler = () async => status();
-      await tester.tap(find.text('Back to sign in'));
+      await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();
       await goToSignUp(tester);
 
-      expect(find.text('Create your account'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Full name'), findsOneWidget);
     });
 
     testWidgets('a failure to find out offers "try again"', (tester) async {
@@ -250,15 +269,15 @@ void main() {
       await open(tester, statusApi: statusApi);
 
       statusApi.handler = () async => throw const NetworkFailure();
-      await goToSignUp(tester);
+      await toChooser(tester);
 
-      expect(find.text('Something went wrong'), findsOneWidget);
+      expect(find.text('We could not reach MyKaunsel. Check your internet connection and try again.'), findsOneWidget);
 
       statusApi.handler = () async => status();
       await tester.tap(find.text('Try again'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Create your account'), findsOneWidget);
+      expect(find.text('Individual'), findsOneWidget);
     });
   });
 
@@ -395,6 +414,9 @@ void main() {
         expect(tester.takeException(), isNull);
 
         await goToSignUp(tester);
+        expect(tester.takeException(), isNull);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         await tester.pageBack();
         await tester.pumpAndSettle();

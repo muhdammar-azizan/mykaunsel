@@ -19,6 +19,7 @@ import 'package:mykaunsel/core/router/app_router.dart';
 import 'package:mykaunsel/features/booking/domain/availability.dart' show SlotLocation;
 import 'package:mykaunsel/features/chat/domain/chat.dart';
 import 'package:mykaunsel/features/counselors/domain/counselor.dart';
+import 'package:mykaunsel/features/platform_status/domain/platform_status.dart';
 import 'package:mykaunsel/features/requests/domain/time_request.dart';
 
 import '../test/support/fakes.dart';
@@ -240,5 +241,72 @@ void main() {
     await say(tester, 'I do not want to live anymore.');
     await scrollTo(tester, find.text('Continue chatting'));
     await shot(tester, '21-small-big-text-crisis');
+  });
+
+  testWidgets('choose account type, notifications and privacy', (tester) async {
+    final c = await start(tester, signedIn: false);
+    await go(tester, c, AppRoutes.chooseAccountType);
+    await shot(tester, '22-choose-account-type');
+    await tester.tap(find.text('Organization'));
+    await tester.pumpAndSettle();
+    await shot(tester, '23-signup-link-sheet');
+  });
+
+  testWidgets('choose account type: small phone, one kind closed', (tester) async {
+    tester.view.physicalSize = const Size(320, 640) * 2;
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: testOverrides(statusApi: FakePlatformStatusApi(() async => status().copyWith(registration: {'counselor': const RegistrationStatus(open: false, message: 'Closed for now.')}))),
+        child: RepaintBoundary(key: _boundary, child: const MyKaunselApp()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final c = ProviderScope.containerOf(tester.element(find.byType(MyKaunselApp)));
+    await go(tester, c, AppRoutes.chooseAccountType);
+    await shot(tester, '24-choose-small-closed');
+  });
+
+  testWidgets('notifications and privacy', (tester) async {
+    final c = await start(tester);
+    await go(tester, c, AppRoutes.accountNotifications);
+    await shot(tester, '25-notifications');
+    await go(tester, c, AppRoutes.accountPrivacy);
+    await shot(tester, '26-privacy');
+  });
+
+  testWidgets('sign in on a small phone', (tester) async {
+    await start(tester, signedIn: false, size: const Size(320, 640));
+    await shot(tester, '27-sign-in-small');
+  });
+
+  testWidgets('sign in to the choice by tapping, small phone', (tester) async {
+    await start(tester, signedIn: false, size: const Size(320, 640));
+    await tester.ensureVisible(find.text('Create an account'));
+    await tester.tap(find.text('Create an account'));
+    await tester.pumpAndSettle();
+    await shot(tester, '28-tapped-small');
+    // ignore: avoid_print
+    print('EXC: ${tester.takeException()}');
+  });
+
+  testWidgets('privacy with a support address on a small phone with big text', (tester) async {
+    tester.view.physicalSize = const Size(320, 640) * 2;
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: testOverrides(statusApi: FakePlatformStatusApi(() async => status().copyWith(supportEmail: 'help@mykaunsel.example')), storage: FakeTokenStorage('5|mkp_abc')),
+        child: MediaQuery(data: const MediaQueryData(size: Size(320, 640), textScaler: TextScaler.linear(2)), child: RepaintBoundary(key: _boundary, child: const MyKaunselApp())),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final c = ProviderScope.containerOf(tester.element(find.byType(MyKaunselApp)));
+    await go(tester, c, AppRoutes.accountPrivacy);
+    await scrollTo(tester, find.text('help@mykaunsel.example'));
+    await shot(tester, '29-privacy-small-big');
+    // ignore: avoid_print
+    print('EXC: ${tester.takeException()}');
   });
 }

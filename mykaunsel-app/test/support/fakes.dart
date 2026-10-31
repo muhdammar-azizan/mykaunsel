@@ -10,6 +10,7 @@ import 'package:mykaunsel/core/config/app_info.dart';
 import 'package:mykaunsel/core/providers.dart';
 import 'package:mykaunsel/core/storage/token_storage.dart';
 import 'package:mykaunsel/features/account/data/account_api.dart';
+import 'package:mykaunsel/features/account/domain/notification_preference.dart';
 import 'package:mykaunsel/features/account/domain/signed_in_device.dart';
 import 'package:mykaunsel/features/auth/data/auth_api.dart';
 import 'package:mykaunsel/features/auth/domain/app_user.dart';
@@ -97,6 +98,8 @@ class FakeAuthApi implements AuthApi {
   final resendCalls = <String>[];
   final registerCalls = <({String name, String email, String password})>[];
   final registerConsents = <bool>[];
+  final signupLinks = <({String type, String email})>[];
+  Future<void> Function(String type, String email) signupLinkHandler = (type, email) async {};
   final forgotPasswordCalls = <String>[];
   int logoutAllCalls = 0;
 
@@ -106,6 +109,13 @@ class FakeAuthApi implements AuthApi {
     registerConsents.add(aiConsent);
 
     return registerHandler(name, email, password);
+  }
+
+  @override
+  Future<void> requestSignupLink({required String type, required String email}) {
+    signupLinks.add((type: type, email: email));
+
+    return signupLinkHandler(type, email);
   }
 
   @override
@@ -243,6 +253,9 @@ class FakeAccountApi implements AccountApi {
   Future<void> Function(String current, String next) changePasswordHandler = (current, next) async {};
   Future<AppUser> Function(bool consent) aiConsentHandler = (consent) async => AppUser(id: testUser.id, name: testUser.name, email: testUser.email, emailVerified: true, aiConsent: consent);
   final consentCalls = <bool>[];
+  final preferenceCalls = <({String key, bool enabled})>[];
+  var bookingEmails = true;
+  Future<void> Function(String key, bool enabled) preferenceHandler = (key, enabled) async {};
   Future<List<SignedInDevice>> Function() devicesHandler = () async => [
         const SignedInDevice(id: 1, name: 'Google Pixel 8', current: true),
         SignedInDevice(id: 2, name: 'Old Tablet', lastUsedAt: testNow.subtract(const Duration(hours: 5))),
@@ -259,6 +272,18 @@ class FakeAccountApi implements AccountApi {
     profileCalls.add((name: name, timezone: timezone));
 
     return updateProfileHandler(name, timezone);
+  }
+
+  @override
+  Future<List<NotificationPreference>> notificationPreferences() async => [NotificationPreference(key: 'booking_emails', label: 'Bookings', description: 'x', enabled: bookingEmails)];
+
+  @override
+  Future<List<NotificationPreference>> setNotificationPreference(String key, bool enabled) async {
+    preferenceCalls.add((key: key, enabled: enabled));
+    await preferenceHandler(key, enabled);
+    bookingEmails = enabled;
+
+    return notificationPreferences();
   }
 
   @override

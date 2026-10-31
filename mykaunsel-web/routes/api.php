@@ -27,6 +27,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:api-login')->name('auth.login');
     Route::post('/auth/two-factor', [AuthController::class, 'twoFactor'])->middleware('throttle:api-two-factor')->name('auth.two-factor');
     Route::post('/auth/email/resend', [AuthController::class, 'resendVerification'])->middleware('throttle:api-email')->name('auth.email.resend');
+    Route::post('/auth/signup-link', [AuthController::class, 'signupLink'])->middleware('throttle:api-email')->name('auth.signup-link');
     Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:api-email')->name('auth.forgot-password');
 
     // Signed in with a token and with a confirmed email address.
@@ -41,6 +42,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::patch('/profile', [AccountController::class, 'updateProfile'])->name('profile');
         Route::get('/devices', [AccountController::class, 'devices'])->name('devices');
         Route::put('/ai-consent', [AccountController::class, 'updateAiConsent'])->name('ai-consent');
+        Route::get('/notification-preferences', [AccountController::class, 'notificationPreferences'])->name('notification-preferences');
+        Route::put('/notification-preferences', [AccountController::class, 'updateNotificationPreference'])->name('notification-preferences.update');
 
         Route::middleware('throttle:api-sensitive')->group(function () {
             Route::put('/password', [AccountController::class, 'updatePassword'])->name('password');

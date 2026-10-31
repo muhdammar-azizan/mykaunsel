@@ -80,6 +80,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Account'));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Sign out'), 200, scrollable: find.byType(Scrollable).first); // the Account page is longer now than the small test screen
     await tester.tap(find.text('Sign out'));
     await tester.pumpAndSettle();
 

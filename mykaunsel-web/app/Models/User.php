@@ -71,7 +71,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $stored = $this->notification_preferences[$key] ?? null;
 
-        return (bool) ($stored ?? config("account.notifications.{$key}.default", false));
+        return (bool) ($stored ?? config("account.notifications.{$key}.default", config("account.client_notifications.{$key}.default", false)));
     }
 
     /** 2FA is on only after the user has proved they can generate a code. */

@@ -20,6 +20,7 @@ _PlatformStatus _$PlatformStatusFromJson(Map<String, dynamic> json) =>
             ),
           ) ??
           const {},
+      supportEmail: json['support_email'] as String?,
     );
 
 Map<String, dynamic> _$PlatformStatusToJson(_PlatformStatus instance) =>
@@ -27,6 +28,7 @@ Map<String, dynamic> _$PlatformStatusToJson(_PlatformStatus instance) =>
       'maintenance': instance.maintenance,
       'app': instance.app,
       'registration': instance.registration,
+      'support_email': instance.supportEmail,
     };
 
 _MaintenanceStatus _$MaintenanceStatusFromJson(Map<String, dynamic> json) =>

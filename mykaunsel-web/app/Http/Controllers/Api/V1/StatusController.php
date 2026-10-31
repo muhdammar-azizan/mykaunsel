@@ -33,6 +33,7 @@ class StatusController extends Controller
                 // When it is expected to end (ISO-8601, UTC), or null if no time was set or the time has already passed.
                 'reopens_at' => ($at = $settings->maintenanceReopenAt()) !== null && $at->gt(now()) ? $at->toIso8601ZuluString() : null,
             ],
+            'support_email' => filled(config('api.support_email')) ? (string) config('api.support_email') : null,
             'registration' => collect($settings->registrationStatus())->map(fn (bool $open, string $role) => [
                 'open' => $open,
                 'message' => $open ? null : $settings->registrationClosedMessage($role),

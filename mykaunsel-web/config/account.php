@@ -30,6 +30,17 @@ return [
         'account.other_sessions_revoked' => 'Signed out other sessions',
     ],
 
+    // The e-mails an ordinary person (a client in the app) can switch off, in Account > Notifications of the app. The same rule as below: whatever
+    // sends one of these must check User::wantsNotification($key). Essential notices (a session cancelled for them by the platform) are NOT here:
+    // those are always sent.
+    'client_notifications' => [
+        'booking_emails' => [
+            'label' => 'Bookings',
+            'description' => 'Confirmations, answers to your time requests and changes to your sessions.',
+            'default' => true,
+        ],
+    ],
+
     'notifications' => [
         'new_organization_application' => [
             'label' => 'New organization application',

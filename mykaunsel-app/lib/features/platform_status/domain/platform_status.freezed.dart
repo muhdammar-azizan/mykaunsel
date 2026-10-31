@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PlatformStatus {
 
- MaintenanceStatus get maintenance; AppVersionStatus get app; Map<String, RegistrationStatus> get registration;
+ MaintenanceStatus get maintenance; AppVersionStatus get app; Map<String, RegistrationStatus> get registration;/// Where people write for help and for a copy of their data; null when the server has none set.
+ String? get supportEmail;
 /// Create a copy of PlatformStatus
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $PlatformStatusCopyWith<PlatformStatus> get copyWith => _$PlatformStatusCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlatformStatus&&(identical(other.maintenance, maintenance) || other.maintenance == maintenance)&&(identical(other.app, app) || other.app == app)&&const DeepCollectionEquality().equals(other.registration, registration));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlatformStatus&&(identical(other.maintenance, maintenance) || other.maintenance == maintenance)&&(identical(other.app, app) || other.app == app)&&const DeepCollectionEquality().equals(other.registration, registration)&&(identical(other.supportEmail, supportEmail) || other.supportEmail == supportEmail));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,maintenance,app,const DeepCollectionEquality().hash(registration));
+int get hashCode => Object.hash(runtimeType,maintenance,app,const DeepCollectionEquality().hash(registration),supportEmail);
 
 @override
 String toString() {
-  return 'PlatformStatus(maintenance: $maintenance, app: $app, registration: $registration)';
+  return 'PlatformStatus(maintenance: $maintenance, app: $app, registration: $registration, supportEmail: $supportEmail)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $PlatformStatusCopyWith<$Res>  {
   factory $PlatformStatusCopyWith(PlatformStatus value, $Res Function(PlatformStatus) _then) = _$PlatformStatusCopyWithImpl;
 @useResult
 $Res call({
- MaintenanceStatus maintenance, AppVersionStatus app, Map<String, RegistrationStatus> registration
+ MaintenanceStatus maintenance, AppVersionStatus app, Map<String, RegistrationStatus> registration, String? supportEmail
 });
 
 
@@ -65,12 +66,13 @@ class _$PlatformStatusCopyWithImpl<$Res>
 
 /// Create a copy of PlatformStatus
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? maintenance = null,Object? app = null,Object? registration = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? maintenance = null,Object? app = null,Object? registration = null,Object? supportEmail = freezed,}) {
   return _then(_self.copyWith(
 maintenance: null == maintenance ? _self.maintenance : maintenance // ignore: cast_nullable_to_non_nullable
 as MaintenanceStatus,app: null == app ? _self.app : app // ignore: cast_nullable_to_non_nullable
 as AppVersionStatus,registration: null == registration ? _self.registration : registration // ignore: cast_nullable_to_non_nullable
-as Map<String, RegistrationStatus>,
+as Map<String, RegistrationStatus>,supportEmail: freezed == supportEmail ? _self.supportEmail : supportEmail // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 /// Create a copy of PlatformStatus
@@ -173,10 +175,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( MaintenanceStatus maintenance,  AppVersionStatus app,  Map<String, RegistrationStatus> registration)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( MaintenanceStatus maintenance,  AppVersionStatus app,  Map<String, RegistrationStatus> registration,  String? supportEmail)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlatformStatus() when $default != null:
-return $default(_that.maintenance,_that.app,_that.registration);case _:
+return $default(_that.maintenance,_that.app,_that.registration,_that.supportEmail);case _:
   return orElse();
 
 }
@@ -194,10 +196,10 @@ return $default(_that.maintenance,_that.app,_that.registration);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( MaintenanceStatus maintenance,  AppVersionStatus app,  Map<String, RegistrationStatus> registration)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( MaintenanceStatus maintenance,  AppVersionStatus app,  Map<String, RegistrationStatus> registration,  String? supportEmail)  $default,) {final _that = this;
 switch (_that) {
 case _PlatformStatus():
-return $default(_that.maintenance,_that.app,_that.registration);case _:
+return $default(_that.maintenance,_that.app,_that.registration,_that.supportEmail);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -214,10 +216,10 @@ return $default(_that.maintenance,_that.app,_that.registration);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( MaintenanceStatus maintenance,  AppVersionStatus app,  Map<String, RegistrationStatus> registration)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( MaintenanceStatus maintenance,  AppVersionStatus app,  Map<String, RegistrationStatus> registration,  String? supportEmail)?  $default,) {final _that = this;
 switch (_that) {
 case _PlatformStatus() when $default != null:
-return $default(_that.maintenance,_that.app,_that.registration);case _:
+return $default(_that.maintenance,_that.app,_that.registration,_that.supportEmail);case _:
   return null;
 
 }
@@ -229,7 +231,7 @@ return $default(_that.maintenance,_that.app,_that.registration);case _:
 @JsonSerializable()
 
 class _PlatformStatus implements PlatformStatus {
-  const _PlatformStatus({required this.maintenance, required this.app, final  Map<String, RegistrationStatus> registration = const {}}): _registration = registration;
+  const _PlatformStatus({required this.maintenance, required this.app, final  Map<String, RegistrationStatus> registration = const {}, this.supportEmail}): _registration = registration;
   factory _PlatformStatus.fromJson(Map<String, dynamic> json) => _$PlatformStatusFromJson(json);
 
 @override final  MaintenanceStatus maintenance;
@@ -241,6 +243,8 @@ class _PlatformStatus implements PlatformStatus {
   return EqualUnmodifiableMapView(_registration);
 }
 
+/// Where people write for help and for a copy of their data; null when the server has none set.
+@override final  String? supportEmail;
 
 /// Create a copy of PlatformStatus
 /// with the given fields replaced by the non-null parameter values.
@@ -255,16 +259,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlatformStatus&&(identical(other.maintenance, maintenance) || other.maintenance == maintenance)&&(identical(other.app, app) || other.app == app)&&const DeepCollectionEquality().equals(other._registration, _registration));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlatformStatus&&(identical(other.maintenance, maintenance) || other.maintenance == maintenance)&&(identical(other.app, app) || other.app == app)&&const DeepCollectionEquality().equals(other._registration, _registration)&&(identical(other.supportEmail, supportEmail) || other.supportEmail == supportEmail));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,maintenance,app,const DeepCollectionEquality().hash(_registration));
+int get hashCode => Object.hash(runtimeType,maintenance,app,const DeepCollectionEquality().hash(_registration),supportEmail);
 
 @override
 String toString() {
-  return 'PlatformStatus(maintenance: $maintenance, app: $app, registration: $registration)';
+  return 'PlatformStatus(maintenance: $maintenance, app: $app, registration: $registration, supportEmail: $supportEmail)';
 }
 
 
@@ -275,7 +279,7 @@ abstract mixin class _$PlatformStatusCopyWith<$Res> implements $PlatformStatusCo
   factory _$PlatformStatusCopyWith(_PlatformStatus value, $Res Function(_PlatformStatus) _then) = __$PlatformStatusCopyWithImpl;
 @override @useResult
 $Res call({
- MaintenanceStatus maintenance, AppVersionStatus app, Map<String, RegistrationStatus> registration
+ MaintenanceStatus maintenance, AppVersionStatus app, Map<String, RegistrationStatus> registration, String? supportEmail
 });
 
 
@@ -292,12 +296,13 @@ class __$PlatformStatusCopyWithImpl<$Res>
 
 /// Create a copy of PlatformStatus
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? maintenance = null,Object? app = null,Object? registration = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? maintenance = null,Object? app = null,Object? registration = null,Object? supportEmail = freezed,}) {
   return _then(_PlatformStatus(
 maintenance: null == maintenance ? _self.maintenance : maintenance // ignore: cast_nullable_to_non_nullable
 as MaintenanceStatus,app: null == app ? _self.app : app // ignore: cast_nullable_to_non_nullable
 as AppVersionStatus,registration: null == registration ? _self._registration : registration // ignore: cast_nullable_to_non_nullable
-as Map<String, RegistrationStatus>,
+as Map<String, RegistrationStatus>,supportEmail: freezed == supportEmail ? _self.supportEmail : supportEmail // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

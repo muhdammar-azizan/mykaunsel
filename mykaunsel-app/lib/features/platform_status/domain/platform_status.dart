@@ -10,6 +10,9 @@ abstract class PlatformStatus with _$PlatformStatus {
     required MaintenanceStatus maintenance,
     required AppVersionStatus app,
     @Default({}) Map<String, RegistrationStatus> registration,
+
+    /// Where people write for help and for a copy of their data; null when the server has none set.
+    String? supportEmail,
   }) = _PlatformStatus;
 
   factory PlatformStatus.fromJson(Map<String, dynamic> json) => _$PlatformStatusFromJson(json);

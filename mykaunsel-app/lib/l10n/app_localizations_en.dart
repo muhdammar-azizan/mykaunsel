@@ -1153,6 +1153,124 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeHelpBody => 'See phone lines you can call.';
 
   @override
+  String get chooseTypeTitle => 'Create your account';
+
+  @override
+  String get chooseTypeSubtitle => 'Who is signing up?';
+
+  @override
+  String get chooseTypeIndividual => 'Individual';
+
+  @override
+  String get chooseTypeIndividualBody =>
+      'Talk to a counselor, book sessions and use the chat.';
+
+  @override
+  String get chooseTypeOrganization => 'Organization';
+
+  @override
+  String get chooseTypeOrganizationBody =>
+      'Register a clinic, university or company.';
+
+  @override
+  String get chooseTypeCounselor => 'Counselor';
+
+  @override
+  String get chooseTypeCounselorBody =>
+      'Join MyKaunsel as a registered counselor.';
+
+  @override
+  String get chooseTypeClosed => 'Closed for now';
+
+  @override
+  String get signupLinkTitle => 'Sign up on a computer';
+
+  @override
+  String get signupLinkOrganizationBody =>
+      'Organizations register on a computer. Enter your email and we will send you the link.';
+
+  @override
+  String get signupLinkCounselorBody =>
+      'Counselors sign up on a computer, with their documents. Enter your email and we will send you the link.';
+
+  @override
+  String get signupLinkSend => 'Send me the link';
+
+  @override
+  String get signupLinkSending => 'Sending…';
+
+  @override
+  String get signupLinkSentTitle => 'Check your email';
+
+  @override
+  String get signupLinkSentBody =>
+      'If that address can receive email, the link is on its way. Open it on a computer to continue.';
+
+  @override
+  String get signupLinkDone => 'Done';
+
+  @override
+  String get accountNotifications => 'Notifications';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get notificationsIntro =>
+      'MyKaunsel only sends email. There are no push notifications.';
+
+  @override
+  String get notificationBookingsTitle => 'Bookings';
+
+  @override
+  String get notificationBookingsBody =>
+      'Confirmations, answers to your time requests and changes to your sessions.';
+
+  @override
+  String get notificationsSaveFailed =>
+      'We couldn\'t save that. Please try again.';
+
+  @override
+  String get accountPrivacy => 'Data and privacy';
+
+  @override
+  String get privacyTitle => 'Data and privacy';
+
+  @override
+  String get privacyHeading => 'How your information is handled';
+
+  @override
+  String get privacyChatKept =>
+      'Your chat conversations are deleted after 12 months.';
+
+  @override
+  String get privacyChatPrivate =>
+      'Counselors and organizations can\'t read your chat.';
+
+  @override
+  String get privacyPdpa =>
+      'MyKaunsel handles your personal data under Malaysia\'s Personal Data Protection Act (PDPA).';
+
+  @override
+  String get privacyPolicyButton => 'Privacy Policy';
+
+  @override
+  String get privacyOpenFailed => 'We couldn\'t open the Privacy Policy.';
+
+  @override
+  String get privacyCopyHeading => 'A copy of your data';
+
+  @override
+  String privacyCopyBody(String email) {
+    return 'To ask for a copy of your data, write to $email.';
+  }
+
+  @override
+  String privacyMailFailed(String email) {
+    return 'We couldn\'t open your email app. Please write to $email.';
+  }
+
+  @override
   String get navChat => 'Chat';
 
   @override

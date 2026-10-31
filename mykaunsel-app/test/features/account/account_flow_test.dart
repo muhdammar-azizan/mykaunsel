@@ -398,7 +398,7 @@ void main() {
         for (final page in ['Profile', 'Change password', 'Signed-in devices']) {
           await goToAccount(tester);
           final tile = find.text(page);
-          await tester.ensureVisible(tile);
+          await tester.scrollUntilVisible(tile, 100, scrollable: find.byType(Scrollable).first);
           await tester.tap(tile);
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull, reason: page);

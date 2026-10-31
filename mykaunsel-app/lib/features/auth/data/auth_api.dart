@@ -18,6 +18,10 @@ abstract class AuthApi {
   /// Sends the confirmation email again. The server answers the same for every address.
   Future<void> resendVerification(String email);
 
+  /// Emails the link to sign up on a computer ([type] is `organization` or `counselor`). The server answers the same for every address, so a
+  /// success says nothing about who has an account; a closed kind of sign-up is a [ForbiddenFailure] with the Platform Admin's words.
+  Future<void> requestSignupLink({required String type, required String email});
+
   /// Emails a link to choose a new password (the page itself opens in the browser). The server answers the same for
   /// every address, so nobody can find out who has an account.
   Future<void> forgotPassword(String email);
@@ -70,6 +74,11 @@ class HttpAuthApi implements AuthApi {
       'password': password,
       'password_confirmation': password,
     });
+  }
+
+  @override
+  Future<void> requestSignupLink({required String type, required String email}) async {
+    await _client.post('/auth/signup-link', data: {'type': type, 'email': email});
   }
 
   @override

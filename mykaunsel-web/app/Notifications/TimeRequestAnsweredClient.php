@@ -26,7 +26,8 @@ class TimeRequestAnsweredClient extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        // The person's own choice (Account > Notifications).
+        return $notifiable->wantsNotification('booking_emails') ? ['mail'] : [];
     }
 
     public function toMail(object $notifiable): MailMessage

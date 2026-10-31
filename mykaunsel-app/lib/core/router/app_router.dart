@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/choose_account_type_screen.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/pending_auth.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
@@ -10,7 +11,9 @@ import '../../features/auth/presentation/two_factor_screen.dart';
 import '../../features/auth/presentation/verify_email_screen.dart';
 import '../../features/account/presentation/account_screen.dart';
 import '../../features/account/presentation/change_password_screen.dart';
+import '../../features/account/presentation/data_privacy_screen.dart';
 import '../../features/account/presentation/devices_screen.dart';
+import '../../features/account/presentation/notification_settings_screen.dart';
 import '../../features/account/presentation/profile_screen.dart';
 import '../../features/booking/domain/booking_preview.dart';
 import '../../features/booking/presentation/booking_args.dart';
@@ -44,6 +47,7 @@ abstract final class AppRoutes {
   static const twoFactor = '/two-factor';
   static const verifyEmail = '/verify-email';
   static const signUp = '/sign-up';
+  static const chooseAccountType = '/choose-account-type';
   static const forgotPassword = '/forgot-password';
   static const home = '/home';
   static const counselors = '/counselors';
@@ -51,6 +55,8 @@ abstract final class AppRoutes {
   static const accountProfile = '/account/profile';
   static const accountPassword = '/account/password';
   static const accountDevices = '/account/devices';
+  static const accountNotifications = '/account/notifications';
+  static const accountPrivacy = '/account/privacy';
 
   static String counselorPath(String id) => '/counselors/${Uri.encodeComponent(id)}';
 
@@ -80,7 +86,7 @@ abstract final class AppRoutes {
   static String requestPath(String id) => '/bookings/requests/${Uri.encodeComponent(id)}';
 
   /// Pages a signed-out person may be on.
-  static const signedOutPages = {signIn, twoFactor, verifyEmail, signUp, forgotPassword};
+  static const signedOutPages = {signIn, twoFactor, verifyEmail, signUp, chooseAccountType, forgotPassword};
 
   /// Pages that only exist for a situation (starting, maintenance…); a signed-in person is never left on one.
   static const gatePages = {splash, maintenance, updateRequired, startupError};
@@ -177,6 +183,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: AppRoutes.twoFactor, builder: (_, _) => const TwoFactorScreen()),
       GoRoute(path: AppRoutes.verifyEmail, builder: (_, _) => const VerifyEmailScreen()),
       GoRoute(path: AppRoutes.signUp, builder: (_, _) => const SignUpScreen()),
+      GoRoute(path: AppRoutes.chooseAccountType, builder: (_, _) => const ChooseAccountTypeScreen()),
       GoRoute(path: AppRoutes.forgotPassword, builder: (_, _) => const ForgotPasswordScreen()),
       GoRoute(
         path: AppRoutes.bookingConfirmed,
@@ -271,6 +278,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 GoRoute(path: 'profile', builder: (_, _) => const ProfileScreen()),
                 GoRoute(path: 'password', builder: (_, _) => const ChangePasswordScreen()),
                 GoRoute(path: 'devices', builder: (_, _) => const DevicesScreen()),
+                GoRoute(path: 'notifications', builder: (_, _) => const NotificationSettingsScreen()),
+                GoRoute(path: 'privacy', builder: (_, _) => const DataPrivacyScreen()),
               ],
             ),
           ]),

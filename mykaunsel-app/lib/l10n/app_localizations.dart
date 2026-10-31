@@ -1965,6 +1965,210 @@ abstract class AppLocalizations {
   /// **'See phone lines you can call.'**
   String get homeHelpBody;
 
+  /// No description provided for @chooseTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account'**
+  String get chooseTypeTitle;
+
+  /// No description provided for @chooseTypeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Who is signing up?'**
+  String get chooseTypeSubtitle;
+
+  /// No description provided for @chooseTypeIndividual.
+  ///
+  /// In en, this message translates to:
+  /// **'Individual'**
+  String get chooseTypeIndividual;
+
+  /// No description provided for @chooseTypeIndividualBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk to a counselor, book sessions and use the chat.'**
+  String get chooseTypeIndividualBody;
+
+  /// No description provided for @chooseTypeOrganization.
+  ///
+  /// In en, this message translates to:
+  /// **'Organization'**
+  String get chooseTypeOrganization;
+
+  /// No description provided for @chooseTypeOrganizationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Register a clinic, university or company.'**
+  String get chooseTypeOrganizationBody;
+
+  /// No description provided for @chooseTypeCounselor.
+  ///
+  /// In en, this message translates to:
+  /// **'Counselor'**
+  String get chooseTypeCounselor;
+
+  /// No description provided for @chooseTypeCounselorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Join MyKaunsel as a registered counselor.'**
+  String get chooseTypeCounselorBody;
+
+  /// No description provided for @chooseTypeClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed for now'**
+  String get chooseTypeClosed;
+
+  /// No description provided for @signupLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up on a computer'**
+  String get signupLinkTitle;
+
+  /// No description provided for @signupLinkOrganizationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizations register on a computer. Enter your email and we will send you the link.'**
+  String get signupLinkOrganizationBody;
+
+  /// No description provided for @signupLinkCounselorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Counselors sign up on a computer, with their documents. Enter your email and we will send you the link.'**
+  String get signupLinkCounselorBody;
+
+  /// No description provided for @signupLinkSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send me the link'**
+  String get signupLinkSend;
+
+  /// No description provided for @signupLinkSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get signupLinkSending;
+
+  /// No description provided for @signupLinkSentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email'**
+  String get signupLinkSentTitle;
+
+  /// No description provided for @signupLinkSentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If that address can receive email, the link is on its way. Open it on a computer to continue.'**
+  String get signupLinkSentBody;
+
+  /// No description provided for @signupLinkDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get signupLinkDone;
+
+  /// No description provided for @accountNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get accountNotifications;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsTitle;
+
+  /// No description provided for @notificationsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'MyKaunsel only sends email. There are no push notifications.'**
+  String get notificationsIntro;
+
+  /// No description provided for @notificationBookingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookings'**
+  String get notificationBookingsTitle;
+
+  /// No description provided for @notificationBookingsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmations, answers to your time requests and changes to your sessions.'**
+  String get notificationBookingsBody;
+
+  /// No description provided for @notificationsSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t save that. Please try again.'**
+  String get notificationsSaveFailed;
+
+  /// No description provided for @accountPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Data and privacy'**
+  String get accountPrivacy;
+
+  /// No description provided for @privacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data and privacy'**
+  String get privacyTitle;
+
+  /// No description provided for @privacyHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'How your information is handled'**
+  String get privacyHeading;
+
+  /// No description provided for @privacyChatKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Your chat conversations are deleted after 12 months.'**
+  String get privacyChatKept;
+
+  /// No description provided for @privacyChatPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Counselors and organizations can\'t read your chat.'**
+  String get privacyChatPrivate;
+
+  /// No description provided for @privacyPdpa.
+  ///
+  /// In en, this message translates to:
+  /// **'MyKaunsel handles your personal data under Malaysia\'s Personal Data Protection Act (PDPA).'**
+  String get privacyPdpa;
+
+  /// No description provided for @privacyPolicyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicyButton;
+
+  /// No description provided for @privacyOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t open the Privacy Policy.'**
+  String get privacyOpenFailed;
+
+  /// No description provided for @privacyCopyHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'A copy of your data'**
+  String get privacyCopyHeading;
+
+  /// No description provided for @privacyCopyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To ask for a copy of your data, write to {email}.'**
+  String privacyCopyBody(String email);
+
+  /// No description provided for @privacyMailFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t open your email app. Please write to {email}.'**
+  String privacyMailFailed(String email);
+
   /// No description provided for @navChat.
   ///
   /// In en, this message translates to:

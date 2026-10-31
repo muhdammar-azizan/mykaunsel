@@ -7,7 +7,12 @@ use App\Models\User;
 use App\Notifications\VerifyEmailForApp;
 use App\Services\ApiAuthService;
 use Illuminate\Http\JsonResponse;
+use App\Notifications\WebSignupLink;
+use App\Services\PlatformSettings;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rules;
@@ -44,6 +49,32 @@ class AuthController extends Controller
             'message' => 'Account created. Check your email and confirm your address, then sign in.',
             'email' => $user->email,
         ], 201);
+    }
+
+    /**
+     * "Email me the link to sign up on a computer" for an Organization or a Counselor (those accounts are made on the web). It answers the SAME
+     * way whether or not the address is anyone's, and whether or not it was just sent to: this must not tell anyone which addresses exist, and
+     * one address can only be sent a link a few times an hour. A closed kind of sign-up (Registration Control) is refused with the admin's words.
+     */
+    public function signupLink(Request $request, PlatformSettings $settings): JsonResponse
+    {
+        $data = $request->validate([
+            'type' => ['required', Rule::in(['organization', 'counselor'])],
+            'email' => ['required', 'string', 'email', 'max:255'],
+        ]);
+
+        if (! $settings->registrationOpen($data['type'])) {
+            return response()->json(['message' => $settings->registrationClosedMessage($data['type'])], 403);
+        }
+
+        $key = 'signup-link|'.sha1($data['type'].'|'.mb_strtolower(trim($data['email'])));
+
+        // The first few in an hour are sent; the rest are answered exactly the same and sent nowhere.
+        if (RateLimiter::attempt($key, 3, fn () => true, 3600)) {
+            Notification::route('mail', trim($data['email']))->notify(new WebSignupLink($data['type']));
+        }
+
+        return response()->json(['message' => 'If that address can receive email, the link is on its way.'], 202);
     }
 
     /** Password step. 200 = signed in. 202 = a two-factor code is needed next (send the challenge back with the code). */

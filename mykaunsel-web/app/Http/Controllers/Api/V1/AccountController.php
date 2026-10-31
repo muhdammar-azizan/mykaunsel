@@ -63,6 +63,33 @@ class AccountController extends Controller
         return response()->json(['user' => $this->auth->present($user->fresh())]);
     }
 
+    /** The e-mails the person can switch off (Account > Notifications in the app). E-mail only: there is no push and no in-app notice. */
+    public function notificationPreferences(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json(['preferences' => collect(config('account.client_notifications'))
+            ->map(fn (array $item, string $key) => ['key' => $key, 'label' => $item['label'], 'description' => $item['description'], 'enabled' => $user->wantsNotification($key)])
+            ->values()->all()]);
+    }
+
+    /** Saves ONE choice. Only the keys in `account.client_notifications` may be set here (never the platform admins' own). */
+    public function updateNotificationPreference(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'key' => ['required', 'string', Rule::in(array_keys(config('account.client_notifications')))],
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        $user = $request->user();
+        $preferences = $user->notification_preferences ?? [];
+        $preferences[$data['key']] = (bool) $data['enabled'];
+
+        $user->forceFill(['notification_preferences' => $preferences])->save();
+
+        return $this->notificationPreferences($request->setUserResolver(fn () => $user->fresh()));
+    }
+
     /** New password: needs the current one; every OTHER phone (and web session) is signed out, this one stays. */
     public function updatePassword(Request $request): JsonResponse
     {
