@@ -126,13 +126,14 @@ The same table and `NotificationCenter` also serve the app (owner's decision of 
 
 **E-mail is separate and stays as it is:** only the important events are e-mailed (and the booking ones obey the switch in Account). The panel shows more than the e-mails do.
 
+**In the app:** a bell on Home (top right) shows the unread number as a figure (and the tooltip says it in words); it is asked again whenever Home opens and whenever the app comes back to the front, and it never shows an error. The bell opens `/notifications`: newest first, 20 at a time, each sentence written from the type key. An unread one has a dot AND bolder words AND the word "Unread" for screen readers (never colour alone). Tapping one marks it read and opens what it is about (a booking, a time request, Your organization, the Feed; one whose booking was deleted opens the Bookings tab). "Mark all as read" is at the top of the list while anything is unread. Account > Notifications still switches the e-mails only.
+
 **Retention** is the same as for the admins (read after 90 days, unread after 180). Deleting an account deletes its notifications.
 
 **API:** see [API.md](API.md): `GET /notifications`, `GET /notifications/unread-count`, `POST /notifications/{id}/read`, `POST /notifications/read-all`.
 
 ## Not built (app notifications)
 
-- The bell and the panel in the app (the next step).
 - Push notifications (Firebase for Android, APNs for iPhone): needed only for notifications while the app is closed.
 - A reminder before a session starts (it would need a scheduled job).
 

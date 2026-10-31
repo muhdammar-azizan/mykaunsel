@@ -1222,7 +1222,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationsIntro =>
-      'MyKaunsel only sends email. There are no push notifications.';
+      'Choose which e-mails you get. What happens is always shown under the bell on Home. There are no push notifications yet.';
 
   @override
   String get notificationBookingsTitle => 'Bookings';
@@ -2096,4 +2096,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeHintHide => 'Hide this';
+
+  @override
+  String notificationsBellUnread(int count) {
+    return 'Notifications, $count unread';
+  }
+
+  @override
+  String get notificationsMarkAll => 'Mark all as read';
+
+  @override
+  String get notificationsMarkFailed =>
+      'We couldn\'t mark them as read. Try again.';
+
+  @override
+  String get notificationsEmptyTitle => 'No notifications yet';
+
+  @override
+  String get notificationsEmptyBody =>
+      'When something happens that you did not do yourself, like a counselor answering a time request, it will show here.';
+
+  @override
+  String get notificationUnread => 'Unread';
+
+  @override
+  String notifRequestApproved(String name) {
+    return '$name approved your time request.';
+  }
+
+  @override
+  String notifRequestDeclined(String name) {
+    return '$name declined your time request.';
+  }
+
+  @override
+  String notifRequestExpired(String name) {
+    return '$name did not answer your time request in time.';
+  }
+
+  @override
+  String notifBookingCancelled(String name) {
+    return 'Your session with $name was cancelled.';
+  }
+
+  @override
+  String notifInvitationReceived(String name) {
+    return '$name invited you to join.';
+  }
+
+  @override
+  String notifMembershipApproved(String name) {
+    return '$name approved you. You can now book its counselors.';
+  }
+
+  @override
+  String notifMembershipDeclined(String name) {
+    return '$name did not approve your request.';
+  }
+
+  @override
+  String notifMembershipEnded(String name) {
+    return 'Your membership of $name has ended.';
+  }
+
+  @override
+  String get notifFeedRemoved =>
+      'Something you wrote on the Feed was removed. Check your e-mail.';
+
+  @override
+  String get notifFeedWarned =>
+      'You received a warning about your writing on the Feed. Check your e-mail.';
 }

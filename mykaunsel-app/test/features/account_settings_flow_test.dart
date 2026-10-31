@@ -54,7 +54,7 @@ void main() {
 
       await tester.tap(find.text('Notifications'));
       await tester.pumpAndSettle();
-      expect(find.text('MyKaunsel only sends email. There are no push notifications.'), findsOneWidget);
+      expect(find.text('Choose which e-mails you get. What happens is always shown under the bell on Home. There are no push notifications yet.'), findsOneWidget);
     });
   });
 

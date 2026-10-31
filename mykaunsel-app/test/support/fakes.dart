@@ -10,6 +10,8 @@ import 'package:mykaunsel/core/config/app_info.dart';
 import 'package:mykaunsel/core/error/app_failure.dart';
 import 'package:mykaunsel/core/providers.dart';
 import 'package:mykaunsel/core/storage/onboarding_store.dart';
+import 'package:mykaunsel/features/notifications/data/notifications_api.dart';
+import 'package:mykaunsel/features/notifications/domain/app_notification.dart';
 import 'package:mykaunsel/features/account/domain/my_organization.dart';
 import 'package:mykaunsel/core/storage/token_storage.dart';
 import 'package:mykaunsel/features/account/data/account_api.dart';
@@ -585,6 +587,70 @@ Finder findText(String text) => find.byWidgetPredicate((Widget w) => w is Text &
 Finder findTextContaining(String text) => find.byWidgetPredicate((Widget w) => w is Text && (w.data ?? '').replaceAll(' ', ' ').contains(text), description: 'text containing "$text"');
 
 /// Everything a test needs, wired the way main.dart wires the real ones.
+/// The app's notifications, newest first, in pages of two so paging is easy to see.
+class FakeNotificationsApi implements NotificationsApi {
+  FakeNotificationsApi([List<AppNotification>? items]) : items = items ?? [];
+
+  List<AppNotification> items;
+  final int pageSize = 2;
+  final listCalls = <int>[];
+  final readCalls = <String>[];
+  int readAllCalls = 0;
+  int unreadCalls = 0;
+  Future<void> Function() listHandler = () async {};
+  Future<void> Function() unreadHandler = () async {};
+  Future<void> Function() markHandler = () async {};
+
+  int get _unread => items.where((n) => !n.read).length;
+
+  @override
+  Future<NotificationsPage> list({int page = 1}) async {
+    listCalls.add(page);
+    await listHandler();
+
+    final from = (page - 1) * pageSize;
+    final slice = items.skip(from).take(pageSize).toList();
+
+    return NotificationsPage(items: slice, unread: _unread, page: page, lastPage: items.isEmpty ? 1 : (items.length / pageSize).ceil());
+  }
+
+  @override
+  Future<int> unread() async {
+    unreadCalls++;
+    await unreadHandler();
+
+    return _unread;
+  }
+
+  @override
+  Future<int> markRead(String id) async {
+    readCalls.add(id);
+    await markHandler();
+    items = [for (final n in items) n.id == id ? n.asRead() : n];
+
+    return _unread;
+  }
+
+  @override
+  Future<int> markAllRead() async {
+    readAllCalls++;
+    await markHandler();
+    items = [for (final n in items) n.asRead()];
+
+    return 0;
+  }
+}
+
+AppNotification aNotification(
+  String id, {
+  String type = 'membership.approved',
+  String? label = 'Acme Berhad',
+  bool read = false,
+  int minutesAgo = 5,
+  NotificationTarget? target,
+}) =>
+    AppNotification(id: id, type: type, title: 'Server title for $type', label: label, occurredAt: testNow.subtract(Duration(minutes: minutesAgo)), read: read, target: target);
+
 class FakeOnboardingStore implements OnboardingStore {
   FakeOnboardingStore(this.seen);
 
@@ -613,6 +679,7 @@ List<Override> testOverrides({
   FakeRequestsApi? requestsApi,
   FakeChatApi? chatApi,
   FakeFeedApi? feedApi,
+  FakeNotificationsApi? notificationsApi,
   bool onboardingSeen = true,
   bool orgHintDismissed = false,
 }) {
@@ -630,6 +697,7 @@ List<Override> testOverrides({
     requestsApiProvider.overrideWithValue(requestsApi ?? FakeRequestsApi()),
     chatApiProvider.overrideWithValue(chatApi ?? FakeChatApi()),
     feedApiProvider.overrideWithValue(feedApi ?? FakeFeedApi()),
+    notificationsApiProvider.overrideWithValue(notificationsApi ?? FakeNotificationsApi()),
     onboardingStoreProvider.overrideWithValue(FakeOnboardingStore(onboardingSeen)..orgHintDismissed = orgHintDismissed),
     clockProvider.overrideWithValue(() => testNow),
   ];

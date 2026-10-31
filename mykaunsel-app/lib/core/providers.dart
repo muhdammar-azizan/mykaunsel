@@ -6,6 +6,7 @@ import '../features/auth/data/auth_api.dart';
 import '../features/booking/data/availability_api.dart';
 import '../features/chat/data/chat_api.dart';
 import '../features/feed/data/feed_api.dart';
+import '../features/notifications/data/notifications_api.dart';
 import '../features/booking/data/booking_api.dart';
 import '../features/bookings/data/my_bookings_api.dart';
 import '../features/counselors/data/counselor_api.dart';
@@ -86,6 +87,8 @@ final myBookingsApiProvider = Provider<MyBookingsApi>((ref) => HttpMyBookingsApi
 final chatApiProvider = Provider<ChatApi>((ref) => HttpChatApi(ref.watch(apiClientProvider)));
 
 final feedApiProvider = Provider<FeedApi>((ref) => HttpFeedApi(ref.watch(apiClientProvider)));
+
+final notificationsApiProvider = Provider<NotificationsApi>((ref) => HttpNotificationsApi(ref.watch(apiClientProvider)));
 
 final requestsApiProvider = Provider<RequestsApi>((ref) => HttpRequestsApi(ref.watch(apiClientProvider)));
 

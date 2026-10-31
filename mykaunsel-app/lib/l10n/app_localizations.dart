@@ -2088,7 +2088,7 @@ abstract class AppLocalizations {
   /// No description provided for @notificationsIntro.
   ///
   /// In en, this message translates to:
-  /// **'MyKaunsel only sends email. There are no push notifications.'**
+  /// **'Choose which e-mails you get. What happens is always shown under the bell on Home. There are no push notifications yet.'**
   String get notificationsIntro;
 
   /// No description provided for @notificationBookingsTitle.
@@ -3518,6 +3518,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide this'**
   String get homeHintHide;
+
+  /// No description provided for @notificationsBellUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications, {count} unread'**
+  String notificationsBellUnread(int count);
+
+  /// No description provided for @notificationsMarkAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
+  String get notificationsMarkAll;
+
+  /// No description provided for @notificationsMarkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t mark them as read. Try again.'**
+  String get notificationsMarkFailed;
+
+  /// No description provided for @notificationsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get notificationsEmptyTitle;
+
+  /// No description provided for @notificationsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When something happens that you did not do yourself, like a counselor answering a time request, it will show here.'**
+  String get notificationsEmptyBody;
+
+  /// No description provided for @notificationUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get notificationUnread;
+
+  /// No description provided for @notifRequestApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} approved your time request.'**
+  String notifRequestApproved(String name);
+
+  /// No description provided for @notifRequestDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} declined your time request.'**
+  String notifRequestDeclined(String name);
+
+  /// No description provided for @notifRequestExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} did not answer your time request in time.'**
+  String notifRequestExpired(String name);
+
+  /// No description provided for @notifBookingCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session with {name} was cancelled.'**
+  String notifBookingCancelled(String name);
+
+  /// No description provided for @notifInvitationReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} invited you to join.'**
+  String notifInvitationReceived(String name);
+
+  /// No description provided for @notifMembershipApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} approved you. You can now book its counselors.'**
+  String notifMembershipApproved(String name);
+
+  /// No description provided for @notifMembershipDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} did not approve your request.'**
+  String notifMembershipDeclined(String name);
+
+  /// No description provided for @notifMembershipEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your membership of {name} has ended.'**
+  String notifMembershipEnded(String name);
+
+  /// No description provided for @notifFeedRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Something you wrote on the Feed was removed. Check your e-mail.'**
+  String get notifFeedRemoved;
+
+  /// No description provided for @notifFeedWarned.
+  ///
+  /// In en, this message translates to:
+  /// **'You received a warning about your writing on the Feed. Check your e-mail.'**
+  String get notifFeedWarned;
 }
 
 class _AppLocalizationsDelegate

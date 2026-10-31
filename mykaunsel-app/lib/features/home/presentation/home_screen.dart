@@ -13,6 +13,7 @@ import '../../bookings/presentation/booking_labels.dart';
 import '../../bookings/presentation/my_bookings_controller.dart';
 import '../../account/presentation/organization_controller.dart';
 import '../../chat/presentation/help_lines.dart';
+import '../../notifications/presentation/notification_bell.dart';
 
 /// The home tab of a signed-in person. The first thing on it is the way to a counselor; more is added as features are built.
 class HomeScreen extends ConsumerWidget {
@@ -27,7 +28,7 @@ class HomeScreen extends ConsumerWidget {
     final firstName = fullName.trim().split(RegExp(r'\s+')).first;
 
     return Scaffold(
-      appBar: AppBar(title: Image.asset('assets/images/mykaunsel-logo.png', height: 30, semanticLabel: l10n.appName)),
+      appBar: AppBar(title: Image.asset('assets/images/mykaunsel-logo.png', height: 30, semanticLabel: l10n.appName), actions: const [NotificationBell()]),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(24),

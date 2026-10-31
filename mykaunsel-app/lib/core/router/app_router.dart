@@ -37,6 +37,7 @@ import '../../features/feed/presentation/muted_people_screen.dart';
 import '../../features/feed/presentation/new_post_screen.dart';
 import '../../features/feed/presentation/post_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/startup/presentation/maintenance_screen.dart';
 import '../../features/startup/presentation/splash_screen.dart';
@@ -81,6 +82,9 @@ abstract final class AppRoutes {
   static const chatHistory = '/chat/history';
 
   static String chatSessionPath(String id) => '/chat/history/${Uri.encodeComponent(id)}';
+
+  /// The bell's page. It sits on top of the tabs, opened from Home.
+  static const notifications = '/notifications';
 
   static const feed = '/feed';
   static const feedMuted = '/feed/muted';
@@ -213,6 +217,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         redirect: (_, state) => state.extra is CreatedBooking ? null : AppRoutes.home,
         builder: (_, state) => BookingConfirmedScreen(booking: state.extra! as CreatedBooking),
       ),
+      GoRoute(path: AppRoutes.notifications, builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: AppRoutes.newPost, builder: (_, state) => NewPostScreen(editing: state.extra is FeedPost ? state.extra! as FeedPost : null)),
       GoRoute(
         path: '/request/:id',
