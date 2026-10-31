@@ -725,5 +725,10 @@
   "orgLeftCancelled": "{count, plural, =1{1 later session was cancelled.} other{{count} later sessions were cancelled.}}",
   "@orgLeftCancelled": {"placeholders": {"count": {"type": "int"}}},
   "orgLeftKept": "{count, plural, =1{1 session in the next few days still goes ahead.} other{{count} sessions in the next few days still go ahead.}}",
-  "@orgLeftKept": {"placeholders": {"count": {"type": "int"}}}
+  "@orgLeftKept": {"placeholders": {"count": {"type": "int"}}},
+  "orgInvitedTitle": "{name} invited you",
+  "@orgInvitedTitle": {"placeholders": {"name": {"type": "String"}}},
+  "orgInvitedBody": "If you accept, you join at once and can book its counselors.",
+  "orgAccept": "Accept",
+  "orgDecline": "Decline"
 }

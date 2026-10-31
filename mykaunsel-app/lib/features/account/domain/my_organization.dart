@@ -35,3 +35,26 @@ class LeftOrganization {
   /// Sessions in the next few days that still go ahead.
   final int kept;
 }
+
+/// An organization's invitation to this person's confirmed e-mail address. Accepting makes them a member at once.
+class OrgInvitation {
+  const OrgInvitation({required this.id, required this.organization});
+
+  factory OrgInvitation.fromJson(Map<String, dynamic> json) => OrgInvitation(id: json['id'] as String, organization: json['organization'] as String);
+
+  final String id;
+  final String organization;
+}
+
+/// The organization page as the server reports it: where the person belongs now, and what they have been invited to.
+class OrganizationOverview {
+  const OrganizationOverview({this.organization, this.invitations = const []});
+
+  factory OrganizationOverview.fromJson(Map<String, dynamic> json) => OrganizationOverview(
+        organization: json['organization'] == null ? null : MyOrganization.fromJson(Map<String, dynamic>.from(json['organization'] as Map)),
+        invitations: [for (final item in (json['invitations'] as List? ?? const [])) OrgInvitation.fromJson(Map<String, dynamic>.from(item as Map))],
+      );
+
+  final MyOrganization? organization;
+  final List<OrgInvitation> invitations;
+}

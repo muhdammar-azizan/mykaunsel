@@ -10,6 +10,7 @@ use App\Exceptions\MembershipRefused;
 use App\Facades\Audit;
 use App\Models\Membership;
 use App\Models\OrgInviteCode;
+use App\Models\OrgMemberInvitation;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -102,39 +103,7 @@ class MembershipService
                 throw MembershipRefused::invalidCode();
             }
 
-            // One person at a time: the user's row is the lock for "which organization am I joining".
-            User::query()->whereKey($user->getKey())->lockForUpdate()->first();
-
-            $held = $this->heldBy($user);
-
-            if ($held !== null) {
-                throw match (true) {
-                    $held->org_id !== $organization->id => MembershipRefused::inOtherOrganization($held->organization->name),
-                    $held->status === MembershipStatus::PendingApproval => MembershipRefused::waitingApproval(),
-                    default => MembershipRefused::alreadyMember(),
-                };
-            }
-
-            $existing = Membership::query()->where('user_id', $user->getKey())->where('org_id', $organization->id)->lockForUpdate()->first();
-
-            // An old row of a former member is reused. A staff row (counselor, admin) is never turned into an employee one.
-            if ($existing !== null && ! in_array($existing->role, self::CLIENT_ROLES, true)) {
-                throw MembershipRefused::alreadyMember();
-            }
-
-            $fresh = [
-                'role' => MembershipRole::Employee,
-                'status' => MembershipStatus::PendingApproval,
-                'join_source' => JoinSource::InviteCode,
-                'joined_at' => now(),
-                'notice_started_at' => null,
-                'offboarded_at' => null,
-                'offboard_reason' => null,
-            ];
-
-            $membership = $existing !== null
-                ? tap($existing)->update($fresh)
-                : Membership::create(['user_id' => $user->getKey(), 'org_id' => $organization->id] + $fresh);
+            $membership = $this->placeAsEmployee($user, $organization, MembershipStatus::PendingApproval, JoinSource::InviteCode);
 
             $invite->increment('used_count');
 
@@ -142,6 +111,117 @@ class MembershipService
 
             return $membership;
         });
+    }
+
+    /**
+     * The invitations waiting for this person: those sent to their CONFIRMED e-mail address, still open, from an active organization.
+     *
+     * @return \Illuminate\Support\Collection<int, OrgMemberInvitation>
+     */
+    public function invitationsFor(User $user): \Illuminate\Support\Collection
+    {
+        if ($user->email_verified_at === null) {
+            return collect();
+        }
+
+        return OrgMemberInvitation::query()
+            ->where('email', OrgMemberInvitation::normalize($user->email))
+            ->whereNull('accepted_at')->whereNull('declined_at')->whereNull('revoked_at')->where('expires_at', '>', now())
+            ->whereHas('organization', fn ($q) => $q->where('subscription_status', OrgStatus::Active->value))
+            ->with('organization:id,name')->orderBy('id')->get();
+    }
+
+    /**
+     * Accepts an invitation: the person becomes an employee AT ONCE (the organization already said yes). The one-organization rule applies.
+     *
+     * @throws MembershipRefused
+     */
+    public function acceptInvitation(User $user, string $publicId): Membership
+    {
+        return DB::transaction(function () use ($user, $publicId) {
+            $invitation = $this->ownInvitation($user, $publicId);
+            $membership = $this->placeAsEmployee($user, $invitation->organization, MembershipStatus::Active, JoinSource::Invitation);
+
+            $invitation->update(['accepted_at' => now()]);
+            Audit::log('member.invitation_accepted', $invitation->organization, ['membership_id' => $membership->getKey(), 'invitation_id' => $invitation->getKey()], $user);
+
+            return $membership;
+        });
+    }
+
+    /** @throws MembershipRefused */
+    public function declineInvitation(User $user, string $publicId): void
+    {
+        DB::transaction(function () use ($user, $publicId) {
+            $invitation = $this->ownInvitation($user, $publicId);
+
+            $invitation->update(['declined_at' => now()]);
+            Audit::log('member.invitation_declined', $invitation->organization, ['invitation_id' => $invitation->getKey()], $user);
+        });
+    }
+
+    /** Someone else's invitation, a closed one, and an unknown one all look the same. */
+    private function ownInvitation(User $user, string $publicId): OrgMemberInvitation
+    {
+        $invitation = OrgMemberInvitation::query()->where('public_id', strtolower($publicId))->lockForUpdate()->first();
+        $organization = $invitation?->organization;
+
+        if (
+            $user->email_verified_at === null || $invitation === null || ! $invitation->isOpen()
+            || $invitation->email !== OrgMemberInvitation::normalize($user->email)
+            || $organization?->subscription_status !== OrgStatus::Active
+        ) {
+            throw MembershipRefused::invitationNotFound();
+        }
+
+        return $invitation;
+    }
+
+    /**
+     * Gives the person their one place in the organization as an employee. Under a lock on the person, so they can not join two at once. An
+     * old row of a former member is reused; a staff row (counselor, admin) is never turned into an employee one.
+     *
+     * @throws MembershipRefused
+     */
+    private function placeAsEmployee(User $user, Organization $organization, MembershipStatus $status, JoinSource $source): Membership
+    {
+        // One person at a time: the user's row is the lock for "which organization am I joining".
+        User::query()->whereKey($user->getKey())->lockForUpdate()->first();
+
+        $held = $this->heldBy($user);
+
+        // Someone waiting for approval who is then INVITED by the same organization needs no approval any more: the organization has said yes.
+        if ($held !== null && $held->org_id === $organization->id && $held->status === MembershipStatus::PendingApproval && $status === MembershipStatus::Active) {
+            return tap($held)->update(['status' => MembershipStatus::Active, 'join_source' => $source, 'joined_at' => now()]);
+        }
+
+        if ($held !== null) {
+            throw match (true) {
+                $held->org_id !== $organization->id => MembershipRefused::inOtherOrganization($held->organization->name),
+                $held->status === MembershipStatus::PendingApproval => MembershipRefused::waitingApproval(),
+                default => MembershipRefused::alreadyMember(),
+            };
+        }
+
+        $existing = Membership::query()->where('user_id', $user->getKey())->where('org_id', $organization->id)->lockForUpdate()->first();
+
+        if ($existing !== null && ! in_array($existing->role, self::CLIENT_ROLES, true)) {
+            throw MembershipRefused::alreadyMember();
+        }
+
+        $fresh = [
+            'role' => MembershipRole::Employee,
+            'status' => $status,
+            'join_source' => $source,
+            'joined_at' => now(),
+            'notice_started_at' => null,
+            'offboarded_at' => null,
+            'offboard_reason' => null,
+        ];
+
+        return $existing !== null
+            ? tap($existing)->update($fresh)
+            : Membership::create(['user_id' => $user->getKey(), 'org_id' => $organization->id] + $fresh);
     }
 
     public function joinViaMemberList(User $user, Organization $organization): void

@@ -2010,4 +2010,19 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String orgInvitedTitle(String name) {
+    return '$name invited you';
+  }
+
+  @override
+  String get orgInvitedBody =>
+      'If you accept, you join at once and can book its counselors.';
+
+  @override
+  String get orgAccept => 'Accept';
+
+  @override
+  String get orgDecline => 'Decline';
 }

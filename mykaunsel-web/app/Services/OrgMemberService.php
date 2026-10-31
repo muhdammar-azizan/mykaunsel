@@ -7,12 +7,15 @@ use App\Exceptions\MembershipNotPending;
 use App\Facades\Audit;
 use App\Models\Membership;
 use App\Models\OrgInviteCode;
+use App\Models\OrgMemberInvitation;
 use App\Models\Organization;
 use App\Models\User;
+use App\Notifications\MemberInvitation;
 use App\Notifications\MembershipApproved;
 use App\Notifications\MembershipDeclined;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use RuntimeException;
 use Throwable;
 
@@ -24,6 +27,9 @@ class OrgMemberService
 {
     /** Switched-on codes per organization: enough for every team, too few to lose track of. */
     public const MAX_OPEN_CODES = 20;
+
+    /** Invitations waiting for an answer at one time. */
+    public const MAX_OPEN_INVITATIONS = 100;
 
     public function createCode(Organization $organization, User $admin, ?int $maxUses, ?Carbon $expiresAt): OrgInviteCode
     {
@@ -42,6 +48,71 @@ class OrgMemberService
             Audit::log('member.code_created', $organization, ['code_id' => $code->getKey(), 'max_uses' => $maxUses], $admin);
 
             return $code;
+        });
+    }
+
+    /**
+     * Invites an e-mail address. The person answers in the app, with that address confirmed. Refused (in plain words) for someone who already
+     * belongs here or was already invited. Whether they belong to ANOTHER organization is only checked when they accept.
+     */
+    public function invite(Organization $organization, User $admin, string $email): OrgMemberInvitation
+    {
+        $email = OrgMemberInvitation::normalize($email);
+
+        $invitation = DB::transaction(function () use ($organization, $admin, $email) {
+            Organization::query()->whereKey($organization->getKey())->lockForUpdate()->first();
+
+            $belongs = Membership::query()->where('org_id', $organization->getKey())
+                ->whereIn('status', [MembershipStatus::Active->value, MembershipStatus::PendingApproval->value, MembershipStatus::NoticePeriod->value, MembershipStatus::Suspended->value])
+                ->whereHas('user', fn ($q) => $q->whereRaw('lower(email) = ?', [$email]))->exists();
+
+            if ($belongs) {
+                throw new RuntimeException('This person already belongs to your organization.');
+            }
+
+            $open = OrgMemberInvitation::query()->where('org_id', $organization->getKey())->get()->filter->isOpen();
+
+            if ($open->contains(fn (OrgMemberInvitation $i) => $i->email === $email)) {
+                throw new RuntimeException('This address has already been invited. Cancel that invitation first if you want to send a new one.');
+            }
+
+            if ($open->count() >= self::MAX_OPEN_INVITATIONS) {
+                throw new RuntimeException('You have '.self::MAX_OPEN_INVITATIONS.' invitations waiting. Cancel some first.');
+            }
+
+            $invitation = OrgMemberInvitation::create([
+                'org_id' => $organization->getKey(),
+                'email' => $email,
+                'invited_by_user_id' => $admin->getKey(),
+                'expires_at' => now()->addDays(OrgMemberInvitation::VALID_DAYS),
+            ]);
+
+            Audit::log('member.invited', $organization, ['invitation_id' => $invitation->getKey()], $admin);
+
+            return $invitation;
+        });
+
+        try {
+            Notification::route('mail', $email)->notify(new MemberInvitation($organization->name));
+        } catch (Throwable $e) {
+            report($e);
+        }
+
+        return $invitation;
+    }
+
+    /** Cancels an invitation that is still waiting. Safe to repeat. */
+    public function revokeInvitation(Organization $organization, int $invitationId, User $admin): void
+    {
+        DB::transaction(function () use ($organization, $invitationId, $admin) {
+            $invitation = OrgMemberInvitation::query()->where('org_id', $organization->getKey())->lockForUpdate()->findOrFail($invitationId);
+
+            if (! $invitation->isOpen()) {
+                return;
+            }
+
+            $invitation->update(['revoked_at' => now()]);
+            Audit::log('member.invitation_revoked', $organization, ['invitation_id' => $invitation->getKey()], $admin);
         });
     }
 

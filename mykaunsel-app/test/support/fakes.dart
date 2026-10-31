@@ -273,8 +273,32 @@ class FakeAccountApi implements AccountApi {
   Future<MyOrganization> Function(String code) joinHandler = (code) async => const MyOrganization(name: 'Acme Berhad', waiting: true);
   Future<LeftOrganization> Function() leaveHandler = () async => const LeftOrganization(name: 'Acme Berhad', cancelled: 0, kept: 0);
 
+  var invitations = <OrgInvitation>[];
+  final invitationCalls = <String>[];
+  Future<void> Function(String id) invitationHandler = (id) async {};
+
   @override
-  Future<MyOrganization?> organization() async => myOrganization;
+  Future<OrganizationOverview> organization() async => OrganizationOverview(organization: myOrganization, invitations: invitations);
+
+  @override
+  Future<OrganizationOverview> acceptInvitation(String id) async {
+    invitationCalls.add('accept:$id');
+    await invitationHandler(id);
+    final taken = invitations.firstWhere((i) => i.id == id);
+    myOrganization = MyOrganization(name: taken.organization, waiting: false);
+    invitations = [for (final i in invitations) if (i.id != id) i];
+
+    return organization();
+  }
+
+  @override
+  Future<List<OrgInvitation>> declineInvitation(String id) async {
+    invitationCalls.add('decline:$id');
+    await invitationHandler(id);
+    invitations = [for (final i in invitations) if (i.id != id) i];
+
+    return invitations;
+  }
 
   @override
   Future<MyOrganization> joinOrganization(String code) async {

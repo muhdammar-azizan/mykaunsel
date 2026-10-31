@@ -52,6 +52,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::middleware('throttle:api-organization')->group(function () {
             Route::post('/organization/join', [OrganizationController::class, 'join'])->name('organization.join');
             Route::delete('/organization', [OrganizationController::class, 'leave'])->name('organization.leave');
+            Route::post('/organization/invitations/{id}/accept', [OrganizationController::class, 'acceptInvitation'])->where('id', '[0-9A-Za-z]{26}')->name('organization.invitations.accept');
+            Route::post('/organization/invitations/{id}/decline', [OrganizationController::class, 'declineInvitation'])->where('id', '[0-9A-Za-z]{26}')->name('organization.invitations.decline');
         });
 
         Route::middleware('throttle:api-sensitive')->group(function () {

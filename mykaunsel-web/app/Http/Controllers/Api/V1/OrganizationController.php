@@ -20,10 +20,38 @@ class OrganizationController extends Controller
 {
     public function __construct(private MembershipService $memberships, private MembershipEnding $ending) {}
 
-    /** `organization` is null when the person belongs to none. `status` is "waiting" (asked with a code, not approved yet) or "member". */
+    /** `invitations` are the open invitations to the person's confirmed e-mail address (`id` is a public id). `organization` is null when the person belongs to none. `status` is "waiting" (asked with a code, not approved yet) or "member". */
     public function show(Request $request): JsonResponse
     {
-        return $this->private(response()->json(['organization' => $this->present($this->memberships->heldBy($request->user()))]));
+        return $this->private(response()->json([
+            'organization' => $this->present($this->memberships->heldBy($request->user())),
+            'invitations' => $this->invitations($request),
+        ]));
+    }
+
+    public function acceptInvitation(Request $request, string $id): JsonResponse
+    {
+        try {
+            $this->memberships->acceptInvitation($request->user(), $id);
+        } catch (MembershipRefused $refused) {
+            return $refused->toResponse();
+        }
+
+        return $this->private(response()->json([
+            'organization' => $this->present($this->memberships->heldBy($request->user())),
+            'invitations' => $this->invitations($request),
+        ]));
+    }
+
+    public function declineInvitation(Request $request, string $id): JsonResponse
+    {
+        try {
+            $this->memberships->declineInvitation($request->user(), $id);
+        } catch (MembershipRefused $refused) {
+            return $refused->toResponse();
+        }
+
+        return $this->private(response()->json(['invitations' => $this->invitations($request)]));
     }
 
     public function join(Request $request): JsonResponse
@@ -49,6 +77,13 @@ class OrganizationController extends Controller
         }
 
         return $this->private(response()->json(['left' => $done]));
+    }
+
+    /** @return list<array{id: string, organization: string}> */
+    private function invitations(Request $request): array
+    {
+        return $this->memberships->invitationsFor($request->user())
+            ->map(fn ($i) => ['id' => $i->public_id, 'organization' => $i->organization->name])->values()->all();
     }
 
     /** @return array{name: string, status: string, grace_days: int}|null */

@@ -86,6 +86,14 @@ class _OrganizationScreenState extends ConsumerState<OrganizationScreen> {
         padding: const EdgeInsets.all(AppSpacing.l),
         children: [
           if (state.left case final left?) _LeftNotice(left: left),
+          if (organization == null || organization.waiting)
+            for (final invitation in state.invitations)
+              _InvitationCard(
+                invitation: invitation,
+                busy: state.working,
+                onAccept: () => ref.read(organizationControllerProvider.notifier).accept(invitation.id),
+                onDecline: () => ref.read(organizationControllerProvider.notifier).decline(invitation.id),
+              ),
           if (organization == null) ...[
             Text(l10n.orgNoneIntro, style: text.bodyLarge),
             const SizedBox(height: AppSpacing.l),
@@ -177,4 +185,47 @@ class _UpperCase extends TextInputFormatter {
 
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) => newValue.copyWith(text: newValue.text.toUpperCase());
+}
+
+/// An invitation sent to the person's e-mail address: accept (a member at once) or decline.
+class _InvitationCard extends StatelessWidget {
+  const _InvitationCard({required this.invitation, required this.busy, required this.onAccept, required this.onDecline});
+
+  final OrgInvitation invitation;
+  final bool busy;
+  final VoidCallback onAccept;
+  final VoidCallback onDecline;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.l),
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.l),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Semantics(header: true, child: Text(l10n.orgInvitedTitle(invitation.organization), style: text.titleMedium?.copyWith(fontWeight: FontWeight.w800))),
+              const SizedBox(height: AppSpacing.xs),
+              Text(l10n.orgInvitedBody),
+              const SizedBox(height: AppSpacing.m),
+              Wrap(
+                spacing: AppSpacing.s,
+                runSpacing: AppSpacing.s,
+                children: [
+                  FilledButton(onPressed: busy ? null : onAccept, child: Text(l10n.orgAccept)),
+                  OutlinedButton(onPressed: busy ? null : onDecline, child: Text(l10n.orgDecline)),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

@@ -8,10 +8,11 @@ import '../../requests/presentation/my_requests_controller.dart';
 import '../domain/my_organization.dart';
 
 class OrganizationState {
-  const OrganizationState({this.loading = true, this.organization, this.loadFailure, this.working = false, this.actionFailure, this.left});
+  const OrganizationState({this.loading = true, this.organization, this.invitations = const [], this.loadFailure, this.working = false, this.actionFailure, this.left});
 
   final bool loading;
   final MyOrganization? organization;
+  final List<OrgInvitation> invitations;
 
   /// The page could not be filled (shown with "Try again").
   final AppFailure? loadFailure;
@@ -29,6 +30,7 @@ class OrganizationState {
     bool? loading,
     MyOrganization? organization,
     bool clearOrganization = false,
+    List<OrgInvitation>? invitations,
     AppFailure? loadFailure,
     bool clearLoadFailure = false,
     bool? working,
@@ -39,6 +41,7 @@ class OrganizationState {
       OrganizationState(
         loading: loading ?? this.loading,
         organization: clearOrganization ? null : (organization ?? this.organization),
+        invitations: invitations ?? this.invitations,
         loadFailure: clearLoadFailure ? null : (loadFailure ?? this.loadFailure),
         working: working ?? this.working,
         actionFailure: clearActionFailure ? null : (actionFailure ?? this.actionFailure),
@@ -62,13 +65,13 @@ class OrganizationController extends Notifier<OrganizationState> {
     state = state.copyWith(loading: state.organization == null, clearLoadFailure: true);
 
     try {
-      final organization = await ref.read(accountApiProvider).organization();
+      final overview = await ref.read(accountApiProvider).organization();
 
       if (!ref.mounted) return;
 
-      state = organization == null
-          ? state.copyWith(loading: false, clearOrganization: true)
-          : state.copyWith(loading: false, organization: organization);
+      state = overview.organization == null
+          ? state.copyWith(loading: false, clearOrganization: true, invitations: overview.invitations)
+          : state.copyWith(loading: false, organization: overview.organization, invitations: overview.invitations);
     } on AppFailure catch (failure) {
       if (ref.mounted) state = state.copyWith(loading: false, loadFailure: failure);
     }
@@ -88,6 +91,62 @@ class OrganizationController extends Notifier<OrganizationState> {
       state = state.copyWith(working: false, organization: organization);
 
       return true;
+    } on AppFailure catch (failure) {
+      if (ref.mounted) state = state.copyWith(working: false, actionFailure: failure);
+
+      return false;
+    }
+  }
+
+  /// Accepts an invitation. Returns true when it went through.
+  Future<bool> accept(String id) async {
+    if (state.working) return false;
+
+    state = state.copyWith(working: true, clearActionFailure: true);
+
+    try {
+      final overview = await ref.read(accountApiProvider).acceptInvitation(id);
+
+      if (!ref.mounted) return true;
+
+      state = state.copyWith(working: false, organization: overview.organization, invitations: overview.invitations);
+
+      return true;
+    } on NotFoundFailure {
+      // Cancelled or expired meanwhile: show what is really there.
+      if (ref.mounted) {
+        state = state.copyWith(working: false);
+        await load();
+      }
+
+      return false;
+    } on AppFailure catch (failure) {
+      if (ref.mounted) state = state.copyWith(working: false, actionFailure: failure);
+
+      return false;
+    }
+  }
+
+  Future<bool> decline(String id) async {
+    if (state.working) return false;
+
+    state = state.copyWith(working: true, clearActionFailure: true);
+
+    try {
+      final left = await ref.read(accountApiProvider).declineInvitation(id);
+
+      if (!ref.mounted) return true;
+
+      state = state.copyWith(working: false, invitations: left);
+
+      return true;
+    } on NotFoundFailure {
+      if (ref.mounted) {
+        state = state.copyWith(working: false);
+        await load();
+      }
+
+      return false;
     } on AppFailure catch (failure) {
       if (ref.mounted) state = state.copyWith(working: false, actionFailure: failure);
 

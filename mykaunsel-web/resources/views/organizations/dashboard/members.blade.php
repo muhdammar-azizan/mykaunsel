@@ -48,6 +48,54 @@
                 @endforelse
             </section>
 
+            {{-- Invitations by e-mail: active at once when accepted in the app --}}
+            <section aria-labelledby="invitations" class="bg-white shadow-sm sm:rounded-lg p-6">
+                <h3 id="invitations" class="text-lg font-semibold text-gray-900">Invite by e-mail</h3>
+                <p class="mt-1 text-sm text-gray-600">The person gets an e-mail, signs in to the MyKaunsel app with that address and accepts. They join at once, without your approval, because you asked them.</p>
+
+                <form method="POST" action="{{ route('org.invitations.store') }}" class="mt-4 flex flex-wrap items-end gap-4">
+                    @csrf
+                    <div class="min-w-[260px] flex-1">
+                        <label for="invite_email" class="block text-sm font-medium text-gray-700">E-mail address</label>
+                        <input id="invite_email" name="email" type="email" required maxlength="255" value="{{ old('email') }}" class="mt-1 block w-full rounded-md border-gray-300 text-sm">
+                    </div>
+                    <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">Send invitation</button>
+                </form>
+
+                @if ($invitations->isNotEmpty())
+                    <div class="mt-6 overflow-x-auto">
+                        <table class="min-w-full text-left text-sm">
+                            <caption class="sr-only">Invitations</caption>
+                            <thead class="text-gray-500">
+                                <tr>
+                                    <th scope="col" class="py-2 pr-4 font-medium">E-mail</th>
+                                    <th scope="col" class="py-2 pr-4 font-medium">Sent</th>
+                                    <th scope="col" class="py-2 pr-4 font-medium">State</th>
+                                    <th scope="col" class="py-2 font-medium"><span class="sr-only">Action</span></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @foreach ($invitations as $invitation)
+                                    <tr>
+                                        <td class="py-2 pr-4">{{ $invitation->email }}</td>
+                                        <td class="py-2 pr-4">{{ $when($invitation->created_at) }}</td>
+                                        <td class="py-2 pr-4">{{ $invitation->state() }}</td>
+                                        <td class="py-2">
+                                            @if ($invitation->isOpen())
+                                                <form method="POST" action="{{ route('org.invitations.revoke', $invitation->id) }}" onsubmit="return confirm('Cancel this invitation?');">
+                                                    @csrf
+                                                    <button type="submit" class="text-sm font-semibold text-red-700 hover:underline">Cancel</button>
+                                                </form>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </section>
+
             {{-- Reference codes --}}
             <section aria-labelledby="codes" class="bg-white shadow-sm sm:rounded-lg p-6">
                 <h3 id="codes" class="text-lg font-semibold text-gray-900">Reference codes</h3>

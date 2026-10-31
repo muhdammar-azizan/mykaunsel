@@ -22,8 +22,14 @@ abstract class AccountApi {
   /// Saves one choice; answers the list as it now is on the server.
   Future<List<NotificationPreference>> setNotificationPreference(String key, bool enabled);
 
-  /// The organization the person belongs to or waits to join; null when none.
-  Future<MyOrganization?> organization();
+  /// The organization the person belongs to or waits to join (null when none), and the invitations waiting for them.
+  Future<OrganizationOverview> organization();
+
+  /// Accepts an invitation: a member at once. Throws [ConflictFailure] (`in_other_organization`, ...) or [NotFoundFailure] (no longer open).
+  Future<OrganizationOverview> acceptInvitation(String id);
+
+  /// Says no. Answers the invitations that are left. Throws [NotFoundFailure] when it is no longer open.
+  Future<List<OrgInvitation>> declineInvitation(String id);
 
   /// Asks to join with a reference code. Throws [ValidationFailure] (the code is not valid or has expired) or [ConflictFailure] with code
   /// `waiting_approval`, `already_member` or `in_other_organization` (the message says which organization), or [RateLimitedFailure].
@@ -84,11 +90,24 @@ class HttpAccountApi implements AccountApi {
   }
 
   @override
-  Future<MyOrganization?> organization() async {
+  Future<OrganizationOverview> organization() async {
     final response = await _client.get('/account/organization');
-    final json = response.data['organization'];
 
-    return json == null ? null : MyOrganization.fromJson(Map<String, dynamic>.from(json as Map));
+    return OrganizationOverview.fromJson(Map<String, dynamic>.from(response.data as Map));
+  }
+
+  @override
+  Future<OrganizationOverview> acceptInvitation(String id) async {
+    final response = await _client.post('/account/organization/invitations/$id/accept');
+
+    return OrganizationOverview.fromJson(Map<String, dynamic>.from(response.data as Map));
+  }
+
+  @override
+  Future<List<OrgInvitation>> declineInvitation(String id) async {
+    final response = await _client.post('/account/organization/invitations/$id/decline');
+
+    return OrganizationOverview.fromJson(Map<String, dynamic>.from(response.data as Map)).invitations;
   }
 
   @override

@@ -53,7 +53,7 @@ class OrganizationApiTest extends TestCase
 
     public function test_a_person_with_no_organization_sees_null(): void
     {
-        $this->getJson('/api/v1/account/organization')->assertOk()->assertExactJson(['organization' => null])
+        $this->getJson('/api/v1/account/organization')->assertOk()->assertExactJson(['organization' => null, 'invitations' => []])
             ->assertHeader('Cache-Control', 'no-store, private');
     }
 
@@ -125,7 +125,7 @@ class OrganizationApiTest extends TestCase
 
         $this->assertSame(BookingStatus::Cancelled, $later->fresh()->status);
         $this->assertSame(BookingStatus::Confirmed, $soon->fresh()->status);
-        $this->getJson('/api/v1/account/organization')->assertExactJson(['organization' => null]);
+        $this->getJson('/api/v1/account/organization')->assertExactJson(['organization' => null, 'invitations' => []]);
     }
 
     public function test_leaving_when_there_is_nothing_to_leave_is_a_404_and_changes_nothing(): void
@@ -138,7 +138,7 @@ class OrganizationApiTest extends TestCase
         $this->join($this->code()->code)->assertCreated();
 
         Sanctum::actingAs(User::factory()->create(['email_verified_at' => now()]));
-        $this->getJson('/api/v1/account/organization')->assertExactJson(['organization' => null]);
+        $this->getJson('/api/v1/account/organization')->assertExactJson(['organization' => null, 'invitations' => []]);
         $this->deleteJson('/api/v1/account/organization')->assertNotFound();
 
         $this->assertSame(MembershipStatus::PendingApproval, Membership::where('user_id', $this->me->id)->sole()->status);

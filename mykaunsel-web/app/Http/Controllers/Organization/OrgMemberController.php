@@ -8,6 +8,7 @@ use App\Exceptions\MembershipNotPending;
 use App\Http\Controllers\Controller;
 use App\Models\Membership;
 use App\Models\OrgInviteCode;
+use App\Models\OrgMemberInvitation;
 use App\Models\Organization;
 use App\Services\MembershipEnding;
 use App\Services\MembershipService;
@@ -41,9 +42,30 @@ class OrgMemberController extends Controller
             'waiting' => $members(MembershipStatus::PendingApproval)->orderBy('joined_at')->get(),
             'members' => $members(MembershipStatus::Active)->orderBy('joined_at')->get(),
             'codes' => OrgInviteCode::query()->where('org_id', $organization->getKey())->orderByDesc('id')->limit(50)->get(),
+            'invitations' => OrgMemberInvitation::query()->where('org_id', $organization->getKey())->orderByDesc('id')->limit(50)->get(),
             'expiryChoices' => self::EXPIRY_CHOICES,
             'timezone' => $request->user()->display_timezone,
         ]);
+    }
+
+    public function invite(Request $request, OrgMemberService $service): RedirectResponse
+    {
+        $input = $request->validate(['email' => ['required', 'string', 'email:rfc', 'max:255']], ['email.email' => 'Write a whole e-mail address, for example name@example.com.']);
+
+        try {
+            $service->invite($this->organization($request), $request->user(), $input['email']);
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        }
+
+        return back()->with('status', 'Invitation sent. They can accept it in the MyKaunsel app with that e-mail address.');
+    }
+
+    public function revokeInvitation(Request $request, int $id, OrgMemberService $service): RedirectResponse
+    {
+        $service->revokeInvitation($this->organization($request), $id, $request->user());
+
+        return back()->with('status', 'The invitation is cancelled.');
     }
 
     public function createCode(Request $request, OrgMemberService $service): RedirectResponse

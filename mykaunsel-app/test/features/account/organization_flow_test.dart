@@ -190,6 +190,83 @@ void main() {
     });
   });
 
+  group('Your organization: invitations', () {
+    const acme = OrgInvitation(id: 'inv1', organization: 'Acme Berhad');
+
+    testWidgets('an invitation is shown first, with what accepting means', (tester) async {
+      await openOrganization(tester, FakeAccountApi()..invitations = [acme]);
+
+      expect(find.text('Acme Berhad invited you'), findsOneWidget);
+      expect(find.text('If you accept, you join at once and can book its counselors.'), findsOneWidget);
+      expect(tester.getTopLeft(find.text('Acme Berhad invited you')).dy, lessThan(tester.getTopLeft(find.text('Reference code')).dy));
+    });
+
+    testWidgets('accepting makes them a member at once', (tester) async {
+      final account = FakeAccountApi()..invitations = [acme];
+      await openOrganization(tester, account);
+
+      await tester.tap(find.text('Accept'));
+      await tester.pumpAndSettle();
+
+      expect(account.invitationCalls, ['accept:inv1']);
+      expect(find.text('You belong to Acme Berhad'), findsOneWidget);
+      expect(find.text('Acme Berhad invited you'), findsNothing);
+    });
+
+    testWidgets('declining removes it and leaves the code box', (tester) async {
+      final account = FakeAccountApi()..invitations = [acme];
+      await openOrganization(tester, account);
+
+      await tester.tap(find.text('Decline'));
+      await tester.pumpAndSettle();
+
+      expect(account.invitationCalls, ['decline:inv1']);
+      expect(find.text('Acme Berhad invited you'), findsNothing);
+      expect(find.text('Reference code'), findsOneWidget);
+    });
+
+    testWidgets('being in another organization is explained, and the invitation stays', (tester) async {
+      final account = FakeAccountApi()
+        ..invitations = [acme]
+        ..invitationHandler = (_) async => throw const ConflictFailure(code: 'in_other_organization', message: 'You are still a member of Beta Sdn Bhd. Leave it first to join another organization.');
+      await openOrganization(tester, account);
+
+      await tester.tap(find.text('Accept'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Beta Sdn Bhd'), findsOneWidget);
+      expect(find.text('Acme Berhad invited you'), findsOneWidget);
+    });
+
+    testWidgets('an invitation that is no longer open disappears after asking the server again', (tester) async {
+      final account = FakeAccountApi()..invitations = [acme];
+      account.invitationHandler = (_) async {
+        account.invitations = const [];
+        throw const NotFoundFailure();
+      };
+      await openOrganization(tester, account);
+
+      await tester.tap(find.text('Accept'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Acme Berhad invited you'), findsNothing);
+      expect(find.text('Reference code'), findsOneWidget);
+    });
+
+    testWidgets('does not overflow with a long name at ×2 on 320×640', (tester) async {
+      await openOrganization(
+        tester,
+        FakeAccountApi()..invitations = [const OrgInvitation(id: 'i', organization: 'Universiti Teknologi Contoh Berhad Malaysia')],
+        size: const Size(320, 640),
+        textScale: 2,
+      );
+
+      expect(tester.takeException(), isNull);
+      await tester.scrollUntilVisible(find.text('Accept'), 100, scrollable: find.byType(Scrollable).first);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('Your organization: large text and small screens', () {
     for (final scale in [1.0, 2.0]) {
       testWidgets('joining does not overflow at ×$scale on 320×640', (tester) async {

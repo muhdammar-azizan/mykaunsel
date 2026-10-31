@@ -3368,6 +3368,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 session in the next few days still goes ahead.} other{{count} sessions in the next few days still go ahead.}}'**
   String orgLeftKept(int count);
+
+  /// No description provided for @orgInvitedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} invited you'**
+  String orgInvitedTitle(String name);
+
+  /// No description provided for @orgInvitedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If you accept, you join at once and can book its counselors.'**
+  String get orgInvitedBody;
+
+  /// No description provided for @orgAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get orgAccept;
+
+  /// No description provided for @orgDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get orgDecline;
 }
 
 class _AppLocalizationsDelegate

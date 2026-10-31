@@ -18,6 +18,7 @@ class MembershipRefused extends RuntimeException
 
     private const STATUS = [
         'invalid_code' => 422,
+        'invitation_not_found' => 404,
         'email_not_verified' => 403,
         'already_member' => 409,
         'waiting_approval' => 409,
@@ -39,6 +40,11 @@ class MembershipRefused extends RuntimeException
     public static function invalidCode(): self
     {
         return new self('invalid_code', 'This code is not valid or has expired. Check it with your organization.');
+    }
+
+    public static function invitationNotFound(): self
+    {
+        return new self('invitation_not_found', 'This invitation is no longer open.');
     }
 
     public static function emailNotVerified(): self
