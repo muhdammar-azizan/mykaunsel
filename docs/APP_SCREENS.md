@@ -157,6 +157,15 @@ B1 no fee text anywhere. B2 the no-recording acknowledgement is required and not
 2. ✅ Mode B + the counselor portal (sessions, planner, weekly hours, requests) → Request status.
 3. ✅ Chat (with the AI consent, crisis detection on the server) → history → cards.
 4. ✅ Feed built (identified posts). ✅ Moderate Feed built (admin web). Feed is complete.
-5. ✅ Choose account type, Notification settings, Data and privacy. ✅ Onboarding. ❌ Invite code (decided, next to build), Help / Terms / Privacy (drafts built, review pending), Reset password deep link (waits for a domain). ➖ Choose context (dropped). ✅ Home's upcoming-booking card. Delete account: built.
+5. ✅ Choose account type, Notification settings, Data and privacy. ✅ Onboarding. ✅ Invite code and e-mail invitations (Account > Your organization, with the HR web page). ✅ Terms tick at sign-up (AI tick optional). ✅ Notification bell and page. ✅ Delete account. ✅ Home's next-session card and organization hint. ⚠️ Help / Terms / Privacy: drafts built, review pending. ⏳ Reset password deep link: waits for a domain. ➖ Choose context: dropped.
+
+## What is left for the app (31 October 2026)
+
+Every screen is built. What remains is **checking it for real** and a few items that wait for the owner:
+
+1. **Try it on a phone or emulator with a live server**: sign up, confirm the e-mail, book, chat, Feed, organization, notifications, delete account. Nothing has been seen on a real device yet (keyboard, system bars, TalkBack, phone calls to the helplines). Needs: real e-mail set up (docs/SETUP.md section 6), `php artisan migrate`, a server the phone can reach (a tunnel or the computer's Wi-Fi address), a queue worker and the scheduler.
+2. **Waits for the owner or a date**: the review of the Terms, Privacy Policy and Help drafts (and a lawyer); the helpline numbers and crisis rules; the reset-password deep link (needs a domain); push notifications (need Firebase/APNs at deployment); a per-person AI quota before launch; a company support e-mail instead of the test one.
+3. **Small gaps, none blocking**: a Join button on the Home session card; a Feed snippet on Home; a reminder before a session starts; Malay translation of every text; asking people who signed up before the Terms tick existed to agree; anonymous posting (postponed by the owner).
+
 
 Nothing built after the Pick a slot step has been viewed on a screen yet; the emulator checklist in APP_ARCHITECTURE.md is the first thing to do with eyes.
