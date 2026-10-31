@@ -25,13 +25,17 @@ use InvalidArgumentException;
  */
 class PlatformPricingController extends Controller
 {
-    private const GROUPS = ['university' => 'University', 'corporate' => 'Corporate'];
+    private const GROUPS = ['university' => 'University', 'corporate' => 'Corporate', 'clinic' => 'Clinic'];
 
     private const PROMOS_PER_PAGE = 15;
 
     public function index(Request $request, SubscriptionPlanService $plans): View
     {
-        $tab = $request->query('tab') === 'promos' ? 'promos' : 'plans';
+        $tab = match ($request->query('tab')) {
+            'promos' => 'promos',
+            'invoicing' => 'invoicing',
+            default => 'plans',
+        };
         $timezone = $request->user()->display_timezone;
 
         // One status per code, from the one place that works it out (PromoCode::status()). The list, the filter and the counts use it.
@@ -40,8 +44,13 @@ class PlatformPricingController extends Controller
 
         $tabs = [
             ['key' => 'plans', 'label' => 'Plans', 'count' => SubscriptionPlan::query()->where('active', true)->count(), 'url' => route('platform.pricing')],
+            ['key' => 'invoicing', 'label' => 'Invoice settings', 'count' => null, 'url' => route('platform.pricing', ['tab' => 'invoicing'])],
             ['key' => 'promos', 'label' => 'Promo Codes', 'count' => $statuses->filter(fn ($s) => $s === PromoCodeStatus::Active)->count(), 'url' => route('platform.pricing', ['tab' => 'promos'])],
         ];
+
+        if ($tab === 'invoicing') {
+            return view('platform.pricing.index', ['tab' => $tab, 'tabs' => $tabs, 'invoicing' => app(PlatformSettings::class)->invoiceSettings()]);
+        }
 
         if ($tab === 'promos') {
             $filter = PromoCodeStatus::tryFrom((string) $request->query('status'));
@@ -123,6 +132,34 @@ class PlatformPricingController extends Controller
         }
 
         return redirect()->route('platform.pricing')->with('status', $changed ? 'The commission was saved (a record only: no payment is processed).' : 'Nothing was changed.');
+    }
+
+    public function updateInvoicing(Request $request, PlatformSettings $settings): RedirectResponse
+    {
+        $data = $request->validateWithBag('invoicing', [
+            'tax_name' => ['nullable', 'string', 'max:20'],
+            'tax_rate_percent' => ['required', 'string', 'regex:/^\d{1,3}(\.\d{1,2})?$/'],
+            'due_days' => ['required', 'integer'],
+            'seller_name' => ['required', 'string', 'max:100'],
+            'seller_address' => ['nullable', 'string', 'max:300'],
+            'seller_ssm' => ['nullable', 'string', 'max:50'],
+            'seller_tax_no' => ['nullable', 'string', 'max:50'],
+            'bank_name' => ['nullable', 'string', 'max:100'],
+            'bank_account_name' => ['nullable', 'string', 'max:100'],
+            'bank_account_no' => ['nullable', 'string', 'max:50'],
+        ], [
+            'tax_rate_percent.required' => 'Type the tax rate from 0 to 100 (0 if no tax is charged).',
+            'tax_rate_percent.regex' => 'Type a number from 0 to 100 with at most two decimals, for example 8 or 6.5.',
+            'seller_name.required' => 'Write the name of the seller that is printed on an invoice.',
+        ]);
+
+        try {
+            $changed = $settings->setInvoiceSettings($request->user(), $data);
+        } catch (InvalidArgumentException $e) {
+            return back()->withInput()->withErrors(['form' => $e->getMessage()], 'invoicing');
+        }
+
+        return redirect()->route('platform.pricing', ['tab' => 'invoicing'])->with('status', $changed ? 'The invoice settings were saved. Invoices already issued keep the values they were made with.' : 'Nothing was changed.');
     }
 
     // ---- promo codes -----------------------------------------------------------------------------------------

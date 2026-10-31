@@ -80,10 +80,10 @@ class SubscriptionAssignmentService
         ];
     }
 
-    /** Clinics and independent counselors are paid for by their clients (a commission), so they have no plan. */
+    /** Universities, corporates and clinics subscribe yearly. (Independent counselors are not organizations; the platform organization has no plan.) */
     public function canHavePlan(Organization $organization): bool
     {
-        return in_array($organization->org_type, [OrgType::University, OrgType::Corporate], true);
+        return in_array($organization->org_type, [OrgType::University, OrgType::Corporate, OrgType::Clinic], true);
     }
 
     // ---- the price -------------------------------------------------------------------------------------------
@@ -196,6 +196,9 @@ class SubscriptionAssignmentService
                     'used_count' => (int) PromoCode::query()->whereKey($promo->id)->value('used_count'),
                 ], $actor);
             }
+
+            // The invoice for this plan, in the same transaction (a failure undoes the assignment too).
+            app(InvoiceService::class)->issueForAssignment($assignment, $actor);
 
             return $assignment->load('plan');
         });

@@ -21,6 +21,7 @@ return [
     ['group' => 'Platform', 'items' => [
         ['label' => 'Analytics', 'route' => 'platform.analytics', 'icon' => 'M3 3v18h18M7 15l4-5 4 3 5-7'],
         ['label' => 'Audit Log', 'route' => 'platform.audit-log', 'icon' => 'M9 12h6M9 16h6M9 8h6M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'],
+        ['label' => 'Invoices', 'route' => 'platform.invoices', 'icon' => 'M6 2h9l5 5v15H6zM14 2v6h6M9 13h7M9 17h7'],
         ['label' => 'Pricing & Promotions', 'route' => 'platform.pricing', 'icon' => 'M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM2 10h20M6 15h3'],
     ]],
     ['group' => 'Settings', 'items' => [

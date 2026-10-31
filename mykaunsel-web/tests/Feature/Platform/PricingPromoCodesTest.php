@@ -367,13 +367,14 @@ class PricingPromoCodesTest extends CounselorTestCase
         foreach (['0', '-1', '1.5', 'x', '10000001'] as $bad) {
             $this->add(['usage_limit' => $bad])->assertSessionHasErrorsIn('promo-new', 'usage_limit');
         }
-        foreach (['clinic', 'everyone', ''] as $bad) {
+        foreach (['everyone', 'platform', ''] as $bad) {
             $this->add(['applies_to' => $bad])->assertSessionHasErrorsIn('promo-new', 'applies_to');
         }
         $this->assertSame(0, PromoCode::count());
 
         $this->add(['code' => 'UNLIM', 'usage_limit' => ''])->assertSessionHasNoErrors();
         $this->add(['code' => 'ONE-1', 'usage_limit' => '1', 'applies_to' => 'corporate'])->assertSessionHasNoErrors();
+        $this->add(['code' => 'CLINIC-1', 'applies_to' => 'clinic'])->assertSessionHasNoErrors();
         $this->assertNull(PromoCode::where('code', 'UNLIM')->sole()->usage_limit);
         $this->assertSame(1, PromoCode::where('code', 'ONE-1')->sole()->usage_limit);
     }
@@ -385,7 +386,7 @@ class PricingPromoCodesTest extends CounselorTestCase
 
         foreach ([
             ['code' => 'abc'], ['code' => 'bad code'], ['type' => 'bogus'], ['value' => 0], ['value' => 101], ['type' => 'fixed', 'value' => 0],
-            ['type' => 'fixed', 'value' => 100_000_001], ['valid_until' => now()->subDay()], ['usage_limit' => 0], ['applies_to' => 'clinic'],
+            ['type' => 'fixed', 'value' => 100_000_001], ['valid_until' => now()->subDay()], ['usage_limit' => 0], ['applies_to' => 'platform'],
         ] as $bad) {
             try {
                 $service->create($this->admin, array_replace($good, $bad));

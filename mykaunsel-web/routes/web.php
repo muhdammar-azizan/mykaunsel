@@ -273,6 +273,14 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/pricing/plans', [PlatformPricingController::class, 'storePlan'])->middleware('throttle:20,1')->name('pricing.plans.store');
         Route::post('/pricing/plans/{plan}', [PlatformPricingController::class, 'updatePlan'])->whereNumber('plan')->middleware('throttle:30,1')->name('pricing.plans.update');
         Route::post('/pricing/commission', [PlatformPricingController::class, 'updateCommission'])->middleware('throttle:10,1')->name('pricing.commission');
+        // Invoices of the yearly subscription: the list, one invoice, marking it paid by hand (a bank transfer) and voiding it.
+        Route::get('/invoices', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'index'])->name('invoices');
+        Route::get('/invoices/{invoice}', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'show'])->where('invoice', '[0-9a-z]{26}')->name('invoices.show');
+        Route::post('/invoices/{invoice}/paid', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'markPaid'])->where('invoice', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('invoices.paid');
+        Route::post('/invoices/{invoice}/void', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'void'])->where('invoice', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('invoices.void');
+        Route::post('/organizations/{organization}/invoice', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'issue'])->whereNumber('organization')->middleware('throttle:20,1')->name('organizations.invoice');
+        Route::post('/pricing/invoicing', [PlatformPricingController::class, 'updateInvoicing'])->middleware('throttle:10,1')->name('pricing.invoicing');
+
         // Promo codes are applied only by an admin (when giving an organization a plan). There is NO public route that checks a code.
         Route::post('/pricing/promos', [PlatformPricingController::class, 'storePromo'])->middleware('throttle:20,1')->name('pricing.promos.store');
         Route::post('/pricing/promos/{promo}', [PlatformPricingController::class, 'updatePromo'])->whereNumber('promo')->middleware('throttle:30,1')->name('pricing.promos.update');

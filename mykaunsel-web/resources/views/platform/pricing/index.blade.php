@@ -4,10 +4,10 @@
 @endphp
 
 <x-platform-layout title="Pricing & Promotions">
-    <x-platform.page-header title="Pricing & Promotions" subtitle="Yearly plans for universities and corporates, promo codes, and the commission for clinics and independent counselors." />
+    <x-platform.page-header title="Pricing & Promotions" subtitle="Yearly plans for universities, corporates and clinics, promo codes, and the commission for independent counselors (a record only; independent counselors use MyKaunsel for free for now)." />
 
     <div class="mt-4 rounded-2xl border border-brand-blue/25 bg-brand-blue/[.05] px-5 py-3 text-[13.5px] leading-snug" role="note">
-        <strong>No payment is processed.</strong> Plans and prices only record what an organization was given; nothing is charged. The prices on this page are <strong>examples</strong>, and prices exclude tax (SST).
+        <strong>Online payment is not connected yet.</strong> Giving an organization a plan makes an invoice; an admin marks it paid by hand once the transfer has arrived. The prices on this page are <strong>examples</strong>, and the tax is added on the invoice (see Invoice settings).
     </div>
 
     @if (session('status'))
@@ -24,6 +24,8 @@
 
     @if ($tab === 'promos')
         @include('platform.pricing._promos')
+    @elseif ($tab === 'invoicing')
+        @include('platform.pricing._invoicing')
     @else
     @foreach ($groups as $type => $groupLabel)
         @php
@@ -90,7 +92,7 @@
     {{-- Commission --}}
     <section class="mt-10" aria-labelledby="commission-title">
         <x-platform.panel title="Commission">
-            <p class="text-[13.5px] text-brand-ink/70">Clinics and independent counselors have no plan: their clients pay, and the platform keeps a percentage of each session. This is one setting for all of them.</p>
+            <p class="text-[13.5px] text-brand-ink/70">Independent counselors use MyKaunsel for free for now; this percentage is only a record of what the platform would keep from their paid sessions later. This is one setting for all of them.</p>
 
             <form method="POST" action="{{ route('platform.pricing.commission') }}" x-data="{ busy: false }" @submit="busy = true" class="mt-4 flex flex-wrap items-end gap-3">
                 @csrf

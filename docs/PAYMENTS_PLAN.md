@@ -46,9 +46,12 @@ Fees come from blogs that disagree with each other; none was confirmed on an off
 
 ## Still to do for the subscription (not built)
 
-1. Allow **clinics** to be given a plan (PRICING.md says only universities and corporates can; clinics are to be added).
-2. **Enforce the end date**: bookings and times only inside the paid period, with the warnings and the "request renewal" button described below.
-3. Later, when there is a payment gateway: invoices and receipts, renewal reminders, and a way to pay online.
+Build order (decided 1 November 2026): **step 1 done** (clinic plans; invoices with a tax line, numbers, snapshots; the Platform Admin pages: Invoices, invoice settings, mark paid by hand, void; see PRICING.md, "Invoices"). Still to do:
+
+2. The Billplz gateway: bill creation, the pay link and the signed callback.
+3. The organization admin's Subscription page, receipts, and the e-mails (invoice issued, receipt).
+4. **Enforce the end date**: bookings and times only inside the paid period, with the warnings and the "request renewal" button described below.
+5. Documents and a last check.
 
 ## Decided by the owner (31 October 2026)
 

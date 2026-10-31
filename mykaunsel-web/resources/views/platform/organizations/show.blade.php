@@ -168,11 +168,30 @@
                 @if ($org->currentAssignment?->plan->max_members !== null && $org->currentAssignment && $memberCount > $org->currentAssignment->plan->max_members)
                     <p class="mt-3 rounded-xl border border-brand-yellow/50 bg-brand-yellow/10 px-4 py-2.5 text-[13px] font-semibold text-[#6B4C0C]" role="alert">Warning: {{ number_format($memberCount) }} members is more than the plan's maximum of {{ number_format($org->currentAssignment->plan->max_members) }}. Nothing is blocked.</p>
                 @endif
-                <p class="mt-3 text-[12.5px] text-brand-ink/50">A record only: no payment is processed. Prices exclude tax (SST).</p>
+                <p class="mt-3 text-[12.5px] text-brand-ink/50">Online payment is not connected yet: an admin marks an invoice paid by hand.</p>
+
+                @if ($org->currentAssignment)
+                    <h3 class="mt-4 text-[13px] font-extrabold">Invoices</h3>
+                    @forelse ($invoices as $invoice)
+                        <p class="mt-1.5 text-[13px]">
+                            <a href="{{ route('platform.invoices.show', $invoice) }}" class="font-semibold text-brand-blue hover:underline">{{ $invoice->number }}</a>
+                            · {{ \App\Support\Money::rm($invoice->total_cents) }} · {{ $invoice->statusLabel() }}
+                        </p>
+                    @empty
+                        <p class="mt-1.5 text-[12.5px] text-brand-ink/60">No invoice for the current plan yet.</p>
+                    @endforelse
+
+                    @if (! $invoices->contains('assignment_id', $org->current_assignment_id))
+                        <form method="POST" action="{{ route('platform.organizations.invoice', $org) }}" class="mt-2">
+                            @csrf
+                            <button type="submit" class="inline-flex min-h-[38px] items-center rounded-full border border-brand-ink/20 px-4 text-[13px] font-semibold transition hover:bg-brand-ink/5">Issue invoice for the current plan</button>
+                        </form>
+                    @endif
+                @endif
                 @if ($offer['applicable'])
                     <button type="button" x-data @click="$dispatch('open-modal', 'change-plan')" class="mt-3 inline-flex min-h-[38px] items-center rounded-full border border-brand-ink/20 px-4 text-[13px] font-semibold transition hover:bg-brand-ink/5">{{ $org->currentAssignment ? 'Change plan' : 'Choose a plan' }}</button>
                 @else
-                    <p class="mt-2 text-[12.5px] text-brand-ink/55">Clinics have no plan: their clients pay and the platform keeps a commission.</p>
+                    <p class="mt-2 text-[12.5px] text-brand-ink/55">This kind of organization has no subscription plan.</p>
                 @endif
 
                 @if ($planHistory->count() > 1)

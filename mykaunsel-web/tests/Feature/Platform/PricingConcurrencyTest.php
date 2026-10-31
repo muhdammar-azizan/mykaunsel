@@ -43,6 +43,7 @@ class PricingConcurrencyTest extends TestCase
     {
         if ($this->orgIds !== []) {
             DB::table('organizations')->whereIn('id', $this->orgIds)->update(['current_assignment_id' => null]);
+            DB::table('invoices')->whereIn('org_id', $this->orgIds)->delete(); // an invoice points at its organization (restrict)
             SubscriptionAssignment::query()->whereIn('org_id', $this->orgIds)->delete();
             Organization::query()->whereIn('id', $this->orgIds)->delete();
         }

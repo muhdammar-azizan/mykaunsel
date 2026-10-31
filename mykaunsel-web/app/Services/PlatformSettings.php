@@ -109,6 +109,88 @@ class PlatformSettings
         return $changed;
     }
 
+    // ---- invoices --------------------------------------------------------------------------------------------
+
+    /**
+     * The invoice settings (config/invoicing.php gives the starting values): the tax name and rate, the days until an invoice is due, who is selling
+     * and where to pay by bank transfer. `tax_rate_bp` is in basis points (800 = 8%).
+     *
+     * @return array{tax_name: string, tax_rate_bp: int, due_days: int, seller_name: string, seller_address: string, seller_ssm: string, seller_tax_no: string, bank_name: string, bank_account_name: string, bank_account_no: string}
+     */
+    public function invoiceSettings(): array
+    {
+        $saved = $this->all()['invoice.settings'] ?? null;
+
+        return array_replace(config('invoicing.defaults'), is_array($saved) ? array_intersect_key($saved, config('invoicing.defaults')) : []);
+    }
+
+    /**
+     * Saves the invoice settings in one transaction with their audit entry (which names only WHAT changed, never the bank details). Saving what is
+     * already saved changes nothing and logs nothing. Existing invoices keep the values they were made with.
+     *
+     * @param  array<string, mixed>  $input  tax_name, tax_rate_percent (0 to 100, at most two decimals), due_days, and the text fields
+     * @return bool whether anything changed
+     *
+     * @throws InvalidArgumentException
+     */
+    public function setInvoiceSettings(User $admin, array $input): bool
+    {
+        $text = fn (string $key, int $max) => mb_substr(trim((string) ($input[$key] ?? '')), 0, $max);
+        $rate = trim((string) ($input['tax_rate_percent'] ?? '0'));
+
+        if (! preg_match('/^\d{1,3}(\.\d{1,2})?$/', $rate) || (float) $rate > 100) {
+            throw new InvalidArgumentException('The tax rate must be a number from 0 to 100, with at most two decimals.');
+        }
+
+        [$min, $max] = config('invoicing.limits.due_days');
+        $days = $input['due_days'] ?? null;
+
+        if (! is_numeric($days) || (int) $days != $days || (int) $days < $min || (int) $days > $max) {
+            throw new InvalidArgumentException("The days until an invoice is due must be a whole number from {$min} to {$max}.");
+        }
+
+        if ($text('seller_name', 100) === '') {
+            throw new InvalidArgumentException('Write the name of the seller that is printed on an invoice.');
+        }
+
+        $new = [
+            'tax_name' => $text('tax_name', 20),
+            'tax_rate_bp' => (int) round(((float) $rate) * 100),
+            'due_days' => (int) $days,
+            'seller_name' => $text('seller_name', 100),
+            'seller_address' => $text('seller_address', 300),
+            'seller_ssm' => $text('seller_ssm', 50),
+            'seller_tax_no' => $text('seller_tax_no', 50),
+            'bank_name' => $text('bank_name', 100),
+            'bank_account_name' => $text('bank_account_name', 100),
+            'bank_account_no' => $text('bank_account_no', 50),
+        ];
+
+        $changed = DB::transaction(function () use ($admin, $new) {
+            $row = $this->lockedRow('invoice.settings', config('invoicing.defaults'));
+            $old = array_replace(config('invoicing.defaults'), is_array($row->value) ? $row->value : []);
+            $differs = array_keys(array_filter($new, fn ($value, $key) => ($old[$key] ?? null) !== $value, ARRAY_FILTER_USE_BOTH));
+
+            if ($differs === []) {
+                return false;
+            }
+
+            $row->update(['value' => $new, 'updated_by' => $admin->id]);
+
+            Audit::log('invoice.settings_updated', null, array_filter([
+                'changed' => $differs,
+                'tax_rate_bp' => in_array('tax_rate_bp', $differs, true) ? ['old' => $old['tax_rate_bp'] ?? null, 'new' => $new['tax_rate_bp']] : null,
+                'due_days' => in_array('due_days', $differs, true) ? ['old' => $old['due_days'] ?? null, 'new' => $new['due_days']] : null,
+            ]), $admin);
+
+            return true;
+        });
+
+        $this->values = null;
+
+        return $changed;
+    }
+
     public function anyRegistrationOpen(): bool
     {
         return in_array(true, $this->registrationStatus(), true);

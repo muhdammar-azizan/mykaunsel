@@ -6,6 +6,7 @@ use App\Models\Complaint;
 use App\Models\CounselorProfile;
 use App\Models\FeedComment;
 use App\Models\FeedPost;
+use App\Models\Invoice;
 use App\Models\LkmDirectorySnapshot;
 use App\Models\Organization;
 use App\Models\PromoCode;
@@ -143,6 +144,10 @@ return [
         'promo.disabled' => ['category' => 'pricing', 'badge' => 'suspended', 'label' => 'Promo code disabled'],
         'promo.deleted' => ['category' => 'pricing', 'badge' => 'deleted', 'label' => 'Promo code deleted'],
         'promo.redeemed' => ['category' => 'pricing', 'badge' => 'approved', 'label' => 'Promo code redeemed'],
+        'invoice.issued' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Invoice issued'],
+        'invoice.marked_paid' => ['category' => 'pricing', 'badge' => 'approved', 'label' => 'Invoice marked paid'],
+        'invoice.voided' => ['category' => 'pricing', 'badge' => 'deleted', 'label' => 'Invoice voided'],
+        'invoice.settings_updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Invoice settings updated'],
         'commission.updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Commission updated'],
         'organization.plan_assigned' => ['category' => 'organizations', 'badge' => 'updated', 'label' => 'Plan assigned to organization'],
         'organization.plan_changed' => ['category' => 'organizations', 'badge' => 'updated', 'label' => 'Organization plan changed'],
@@ -212,6 +217,7 @@ return [
         FeedComment::class => 'feed_comment',
         AdminInvitation::class => 'admin_invitation',
         SubscriptionPlan::class => 'plan',
+        Invoice::class => 'invoice',
         PromoCode::class => 'promo_code',
     ],
 

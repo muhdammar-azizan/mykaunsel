@@ -20,7 +20,7 @@ class PromoCode extends Model
 {
     public const TYPES = ['percent' => 'Percentage', 'fixed' => 'Fixed amount'];
 
-    public const APPLIES_TO = ['all' => 'All organizations', 'university' => 'University only', 'corporate' => 'Corporate only'];
+    public const APPLIES_TO = ['all' => 'All organizations', 'university' => 'University only', 'corporate' => 'Corporate only', 'clinic' => 'Clinic only'];
 
     protected $fillable = ['code', 'type', 'value', 'valid_from', 'valid_until', 'usage_limit', 'used_count', 'applies_to', 'disabled', 'version', 'created_by'];
 

@@ -128,6 +128,7 @@ class PlatformOrganizationController extends Controller
             'organization' => $organization,
             'offer' => $plans->offeredPlans($organization),
             'planHistory' => $plans->history($organization),
+            'invoices' => \App\Models\Invoice::query()->where('org_id', $organization->getKey())->orderByDesc('id')->limit(5)->get(),
             'memberCount' => $plans->memberCount($organization),
             'registrant' => $registrant,
             'registrantTitle' => $organization->registrant?->title,

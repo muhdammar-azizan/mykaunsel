@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Yearly subscription plans for universities and corporates. There is no payment: a plan is a record of a price.
+ * Yearly subscription plans for universities, corporates and clinics. There is no payment: a plan is a record of a price.
  *
  * - Plans are never deleted, only made inactive. An inactive plan is not offered when assigning, but organizations on it keep it.
  * - ACTIVE plans of the same organization type must not overlap (checked while the plans of that type are locked, so two
@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\DB;
  */
 class SubscriptionPlanService
 {
-    public const TYPES = [OrgType::University, OrgType::Corporate];
+    public const TYPES = [OrgType::University, OrgType::Corporate, OrgType::Clinic];
 
     /**
      * @param  array{org_type: string, name: string, min_members: int, max_members: ?int, price_cents: int, active: bool}  $data
@@ -254,7 +254,7 @@ class SubscriptionPlanService
         $maxPrice = (int) config('pricing.plan.max_price_cents');
 
         if (! in_array($data['org_type'] ?? null, array_map(fn (OrgType $t) => $t->value, self::TYPES), true)) {
-            $errors[] = 'Plans are only for universities and corporates.';
+            $errors[] = 'Plans are only for universities, corporates and clinics.';
         }
 
         $name = trim((string) ($data['name'] ?? ''));

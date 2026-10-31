@@ -1,12 +1,12 @@
 # Pricing & Promotions (Platform Admin → Platform → Pricing & Promotions)
 
-**There is no payment.** Nothing is charged. This page records plans, prices and promo codes and which organization is on which plan. The page says so, and so does this document. Prices shown are **examples** and **exclude tax (SST)**. Out of scope: payment gateway, invoices, receipts, proration, automatic renewal and reminders, what happens when a subscription ends, tax, and a public pricing page.
+**Online payment is not connected yet** (the Billplz gateway is the next step of the subscription work, see [PAYMENTS_PLAN.md](PAYMENTS_PLAN.md)). Giving an organization a plan now also makes an **invoice** (below); an admin marks it paid by hand once a bank transfer has arrived. This page records plans, prices and promo codes and which organization is on which plan. The page says so, and so does this document. Prices shown are **examples** and **exclude tax (SST)**. Out of scope: payment gateway, invoices, receipts, proration, automatic renewal and reminders, what happens when a subscription ends, tax, and a public pricing page.
 
 This file is built in three steps. **Step 1 (done): Plans tab, commission, database, example data. Step 2 (done): Promo Codes tab. Step 3 (done): giving plans to organizations (Approve modal, "Change plan"), redemption, snapshots.**
 
 ## Business rules
 
-- Only **universities and corporates** pay, a **yearly** subscription based on member count. Clinics and independent counselors have **no plans**: their clients pay and the platform keeps a commission (one setting below, record only).
+- **Universities, corporates and clinics** pay a **yearly** subscription based on member count (clinics were added on 1 November 2026). Independent counselors have no plan and use MyKaunsel for free for now; the commission (one setting below, record only) is for their paid sessions later.
 - **Yearly only.** The price is an integer in sen in `price_cents` (a generic column), so a billing period can be added later with a migration. Money is always integer sen, never a float (`App\Support\Money`).
 
 ## Plans (step 1)
@@ -120,3 +120,17 @@ The older keys (`pricing.plan_created`, `pricing.plan_updated`, `pricing.plan_de
 ## Security
 
 Platform Admin only (403 for everyone else), CSRF on every action, rate limits (adding 20 a minute, editing and disabling 30 a minute, deleting 20, commission 10), server-side validation of every rule above (also inside the service, so no caller can skip it), all text escaped when shown. **There is no public endpoint that checks a promo code.** Codes are applied only by a Platform Admin when assigning a plan. If a code field is ever added to a public form it needs rate limiting.
+
+## Invoices (built 1 November 2026, step 1 of the subscription payment)
+
+Giving an organization a plan (**Approve** with a plan, or **Change plan**) makes an invoice **in the same transaction**: if the invoice can not be made, the plan is not given either.
+
+- **Lines:** the plan price, the discount from the promo code, then one tax line on what is left (name and rate from the invoice settings), then the total. Money is whole sen; tax is rounded to the nearest sen, half up (`InvoiceService::tax`).
+- **Snapshots:** the invoice keeps who sold (name, address, SSM, tax number, bank account), who was billed (name, SSM, type), the tax name and rate, the due days and every amount. Changing a plan, a setting or an organization later never changes an invoice.
+- **Number:** `INV-<year>-<n>` (for example `INV-2026-0001`), the number restarting every year; the year's counter row is locked while a number is taken. One invoice per assignment (a unique key).
+- **Dates:** issued today and due after the invoice setting `due_days` (14), by the **Malaysian** calendar (the application clock is UTC). An unpaid invoice past its due date shows as **Overdue** (the day itself is not late). Overdue is only a label for now: it does not stop anything.
+- **A total of RM 0.00** (a 100% promo code) is paid at once with the method `no_charge`.
+- **Marking paid** (Platform Admin, a bank transfer that has arrived): the bank reference (required) and the day the money arrived (not in the future). **Voiding** (a mistake): a reason; only an unpaid invoice; the plan the organization was given does not change. A paid invoice can not be voided (that would be a credit note, not built). Both lock the invoice, so two admins at once can not both succeed.
+- **Pages:** *Invoices* in the menu (tabs Open, Overdue, Paid, Void, All, with counts and a search by number or organization); one invoice as a document with the Payment, Cancel and History panels; on an organization's page the latest five invoices and **Issue invoice for the current plan** (for a plan given before invoices existed); *Pricing & Promotions > Invoice settings* for the tax name and rate (0% while this is a final year project), the due days, the seller and the bank account.
+- **Audit** (ids and amounts only, never the bank details or the reference): `invoice.issued`, `invoice.marked_paid`, `invoice.voided`, `invoice.settings_updated` (which settings changed, and the old and new tax rate and due days).
+- **Not built yet (next steps):** the Billplz gateway and the pay link, the organization's own Subscription page and receipts, the e-mails, and enforcing the end date. See PAYMENTS_PLAN.md.

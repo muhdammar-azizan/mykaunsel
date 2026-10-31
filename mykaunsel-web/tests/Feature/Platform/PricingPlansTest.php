@@ -102,10 +102,10 @@ class PricingPlansTest extends CounselorTestCase
         $this->assertSame(10.0, $this->commission());
     }
 
-    public function test_the_page_says_nothing_is_charged_and_is_in_the_menu(): void
+    public function test_the_page_says_online_payment_is_not_connected_and_is_in_the_menu(): void
     {
         $this->as()->get(route('platform.pricing'))->assertOk()
-            ->assertSee('No payment is processed')->assertSee('examples')->assertSee('exclude tax (SST)')
+            ->assertSee('Online payment is not connected yet')->assertSee('examples')->assertSee('Invoice settings')
             ->assertSee('Pricing &amp; Promotions', false);
 
         $this->as()->get(route('platform.dashboard'))->assertSee(route('platform.pricing'), false);
@@ -114,7 +114,7 @@ class PricingPlansTest extends CounselorTestCase
     public function test_each_group_has_an_empty_state(): void
     {
         $this->as()->get(route('platform.pricing'))->assertOk()
-            ->assertSee('No university plans yet')->assertSee('No corporate plans yet')->assertSee('Add plan');
+            ->assertSee('No university plans yet')->assertSee('No corporate plans yet')->assertSee('No clinic plans yet')->assertSee('Add plan');
     }
 
     // ---- adding a plan ---------------------------------------------------------------------------------------
@@ -167,13 +167,21 @@ class PricingPlansTest extends CounselorTestCase
         $this->assertNull(SubscriptionPlan::where('name', 'Big')->sole()->max_members);
     }
 
-    public function test_only_universities_and_corporates_have_plans(): void
+    public function test_only_universities_corporates_and_clinics_have_plans(): void
     {
-        foreach (['clinic', 'platform', 'individual', ''] as $type) {
+        $this->add2('clinic');
+
+        foreach (['platform', 'individual', ''] as $type) {
             $this->as()->post(route('platform.pricing.plans.store'), $this->form(['org_type' => $type]))->assertStatus(422);
         }
 
-        $this->assertSame(0, SubscriptionPlan::count());
+        $this->assertSame(1, SubscriptionPlan::count(), 'only the clinic plan was accepted');
+        $this->assertSame('clinic', SubscriptionPlan::sole()->org_type->value);
+    }
+
+    private function add2(string $type): void
+    {
+        $this->as()->post(route('platform.pricing.plans.store'), $this->form(['org_type' => $type]))->assertSessionHasNoErrors();
     }
 
     // ---- overlaps and gaps -----------------------------------------------------------------------------------
@@ -388,7 +396,7 @@ class PricingPlansTest extends CounselorTestCase
         foreach ([
             ['price_cents' => 0], ['price_cents' => -1], ['price_cents' => 100_000_001], ['min_members' => 0], ['min_members' => 1_000_001],
             ['max_members' => 0], ['min_members' => 10, 'max_members' => 9], ['name' => '   '], ['name' => str_repeat('x', 101)],
-            ['org_type' => 'clinic'], ['org_type' => 'platform'],
+            ['org_type' => 'platform'], ['org_type' => 'individual'],
         ] as $bad) {
             try {
                 $service->create($this->admin, array_replace($good, $bad));

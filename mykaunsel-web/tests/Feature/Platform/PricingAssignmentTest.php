@@ -473,18 +473,36 @@ class PricingAssignmentTest extends CounselorTestCase
         $this->assertSame(0, SubscriptionAssignment::count());
     }
 
-    public function test_clinics_and_pending_organizations_cannot_be_given_a_plan_by_change_plan(): void
+    public function test_pending_organizations_and_the_platform_itself_cannot_be_given_a_plan_by_change_plan(): void
     {
         $plan = $this->plan();
-        $clinic = Organization::where('org_type', 'clinic')->where('subscription_status', 'active')->firstOrFail();
+        $platform = Organization::where('org_type', 'platform')->firstOrFail();
         $pending = $this->pendingUniversity();
 
-        foreach ([$clinic, $pending] as $org) {
-            $this->as()->post(route('platform.organizations.plan', $org), ['plan_id' => $plan->id])->assertSessionHasErrorsIn('plan', 'plan');
-            $this->assertNull($org->fresh()->current_assignment_id);
-        }
+        $this->as()->post(route('platform.organizations.plan', $pending), ['plan_id' => $plan->id])->assertSessionHasErrorsIn('plan', 'plan');
+        $this->assertNull($pending->fresh()->current_assignment_id);
+
+        $this->assertFalse($this->service()->canHavePlan($platform));
+        $this->assertFalse($this->service()->offeredPlans($platform)['applicable']);
         $this->assertSame(0, SubscriptionAssignment::count());
-        $this->assertFalse($this->service()->offeredPlans($clinic)['applicable']);
+    }
+
+    public function test_a_clinic_subscribes_like_any_other_organization_and_only_to_a_clinic_plan(): void
+    {
+        $clinic = Organization::where('org_type', 'clinic')->where('subscription_status', 'active')->firstOrFail();
+        $clinicPlan = $this->plan(type: 'clinic', name: 'Clinic plan');
+        $universityPlan = $this->plan(name: 'University plan');
+
+        $offered = $this->service()->offeredPlans($clinic);
+        $this->assertTrue($offered['applicable']);
+        $this->assertSame([$clinicPlan->id], $offered['plans']->pluck('plan.id')->all());
+
+        $this->as()->post(route('platform.organizations.plan', $clinic), ['plan_id' => $universityPlan->id])->assertSessionHasErrorsIn('plan', 'plan');
+        $this->assertNull($clinic->fresh()->current_assignment_id);
+
+        $this->as()->post(route('platform.organizations.plan', $clinic), ['plan_id' => $clinicPlan->id])->assertSessionHasNoErrors();
+        $this->assertSame($clinicPlan->id, $clinic->fresh()->currentAssignment->plan_id);
+        $this->assertNotNull($clinic->fresh()->subscription_ends_at);
     }
 
     public function test_an_inactive_plan_is_not_offered_but_keeps_its_organizations(): void
@@ -617,11 +635,11 @@ class PricingAssignmentTest extends CounselorTestCase
         $this->assertSame(2, SubscriptionAssignment::count());
     }
 
-    public function test_clinics_see_no_plan_controls(): void
+    public function test_clinics_see_the_plan_controls_and_the_platform_organization_does_not(): void
     {
         $clinic = Organization::where('org_type', 'clinic')->where('subscription_status', 'active')->firstOrFail();
 
-        $this->as()->get(route('platform.organizations.show', $clinic))->assertOk()->assertDontSee('Change plan')->assertSee('Clinics have no plan');
+        $this->as()->get(route('platform.organizations.show', $clinic))->assertOk()->assertSee('Choose a plan')->assertDontSee('has no subscription plan');
     }
 
     // ---- reading it back -------------------------------------------------------------------------------------
