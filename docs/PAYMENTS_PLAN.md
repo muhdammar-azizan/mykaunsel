@@ -1,5 +1,9 @@
 # Payments: plan (nothing is built; to be decided)
 
+> **Context (owner, 31 October 2026): MyKaunsel is a final year project (FYP) for now. There are no real users, only the developer.** Payments, taxes, licences, lawyers and accountants are looked at again only if the project becomes commercial and has real users. Until then nothing in this file needs to be built or checked.
+>
+> **Decision of 31 October 2026: payments for independent counselors are ON HOLD.** The owner still wants the feature, but it is looked at again only after many more functions of the system are finished. Until then **independent counselors use MyKaunsel for free**: no commission, no session price, no payment, no escrow. Everything below about independent counselors is the thinking kept for later. **Organizations (universities, corporates and clinics) stay on the yearly subscription**, which is simple: one payer, once a year, nothing to refund. Until a payment gateway exists, a subscription is **recorded by the Platform Admin and paid outside the system** (invoice and bank transfer), as the Pricing page already works today.
+
 Nothing is charged today. [PRICING.md](PRICING.md) only records plans, prices, promo codes and a commission percentage. This page keeps the thinking about real payments so it is not repeated. Owner's order: settle every other question first, then decide payments.
 
 ## Who pays whom (corrected on 31 October 2026)
@@ -12,6 +16,39 @@ Nothing is charged today. [PRICING.md](PRICING.md) only records plans, prices, p
 | The independent counselor's client (the public) | the counselor, through MyKaunsel | Pays per session. |
 
 The hard part is the last row. The owner wants the money to pass through MyKaunsel (a refund is simpler when the platform holds the money).
+
+## Subscription payment: to be built (owner, 31 October 2026)
+
+The owner decided the **organization subscription is built with a real payment API** (in the provider's test mode, since this is an FYP), together with clinic plans and the end-date enforcement. This is the simple case: the organization pays MyKaunsel's own account, no money is held for anyone else.
+
+### Decided for the subscription payment (owner, 1 November 2026)
+- **Provider: Billplz first** (sandbox), behind a small gateway interface; Stripe is the second choice.
+- **Tax on the invoice:** an invoice shows subtotal, discount, a tax line and the total, like a real one. The tax rate is a setting (starting value 0% while this is an FYP) and each invoice keeps the rate it was made with.
+- **Renewal: reminders with a pay link, not an automatic charge** (60, 30, 14 and 7 days before the end). Billplz's pricing page lists an "Auto-Deduct" product (2.3% + RM1.25 cards, 2% + RM0.75 FPX on the Standard plan), but whether that is a true FPX e-mandate (direct debit) is unclear: one competitor says it is not, and Curlec is the one described as strong for e-mandates. Large organizations also tend to pay a yearly invoice through a purchase order, not by a standing charge, so automatic charging is left for later.
+- **A plan change during the term** keeps the plan until the term ends.
+- **Build order:** (1) clinic plans, invoices and the manual "mark as paid"; (2) the Billplz gateway, bill creation and the signed callback; (3) the organization's Subscription page, receipts and e-mails; (4) end-date enforcement with the warnings and "request renewal"; (5) documents and a last check.
+
+### Provider research (31 October 2026)
+Fees come from blogs that disagree with each other; none was confirmed on an official page. Re-check the provider's own page and test mode before building.
+
+| Provider | What was found |
+|---|---|
+| **Billplz** | Bill API, a separate **sandbox** (own domain and keys) with a simulated payment page; callbacks (retried up to 5 times if the server does not answer 200) signed with **HMAC-SHA256** (`x_signature`); FPX charged a **flat fee** deducted from the credit balance; a Laravel adapter exists (jomweb/billplz-laravel, MIT, last updated 2024). The fee amount, card support and settlement schedule were not found. |
+| **Stripe** (Malaysia) | Cards, FPX, GrabPay, Alipay; reported fee **3% + RM1.00** per transaction (no DuitNow QR or Touch 'n Go); settlement reported as 7 days; best documentation and an official PHP library; test mode needs no business. FPX per-payment ceiling reported as RM30,000. |
+| **ToyyibPay** | Bill API and a sandbox (dev.toyyibpay.com); callback verified with an MD5 hash; reports from other developers of undocumented sandbox errors and callbacks posted as multipart. Quick to use, weaker for production. |
+| **CHIP, Curlec (Razorpay), HitPay, Fiuu (Razer), Xendit** | Often quoted cheaper than Stripe (about 1% to 2%, FPX flat or about 1.8% + RM0.40); Curlec is positioned for recurring billing, Xendit for developer-first platforms with custom pricing. API quality and sandbox access not confirmed. |
+
+### Recommendation
+1. **Billplz first**, behind a small gateway interface in our code so the provider can be changed. It maps exactly to "an invoice with a pay link", the sandbox and the signature scheme are documented, and a Malaysian organization pays by FPX.
+2. **Stripe second** (best documentation; dearer; fewer local methods). **CHIP or Curlec** to be compared with real quotes if the project becomes commercial.
+3. **Keep a manual path next to the online one**: a large invoice (a university) can exceed what one FPX payment allows and many organizations pay by bank transfer with a purchase order, so the Platform Admin can still mark an invoice paid by hand (audited).
+4. A live account normally needs a registered business; the FYP uses the sandbox only.
+
+## Still to do for the subscription (not built)
+
+1. Allow **clinics** to be given a plan (PRICING.md says only universities and corporates can; clinics are to be added).
+2. **Enforce the end date**: bookings and times only inside the paid period, with the warnings and the "request renewal" button described below.
+3. Later, when there is a payment gateway: invoices and receipts, renewal reminders, and a way to pay online.
 
 ## Decided by the owner (31 October 2026)
 
