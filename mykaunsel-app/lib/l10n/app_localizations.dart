@@ -2619,6 +2619,12 @@ abstract class AppLocalizations {
   /// **'Account'**
   String get accountTitle;
 
+  /// No description provided for @homeUpcomingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your next session'**
+  String get homeUpcomingTitle;
+
   /// No description provided for @homeFindTitle.
   ///
   /// In en, this message translates to:
@@ -3248,6 +3254,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read and share short posts with others. You post under your own name, and you can report or mute anything you do not want to see.'**
   String get onboardingFeedBody;
+
+  /// No description provided for @orgTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your organization'**
+  String get orgTitle;
+
+  /// No description provided for @orgNoneIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'If your organization gave you a reference code, enter it here. When your organization approves you, you can book its counselors. You can use MyKaunsel without one.'**
+  String get orgNoneIntro;
+
+  /// No description provided for @orgCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference code'**
+  String get orgCodeLabel;
+
+  /// No description provided for @orgJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Send my request'**
+  String get orgJoin;
+
+  /// No description provided for @orgWaitingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name}'**
+  String orgWaitingTitle(String name);
+
+  /// No description provided for @orgWaitingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has to approve you before you can book its counselors. We will e-mail you when they answer.'**
+  String orgWaitingBody(String name);
+
+  /// No description provided for @orgWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw my request'**
+  String get orgWithdraw;
+
+  /// No description provided for @orgWithdrawTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw your request?'**
+  String get orgWithdrawTitle;
+
+  /// No description provided for @orgWithdrawBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing else changes. You can ask again with a code later.'**
+  String get orgWithdrawBody;
+
+  /// No description provided for @orgWithdrawConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get orgWithdrawConfirm;
+
+  /// No description provided for @orgMemberTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You belong to {name}'**
+  String orgMemberTitle(String name);
+
+  /// No description provided for @orgMemberBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can book the counselors of {name}, as well as the public counselors.'**
+  String orgMemberBody(String name);
+
+  /// No description provided for @orgLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave organization'**
+  String get orgLeave;
+
+  /// No description provided for @orgLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave {name}?'**
+  String orgLeaveTitle(String name);
+
+  /// No description provided for @orgLeaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will be told that you left. Your later sessions with its counselors will be cancelled. Sessions in the next {days} days still go ahead.'**
+  String orgLeaveBody(String name, int days);
+
+  /// No description provided for @orgLeaveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get orgLeaveConfirm;
+
+  /// No description provided for @orgLeftTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You left {name}'**
+  String orgLeftTitle(String name);
+
+  /// No description provided for @orgLeftCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 later session was cancelled.} other{{count} later sessions were cancelled.}}'**
+  String orgLeftCancelled(int count);
+
+  /// No description provided for @orgLeftKept.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 session in the next few days still goes ahead.} other{{count} sessions in the next few days still go ahead.}}'**
+  String orgLeftKept(int count);
 }
 
 class _AppLocalizationsDelegate

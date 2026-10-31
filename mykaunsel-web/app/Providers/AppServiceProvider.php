@@ -98,6 +98,12 @@ class AppServiceProvider extends ServiceProvider
             Limit::perHour(20)->by('sensitive-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
         ]);
 
+        // Trying reference codes: a few a minute, so a code can not be guessed.
+        RateLimiter::for('api-organization', fn (Request $request) => [
+            Limit::perMinute(5)->by('organization|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+            Limit::perHour(30)->by('organization-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+        ]);
+
         // The booking screen asks again when a date or the mode is chosen and when the app comes back, so it gets more room than the search.
         RateLimiter::for('api-availability', fn (Request $request) => [
             Limit::perMinute(60)->by('availability|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),

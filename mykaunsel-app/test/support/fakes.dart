@@ -10,6 +10,7 @@ import 'package:mykaunsel/core/config/app_info.dart';
 import 'package:mykaunsel/core/error/app_failure.dart';
 import 'package:mykaunsel/core/providers.dart';
 import 'package:mykaunsel/core/storage/onboarding_store.dart';
+import 'package:mykaunsel/features/account/domain/my_organization.dart';
 import 'package:mykaunsel/core/storage/token_storage.dart';
 import 'package:mykaunsel/features/account/data/account_api.dart';
 import 'package:mykaunsel/features/account/domain/notification_preference.dart';
@@ -265,6 +266,32 @@ class FakeAccountApi implements AccountApi {
         SignedInDevice(id: 2, name: 'Old Tablet', lastUsedAt: testNow.subtract(const Duration(hours: 5))),
       ];
   Future<void> Function(int id, String current) revokeHandler = (id, current) async {};
+
+  MyOrganization? myOrganization;
+  final joinCalls = <String>[];
+  int leaveCalls = 0;
+  Future<MyOrganization> Function(String code) joinHandler = (code) async => const MyOrganization(name: 'Acme Berhad', waiting: true);
+  Future<LeftOrganization> Function() leaveHandler = () async => const LeftOrganization(name: 'Acme Berhad', cancelled: 0, kept: 0);
+
+  @override
+  Future<MyOrganization?> organization() async => myOrganization;
+
+  @override
+  Future<MyOrganization> joinOrganization(String code) async {
+    joinCalls.add(code);
+    myOrganization = await joinHandler(code);
+
+    return myOrganization!;
+  }
+
+  @override
+  Future<LeftOrganization> leaveOrganization() async {
+    leaveCalls++;
+    final left = await leaveHandler();
+    myOrganization = null;
+
+    return left;
+  }
 
   final profileCalls = <({String name, String timezone})>[];
   final passwordCalls = <({String current, String next})>[];

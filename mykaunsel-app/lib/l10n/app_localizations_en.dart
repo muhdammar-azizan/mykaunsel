@@ -1529,6 +1529,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountTitle => 'Account';
 
   @override
+  String get homeUpcomingTitle => 'Your next session';
+
+  @override
   String get homeFindTitle => 'Find a counselor';
 
   @override
@@ -1918,4 +1921,93 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboardingFeedBody =>
       'Read and share short posts with others. You post under your own name, and you can report or mute anything you do not want to see.';
+
+  @override
+  String get orgTitle => 'Your organization';
+
+  @override
+  String get orgNoneIntro =>
+      'If your organization gave you a reference code, enter it here. When your organization approves you, you can book its counselors. You can use MyKaunsel without one.';
+
+  @override
+  String get orgCodeLabel => 'Reference code';
+
+  @override
+  String get orgJoin => 'Send my request';
+
+  @override
+  String orgWaitingTitle(String name) {
+    return 'Waiting for $name';
+  }
+
+  @override
+  String orgWaitingBody(String name) {
+    return '$name has to approve you before you can book its counselors. We will e-mail you when they answer.';
+  }
+
+  @override
+  String get orgWithdraw => 'Withdraw my request';
+
+  @override
+  String get orgWithdrawTitle => 'Withdraw your request?';
+
+  @override
+  String get orgWithdrawBody =>
+      'Nothing else changes. You can ask again with a code later.';
+
+  @override
+  String get orgWithdrawConfirm => 'Withdraw';
+
+  @override
+  String orgMemberTitle(String name) {
+    return 'You belong to $name';
+  }
+
+  @override
+  String orgMemberBody(String name) {
+    return 'You can book the counselors of $name, as well as the public counselors.';
+  }
+
+  @override
+  String get orgLeave => 'Leave organization';
+
+  @override
+  String orgLeaveTitle(String name) {
+    return 'Leave $name?';
+  }
+
+  @override
+  String orgLeaveBody(String name, int days) {
+    return '$name will be told that you left. Your later sessions with its counselors will be cancelled. Sessions in the next $days days still go ahead.';
+  }
+
+  @override
+  String get orgLeaveConfirm => 'Leave';
+
+  @override
+  String orgLeftTitle(String name) {
+    return 'You left $name';
+  }
+
+  @override
+  String orgLeftCancelled(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count later sessions were cancelled.',
+      one: '1 later session was cancelled.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String orgLeftKept(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions in the next few days still go ahead.',
+      one: '1 session in the next few days still goes ahead.',
+    );
+    return '$_temp0';
+  }
 }

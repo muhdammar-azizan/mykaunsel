@@ -1,5 +1,6 @@
 import '../../../core/network/api_client.dart';
 import '../../auth/domain/app_user.dart';
+import '../domain/my_organization.dart';
 import '../domain/notification_preference.dart';
 import '../domain/signed_in_device.dart';
 
@@ -20,6 +21,16 @@ abstract class AccountApi {
 
   /// Saves one choice; answers the list as it now is on the server.
   Future<List<NotificationPreference>> setNotificationPreference(String key, bool enabled);
+
+  /// The organization the person belongs to or waits to join; null when none.
+  Future<MyOrganization?> organization();
+
+  /// Asks to join with a reference code. Throws [ValidationFailure] (the code is not valid or has expired) or [ConflictFailure] with code
+  /// `waiting_approval`, `already_member` or `in_other_organization` (the message says which organization), or [RateLimitedFailure].
+  Future<MyOrganization> joinOrganization(String code);
+
+  /// Leaves the organization (or withdraws the request). Throws [NotFoundFailure] when there is none.
+  Future<LeftOrganization> leaveOrganization();
 
   Future<List<SignedInDevice>> devices();
 
@@ -70,6 +81,28 @@ class HttpAccountApi implements AccountApi {
       'password': newPassword,
       'password_confirmation': newPassword,
     });
+  }
+
+  @override
+  Future<MyOrganization?> organization() async {
+    final response = await _client.get('/account/organization');
+    final json = response.data['organization'];
+
+    return json == null ? null : MyOrganization.fromJson(Map<String, dynamic>.from(json as Map));
+  }
+
+  @override
+  Future<MyOrganization> joinOrganization(String code) async {
+    final response = await _client.post('/account/organization/join', data: {'code': code});
+
+    return MyOrganization.fromJson(Map<String, dynamic>.from(response.data['organization'] as Map));
+  }
+
+  @override
+  Future<LeftOrganization> leaveOrganization() async {
+    final response = await _client.delete('/account/organization');
+
+    return LeftOrganization.fromJson(Map<String, dynamic>.from(response.data['left'] as Map));
   }
 
   @override

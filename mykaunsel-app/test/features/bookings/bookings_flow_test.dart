@@ -413,7 +413,7 @@ void main() {
       expect(find.text('Your session is booked.'), findsOneWidget);
       expect(find.text('Your session with Kaunselor Aina Syazwani'), findsOneWidget);
       expect(find.text('Tuesday, 3 November 2026'), findsOneWidget);
-      expect(api.lists.length, before, reason: 'nothing asked for until the tab is opened');
+      expect(api.lists.length, before + 1, reason: 'Home shows the next session, so the new booking makes it ask for the list again, once');
 
       await tester.tap(find.text('View booking'));
       await tester.pumpAndSettle();

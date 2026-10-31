@@ -141,6 +141,11 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::get('/dashboard', [OrgDashboardController::class, 'index'])->name('dashboard');
         Route::get('/counselors', [OrgCounselorController::class, 'index'])->name('counselors');
         Route::get('/members', [OrgMemberController::class, 'index'])->name('members');
+        Route::post('/members/{id}/approve', [OrgMemberController::class, 'approve'])->whereNumber('id')->middleware('throttle:60,1')->name('members.approve');
+        Route::post('/members/{id}/decline', [OrgMemberController::class, 'decline'])->whereNumber('id')->middleware('throttle:60,1')->name('members.decline');
+        Route::post('/members/{id}/remove', [OrgMemberController::class, 'remove'])->whereNumber('id')->middleware('throttle:30,1')->name('members.remove');
+        Route::post('/codes', [OrgMemberController::class, 'createCode'])->middleware('throttle:20,1')->name('codes.store');
+        Route::post('/codes/{id}/revoke', [OrgMemberController::class, 'revokeCode'])->whereNumber('id')->middleware('throttle:30,1')->name('codes.revoke');
         Route::get('/settings', [OrgSettingController::class, 'index'])->name('settings');
     });
 

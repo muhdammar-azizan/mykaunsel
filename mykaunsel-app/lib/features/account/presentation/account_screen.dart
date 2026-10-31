@@ -94,6 +94,7 @@ class AccountScreen extends ConsumerWidget {
             ListTile(leading: const Icon(Icons.person_outline), title: Text(l10n.accountProfile), trailing: const Icon(Icons.chevron_right), onTap: () => context.push(AppRoutes.accountProfile)),
             ListTile(leading: const Icon(Icons.lock_outline), title: Text(l10n.accountPassword), trailing: const Icon(Icons.chevron_right), onTap: () => context.push(AppRoutes.accountPassword)),
             ListTile(leading: const Icon(Icons.smartphone), title: Text(l10n.accountDevices), trailing: const Icon(Icons.chevron_right), onTap: () => context.push(AppRoutes.accountDevices)),
+            ListTile(leading: const Icon(Icons.business_outlined), title: Text(l10n.orgTitle), trailing: const Icon(Icons.chevron_right), onTap: () => context.push(AppRoutes.accountOrganization)),
             ListTile(leading: const Icon(Icons.notifications_none), title: Text(l10n.accountNotifications), trailing: const Icon(Icons.chevron_right), onTap: () => context.push(AppRoutes.accountNotifications)),
             ListTile(leading: const Icon(Icons.privacy_tip_outlined), title: Text(l10n.accountPrivacy), trailing: const Icon(Icons.chevron_right), onTap: () => context.push(AppRoutes.accountPrivacy)),
             SwitchListTile(

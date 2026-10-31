@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\CounselorDirectoryController;
 use App\Http\Controllers\Api\V1\MyBookingController;
+use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Http\Controllers\Api\V1\TimeRequestController;
 use App\Http\Controllers\Api\V1\StatusController;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +46,13 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::put('/ai-consent', [AccountController::class, 'updateAiConsent'])->name('ai-consent');
         Route::get('/notification-preferences', [AccountController::class, 'notificationPreferences'])->name('notification-preferences');
         Route::put('/notification-preferences', [AccountController::class, 'updateNotificationPreference'])->name('notification-preferences.update');
+
+        // The organization the person belongs to (or waits to join), joining with a reference code, and leaving.
+        Route::get('/organization', [OrganizationController::class, 'show'])->name('organization');
+        Route::middleware('throttle:api-organization')->group(function () {
+            Route::post('/organization/join', [OrganizationController::class, 'join'])->name('organization.join');
+            Route::delete('/organization', [OrganizationController::class, 'leave'])->name('organization.leave');
+        });
 
         Route::middleware('throttle:api-sensitive')->group(function () {
             Route::put('/password', [AccountController::class, 'updatePassword'])->name('password');

@@ -77,7 +77,7 @@ mykaunsel/
 | `OrgType` | `university`, `corporate`, `clinic`, `platform` |
 | `AccessModel` | `closed`, `open` |
 | `MembershipRole` | `student`, `staff`, `employee`, `counselor`, `org_admin`, `platform_admin` |
-| `MembershipStatus` | `active`, `suspended`, `alumni`, `notice_period`, `offboarded` |
+| `MembershipStatus` | `active`, `pending_approval` (joined with a reference code, no access until HR approves), `suspended`, `alumni`, `notice_period`, `offboarded` |
 | `OrgStatus` | `pending`, `active`, `suspended`, `rejected` |
 | `VerificationType` | `org_assigned`, `platform_verified` |
 | `VerificationStatus` | `pending`, `approved`, `rejected`, `suspended` |

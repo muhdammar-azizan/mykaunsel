@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mykaunsel/app.dart';
+import 'package:mykaunsel/features/account/presentation/account_screen.dart';
 import 'package:mykaunsel/core/error/app_failure.dart';
 import 'package:mykaunsel/features/platform_status/domain/platform_status.dart';
 
@@ -381,6 +382,8 @@ void main() {
       await open(tester, storage: storage, authApi: api);
 
       await openAccountTab(tester);
+      await tester.drag(find.descendant(of: find.byType(AccountScreen), matching: find.byType(ListView)), const Offset(0, -300));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Sign out of all devices'));
       await tester.pumpAndSettle();
 
@@ -390,7 +393,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(api.logoutAllCalls, 0);
-      expect(find.text('Siti Aminah'), findsOneWidget);
+      expect(find.text('Sign out of all devices'), findsOneWidget, reason: 'still signed in, on the Account page');
 
       await tester.tap(find.text('Sign out of all devices'));
       await tester.pumpAndSettle();

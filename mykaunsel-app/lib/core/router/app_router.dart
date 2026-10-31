@@ -14,6 +14,7 @@ import '../../features/account/presentation/change_password_screen.dart';
 import '../../features/account/presentation/data_privacy_screen.dart';
 import '../../features/account/presentation/devices_screen.dart';
 import '../../features/account/presentation/notification_settings_screen.dart';
+import '../../features/account/presentation/organization_screen.dart';
 import '../../features/account/presentation/profile_screen.dart';
 import '../../features/booking/domain/booking_preview.dart';
 import '../../features/booking/presentation/booking_args.dart';
@@ -65,6 +66,7 @@ abstract final class AppRoutes {
   static const accountDevices = '/account/devices';
   static const accountNotifications = '/account/notifications';
   static const accountPrivacy = '/account/privacy';
+  static const accountOrganization = '/account/organization';
 
   static String counselorPath(String id) => '/counselors/${Uri.encodeComponent(id)}';
 
@@ -311,6 +313,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 GoRoute(path: 'devices', builder: (_, _) => const DevicesScreen()),
                 GoRoute(path: 'notifications', builder: (_, _) => const NotificationSettingsScreen()),
                 GoRoute(path: 'privacy', builder: (_, _) => const DataPrivacyScreen()),
+                GoRoute(path: 'organization', builder: (_, _) => const OrganizationScreen()),
               ],
             ),
           ]),
