@@ -15,11 +15,11 @@ The hard part is the last row. The owner wants the money to pass through MyKauns
 
 ## Decided by the owner (31 October 2026)
 
-- **Commission starts at 7%** on an independent counselor's paid session. (Whether a lower rate for a client who books the same counselor again is wanted is still to be said.)
+- **Commission is 10%, with every tax MyKaunsel has to handle included** (changed from 7% the same day, because tax had been forgotten). It is taken from an independent counselor's paid session. Not yet said: who bears the payment provider's own fee (MyKaunsel out of the 10%, the counselor, or a small service fee for the client); the accountant must say which taxes apply to the commission and what is left after them. A lower rate for a client who books the same counselor again is not decided (proposed: decide it later, with real data).
 - **Refund and cancellation rules agreed** as proposed under "Proposed design" below.
 - **After a subscription ends, new members may still join** an organization (code or invitation) but can not book until it is renewed.
 - **Price range for a session:** none yet. The Platform Admin sets a floor and a ceiling later; the owner will say when.
-- **Escrow:** still being explained to the owner; who holds the money is not decided.
+- **Escrow:** explained. Nobody in government holds the money: it is held by a licensed payment provider or by a bank or trustee account. Who holds it is not decided; to ask the lawyer and two or three Malaysian providers (questions in the conversation of 31 October 2026: split payments with delayed payout to third parties, the licence under which they hold funds, onboarding of our counselors, payout schedule, refunds and chargebacks, fees for FPX, cards and e-wallets, the API and notifications, and a test environment).
 - Payments stay on hold until every other question is settled.
 
 ## Subscription end date (decided in principle)
