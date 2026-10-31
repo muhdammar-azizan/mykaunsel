@@ -95,7 +95,7 @@ Depends on Moderate Feed in the admin part. Build them together. **Decision (own
 | ✅ | Data and privacy | **Built** (Account > Data and privacy; the Privacy Policy opens on the web, which is still a placeholder page; the "write to us" line shows only when the server has `SUPPORT_EMAIL` set). A static information card: chat deleted after 12 months, counselors and organizations cannot see chat content, PDPA. A link to the Privacy Policy. Data-copy requests: use the support email for now. |
 | ✅ | Notification settings | **Built** (Account > Notifications: one Bookings switch; the booking e-mails obey it; the community switch comes with Feed). Email only. A bookings toggle (confirmation, reminders, changes). A community toggle only when Feed exists. **The email-sending code must read this choice.** |
 | ✅ | Log out | Confirmation exists. |
-| ❌ | Delete account | Do not build before the data policy is decided. Needs: what is deleted, what stays (booking records 90 days, session notes stay with the organization), complaint reporters anonymized. Type "DELETE" to confirm. |
+| ⚠️ | Delete account | **Policy decided; the server is built (`DELETE /account`, see [ACCOUNT_DELETION.md](ACCOUNT_DELETION.md)); the app screen is not built yet.** Original note: Do not build before the data policy is decided. Needs: what is deleted, what stays (booking records 90 days, session notes stay with the organization), complaint reporters anonymized. Type "DELETE" to confirm. |
 
 ## 8. System states
 

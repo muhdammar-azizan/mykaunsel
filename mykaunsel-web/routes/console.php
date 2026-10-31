@@ -28,6 +28,9 @@ Schedule::command('notifications:purge')->dailyAt('03:20')->withoutOverlapping()
 Schedule::command('bookings:purge-idempotency')->dailyAt('03:30')->withoutOverlapping();
 Schedule::command('waitlist:purge')->dailyAt('03:00')->withoutOverlapping();
 
+// Bookings and time requests of accounts deleted more than 90 days ago are deleted (those a session note or a complaint needs stay): see config/account.php.
+Schedule::command('accounts:purge-deleted')->dailyAt('03:40')->withoutOverlapping();
+
 // Evidence of LKM review requests is deleted 30 days after the decision: see config/lkm.php.
 Schedule::command('lkm:purge-review-evidence')->dailyAt('02:45')->withoutOverlapping();
 

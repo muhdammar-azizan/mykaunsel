@@ -101,12 +101,6 @@ class ProfileTest extends TestCase
 
     public function test_user_can_delete_their_account(): void
     {
-        $this->markTestSkipped(
-            'Deleting a member currently fails with a foreign key error because memberships (and bookings, '
-            .'notes, etc.) reference users without a cascade. Needs a data-retention decision first '
-            .'(anonymise vs. soft delete vs. cascade) — see the account-deletion item in the project notes.'
-        );
-
         $user = $this->member();
 
         $this->as($user)->delete('/profile', ['password' => 'password'])
@@ -114,7 +108,10 @@ class ProfileTest extends TestCase
             ->assertRedirect('/');
 
         $this->assertGuest();
-        $this->assertNull($user->fresh());
+
+        // The row stays as an anonymous stub (bookings and notes still point at it): docs/ACCOUNT_DELETION.md
+        $this->assertNotNull($user->fresh()->deleted_at);
+        $this->assertSame('Deleted user', $user->fresh()->name);
     }
 
     public function test_correct_password_must_be_provided_to_delete_account(): void

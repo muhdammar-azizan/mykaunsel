@@ -167,6 +167,8 @@ return [
         'account.recovery_code_used' => ['category' => 'security', 'badge' => 'security', 'label' => 'Recovery code used to sign in'],
         'account.recovery_codes_regenerated' => ['category' => 'security', 'badge' => 'security', 'label' => 'Recovery codes regenerated'],
         'account.other_sessions_revoked' => ['category' => 'security', 'badge' => 'security', 'label' => 'Signed out other sessions'],
+        'account.records_purged' => ['category' => 'system', 'badge' => 'deleted', 'label' => 'Bookings of deleted accounts purged (retention)'],
+        'account.deleted' => ['category' => 'account', 'badge' => 'deleted', 'label' => 'Account deleted by the person'],
         'account.avatar_changed' => ['category' => 'account', 'badge' => 'updated', 'label' => 'Profile photo changed'],
 
         // Sign-in activity (hidden on the Audit Log page by default)

@@ -9,6 +9,9 @@ return [
 
     // Disk for profile photos. Switch to an S3/R2 disk by changing AVATAR_DISK in .env.
     'avatar_disk' => env('AVATAR_DISK', 'public'),
+
+    // Days a deleted account's bookings and time requests are kept (without any name) before they are deleted (docs/ACCOUNT_DELETION.md).
+    'deleted_booking_days' => 90,
     'avatar_max_kb' => 2048,
     'avatar_size' => 512,
 

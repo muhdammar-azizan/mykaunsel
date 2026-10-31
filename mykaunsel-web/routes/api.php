@@ -58,6 +58,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::middleware('throttle:api-sensitive')->group(function () {
             Route::put('/password', [AccountController::class, 'updatePassword'])->name('password');
+            Route::delete('/', [AccountController::class, 'destroy'])->name('destroy');
             Route::post('/devices/{device}/revoke', [AccountController::class, 'revokeDevice'])->whereNumber('device')->name('devices.revoke');
         });
     });

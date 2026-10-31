@@ -56,9 +56,13 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        Auth::logout();
+        try {
+            app(\App\Services\AccountDeletion::class)->delete($user);
+        } catch (\App\Exceptions\AccountNotDeletable $refused) {
+            return back()->withErrors(['password' => $refused->getMessage()], 'userDeletion');
+        }
 
-        $user->delete();
+        Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

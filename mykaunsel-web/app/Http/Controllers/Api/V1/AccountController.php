@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\AccountNotDeletable;
 use App\Facades\Audit;
+use App\Services\AccountDeletion;
 use App\Http\Controllers\Controller;
 use App\Services\ApiAuthService;
 use DateTimeZone;
@@ -91,6 +93,29 @@ class AccountController extends Controller
     }
 
     /** New password: needs the current one; every OTHER phone (and web session) is signed out, this one stays. */
+    /**
+     * Deleting the account (docs/ACCOUNT_DELETION.md). Needs the current password and the word DELETE typed, because it can not be undone.
+     * Counselors and administrators are refused (403 `staff_account`). On success every sign-in of the person is gone, this one included.
+     */
+    public function destroy(Request $request, AccountDeletion $deletion): JsonResponse
+    {
+        $request->validate([
+            'current_password' => ['required', 'string', 'current_password:sanctum'],
+            'confirm' => ['required', 'in:DELETE'],
+        ], [
+            'current_password.current_password' => 'That password is not correct.',
+            'confirm.in' => 'Type DELETE in capitals to confirm.',
+        ]);
+
+        try {
+            $done = $deletion->delete($request->user());
+        } catch (AccountNotDeletable $refused) {
+            return $refused->toResponse();
+        }
+
+        return response()->json(['deleted' => true, 'cancelled' => $done['cancelled']])->header('Cache-Control', 'private, no-store');
+    }
+
     public function updatePassword(Request $request): JsonResponse
     {
         $data = $request->validate([
