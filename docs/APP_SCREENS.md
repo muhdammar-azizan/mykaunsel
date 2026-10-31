@@ -104,7 +104,7 @@ Depends on Moderate Feed in the admin part. Build them together. **Decision (own
 | ✅ | ★ Registration closed | Make sure it is also shown on Choose account type and Invite code, not only Create account. |
 | ✅ | ★ Maintenance | Make sure a Platform Admin is not locked out (that is the web portal, not the app). |
 | ✅ | ★ No connection and general error | Keep. |
-| ❌ | ★ Help, Terms, Privacy Policy | Static pages on the web, opened in an in-app browser. Help: the support email and the list of helplines. The Terms and Privacy Policy text must be real before launch (PDPA). |
+| ⚠️ | ★ Help, Terms, Privacy Policy | **Built as DRAFTS** (see [LEGAL_PAGES.md](LEGAL_PAGES.md)): three web pages (`/help`, `/terms`, `/privacy`) linked from Account. The text is written from what the system really does, marked as a draft, with "To be confirmed" where only the owner knows the fact. Original spec: Static pages on the web, opened in an in-app browser. Help: the support email and the list of helplines. The Terms and Privacy Policy text must be real before launch (PDPA). |
 
 ## 9. Counselor web portal (not in the original list, built because the app needs it)
 
@@ -157,6 +157,6 @@ B1 no fee text anywhere. B2 the no-recording acknowledgement is required and not
 2. ✅ Mode B + the counselor portal (sessions, planner, weekly hours, requests) → Request status.
 3. ✅ Chat (with the AI consent, crisis detection on the server) → history → cards.
 4. ✅ Feed built (identified posts). ✅ Moderate Feed built (admin web). Feed is complete.
-5. ✅ Choose account type, Notification settings, Data and privacy. ✅ Onboarding. ❌ Invite code (decided, next to build), Help / Terms / Privacy (a draft first), Reset password deep link (waits for a domain). ➖ Choose context (dropped). ✅ Home's upcoming-booking card. Delete account: built.
+5. ✅ Choose account type, Notification settings, Data and privacy. ✅ Onboarding. ❌ Invite code (decided, next to build), Help / Terms / Privacy (drafts built, review pending), Reset password deep link (waits for a domain). ➖ Choose context (dropped). ✅ Home's upcoming-booking card. Delete account: built.
 
 Nothing built after the Pick a slot step has been viewed on a screen yet; the emulator checklist in APP_ARCHITECTURE.md is the first thing to do with eyes.

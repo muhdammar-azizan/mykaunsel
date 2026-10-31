@@ -2065,4 +2065,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountDeletedNote =>
       'Your account has been deleted. We sent an e-mail to confirm.';
+
+  @override
+  String get helpPage => 'Help';
+
+  @override
+  String get termsPage => 'Terms of Use';
+
+  @override
+  String get pageOpenFailed => 'We couldn\'t open that page.';
 }

@@ -52,8 +52,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// A placeholder until the real Privacy Policy is written (the waitlist consent line links here).
+// Privacy Policy, Terms of Use and Help: public pages, drafts until the owner and a lawyer have reviewed them (config/legal.php, docs/LEGAL_PAGES.md).
 Route::view('/privacy', 'privacy')->name('privacy');
+Route::view('/terms', 'terms')->name('terms');
+Route::view('/help', 'help')->name('help');
 
 // Waitlist for closed sign-ups (Organization and Counselor): the form on the "sign-up closed" page, and the opt-out link in the
 // email. Opting out works even during maintenance and is never blocked by a closed sign-up. See docs/WAITLIST.md.

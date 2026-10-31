@@ -3464,6 +3464,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account has been deleted. We sent an e-mail to confirm.'**
   String get accountDeletedNote;
+
+  /// No description provided for @helpPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get helpPage;
+
+  /// No description provided for @termsPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Use'**
+  String get termsPage;
+
+  /// No description provided for @pageOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t open that page.'**
+  String get pageOpenFailed;
 }
 
 class _AppLocalizationsDelegate

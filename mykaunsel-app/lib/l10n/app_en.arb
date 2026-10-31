@@ -742,5 +742,8 @@
   "deleteTypeLabel": "Type DELETE to confirm",
   "deleteTypeHelp": "In capital letters",
   "deleteAccountButton": "Delete my account",
-  "accountDeletedNote": "Your account has been deleted. We sent an e-mail to confirm."
+  "accountDeletedNote": "Your account has been deleted. We sent an e-mail to confirm.",
+  "helpPage": "Help",
+  "termsPage": "Terms of Use",
+  "pageOpenFailed": "We couldn't open that page."
 }

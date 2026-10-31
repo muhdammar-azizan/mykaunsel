@@ -40,6 +40,8 @@ return [
         'context.select', 'context.store',
         // The app asks this first, to show the maintenance / closed-sign-up message instead of a plain error.
         'api.v1.status',
+        // The rules and the phone numbers people can call must always be readable, maintenance or not.
+        'privacy', 'terms', 'help',
         // Opting out of the waitlist emails always works.
         'waitlist.unsubscribe', 'waitlist.unsubscribe.store',
     ],

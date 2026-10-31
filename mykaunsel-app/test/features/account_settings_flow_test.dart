@@ -58,6 +58,36 @@ void main() {
     });
   });
 
+  group('Help, Terms and the Privacy Policy', () {
+    testWidgets('are on the Account page and open the website pages', (tester) async {
+      final opened = <Uri>[];
+      await openAccount(tester, account: FakeAccountApi(), opened: opened);
+
+      for (final entry in {'Help': '/help', 'Terms of Use': '/terms', 'Privacy Policy': '/privacy'}.entries) {
+        await tester.scrollUntilVisible(find.text(entry.key), 200, scrollable: find.byType(Scrollable).first);
+        await tester.drag(find.byType(Scrollable).first, const Offset(0, -120));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(entry.key));
+        await tester.pumpAndSettle();
+        expect(opened.last.path, entry.value);
+      }
+
+      expect(opened.map((u) => u.host).toSet(), {'test.local'});
+    });
+
+    testWidgets('a page that can not be opened says so', (tester) async {
+      await openAccount(tester, account: FakeAccountApi(), opens: false);
+
+      await tester.scrollUntilVisible(find.text('Help'), 200, scrollable: find.byType(Scrollable).first);
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, -120));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Help'));
+      await tester.pumpAndSettle();
+
+      expect(find.text("We couldn't open that page."), findsOneWidget);
+    });
+  });
+
   group('Notifications', () {
     testWidgets('one switch for bookings, on by default, with what it covers', (tester) async {
       await openAccount(tester, account: FakeAccountApi());

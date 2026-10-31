@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/providers.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/session/session_controller.dart';
 import '../../../core/session/session_state.dart';
@@ -34,6 +35,15 @@ class AccountScreen extends ConsumerWidget {
   }
 
   /// Turning the chat on asks first (the same words as in the chat); turning it off asks whether they are sure. Either way the server decides.
+  /// Help, Terms and the Privacy Policy are pages on the website (one text for the app and the web).
+  Future<void> _openPage(BuildContext context, WidgetRef ref, String path) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final failure = AppLocalizations.of(context).pageOpenFailed;
+    final ok = await ref.read(urlOpenerProvider)(Uri.parse('${ref.read(appConfigProvider).apiBaseUrl}$path'));
+
+    if (!ok) messenger.showSnackBar(SnackBar(content: Text(failure)));
+  }
+
   Future<void> _toggleAiChat(BuildContext context, WidgetRef ref, bool on) async {
     final l10n = AppLocalizations.of(context);
 
@@ -115,6 +125,10 @@ class AccountScreen extends ConsumerWidget {
               title: Text(l10n.signOutEverywhere),
               onTap: () => _signOutEverywhere(context, ref),
             ),
+            const Divider(height: 32),
+            ListTile(leading: const Icon(Icons.help_outline), title: Text(l10n.helpPage), trailing: const Icon(Icons.open_in_new), onTap: () => _openPage(context, ref, '/help')),
+            ListTile(leading: const Icon(Icons.description_outlined), title: Text(l10n.termsPage), trailing: const Icon(Icons.open_in_new), onTap: () => _openPage(context, ref, '/terms')),
+            ListTile(leading: const Icon(Icons.shield_outlined), title: Text(l10n.privacyPolicyButton), trailing: const Icon(Icons.open_in_new), onTap: () => _openPage(context, ref, '/privacy')),
             ListTile(
               leading: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
               title: Text(l10n.deleteAccountTitle, style: TextStyle(color: Theme.of(context).colorScheme.error)),
