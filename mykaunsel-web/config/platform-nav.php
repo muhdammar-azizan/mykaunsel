@@ -16,7 +16,7 @@ return [
     ]],
     ['group' => 'Trust & Safety', 'items' => [
         ['label' => 'Complaints', 'route' => 'platform.complaints', 'icon' => 'M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'],
-        ['label' => 'Moderate Feed', 'route' => null, 'icon' => 'M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4zM8 8h8M8 12h5'],
+        ['label' => 'Moderate Feed', 'route' => 'platform.moderation', 'icon' => 'M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4zM8 8h8M8 12h5'],
     ]],
     ['group' => 'Platform', 'items' => [
         ['label' => 'Analytics', 'route' => 'platform.analytics', 'icon' => 'M3 3v18h18M7 15l4-5 4 3 5-7'],

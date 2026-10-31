@@ -9,7 +9,7 @@ A small public timeline for everyone who is signed in (individuals, clients, cou
 - Post and comment: text only, at most **500 characters** (`config/feed.php`). A person can post at most **20 a day** (Malaysian day) and write at most 10 a minute / 60 an hour (posts, comments, edits, reports, mutes share one limit; likes have their own).
 - Writing is safe to repeat: `client_id` (UUID made by the app) stores a retried post or comment once. Liking twice is one like. Deleting twice and reporting twice change nothing more.
 - **Crisis words** (same rules as the chat, `CrisisDetector`) never stop a post or a comment. The answer carries `crisis: true` and the `helplines`, and the app shows the calm help card.
-- Edit and delete: only the author. Edit sets `edited`. Delete is a soft delete. A moderator's removal (`removed_at`, from the Moderate Feed page, later) hides it the same way. A post or comment that is not visible is `404` for everyone, like one that never existed.
+- Edit and delete: only the author. Edit sets `edited`. Delete is a soft delete. A moderator's removal (`removed_at`, from the Moderate Feed page) hides it the same way. A post or comment that is not visible is `404` for everyone, like one that never existed.
 - **Report**: five reasons (`spam`, `harassment`, `self_harm`, `inappropriate`, `other`). One person reports one post or comment once. Own writing cannot be reported (`409 cannot_report_own`). Reports wait in `feed_reports` (`status` pending) for the Moderate Feed queue.
 - **Mute**: hides one person's posts and comments from the muter's own feed and comment lists only. Done from a post (`mute-author`), listed and undone in the muted people list.
 - Ids in the API are 26 character public ids. No internal id and no e-mail is ever returned.
@@ -37,8 +37,17 @@ Refusals carry `code`: `post_not_found`, `comment_not_found`, `mute_not_found` (
 
 The Feed tab (`features/feed`): the feed with pull-to-refresh and paging, a New post screen (live count to 500, says it posts under the person's name, also used to edit), the post page with comments and the comment box at the bottom, the post menu (edit/delete for the owner, report with five reasons and mute for others), a Muted people list (the volume icon in the Feed's bar), and the calm help card after a flagged post or comment. A post or comment that did not go stays on screen and goes again with the same client id.
 
+## Moderate Feed (Platform Admin web, sidebar: Trust & Safety)
+
+`/platform/moderation`: one row per reported post or comment (all its pending reports together, oldest first), with the writing, its author, how many reports and the reasons given. Reporters are never shown. Tabs: To review / Handled. Three actions, each on ALL the pending reports of that row, in one transaction with the post or comment locked (a second admin is told "already dealt with" and nothing changes):
+
+- **Set reports aside** — the writing stays. Audit `moderation.report_dismissed`.
+- **Remove** — sets `removed_at` (gone for everyone in the app), emails the author, with an optional note. Audit `moderation.post_removed` / `moderation.comment_removed`.
+- **Warn author** — a written message (at least 10 characters) is emailed; the writing stays; reports are closed as acted on. Audit `moderation.user_warned` (target: the author).
+
+Audit entries hold ids only, never the writing or the admin's message. A post its author already deleted still shows (marked) and can be set aside. No bell notification for new reports yet.
+
 ## Not built yet
 
-- Moderate Feed (Platform Admin web): the queue of `feed_reports`, dismiss / remove / warn.
 - Community e-mail toggle (there are no feed e-mails).
 - Anonymous posting (owner decision pending).

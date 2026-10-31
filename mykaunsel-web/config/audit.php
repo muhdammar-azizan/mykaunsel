@@ -4,6 +4,8 @@ use App\Models\AdminInvitation;
 use App\Models\Booking;
 use App\Models\Complaint;
 use App\Models\CounselorProfile;
+use App\Models\FeedComment;
+use App\Models\FeedPost;
 use App\Models\LkmDirectorySnapshot;
 use App\Models\Organization;
 use App\Models\PromoCode;
@@ -107,6 +109,7 @@ return [
         // Moderation
         'moderation.report_dismissed' => ['category' => 'moderation', 'badge' => 'updated', 'label' => 'Report dismissed'],
         'moderation.post_removed' => ['category' => 'moderation', 'badge' => 'deleted', 'label' => 'Post removed'],
+        'moderation.comment_removed' => ['category' => 'moderation', 'badge' => 'deleted', 'label' => 'Comment removed'],
         'moderation.user_warned' => ['category' => 'moderation', 'badge' => 'security', 'label' => 'User warned'],
 
         // Platform settings
@@ -192,6 +195,8 @@ return [
         LkmDirectorySnapshot::class => 'lkm_record',
         Complaint::class => 'complaint',
         Booking::class => 'booking',
+        FeedPost::class => 'feed_post',
+        FeedComment::class => 'feed_comment',
         AdminInvitation::class => 'admin_invitation',
         SubscriptionPlan::class => 'plan',
         PromoCode::class => 'promo_code',

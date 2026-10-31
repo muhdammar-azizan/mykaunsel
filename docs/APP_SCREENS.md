@@ -76,7 +76,7 @@ Closes the booking loop and makes the slot-restore contract (B9) real.
 
 ## 6. Wellness Feed
 
-Depends on Moderate Feed in the admin part. Build them together. **Decision (owner):** everyone posts as themselves, with their name, like Twitter/Threads. No anonymous posting for now. Server and app screens done (see [FEED.md](FEED.md)); only Moderate Feed (admin web) is left.
+Depends on Moderate Feed in the admin part. Build them together. **Decision (owner):** everyone posts as themselves, with their name, like Twitter/Threads. No anonymous posting for now. Server and app screens done (see [FEED.md](FEED.md)); Moderate Feed (admin web) is built too.
 
 | | Screen | Details |
 |---|---|---|
@@ -143,7 +143,7 @@ B1 no fee text anywhere. B2 the no-recording acknowledgement is required and not
 1. ✅ Booking confirmed (real) → Session details → My bookings (list, details, cancel, reschedule).
 2. ✅ Mode B + the counselor portal (sessions, planner, weekly hours, requests) → Request status.
 3. ✅ Chat (with the AI consent, crisis detection on the server) → history → cards.
-4. ✅ Feed built (identified posts). ❌ **Next:** Moderate Feed in the admin web (queue of reports).
+4. ✅ Feed built (identified posts). ✅ Moderate Feed built (admin web). Feed is complete.
 5. ✅ Choose account type, Notification settings, Data and privacy. ❌ Onboarding, Invite code (decision 9), Choose context (decision 10), Help / Terms / Privacy (needs decision 5), Reset password deep link, Home's upcoming-booking card. Delete account waits for decision 3.
 
 Nothing built after the Pick a slot step has been viewed on a screen yet; the emulator checklist in APP_ARCHITECTURE.md is the first thing to do with eyes.

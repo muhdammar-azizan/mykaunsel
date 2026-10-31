@@ -231,6 +231,13 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/complaints/{complaint}/suspend-counselor', [PlatformComplaintActionController::class, 'suspendCounselor'])->whereNumber('complaint')->middleware('throttle:20,1')->name('complaints.suspend-counselor');
         Route::post('/complaints/{complaint}/notes', [PlatformComplaintController::class, 'storeNote'])->whereNumber('complaint')->middleware('throttle:30,1')->name('complaints.notes.store');
 
+        // Moderate Feed: reports from the app, one row per reported post or comment.
+        Route::get('/moderation', [\App\Http\Controllers\Platform\PlatformModerationController::class, 'index'])->name('moderation');
+        foreach (['dismiss' => 60, 'remove' => 30, 'warn' => 20] as $action => $perMinute) {
+            Route::post('/moderation/{kind}/{id}/'.$action, [\App\Http\Controllers\Platform\PlatformModerationController::class, $action])
+                ->where('kind', 'post|comment')->whereNumber('id')->middleware('throttle:'.$perMinute.',1')->name('moderation.'.$action);
+        }
+
         // Platform Admins: who has access to this area. Admins are never deleted, only removed (the row and history stay).
         Route::get('/admins', [PlatformAdminController::class, 'index'])->name('admins');
         Route::post('/admins', [PlatformAdminController::class, 'store'])->middleware('throttle:10,1')->name('admins.store');
