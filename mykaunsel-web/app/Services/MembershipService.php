@@ -13,8 +13,11 @@ use App\Models\OrgInviteCode;
 use App\Models\OrgMemberInvitation;
 use App\Models\Organization;
 use App\Models\User;
+use App\Notifications\MemberWaitingApproval;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class MembershipService
 {
@@ -95,7 +98,7 @@ class MembershipService
 
         $normalized = OrgInviteCode::normalize($code);
 
-        return DB::transaction(function () use ($user, $normalized) {
+        $membership = DB::transaction(function () use ($user, $normalized) {
             $invite = OrgInviteCode::query()->where('code', $normalized)->lockForUpdate()->first();
             $organization = $invite?->organization;
 
@@ -111,6 +114,39 @@ class MembershipService
 
             return $membership;
         });
+
+        $this->tellAdminsSomeoneIsWaiting($membership->organization);
+
+        return $membership;
+    }
+
+    /** Minutes during which one e-mail to the admins covers everyone who asks (a code handed to a whole team would otherwise send dozens). */
+    public const WAITING_MAIL_MINUTES = 10;
+
+    /** The organization's admins, active ones only. */
+    public function admins(Organization $organization): \Illuminate\Support\Collection
+    {
+        return User::query()->whereIn('id', Membership::query()
+            ->where('org_id', $organization->getKey())->where('role', MembershipRole::OrgAdmin->value)->where('status', MembershipStatus::Active->value)
+            ->pluck('user_id'))->get();
+    }
+
+    /** After the request is saved; never able to undo or fail it. */
+    private function tellAdminsSomeoneIsWaiting(Organization $organization): void
+    {
+        try {
+            if (! Cache::add('org-waiting-mail:'.$organization->getKey(), true, now()->addMinutes(self::WAITING_MAIL_MINUTES))) {
+                return;
+            }
+
+            $waiting = Membership::query()->where('org_id', $organization->getKey())->where('status', MembershipStatus::PendingApproval->value)->count();
+
+            foreach ($this->admins($organization) as $admin) {
+                $admin->notify(new MemberWaitingApproval($organization->name, $waiting));
+            }
+        } catch (Throwable $e) {
+            report($e);
+        }
     }
 
     /**

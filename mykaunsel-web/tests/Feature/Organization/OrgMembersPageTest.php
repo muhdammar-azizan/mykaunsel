@@ -15,6 +15,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Notifications\MembershipApproved;
 use App\Notifications\MembershipDeclined;
+use App\Notifications\MemberWaitingApproval;
 use App\Services\MembershipService;
 use App\Services\OrgMemberService;
 use Database\Seeders\PlatformSeeder;
@@ -229,5 +230,61 @@ class OrgMembersPageTest extends TestCase
         $this->hr()->post(route('org.members.approve', $row->id))->assertSessionHas('status');
 
         $this->assertSame(MembershipStatus::Active, $row->fresh()->status);
+    }
+
+    public function test_the_admins_get_one_e_mail_saying_how_many_wait_and_not_who(): void
+    {
+        Notification::fake();
+        $member = $this->person('Aiman Employee');
+        $this->join($member, $this->acme, MembershipRole::Employee, MembershipStatus::Active);
+        $code = OrgInviteCode::issue($this->acme, $this->hr, null, null);
+        $service = app(MembershipService::class);
+
+        $service->joinViaInviteCode($this->person('Siti Aminah'), $code->code);
+
+        Notification::assertSentTo($this->hr, MemberWaitingApproval::class, function ($n) {
+            $mail = $n->toMail($this->hr);
+
+            return str_contains($mail->subject, 'One person is waiting')
+                && ! str_contains(implode(' ', $mail->introLines).$mail->subject, 'Siti')
+                && $mail->actionUrl === route('org.members');
+        });
+        Notification::assertNotSentTo($member, MemberWaitingApproval::class);
+
+        // everyone who asks in the next minutes is covered by that one e-mail
+        $service->joinViaInviteCode($this->person('Budi'), $code->code);
+        Notification::assertSentToTimes($this->hr, MemberWaitingApproval::class, 1);
+
+        // later, a new e-mail says how many wait now
+        $this->travel(11)->minutes();
+        $service->joinViaInviteCode($this->person('Dina'), $code->code);
+        Notification::assertSentToTimes($this->hr, MemberWaitingApproval::class, 2);
+        Notification::assertSentTo($this->hr, MemberWaitingApproval::class, fn ($n) => str_contains($n->toMail($this->hr)->subject, '3 people are waiting'));
+    }
+
+    public function test_a_refused_code_tells_nobody_and_an_organization_without_admins_does_not_break_joining(): void
+    {
+        Notification::fake();
+        $service = app(MembershipService::class);
+
+        try {
+            $service->joinViaInviteCode($this->person('Siti Aminah'), 'WRONGCODE1');
+        } catch (MembershipRefused) {
+        }
+
+        Notification::assertNothingSent();
+
+        $lonely = $this->org('No Admin Co');
+        $joined = $service->joinViaInviteCode($this->person('Budi'), OrgInviteCode::issue($lonely, null, null, null)->code);
+        $this->assertSame(MembershipStatus::PendingApproval, $joined->status);
+    }
+
+    public function test_a_failing_mail_does_not_undo_joining(): void
+    {
+        config(['mail.default' => 'smtp', 'mail.mailers.smtp.host' => '127.0.0.1', 'mail.mailers.smtp.port' => 1, 'mail.mailers.smtp.timeout' => 1]);
+
+        $joined = app(MembershipService::class)->joinViaInviteCode($this->person('Siti Aminah'), OrgInviteCode::issue($this->acme, $this->hr, null, null)->code);
+
+        $this->assertSame(MembershipStatus::PendingApproval, $joined->fresh()->status);
     }
 }

@@ -219,6 +219,7 @@ class MembershipEndingTest extends TestCase
 
         $this->assertThrows(fn () => $this->ending()->remove($this->closed, $pending->id, $this->hr), MembershipNotEndable::class);
 
+        Notification::fake(); // the e-mail to the admins about the request was sent above; withdrawing sends nothing at all
         $result = $this->ending()->leave($waiter);
 
         $this->assertSame(0, $result['cancelled']);

@@ -202,18 +202,10 @@ class MembershipEnding
 
         // The organization hears the NAME of someone who left by themselves, and nothing about their sessions.
         if ($by === 'person') {
-            foreach ($this->admins($organization) as $admin) {
+            foreach ($this->memberships->admins($organization) as $admin) {
                 $this->tell($admin, new MemberLeft($organization->name, $person->name));
             }
         }
-    }
-
-    /** @return \Illuminate\Support\Collection<int, User> */
-    private function admins(Organization $organization)
-    {
-        return User::query()->whereIn('id', Membership::query()
-            ->where('org_id', $organization->getKey())->where('role', MembershipRole::OrgAdmin->value)->where('status', MembershipStatus::Active->value)
-            ->pluck('user_id'))->get();
     }
 
     private function tell(?User $user, object $notification): void
