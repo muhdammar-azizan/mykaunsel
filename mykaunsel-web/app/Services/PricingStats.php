@@ -32,4 +32,13 @@ class PricingStats
             ->whereBetween('ends_on', [today()->toDateString(), today()->addDays($days)->toDateString()])
             ->count();
     }
+
+    /** Organizations whose CURRENT plan ended before today. */
+    public function subscriptionsEnded(): int
+    {
+        return SubscriptionAssignment::query()
+            ->whereIn('id', Organization::query()->whereNotNull('current_assignment_id')->select('current_assignment_id'))
+            ->where('ends_on', '<', today()->toDateString())
+            ->count();
+    }
 }

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Platform;
 
 use App\Exceptions\InvoiceNotOpen;
+use App\Facades\Audit;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Invoice;
 use App\Models\Organization;
 use App\Services\InvoiceService;
+use App\Services\Payments\InvoicePayments;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -70,9 +72,24 @@ class PlatformInvoiceController extends Controller
 
         return view('platform.invoices.show', [
             'invoice' => $invoice,
+            'attempts' => $invoice->payments()->orderByDesc('id')->limit(20)->get(),
             'timezone' => $request->user()->display_timezone,
             'history' => AuditLog::query()->where('target_type', 'invoice')->where('target_id', $invoice->getKey())->orderByDesc('id')->limit(20)->get(),
         ]);
+    }
+
+    /** Opens a payment page for an unpaid invoice (until the organization's own Pay button exists, an admin can open one to try the flow). */
+    public function payLink(Request $request, Invoice $invoice, InvoicePayments $payments): RedirectResponse
+    {
+        try {
+            $payment = $payments->start($invoice, $request->user());
+        } catch (InvoiceNotOpen $e) {
+            return back()->with('error', $e->getMessage().' Nothing was changed.');
+        }
+
+        Audit::log('invoice.payment_started', $invoice, ['invoice_id' => $invoice->getKey(), 'org_id' => $invoice->org_id, 'payment_id' => $payment->getKey()], $request->user());
+
+        return redirect($payments->gateway()->payUrl($payment));
     }
 
     public function markPaid(Request $request, Invoice $invoice, InvoiceService $invoices): RedirectResponse

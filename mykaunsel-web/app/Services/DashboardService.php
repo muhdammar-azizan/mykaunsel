@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\ComplaintStatus;
 use App\Models\AuditLog;
 use App\Models\Complaint;
+use App\Models\Invoice;
 use App\Models\CounselorProfile;
 use App\Models\Organization;
 use App\Models\User;
@@ -212,6 +213,18 @@ class DashboardService
         $sources['subscriptions_ending'] = $this->source(
             collect($ending > 0 ? [$this->item('subscriptions_ending', 'subscriptions-ending', null, $ending.' '.Str::plural('organization', $ending).' with a plan ending within 30 days', route('platform.organizations', ['tab' => 'approved']), 'amber')] : []),
             $ending, 'Organizations with a plan ending soon', route('platform.organizations', ['tab' => 'approved']),
+        );
+
+        $ended = $this->pricing->subscriptionsEnded();
+        $sources['subscriptions_ended'] = $this->source(
+            collect($ended > 0 ? [$this->item('subscriptions_ended', 'subscriptions-ended', null, $ended.' '.Str::plural('organization', $ended).' with a plan that has ended', route('platform.organizations', ['tab' => 'approved']), 'red')] : []),
+            $ended, 'Organizations whose plan has ended', route('platform.organizations', ['tab' => 'approved']),
+        );
+
+        $overdue = Invoice::query()->overdue()->count();
+        $sources['invoices_overdue'] = $this->source(
+            collect($overdue > 0 ? [$this->item('invoices_overdue', 'invoices-overdue', null, $overdue.' '.Str::plural('invoice', $overdue).' unpaid after the due date', route('platform.invoices', ['tab' => 'overdue']), 'amber')] : []),
+            $overdue, 'Overdue invoices', route('platform.invoices', ['tab' => 'overdue']),
         );
 
         $all = collect($sources)->flatMap(fn (array $s) => $s['items'])->all();

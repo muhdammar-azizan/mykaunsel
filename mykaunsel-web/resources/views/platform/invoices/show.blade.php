@@ -26,7 +26,7 @@
                 @if ($invoice->status === \App\Models\Invoice::PAID)
                     <dl class="mt-2 divide-y divide-brand-ink/[.07]">
                         <x-platform.detail-row label="Paid on">{{ $when($invoice->paid_at) }}</x-platform.detail-row>
-                        <x-platform.detail-row label="Method">{{ ['manual' => 'Bank transfer, marked by an admin', 'no_charge' => 'Nothing to pay', 'billplz' => 'Online (Billplz)'][$invoice->payment_method] ?? $invoice->payment_method }}</x-platform.detail-row>
+                        <x-platform.detail-row label="Method">{{ ['manual' => 'Bank transfer, marked by an admin', 'no_charge' => 'Nothing to pay', 'simulated' => 'Online (test page)', 'billplz' => 'Online (Billplz)'][$invoice->payment_method] ?? $invoice->payment_method }}</x-platform.detail-row>
                         @if ($invoice->payment_reference)
                             <x-platform.detail-row label="Reference">{{ $invoice->payment_reference }}</x-platform.detail-row>
                         @endif
@@ -52,6 +52,21 @@
                         <button type="submit" :disabled="busy" class="mt-4 inline-flex min-h-[42px] items-center rounded-full bg-brand-blue px-6 text-[13.5px] font-semibold text-white transition hover:bg-brand-deep disabled:opacity-60">
                             <span x-show="!busy">Mark as paid</span><span x-show="busy" x-cloak>Saving…</span>
                         </button>
+                    </form>
+                @endif
+            </x-platform.panel>
+
+            <x-platform.panel title="Online payments">
+                @forelse ($attempts as $attempt)
+                    <p class="mt-2 text-[13px]"><span class="font-semibold">{{ $attempt->statusLabel() }}</span> <span class="text-brand-ink/55">· {{ \App\Support\Money::rm($attempt->amount_cents) }} · {{ $when($attempt->created_at) }}</span>@if ($attempt->provider_reference)<span class="block text-[12px] text-brand-ink/55">{{ $attempt->provider_reference }}</span>@endif</p>
+                @empty
+                    <p class="text-[13px] text-brand-ink/55">Nobody has tried to pay online.</p>
+                @endforelse
+                <p class="mt-3 text-[12.5px] text-brand-ink/50">Provider: {{ config('payments.provider') }} (a test page, no real money).</p>
+                @if ($invoice->status === \App\Models\Invoice::UNPAID)
+                    <form method="POST" action="{{ route('platform.invoices.pay-link', $invoice) }}" class="mt-3">
+                        @csrf
+                        <button type="submit" class="inline-flex min-h-[38px] items-center rounded-full border border-brand-ink/20 px-4 text-[13px] font-semibold transition hover:bg-brand-ink/5">Open a payment page</button>
                     </form>
                 @endif
             </x-platform.panel>

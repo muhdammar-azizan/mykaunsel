@@ -346,10 +346,10 @@ class DashboardServiceTest extends TestCase
 
     public function test_plans_ending_soon_are_one_summary_line_and_only_when_there_are_some(): void
     {
-        $this->mock(PricingStats::class, fn ($mock) => $mock->shouldReceive('subscriptionsEndingWithin')->with(30)->andReturn(3));
+        $this->mock(PricingStats::class, fn ($mock) => $mock->shouldReceive('subscriptionsEndingWithin')->with(30)->andReturn(3)->getMock()->shouldReceive('subscriptionsEnded')->andReturn(0));
         $this->assertSame('3 organizations with a plan ending within 30 days', collect($this->service()->attention()['items'])->firstWhere('kind', 'subscriptions_ending')['text']);
 
-        $this->mock(PricingStats::class, fn ($mock) => $mock->shouldReceive('subscriptionsEndingWithin')->with(30)->andReturn(0));
+        $this->mock(PricingStats::class, fn ($mock) => $mock->shouldReceive('subscriptionsEndingWithin')->with(30)->andReturn(0)->getMock()->shouldReceive('subscriptionsEnded')->andReturn(0));
         $this->assertNull(collect(app(DashboardService::class)->attention()['items'])->firstWhere('kind', 'subscriptions_ending'));
     }
 

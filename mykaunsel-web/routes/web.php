@@ -57,6 +57,10 @@ Route::view('/privacy', 'privacy')->name('privacy');
 Route::view('/terms', 'terms')->name('terms');
 Route::view('/help', 'help')->name('help');
 
+// The page of the simulated payment provider (config/payments.php): an unguessable address per try, and a signed result.
+Route::get('/pay/{payment}', [\App\Http\Controllers\SimulatedPaymentController::class, 'show'])->where('payment', '[0-9a-z]{26}')->name('pay.show');
+Route::post('/pay/{payment}/result', [\App\Http\Controllers\SimulatedPaymentController::class, 'result'])->where('payment', '[0-9a-z]{26}')->middleware('throttle:20,1')->name('pay.result');
+
 // Waitlist for closed sign-ups (Organization and Counselor): the form on the "sign-up closed" page, and the opt-out link in the
 // email. Opting out works even during maintenance and is never blocked by a closed sign-up. See docs/WAITLIST.md.
 Route::post('/waitlist/{type}', [\App\Http\Controllers\WaitlistController::class, 'store'])
@@ -277,6 +281,7 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::get('/invoices', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'index'])->name('invoices');
         Route::get('/invoices/{invoice}', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'show'])->where('invoice', '[0-9a-z]{26}')->name('invoices.show');
         Route::post('/invoices/{invoice}/paid', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'markPaid'])->where('invoice', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('invoices.paid');
+        Route::post('/invoices/{invoice}/pay-link', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'payLink'])->where('invoice', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('invoices.pay-link');
         Route::post('/invoices/{invoice}/void', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'void'])->where('invoice', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('invoices.void');
         Route::post('/organizations/{organization}/invoice', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'issue'])->whereNumber('organization')->middleware('throttle:20,1')->name('organizations.invoice');
         Route::post('/pricing/invoicing', [PlatformPricingController::class, 'updateInvoicing'])->middleware('throttle:10,1')->name('pricing.invoicing');

@@ -51,6 +51,23 @@ class Organization extends Model
         'cancellation_deadline_hours',
     ];
 
+    /** none | active | ending_soon (30 days or less) | ended. The date counts as a Malaysian day. */
+    public function subscriptionState(): string
+    {
+        if ($this->subscription_ends_at === null) {
+            return 'none';
+        }
+
+        $today = \App\Models\Invoice::today();
+        $end = \Illuminate\Support\Carbon::parse($this->subscription_ends_at->toDateString(), $today->getTimezone())->startOfDay();
+
+        return match (true) {
+            $end->lt($today) => 'ended',
+            $end->lte($today->copy()->addDays(30)) => 'ending_soon',
+            default => 'active',
+        };
+    }
+
     protected function casts(): array
     {
         return [

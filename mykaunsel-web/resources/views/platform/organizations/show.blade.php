@@ -161,14 +161,22 @@
                         <x-platform.detail-row label="Started">{{ $org->currentAssignment->starts_on->format('j M Y') }}</x-platform.detail-row>
                     @endif
                     @if ($org->subscription_ends_at)
-                        <x-platform.detail-row label="Ends">{{ $org->subscription_ends_at->format('j M Y') }}</x-platform.detail-row>
+                        <x-platform.detail-row label="Ends">
+                            {{ $org->subscription_ends_at->format('j M Y') }}
+                            @php $state = $org->subscriptionState(); @endphp
+                            @if ($state === 'ended')
+                                <span class="ml-1 inline-flex rounded-full bg-brand-red/10 px-2.5 py-0.5 text-[11.5px] font-bold text-brand-red">Ended</span>
+                            @elseif ($state === 'ending_soon')
+                                <span class="ml-1 inline-flex rounded-full bg-brand-yellow/20 px-2.5 py-0.5 text-[11.5px] font-bold text-[#6B4C0C]">Ending soon</span>
+                            @endif
+                        </x-platform.detail-row>
                     @endif
                     <x-platform.detail-row label="Members">{{ number_format($memberCount) }}</x-platform.detail-row>
                 </dl>
                 @if ($org->currentAssignment?->plan->max_members !== null && $org->currentAssignment && $memberCount > $org->currentAssignment->plan->max_members)
                     <p class="mt-3 rounded-xl border border-brand-yellow/50 bg-brand-yellow/10 px-4 py-2.5 text-[13px] font-semibold text-[#6B4C0C]" role="alert">Warning: {{ number_format($memberCount) }} members is more than the plan's maximum of {{ number_format($org->currentAssignment->plan->max_members) }}. Nothing is blocked.</p>
                 @endif
-                <p class="mt-3 text-[12.5px] text-brand-ink/50">Online payment is not connected yet: an admin marks an invoice paid by hand.</p>
+                <p class="mt-3 text-[12.5px] text-brand-ink/50">Online payment uses a test page for now (no real money). An admin can also mark an invoice paid by hand.</p>
 
                 @if ($org->currentAssignment)
                     <h3 class="mt-4 text-[13px] font-extrabold">Invoices</h3>
