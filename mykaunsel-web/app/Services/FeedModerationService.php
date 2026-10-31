@@ -53,6 +53,7 @@ class FeedModerationService
             Audit::log($kind === 'post' ? 'moderation.post_removed' : 'moderation.comment_removed', $target, ['reports' => $count], $admin);
         });
 
+        app(\App\Services\NotificationCenter::class)->notify($author, 'feed.removed', null, $kind, $kind.':'.$id.':'.now()->getTimestamp());
         $this->tell($author, new FeedContentRemoved($kind, $note));
     }
 
@@ -69,6 +70,7 @@ class FeedModerationService
             Audit::log('moderation.user_warned', $author, ['kind' => $kind, 'target_id' => $target->getKey(), 'reports' => $count], $admin);
         });
 
+        app(\App\Services\NotificationCenter::class)->notify($author, 'feed.warned', null, $kind, $kind.':'.$id.':'.now()->getTimestamp());
         $this->tell($author, new FeedWarning($message));
     }
 

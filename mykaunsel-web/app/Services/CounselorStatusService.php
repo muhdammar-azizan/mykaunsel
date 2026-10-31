@@ -124,7 +124,7 @@ class CounselorStatusService
             }
         });
 
-        DB::afterCommit(function () use ($profile, $reason, $cancelUpcoming, $clientNotices) {
+        DB::afterCommit(function () use ($profile, $reason, $cancelUpcoming, $clientNotices, $cancelledIds, $expiredIds) {
             $this->tell($profile->user, new CounselorSuspended($reason, $cancelUpcoming));
 
             foreach ($this->organizationAdmins($profile) as [$orgAdmin, $organizationName]) {
@@ -133,6 +133,19 @@ class CounselorStatusService
 
             foreach ($clientNotices as [$userId, $counselorName, $when, $kind]) {
                 $this->tell(User::find($userId), new ClientSessionNotice($counselorName, $when, $kind));
+            }
+
+            // The same news inside the app, once per cancelled session or closed request.
+            $center = app(NotificationCenter::class);
+
+            foreach ($cancelledIds as $bookingId) {
+                $booking = \App\Models\Booking::query()->find($bookingId);
+                $center->notify($booking?->user, 'booking.cancelled', $booking, $profile->user->name);
+            }
+
+            foreach ($expiredIds as $requestId) {
+                $request = \App\Models\BookingRequest::query()->find($requestId);
+                $center->notify($request?->user, 'request.expired', $request, $profile->user->name);
             }
         });
     }

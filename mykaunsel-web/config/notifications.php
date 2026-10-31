@@ -27,5 +27,7 @@ return [
         'complaints' => 'Complaints',
         'admins' => 'Admins',
         'system' => 'System',
+        // The mobile app's notifications (App\Support\Inbox\ClientNotificationTypes): never listed on the Platform Admin page.
+        'activity' => 'Your activity',
     ],
 ];

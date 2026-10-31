@@ -12,6 +12,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class UserNotification extends Model
 {
+    /** Random public id the moment it is inserted (never a counter, never mass-assignable): the mobile app only ever sees this. */
+    protected function performInsert(Builder $query)
+    {
+        $this->public_id ??= strtolower((string) \Illuminate\Support\Str::ulid());
+
+        return parent::performInsert($query);
+    }
+
     protected $fillable = [
         'recipient_user_id', 'type', 'target_type', 'target_id', 'label', 'occurrence_key', 'count', 'occurred_at', 'read_at',
     ];

@@ -75,6 +75,34 @@ class NotificationCenter
         }
     }
 
+    /**
+     * Tell ONE person (a client, not an admin) that something happened. Never throws: a failure is report()ed and the action that caused it goes
+     * on. The same occurrence told twice creates one notification (a retry cannot double it).
+     *
+     * @return bool whether a notification was created
+     */
+    public function notify(?User $recipient, string $type, ?Model $target, ?string $label, string $occurrence = ''): bool
+    {
+        if ($recipient === null) {
+            return false;
+        }
+
+        try {
+            $definition = $this->registry->get($type);
+            $this->assertTarget($definition->targetType, $target);
+
+            UserNotification::create($this->row($recipient->getKey(), $type, $definition->targetType, $target, $label, $this->occurrenceKey($definition->targetType, $target?->getKey(), $occurrence)));
+
+            return true;
+        } catch (UniqueConstraintViolationException) {
+            return false; // a retry: this person already has it
+        } catch (Throwable $e) {
+            report($e);
+
+            return false;
+        }
+    }
+
     /** The same as publish(), but an error is thrown (used by tests and by publish()). */
     public function notifyAdmins(string $type, ?Model $target, ?string $label, string $occurrence = '', ?User $actor = null): int
     {
@@ -137,10 +165,33 @@ class NotificationCenter
     //  Reading and changing (always the signed-in person's own)
     // =============================================================================================================
 
-    /** The bell's number: one indexed count. */
-    public function unreadCount(User $user): int
+    /**
+     * The bell's number: one indexed count.
+     *
+     * @param  list<string>|null  $types  only these type keys (the mobile app counts its own group only); null = all
+     */
+    public function unreadCount(User $user, ?array $types = null): int
     {
-        return UserNotification::query()->ownedBy($user)->unread()->count();
+        return UserNotification::query()->ownedBy($user)->unread()->when($types !== null, fn ($query) => $query->whereIn('type', $types))->count();
+    }
+
+    /**
+     * One page of a person's notifications of the given types, newest first.
+     *
+     * @param  list<string>  $types
+     */
+    public function pageOf(User $user, array $types, int $page, int $perPage): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return UserNotification::query()->ownedBy($user)->whereIn('type', $types)
+            ->orderByDesc('occurred_at')->orderByDesc('id')->paginate($perPage, ['*'], 'page', max(1, $page));
+    }
+
+    /** Marks one of THIS person's notifications read, by its public id. @return bool false when it is not theirs (or does not exist) */
+    public function markReadByPublicId(User $user, string $publicId): bool
+    {
+        $id = UserNotification::query()->ownedBy($user)->where('public_id', strtolower($publicId))->value('id');
+
+        return $id !== null && $this->markRead($user, (int) $id);
     }
 
     /** @return Collection<int, UserNotification> newest first */

@@ -132,7 +132,7 @@ class PlatformNotificationController extends Controller
             'page' => $page,
             'tab' => $tab,
             'group' => $group,
-            'groups' => config('notifications.groups'),
+            'groups' => collect(config('notifications.groups'))->except(\App\Support\Inbox\ClientNotificationTypes::GROUP)->all(),
             'counts' => ['all' => $base()->count(), 'unread' => $base()->unread()->count()],
             'empty' => ! $has ? 'none' : ($page->isEmpty() ? ($group === null && $tab === 'unread' ? 'no_unread' : 'no_match') : null),
             'unreadTotal' => $this->center->unreadCount($user),
@@ -150,7 +150,7 @@ class PlatformNotificationController extends Controller
     /** A known type group, or null (anything else typed into the address is ignored). */
     private function group(mixed $value): ?string
     {
-        return is_string($value) && array_key_exists($value, config('notifications.groups')) ? $value : null;
+        return is_string($value) && $value !== \App\Support\Inbox\ClientNotificationTypes::GROUP && array_key_exists($value, config('notifications.groups')) ? $value : null;
     }
 
     /**

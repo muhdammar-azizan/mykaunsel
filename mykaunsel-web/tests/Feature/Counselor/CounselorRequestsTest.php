@@ -172,6 +172,25 @@ class CounselorRequestsTest extends TestCase
         $this->assertNotContains('2026-11-05 10:00', $this->startsOf($this->availability($this->aina)), 'but it was never a slot, so nobody is offered it');
     }
 
+    public function test_approving_and_declining_are_also_news_inside_the_app_once_each(): void
+    {
+        Notification::fake();
+        $approved = $this->request();
+        $declined = $this->request(['requested_date' => '2026-11-06']);
+
+        $this->approve($approved);
+        $this->approve($approved); // a repeat adds nothing
+        $this->decline($declined, 'Not that day');
+
+        $rows = \App\Models\UserNotification::query()->where('recipient_user_id', $this->client->id)->orderBy('id')->get();
+
+        $this->assertSame(['request.approved', 'request.declined'], $rows->pluck('type')->all());
+        $this->assertSame([$approved->id, $declined->id], $rows->pluck('target_id')->all());
+        $this->assertSame('Aina', $rows[0]->label, "the counselor's name only: no time, no reason");
+        $this->assertStringNotContainsString('Not that day', json_encode($rows->toArray()));
+        $this->assertSame(0, \App\Models\UserNotification::query()->where('recipient_user_id', $this->aina->user_id)->count(), 'the counselor is not told here');
+    }
+
     public function test_approving_twice_is_harmless(): void
     {
         Notification::fake();

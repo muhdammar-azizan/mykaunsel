@@ -101,6 +101,8 @@ class CounselorAppointmentController extends Controller
         try {
             $start = $asked->startOf($request);
 
+            app(\App\Services\NotificationCenter::class)->notify($request->user, 'request.'.$outcome, $request, $asked->present($request)['counselor']['display_name'], (string) $request->responded_at?->getTimestamp());
+
             $request->user->notify(new TimeRequestAnsweredClient([
                 'outcome' => $outcome,
                 'counselor' => $asked->present($request)['counselor']['display_name'],

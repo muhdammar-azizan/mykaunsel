@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\CounselorDirectoryController;
 use App\Http\Controllers\Api\V1\MyBookingController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Http\Controllers\Api\V1\TimeRequestController;
 use App\Http\Controllers\Api\V1\StatusController;
@@ -61,6 +62,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::delete('/', [AccountController::class, 'destroy'])->name('destroy');
             Route::post('/devices/{device}/revoke', [AccountController::class, 'revokeDevice'])->whereNumber('device')->name('devices.revoke');
         });
+    });
+
+    // The person's notifications in the app (docs/NOTIFICATIONS.md): what happened that they did not do themselves. Their own only.
+    Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-user'])->prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [NotificationController::class, 'unread'])->name('unread');
+        Route::post('/read-all', [NotificationController::class, 'readAll'])->name('read-all');
+        Route::post('/{id}/read', [NotificationController::class, 'read'])->where('id', '[0-9A-Za-z]{26}')->name('read');
     });
 
     // Booking a time (docs/AVAILABILITY.md, "The confirm step"). The preview claims nothing; the POST is the only place a Mode A booking is

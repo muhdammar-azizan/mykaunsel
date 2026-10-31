@@ -32,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Support\Inbox\NotificationRegistry::class, function () {
             $registry = new \App\Support\Inbox\NotificationRegistry;
             \App\Support\Inbox\CoreNotificationTypes::register($registry);
+            \App\Support\Inbox\ClientNotificationTypes::register($registry);
 
             return $registry;
         });

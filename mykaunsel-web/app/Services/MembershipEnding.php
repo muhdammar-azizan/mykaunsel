@@ -196,6 +196,17 @@ class MembershipEnding
 
         $this->tell($person, new MembershipEnded($organization->name, $by, array_map($line, $cancelled), array_map($line, $kept)));
 
+        // In the app: only what the person did not do themselves. Leaving is their own act; being removed, and the sessions that went with either, are news.
+        $center = app(\App\Services\NotificationCenter::class);
+
+        if ($by === 'organization') {
+            $center->notify($person, 'membership.ended', $organization, $organization->name, (string) now()->getTimestamp());
+        }
+
+        foreach ($cancelled as $row) {
+            $center->notify($person, 'booking.cancelled', $row['booking'], $row['booking']->counselor->name);
+        }
+
         foreach ($cancelled as $row) {
             $this->tell($row['booking']->counselor, new SessionCancelledMembershipEnded($organization->name, $person->name, $row['when']));
         }

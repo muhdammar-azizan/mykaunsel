@@ -114,6 +114,28 @@ Each producer calls `NotificationCenter::publish()` (or `publishCoalescing()`) *
 
 The Account page lets an admin switch **`escalated_complaint`** and **`weekly_summary`** on or off, but **nothing in the application sends those emails yet** (only `new_organization_application` and `new_counselor_application` are sent, by `PlatformAdminNotifier`). The switches do nothing today. They are outside this work (the Account page is not changed). They need their own senders: the escalation email when escalation is built, and the weekly summary as a scheduled job.
 
+## The mobile app's notifications (group `activity`)
+
+The same table and `NotificationCenter` also serve the app (owner's decision of 31 October 2026: an in-app panel, **no push for now**; push needs Firebase/APNs at deployment). They have their own group, `activity`, which the Platform Admin bell and page never show, and the API lists only that group.
+
+**Only what happened that the person did not do themselves.** Booking something, cancelling it or leaving an organization is not news to them. Types (`App\Support\Inbox\ClientNotificationTypes`): `request.approved`, `request.declined`, `request.expired` (target: the time request), `booking.cancelled` (target: the booking; the counselor was suspended, or the membership ended), `invitation.received`, `membership.approved`, `membership.declined`, `membership.ended` (target: the organization; ended only when the organization removed them), `feed.removed`, `feed.warned` (no target: the writing is gone).
+
+**What is stored:** the key, a short label (a counselor's or an organization's name), the target's id and the time. No time of a session, no reason, no message, no e-mail. The API turns a booking or a request into its public id; the app writes the sentence from the key (`title` is an English fallback). Every row also has a random public id (`user_notifications.public_id`).
+
+**Who creates them** (always right beside the e-mail that already exists, never able to fail it): the counselor answering a time request (`CounselorAppointmentController`), `requests:expire`, `OrgMemberService` (approve, decline, invite: only if the invited address already belongs to a confirmed account), `MembershipEnding`, `CounselorStatusService::suspend` (sessions cancelled and requests closed), `FeedModerationService` (remove, warn). `NotificationCenter::notify($user, $type, $target, $label, $occurrence)` is the one door; it never throws and the same occurrence twice makes one.
+
+**E-mail is separate and stays as it is:** only the important events are e-mailed (and the booking ones obey the switch in Account). The panel shows more than the e-mails do.
+
+**Retention** is the same as for the admins (read after 90 days, unread after 180). Deleting an account deletes its notifications.
+
+**API:** see [API.md](API.md): `GET /notifications`, `GET /notifications/unread-count`, `POST /notifications/{id}/read`, `POST /notifications/read-all`.
+
+## Not built (app notifications)
+
+- The bell and the panel in the app (the next step).
+- Push notifications (Firebase for Android, APNs for iPhone): needed only for notifications while the app is closed.
+- A reminder before a session starts (it would need a scheduled job).
+
 ## Tests
 
 All in `tests/Feature/Notifications` plus `tests/js`:

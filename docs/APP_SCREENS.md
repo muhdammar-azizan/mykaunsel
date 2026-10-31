@@ -37,7 +37,7 @@ Status: ✅ built · ⚠️ partly built or a placeholder · ❌ not built.
 | | Screen | Details |
 |---|---|---|
 | ⚠️ | Home | Two states: a new user (a Chat card and an invitation to find a counselor) and a user with an upcoming booking (a session card; "Join session" only within 15 minutes before). A quick-help strip "Call HEAL 15555". A Feed snippet is added when Feed exists. (Now: greeting, a "Your next session" card with the soonest confirmed booking (left out while loading, on a failure, or with nothing booked; it opens the booking, where Join session lives), the way to Find, a Chat card, and a "Need help right now?" card that opens the phone lines. The Feed snippet and a Join button on the card itself are not built.) |
-| ❌ | Notification panel | Postponed, and the bell hidden. No in-app notifications, email only (decision B11). |
+| ⚠️ | Notification panel | **Reversed by the owner (31 October 2026): the app gets an in-app panel, no push for now (push needs Firebase/APNs at deployment).** Server built (`/api/v1/notifications`, see [NOTIFICATIONS.md](NOTIFICATIONS.md)); the bell and the panel in the app are not built yet. E-mail stays for the important events only. Original note: Postponed, and the bell hidden. No in-app notifications, email only (decision B11). |
 
 ## 3. Chatbot
 

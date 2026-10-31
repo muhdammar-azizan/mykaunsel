@@ -92,6 +92,12 @@ class OrgMemberService
             return $invitation;
         });
 
+        // Someone who already has an account with that address CONFIRMED sees it in the app at once; others find it when they sign in.
+        app(NotificationCenter::class)->notify(
+            User::query()->whereRaw('lower(email) = ?', [$email])->whereNotNull('email_verified_at')->whereNull('deleted_at')->first(),
+            'invitation.received', $organization, $organization->name, (string) $invitation->getKey(),
+        );
+
         try {
             Notification::route('mail', $email)->notify(new MemberInvitation($organization->name));
         } catch (Throwable $e) {
@@ -137,6 +143,7 @@ class OrgMemberService
     {
         $person = $this->answer($organization, $membershipId, $admin, MembershipStatus::Active, 'member.join_approved', ['joined_at' => now()]);
 
+        app(NotificationCenter::class)->notify($person, 'membership.approved', $organization, $organization->name, (string) now()->getTimestamp());
         $this->tell($person, new MembershipApproved($organization->name));
     }
 
@@ -148,6 +155,7 @@ class OrgMemberService
             'offboard_reason' => 'Request declined by the organization',
         ]);
 
+        app(NotificationCenter::class)->notify($person, 'membership.declined', $organization, $organization->name, (string) now()->getTimestamp());
         $this->tell($person, new MembershipDeclined($organization->name));
     }
 

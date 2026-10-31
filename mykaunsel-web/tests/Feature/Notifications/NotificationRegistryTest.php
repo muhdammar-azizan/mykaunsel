@@ -77,13 +77,15 @@ class NotificationRegistryTest extends TestCase
             $this->assertNotSame('', $this->registry()->get($key)->title);
         }
 
-        $this->assertSame(array_keys($expected), array_keys($this->registry()->all()));
+        // (The mobile app's own types, group "activity", are checked in NotificationApiTest.)
+        $admin = array_filter($this->registry()->all(), fn (NotificationType $t) => $t->group !== 'activity');
+        $this->assertSame(array_keys($expected), array_keys($admin));
         $this->assertSame(['counselor.kb_duplicate_flagged'], array_keys(array_filter($this->registry()->all(), fn (NotificationType $t) => $t->coalesces())));
     }
 
     public function test_the_groups_of_the_full_page_each_have_types(): void
     {
-        $this->assertSame(['applications', 'lkm', 'complaints', 'admins', 'system'], array_keys(config('notifications.groups')));
+        $this->assertSame(['applications', 'lkm', 'complaints', 'admins', 'system', 'activity'], array_keys(config('notifications.groups')));
 
         foreach (array_keys(config('notifications.groups')) as $group) {
             $this->assertNotEmpty($this->registry()->keysInGroup($group), $group);

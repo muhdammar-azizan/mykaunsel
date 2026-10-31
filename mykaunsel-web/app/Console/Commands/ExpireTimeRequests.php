@@ -26,6 +26,8 @@ class ExpireTimeRequests extends Command
             try {
                 $start = $requests->startOf($request);
 
+                app(\App\Services\NotificationCenter::class)->notify($request->user, 'request.expired', $request, $requests->present($request)['counselor']['display_name']);
+
                 $request->user->notify(new TimeRequestAnsweredClient([
                     'outcome' => 'expired',
                     'counselor' => $requests->present($request)['counselor']['display_name'],
