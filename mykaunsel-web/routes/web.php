@@ -157,6 +157,17 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::get('/settings', [OrgSettingController::class, 'index'])->name('settings');
     });
 
+    // The bell of the counselor and organization admin portals: only ever your own notifications (PortalNotificationController).
+    Route::prefix('portal')->name('portal.')->middleware('role:org_admin,counselor')->group(function () {
+        Route::get('/notifications', [\App\Http\Controllers\Portal\PortalNotificationController::class, 'index'])->middleware('throttle:60,1')->name('notifications');
+        Route::get('/notifications/unread-count', [\App\Http\Controllers\Portal\PortalNotificationController::class, 'count'])->middleware('throttle:120,1')->name('notifications.count');
+        Route::get('/notifications/panel', [\App\Http\Controllers\Portal\PortalNotificationController::class, 'panel'])->middleware('throttle:60,1')->name('notifications.panel');
+        Route::post('/notifications/read-all', [\App\Http\Controllers\Portal\PortalNotificationController::class, 'readAll'])->middleware('throttle:30,1')->name('notifications.read-all');
+        Route::post('/notifications/{notification}/read', [\App\Http\Controllers\Portal\PortalNotificationController::class, 'markRead'])->whereNumber('notification')->middleware('throttle:120,1')->name('notifications.read');
+        Route::post('/notifications/{notification}/unread', [\App\Http\Controllers\Portal\PortalNotificationController::class, 'markUnread'])->whereNumber('notification')->middleware('throttle:120,1')->name('notifications.unread');
+        Route::post('/notifications/{notification}/open', [\App\Http\Controllers\Portal\PortalNotificationController::class, 'open'])->whereNumber('notification')->middleware('throttle:60,1')->name('notifications.open');
+    });
+
     Route::prefix('counselor')->name('counselor.')->middleware('role:counselor')->group(function () {
         Route::get('/dashboard', [CounselorDashboardController::class, 'index'])->name('dashboard');
         Route::get('/planner', [CounselorPlannerController::class, 'index'])->name('planner');

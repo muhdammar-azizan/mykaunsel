@@ -26,6 +26,12 @@ class PlatformNotificationController extends Controller
 {
     public function __construct(private readonly NotificationCenter $center, private readonly NotificationRegistry $registry) {}
 
+    /** The route-name prefix of this controller's pages: the portal subclass uses its own routes and nothing else. */
+    protected function prefix(): string
+    {
+        return 'platform';
+    }
+
     /** The bell's number, for the polling. One indexed count query. */
     public function count(Request $request): JsonResponse
     {
@@ -39,7 +45,7 @@ class PlatformNotificationController extends Controller
         $items = $this->center->latest($user, (int) config('notifications.panel_items'));
         $groups = $this->grouped($items, $user->display_timezone);
 
-        return response()->view('platform.notifications._panel', ['groups' => $groups, 'empty' => $items->isEmpty()])
+        return response()->view('platform.notifications._panel', ['groups' => $groups, 'empty' => $items->isEmpty(), 'p' => $this->prefix()])
             ->header('X-Unread-Count', (string) $this->center->unreadCount($user))
             ->header('Cache-Control', 'no-store');
     }
@@ -61,7 +67,7 @@ class PlatformNotificationController extends Controller
 
         $where = $group === null ? '' : ' in '.config('notifications.groups')[$group];
 
-        return redirect()->route('platform.notifications', $this->pageQuery($request))->with('status', $marked === 0
+        return redirect()->route($this->prefix().'.notifications', $this->pageQuery($request))->with('status', $marked === 0
             ? 'Nothing to mark: everything'.$where.' is already read.'
             : "Marked {$marked} ".($marked === 1 ? 'notification' : 'notifications').$where.' as read.');
     }
@@ -71,14 +77,14 @@ class PlatformNotificationController extends Controller
     {
         abort_unless($this->center->markRead($request->user(), $notification), 404);
 
-        return redirect()->route('platform.notifications', $this->pageQuery($request));
+        return redirect()->route($this->prefix().'.notifications', $this->pageQuery($request));
     }
 
     public function markUnread(Request $request, int $notification): RedirectResponse
     {
         abort_unless($this->center->markUnread($request->user(), $notification), 404);
 
-        return redirect()->route('platform.notifications', $this->pageQuery($request));
+        return redirect()->route($this->prefix().'.notifications', $this->pageQuery($request));
     }
 
     /**
@@ -103,7 +109,7 @@ class PlatformNotificationController extends Controller
             return $this->goneBack();
         }
 
-        return redirect()->to($type->url($row->target_id) ?? route('platform.notifications'));
+        return redirect()->to($type->url($row->target_id) ?? route($this->prefix().'.notifications'));
     }
 
     /** The full page: All / Unread, a filter by type group, 25 per page, with the three kinds of empty state. */
@@ -122,7 +128,7 @@ class PlatformNotificationController extends Controller
 
         // A page number past the end (for example after marking things read on the Unread tab): go to the last real page.
         if ($page->isEmpty() && $page->currentPage() > 1) {
-            return redirect()->route('platform.notifications', array_filter(['tab' => $tab === 'unread' ? 'unread' : null, 'group' => $group, 'page' => $page->lastPage()]));
+            return redirect()->route($this->prefix().'.notifications', array_filter(['tab' => $tab === 'unread' ? 'unread' : null, 'group' => $group, 'page' => $page->lastPage()]));
         }
 
         $has = UserNotification::query()->ownedBy($user)->exists();
@@ -142,13 +148,13 @@ class PlatformNotificationController extends Controller
         ]);
     }
 
-    private function goneBack(): RedirectResponse
+    protected function goneBack(): RedirectResponse
     {
-        return redirect()->route('platform.notifications')->with('notice', 'That item no longer exists.');
+        return redirect()->route($this->prefix().'.notifications')->with('notice', 'That item no longer exists.');
     }
 
     /** A known type group, or null (anything else typed into the address is ignored). */
-    private function group(mixed $value): ?string
+    protected function group(mixed $value): ?string
     {
         return is_string($value) && $value !== \App\Support\Inbox\ClientNotificationTypes::GROUP && array_key_exists($value, config('notifications.groups')) ? $value : null;
     }
@@ -159,7 +165,7 @@ class PlatformNotificationController extends Controller
      *
      * @return array<string, string|int>
      */
-    private function pageQuery(Request $request): array
+    protected function pageQuery(Request $request): array
     {
         $page = $request->input('page', $request->query('page'));
 
@@ -176,7 +182,7 @@ class PlatformNotificationController extends Controller
      * @param  Collection<int, UserNotification>  $items
      * @return list<array<string, mixed>>
      */
-    private function present(Collection $items, string $timezone): array
+    protected function present(Collection $items, string $timezone): array
     {
         $states = $this->registry->states($items);
         $now = CarbonImmutable::now($timezone);
@@ -207,7 +213,7 @@ class PlatformNotificationController extends Controller
      * @param  Collection<int, UserNotification>  $items
      * @return array<string, list<array<string, mixed>>> "Today" and "Earlier" (empty groups left out)
      */
-    private function grouped(Collection $items, string $timezone): array
+    protected function grouped(Collection $items, string $timezone): array
     {
         $presented = collect($this->present($items, $timezone));
 

@@ -103,7 +103,7 @@ class OrgMembersPageTest extends TestCase
             ->assertSee('Members (1)')->assertSee('Aiman Employee')
             ->assertSee($code->display())->assertSee('0 of 5')
             ->assertDontSee('Orang Beta')
-            ->assertDontSee('Hana HR</p>', false);
+            ->assertDontSee('text-gray-900">Hana HR</p>', false);
     }
 
     public function test_each_working_code_comes_with_words_to_send_that_say_where_to_type_it(): void

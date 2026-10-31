@@ -3,9 +3,9 @@
 Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md. Colours follow the MyKaunsel theme; structure follows the owner's two reference screenshots (dark fixed header, left sidebar, cards, fixed footer). Platform Admin keeps its own design.
 
 ## Shared (build first)
-- [ ] Layout: fixed dark header (menu, logo, search, notifications bell, help, avatar), left sidebar, content area, fixed footer
-- [ ] Notifications bell and list
-- [ ] Account menu (profile, security, sign out) and role switch
+- [x] Layout: fixed dark header (menu, logo, search, notifications bell, help, avatar), left sidebar, content area, fixed footer (`x-portal-layout`, `config/portal-nav.php`; the 8 existing counselor and organization pages already use it)
+- [x] Notifications bell and list (`/portal/notifications`)
+- [ ] Account menu (profile, security, sign out) and role switch: menu, sign out and role switch are done; the Account page it links to is still the old basic profile page (security and notification settings for portal users are not built)
 
 ## Counselor portal
 - [ ] Dashboard: today's sessions, requests waiting for an answer, next free time, short notices

@@ -2,7 +2,7 @@
      Unread = a filled dot AND bold text AND the words "Unread" for screen readers: never colour alone. Everything shown is escaped by Blade. --}}
 @php($dim = $item['handled'] || $item['gone'])
 
-<form method="POST" action="{{ route('platform.notifications.open', $item['id']) }}">
+<form method="POST" action="{{ route(($p ?? 'platform').'.notifications.open', $item['id']) }}">
     @csrf
     <button type="submit" class="flex w-full items-start gap-3 px-5 py-3 text-left transition hover:bg-brand-ink/5 focus:outline-none focus-visible:bg-brand-ink/5 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-blue {{ $dim ? 'opacity-60' : '' }}">
         <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full {{ $item['unread'] ? 'bg-brand-blue' : 'border border-brand-ink/30' }}" aria-hidden="true"></span>

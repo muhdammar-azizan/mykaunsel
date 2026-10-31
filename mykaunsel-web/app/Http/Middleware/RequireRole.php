@@ -8,9 +8,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RequireRole
 {
-    public function handle(Request $request, Closure $next, string $role): Response
+    /** `role:counselor` or, for pages both portals share, `role:org_admin,counselor`. */
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        if ($request->session()->get('current_role') !== $role) {
+        if (! in_array($request->session()->get('current_role'), $roles, true)) {
             abort(403);
         }
 

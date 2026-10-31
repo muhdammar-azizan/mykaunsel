@@ -6,7 +6,7 @@
         <h3 class="px-5 pb-1 pt-3 text-[11px] font-bold uppercase tracking-wide text-brand-ink/50">{{ $heading }}</h3>
         <ul class="divide-y divide-brand-ink/[.06]">
             @foreach ($items as $item)
-                <li>@include('platform.notifications._item', ['item' => $item])</li>
+                <li>@include('platform.notifications._item', ['item' => $item, 'p' => $p ?? 'platform'])</li>
             @endforeach
         </ul>
     @endforeach
