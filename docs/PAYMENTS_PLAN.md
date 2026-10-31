@@ -13,6 +13,15 @@ Nothing is charged today. [PRICING.md](PRICING.md) only records plans, prices, p
 
 The hard part is the last row. The owner wants the money to pass through MyKaunsel (a refund is simpler when the platform holds the money).
 
+## Decided by the owner (31 October 2026)
+
+- **Commission starts at 7%** on an independent counselor's paid session. (Whether a lower rate for a client who books the same counselor again is wanted is still to be said.)
+- **Refund and cancellation rules agreed** as proposed under "Proposed design" below.
+- **After a subscription ends, new members may still join** an organization (code or invitation) but can not book until it is renewed.
+- **Price range for a session:** none yet. The Platform Admin sets a floor and a ceiling later; the owner will say when.
+- **Escrow:** still being explained to the owner; who holds the money is not decided.
+- Payments stay on hold until every other question is settled.
+
 ## Subscription end date (decided in principle)
 
 `organizations.subscription_ends_at` already exists and is set from the plan (one year after the start). **It is not enforced anywhere yet.** Rule from the owner: a session can only be booked **inside the paid period**, so the counselors and clients of an organization can not run the service when it has not paid. How it is delivered (what people see) is proposed in the conversation of 31 October 2026 and is to be confirmed:
