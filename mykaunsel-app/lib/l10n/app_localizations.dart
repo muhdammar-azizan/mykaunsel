@@ -3392,6 +3392,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Decline'**
   String get orgDecline;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This can not be undone.'**
+  String get deleteAccountWarning;
+
+  /// No description provided for @deleteErasedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is erased'**
+  String get deleteErasedTitle;
+
+  /// No description provided for @deleteErasedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name, e-mail address and photo, your chats with the assistant, your Feed posts and comments, and every sign-in of yours.'**
+  String get deleteErasedBody;
+
+  /// No description provided for @deleteEndedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What ends'**
+  String get deleteEndedTitle;
+
+  /// No description provided for @deleteEndedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'All your later sessions are cancelled and the counselors are told. If you belong to an organization, you leave it and it is told your name.'**
+  String get deleteEndedBody;
+
+  /// No description provided for @deleteKeptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What stays'**
+  String get deleteKeptTitle;
+
+  /// No description provided for @deleteKeptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Records of past bookings stay for 90 days without your name. What a counselor or organization wrote about a session stays with them.'**
+  String get deleteKeptBody;
+
+  /// No description provided for @deleteTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type DELETE to confirm'**
+  String get deleteTypeLabel;
+
+  /// No description provided for @deleteTypeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'In capital letters'**
+  String get deleteTypeHelp;
+
+  /// No description provided for @deleteAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get deleteAccountButton;
+
+  /// No description provided for @accountDeletedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted. We sent an e-mail to confirm.'**
+  String get accountDeletedNote;
 }
 
 class _AppLocalizationsDelegate

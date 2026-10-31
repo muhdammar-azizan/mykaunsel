@@ -2,7 +2,7 @@ import '../../features/auth/domain/app_user.dart';
 import '../error/app_failure.dart';
 
 /// Why the person is signed out (so the sign-in screen can say so).
-enum SignedOutReason { none, sessionExpired, signedOutByUser }
+enum SignedOutReason { none, sessionExpired, signedOutByUser, accountDeleted }
 
 /// The ONE answer to "where is this person right now?". The router only reads this, so nobody can end up on a screen
 /// that does not match their situation.

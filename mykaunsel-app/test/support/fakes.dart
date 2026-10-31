@@ -267,6 +267,16 @@ class FakeAccountApi implements AccountApi {
       ];
   Future<void> Function(int id, String current) revokeHandler = (id, current) async {};
 
+  final deleteCalls = <String>[];
+  Future<int> Function(String password) deleteHandler = (password) async => 0;
+
+  @override
+  Future<int> deleteAccount({required String currentPassword}) {
+    deleteCalls.add(currentPassword);
+
+    return deleteHandler(currentPassword);
+  }
+
   MyOrganization? myOrganization;
   final joinCalls = <String>[];
   int leaveCalls = 0;

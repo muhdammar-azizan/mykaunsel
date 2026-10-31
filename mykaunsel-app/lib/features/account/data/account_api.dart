@@ -38,6 +38,10 @@ abstract class AccountApi {
   /// Leaves the organization (or withdraws the request). Throws [NotFoundFailure] when there is none.
   Future<LeftOrganization> leaveOrganization();
 
+  /// Deletes the account for good (docs/ACCOUNT_DELETION.md). Throws [ValidationFailure] on `current_password` (wrong), [ForbiddenFailure]
+  /// with code `staff_account` (a counselor or an administrator), or [RateLimitedFailure]. On success every sign-in, this one too, is gone.
+  Future<int> deleteAccount({required String currentPassword});
+
   Future<List<SignedInDevice>> devices();
 
   /// Signs ANOTHER phone out. Needs the current password (same failures as [changePassword]).
@@ -122,6 +126,13 @@ class HttpAccountApi implements AccountApi {
     final response = await _client.delete('/account/organization');
 
     return LeftOrganization.fromJson(Map<String, dynamic>.from(response.data['left'] as Map));
+  }
+
+  @override
+  Future<int> deleteAccount({required String currentPassword}) async {
+    final response = await _client.delete('/account', data: {'current_password': currentPassword, 'confirm': 'DELETE'});
+
+    return (response.data['cancelled'] as num?)?.toInt() ?? 0;
   }
 
   @override

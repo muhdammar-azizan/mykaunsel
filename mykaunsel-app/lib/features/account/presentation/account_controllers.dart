@@ -77,6 +77,35 @@ class PasswordController extends Notifier<SubmitState> {
   }
 }
 
+// ---- delete account ---------------------------------------------------------------------
+
+final deleteAccountControllerProvider = NotifierProvider.autoDispose<DeleteAccountController, SubmitState>(DeleteAccountController.new);
+
+class DeleteAccountController extends Notifier<SubmitState> {
+  @override
+  SubmitState build() => SubmitState.idle;
+
+  /// True when the account is gone: this phone then signs out by itself and the router leaves the page.
+  Future<bool> delete(String currentPassword) async {
+    if (state.submitting) {
+      return false;
+    }
+
+    state = SubmitState.busy;
+
+    try {
+      await ref.read(accountApiProvider).deleteAccount(currentPassword: currentPassword);
+      await ref.read(sessionControllerProvider.notifier).accountDeleted();
+
+      return true;
+    } on AppFailure catch (failure) {
+      if (ref.mounted) state = SubmitState(failure: failure);
+
+      return false;
+    }
+  }
+}
+
 // ---- devices ----------------------------------------------------------------------------
 
 /// The phones signed in to this account. Asked again for the next person who signs in.

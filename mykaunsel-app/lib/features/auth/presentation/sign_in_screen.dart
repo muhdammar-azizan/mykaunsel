@@ -60,6 +60,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     final form = ref.watch(signInControllerProvider);
     final session = ref.watch(sessionControllerProvider);
     final expired = session is SessionSignedOut && session.reason == SignedOutReason.sessionExpired;
+    final deleted = session is SessionSignedOut && session.reason == SignedOutReason.accountDeleted;
 
     return AuthScaffold(
       title: l10n.signInTitle,
@@ -69,6 +70,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: Text(l10n.sessionExpired, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
+          ),
+        if (deleted)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Semantics(liveRegion: true, child: Text(l10n.accountDeletedNote, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium)),
           ),
         FailureBanner(failure: form.failure, hideFieldErrors: const ['email', 'password']),
         Form(

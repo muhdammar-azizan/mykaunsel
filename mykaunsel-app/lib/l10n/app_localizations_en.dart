@@ -2025,4 +2025,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orgDecline => 'Decline';
+
+  @override
+  String get deleteAccountTitle => 'Delete account';
+
+  @override
+  String get deleteAccountWarning => 'This can not be undone.';
+
+  @override
+  String get deleteErasedTitle => 'What is erased';
+
+  @override
+  String get deleteErasedBody =>
+      'Your name, e-mail address and photo, your chats with the assistant, your Feed posts and comments, and every sign-in of yours.';
+
+  @override
+  String get deleteEndedTitle => 'What ends';
+
+  @override
+  String get deleteEndedBody =>
+      'All your later sessions are cancelled and the counselors are told. If you belong to an organization, you leave it and it is told your name.';
+
+  @override
+  String get deleteKeptTitle => 'What stays';
+
+  @override
+  String get deleteKeptBody =>
+      'Records of past bookings stay for 90 days without your name. What a counselor or organization wrote about a session stays with them.';
+
+  @override
+  String get deleteTypeLabel => 'Type DELETE to confirm';
+
+  @override
+  String get deleteTypeHelp => 'In capital letters';
+
+  @override
+  String get deleteAccountButton => 'Delete my account';
+
+  @override
+  String get accountDeletedNote =>
+      'Your account has been deleted. We sent an e-mail to confirm.';
 }

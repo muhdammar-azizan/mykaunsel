@@ -99,6 +99,12 @@ class SessionController extends Notifier<SessionState> {
     if (ref.mounted) state = const SessionSignedOut(reason: SignedOutReason.signedOutByUser);
   }
 
+  /// The account was deleted: the server already ended every sign-in, so nothing is asked of it. Only this phone forgets.
+  Future<void> accountDeleted() async {
+    await ref.read(tokenStorageProvider).clear();
+    if (ref.mounted) state = const SessionSignedOut(reason: SignedOutReason.accountDeleted);
+  }
+
   /// Called for every failed API call (see apiClientProvider).
   void handleFailure(AppFailure failure, {required bool hadToken}) {
     // start() deals with its own failures.

@@ -115,6 +115,12 @@ class AccountScreen extends ConsumerWidget {
               title: Text(l10n.signOutEverywhere),
               onTap: () => _signOutEverywhere(context, ref),
             ),
+            ListTile(
+              leading: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+              title: Text(l10n.deleteAccountTitle, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(AppRoutes.accountDelete),
+            ),
           ],
         ),
       ),

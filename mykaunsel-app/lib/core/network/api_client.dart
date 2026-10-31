@@ -58,7 +58,7 @@ class ApiClient {
 
   Future<ApiResponse> patch(String path, {Map<String, dynamic>? data}) => _send('PATCH', path, data: data);
 
-  Future<ApiResponse> delete(String path) => _send('DELETE', path);
+  Future<ApiResponse> delete(String path, {Map<String, dynamic>? data}) => _send('DELETE', path, data: data);
 
   Future<ApiResponse> _send(String method, String path, {Map<String, dynamic>? data, Map<String, dynamic>? query, Map<String, String>? headers}) async {
     final token = await _readToken();

@@ -1,6 +1,6 @@
 # Deleting an account
 
-A client deletes their own account (the app, Account > Delete account, and the web profile page). The owner's decisions are in [APP_SCREENS.md](APP_SCREENS.md), "Decisions of the owner", 3. This page says what the server does. The app screen is built separately.
+A client deletes their own account (the app, Account > Delete account, and the web profile page). The owner's decisions are in [APP_SCREENS.md](APP_SCREENS.md), "Decisions of the owner", 3. This page says what the server does; the app screen (Account > Delete account) shows the same three lists before it asks for the password and the word DELETE.
 
 ## What the server does (`AccountDeletion`)
 
@@ -28,7 +28,6 @@ The web profile page (Breeze "Delete account") uses the same service.
 
 ## Not built
 
-- The app screen (Account > Delete account).
 - Terms and Privacy Policy text that says all this (a draft comes first).
 - A grace period to change one's mind (the owner has not asked for one).
 - Deleting a counselor's or an administrator's account.

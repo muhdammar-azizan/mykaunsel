@@ -95,7 +95,7 @@ Depends on Moderate Feed in the admin part. Build them together. **Decision (own
 | ✅ | Data and privacy | **Built** (Account > Data and privacy; the Privacy Policy opens on the web, which is still a placeholder page; the "write to us" line shows only when the server has `SUPPORT_EMAIL` set). A static information card: chat deleted after 12 months, counselors and organizations cannot see chat content, PDPA. A link to the Privacy Policy. Data-copy requests: use the support email for now. |
 | ✅ | Notification settings | **Built** (Account > Notifications: one Bookings switch; the booking e-mails obey it; the community switch comes with Feed). Email only. A bookings toggle (confirmation, reminders, changes). A community toggle only when Feed exists. **The email-sending code must read this choice.** |
 | ✅ | Log out | Confirmation exists. |
-| ⚠️ | Delete account | **Policy decided; the server is built (`DELETE /account`, see [ACCOUNT_DELETION.md](ACCOUNT_DELETION.md)); the app screen is not built yet.** Original note: Do not build before the data policy is decided. Needs: what is deleted, what stays (booking records 90 days, session notes stay with the organization), complaint reporters anonymized. Type "DELETE" to confirm. |
+| ✅ | Delete account | **Built** (Account > Delete account: says what is erased, what ends and what stays; the password and the word DELETE in capitals; then this phone signs out and the sign-in page says the account is gone). Server: `DELETE /account`, see [ACCOUNT_DELETION.md](ACCOUNT_DELETION.md). Original note: Do not build before the data policy is decided. Needs: what is deleted, what stays (booking records 90 days, session notes stay with the organization), complaint reporters anonymized. Type "DELETE" to confirm. |
 
 ## 8. System states
 
@@ -157,6 +157,6 @@ B1 no fee text anywhere. B2 the no-recording acknowledgement is required and not
 2. ✅ Mode B + the counselor portal (sessions, planner, weekly hours, requests) → Request status.
 3. ✅ Chat (with the AI consent, crisis detection on the server) → history → cards.
 4. ✅ Feed built (identified posts). ✅ Moderate Feed built (admin web). Feed is complete.
-5. ✅ Choose account type, Notification settings, Data and privacy. ✅ Onboarding. ❌ Invite code (decided, next to build), Help / Terms / Privacy (a draft first), Reset password deep link (waits for a domain). ➖ Choose context (dropped). ✅ Home's upcoming-booking card. Delete account: decided, not built yet.
+5. ✅ Choose account type, Notification settings, Data and privacy. ✅ Onboarding. ❌ Invite code (decided, next to build), Help / Terms / Privacy (a draft first), Reset password deep link (waits for a domain). ➖ Choose context (dropped). ✅ Home's upcoming-booking card. Delete account: built.
 
 Nothing built after the Pick a slot step has been viewed on a screen yet; the emulator checklist in APP_ARCHITECTURE.md is the first thing to do with eyes.

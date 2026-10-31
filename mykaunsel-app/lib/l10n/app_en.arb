@@ -730,5 +730,17 @@
   "@orgInvitedTitle": {"placeholders": {"name": {"type": "String"}}},
   "orgInvitedBody": "If you accept, you join at once and can book its counselors.",
   "orgAccept": "Accept",
-  "orgDecline": "Decline"
+  "orgDecline": "Decline",
+  "deleteAccountTitle": "Delete account",
+  "deleteAccountWarning": "This can not be undone.",
+  "deleteErasedTitle": "What is erased",
+  "deleteErasedBody": "Your name, e-mail address and photo, your chats with the assistant, your Feed posts and comments, and every sign-in of yours.",
+  "deleteEndedTitle": "What ends",
+  "deleteEndedBody": "All your later sessions are cancelled and the counselors are told. If you belong to an organization, you leave it and it is told your name.",
+  "deleteKeptTitle": "What stays",
+  "deleteKeptBody": "Records of past bookings stay for 90 days without your name. What a counselor or organization wrote about a session stays with them.",
+  "deleteTypeLabel": "Type DELETE to confirm",
+  "deleteTypeHelp": "In capital letters",
+  "deleteAccountButton": "Delete my account",
+  "accountDeletedNote": "Your account has been deleted. We sent an e-mail to confirm."
 }
