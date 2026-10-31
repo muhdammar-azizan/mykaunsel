@@ -175,6 +175,7 @@ class _BookingCard extends ConsumerWidget {
       color: scheme.cardFill,
       shape: RoundedRectangleBorder(borderRadius: AppRadii.cardRadius, side: BorderSide(color: scheme.cardBorder)),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           InkWell(
             borderRadius: AppRadii.cardRadius,

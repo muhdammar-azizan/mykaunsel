@@ -997,7 +997,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$hours hours',
       one: '1 hour',
     );
-    return 'Choose a time inside $name\'s working hours. $name has $_temp0 to answer, and nothing is booked until they approve. If they do not answer, the request closes by itself.';
+    return 'Choose a time inside $name\'s working hours. They have $_temp0 to answer, and nothing is booked until they approve. If they do not answer, the request closes by itself.';
   }
 
   @override

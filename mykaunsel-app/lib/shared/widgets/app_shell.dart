@@ -16,7 +16,10 @@ class AppShell extends StatelessWidget {
 
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
+      // Five tabs: at the largest text sizes a label such as "Bookings" would break in the middle of the word, so the bar's text stops growing at 1.1.
+      bottomNavigationBar: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.1,
+        child: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         // Tapping the tab you are already on goes back to its first page.
         onDestinationSelected: (index) => navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex),
@@ -27,6 +30,7 @@ class AppShell extends StatelessWidget {
           NavigationDestination(icon: const Icon(Icons.event_note_outlined), selectedIcon: const Icon(Icons.event_note), label: l10n.navBookings),
           NavigationDestination(icon: const Icon(Icons.person_outline), selectedIcon: const Icon(Icons.person), label: l10n.navAccount),
         ],
+        ),
       ),
     );
   }

@@ -116,13 +116,13 @@ void main() {
 
       expect(api.hoursCalls, ['c1']);
       expect(find.text('Ask for a time'), findsOneWidget);
-      expect(find.textContaining('Choose a time inside Kaunselor Aina Syazwani\'s working hours. Kaunselor Aina Syazwani has 48 hours to answer'), findsOneWidget);
+      expect(find.textContaining('Choose a time inside Kaunselor Aina Syazwani\'s working hours. They have 48 hours to answer'), findsOneWidget);
       expect(find.text('Mon 2 Nov'), findsOneWidget);
       expect(find.text('Thu 5 Nov'), findsOneWidget);
       expect(find.text('Fri 6 Nov'), findsNothing, reason: 'no hours on a Friday');
       expect(findText('2:00 PM'), findsOneWidget);
       expect(findText('3:30 PM'), findsOneWidget);
-      expect(find.text('30 min · In-person · Klinik Damai, Kuantan'), findsWidgets);
+      expect(find.text('30 min · In-person · Klinik Damai, Kuantan'), findsOneWidget, reason: 'said once for the day, not on every time');
       expect(find.text('Pick a time to ask for'), findsOneWidget);
       expect(tester.widget<FilledButton>(sendButton()).onPressed, isNull);
     });
@@ -162,7 +162,7 @@ void main() {
 
       expect(findText('10:00 AM'), findsOneWidget);
       expect(findText('12:00 PM'), findsOneWidget);
-      expect(find.text('60 min · Online'), findsWidgets);
+      expect(find.text('60 min · Online'), findsOneWidget);
       expect(find.text('Pick a time to ask for'), findsOneWidget);
     });
 

@@ -167,6 +167,16 @@ class _Times extends StatelessWidget {
 
     if (day == null) return const SizedBox.shrink();
 
+    // How long, what kind and where: said once under the heading when every time of the day is the same, on each time when they differ.
+    final details = [
+      for (final time in day.times)
+        [l10n.minutesShort(time.line.durationMinutes), time.mode.label(l10n), time.line.location == null ? null : '${time.line.location!.name}, ${time.line.location!.city}']
+            .whereType<String>()
+            .where((p) => p.isNotEmpty)
+            .join(' · '),
+    ];
+    final sameDetail = details.toSet().length == 1;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -175,25 +185,27 @@ class _Times extends StatelessWidget {
           child: Text(l10n.pickSlotTimesLabel(DateFormat('EEEE d MMMM', locale).format(day.day)), style: text.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
         ),
         const SizedBox(height: AppSpacing.s),
+        if (sameDetail) Padding(padding: const EdgeInsets.only(bottom: AppSpacing.s), child: Text(details.first, style: text.bodyMedium)),
         Wrap(
           spacing: AppSpacing.s,
           runSpacing: AppSpacing.s,
           children: [
-            for (final time in day.times)
+            for (var i = 0; i < day.times.length; i++)
               Builder(builder: (context) {
+                final time = day.times[i];
                 final place = time.line.location == null ? null : '${time.line.location!.name}, ${time.line.location!.city}';
                 final clock = formatSlotTime(time.startsAt, locale: locale);
-                final detail = [l10n.minutesShort(time.line.durationMinutes), time.mode.label(l10n), place].whereType<String>().where((p) => p.isNotEmpty).join(' · ');
+                final selected = state.selected?.startsAt == time.startsAt;
 
                 return Semantics(
                   button: true,
-                  selected: state.selected?.startsAt == time.startsAt,
+                  selected: selected,
                   excludeSemantics: true,
-                  label: [l10n.pickSlotSlotLabel(clock, time.line.durationMinutes, time.mode.label(l10n) ?? ''), ?place, if (state.selected?.startsAt == time.startsAt) l10n.pickSlotSelected].join(', '),
+                  label: [l10n.pickSlotSlotLabel(clock, time.line.durationMinutes, time.mode.label(l10n) ?? ''), ?place, if (selected) l10n.pickSlotSelected].join(', '),
                   onTap: state.busy ? null : () => onSelect(time),
                   child: ChoiceChip(
-                    label: Column(mainAxisSize: MainAxisSize.min, children: [Text(clock), Text(detail, style: text.bodySmall)]),
-                    selected: state.selected?.startsAt == time.startsAt,
+                    label: sameDetail ? Text(clock) : Column(mainAxisSize: MainAxisSize.min, children: [Text(clock), Text(details[i], style: text.bodySmall)]),
+                    selected: selected,
                     materialTapTargetSize: MaterialTapTargetSize.padded,
                     onSelected: state.busy ? null : (_) => onSelect(time),
                   ),

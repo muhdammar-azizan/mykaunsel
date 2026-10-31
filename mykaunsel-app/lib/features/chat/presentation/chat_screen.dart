@@ -87,6 +87,7 @@ class _ConversationState extends ConsumerState<_Conversation> {
   final _scroll = ScrollController();
   final _focus = FocusNode();
   int _shown = 0;
+  final _crisisKey = GlobalKey();
 
   @override
   void dispose() {
@@ -105,6 +106,21 @@ class _ConversationState extends ConsumerState<_Conversation> {
     ref.read(chatControllerProvider.notifier).send(text);
   }
 
+  /// The newest crisis card is among the last items that were just added (an answer, the card, maybe counselors).
+  bool _crisisIsNew(ChatState state) {
+    final from = state.items.length - 4 < 0 ? 0 : state.items.length - 4;
+
+    return state.items.skip(from).any((i) => i is CrisisItem);
+  }
+
+  void _scrollToCrisis() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = _crisisKey.currentContext;
+
+      if (context != null) Scrollable.ensureVisible(context, duration: const Duration(milliseconds: 250), alignment: 0.0, curve: Curves.easeOut);
+    });
+  }
+
   void _scrollToEnd() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scroll.hasClients) _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
@@ -119,8 +135,16 @@ class _ConversationState extends ConsumerState<_Conversation> {
     final name = session is SessionSignedIn ? session.user.name.trim().split(RegExp(r'\s+')).first : '';
 
     if (state.items.length != _shown) {
+      final grew = state.items.length > _shown;
+
       _shown = state.items.length;
-      _scrollToEnd();
+
+      // A card for someone who may be in danger is shown from its top; anything else, the newest message.
+      if (grew && state.items.whereType<CrisisItem>().isNotEmpty && state.items.last is! UserItem && _crisisIsNew(state)) {
+        _scrollToCrisis();
+      } else {
+        _scrollToEnd();
+      }
     }
 
     return Column(
@@ -131,14 +155,14 @@ class _ConversationState extends ConsumerState<_Conversation> {
             padding: const EdgeInsets.all(AppSpacing.l),
             children: [
               if (state.isEmpty) _Greeting(name: name),
-              for (final item in state.items) _ItemView(item: item),
+              for (final item in state.items) _ItemView(key: item is CrisisItem ? _crisisKey : null, item: item),
               if (_awaiting(state)) const _Thinking(),
             ],
           ),
         ),
         _InputBar(controller: _input, focus: _focus, busy: state.busy, onSend: _send),
         Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.s),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.l, AppSpacing.xs, AppSpacing.l, AppSpacing.s),
           child: Text(l10n.chatDisclaimer, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.mutedText)),
         ),
       ],
@@ -254,7 +278,7 @@ class _Thinking extends StatelessWidget {
 }
 
 class _ItemView extends ConsumerWidget {
-  const _ItemView({required this.item});
+  const _ItemView({super.key, required this.item});
 
   final ChatItem item;
 

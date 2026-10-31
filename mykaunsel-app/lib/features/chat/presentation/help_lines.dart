@@ -93,12 +93,15 @@ class _HelpSheet extends ConsumerWidget {
             const SizedBox(height: AppSpacing.s),
             Text(l10n.crisisEmergency, style: text.bodyMedium),
             const SizedBox(height: AppSpacing.l),
-            OutlinedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                context.go(AppRoutes.counselors);
-              },
-              child: Text(l10n.crisisFindCounselor),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  context.go(AppRoutes.counselors);
+                },
+                child: Text(l10n.crisisFindCounselor),
+              ),
             ),
           ],
         ),

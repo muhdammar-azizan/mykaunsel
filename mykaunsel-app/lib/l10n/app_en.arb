@@ -382,7 +382,7 @@
   "requestsEmptyTitle": "No requests yet",
   "requestsEmptyBody": "When you ask a counselor for a time, it shows here until they answer.",
   "requestTitle": "Ask for a time",
-  "requestIntro": "Choose a time inside {name}'s working hours. {name} has {hours, plural, =1{1 hour} other{{hours} hours}} to answer, and nothing is booked until they approve. If they do not answer, the request closes by itself.",
+  "requestIntro": "Choose a time inside {name}'s working hours. They have {hours, plural, =1{1 hour} other{{hours} hours}} to answer, and nothing is booked until they approve. If they do not answer, the request closes by itself.",
   "@requestIntro": {"placeholders": {"name": {"type": "String"}, "hours": {"type": "int"}}},
   "requestNoHours": "This counselor has not set working hours yet, so you can't ask for a time. Try their available times instead.",
   "requestNoTimes": "There is no time to ask for in the coming weeks.",

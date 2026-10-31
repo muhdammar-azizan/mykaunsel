@@ -23,11 +23,13 @@ ThemeData buildAppTheme() {
   const pill = StadiumBorder();
   // 48 logical pixels is the smallest comfortable (and accessible) tap target.
   const minButton = Size(64, 48);
+  // A button's own text style replaces the theme's, so it must name the brand font itself or its label falls back to the system font.
+  const font = 'PlusJakartaSans';
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    fontFamily: 'PlusJakartaSans',
+    fontFamily: font,
     scaffoldBackgroundColor: AppColors.cream,
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.cream,
@@ -36,13 +38,13 @@ ThemeData buildAppTheme() {
       scrolledUnderElevation: 0,
     ),
     filledButtonTheme: FilledButtonThemeData(
-      style: FilledButton.styleFrom(minimumSize: minButton, shape: pill, textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+      style: FilledButton.styleFrom(minimumSize: minButton, shape: pill, textStyle: const TextStyle(fontFamily: font, fontWeight: FontWeight.w600, fontSize: 15)),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(minimumSize: minButton, shape: pill, textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+      style: OutlinedButton.styleFrom(minimumSize: minButton, shape: pill, textStyle: const TextStyle(fontFamily: font, fontWeight: FontWeight.w600, fontSize: 15)),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(minimumSize: minButton, shape: pill, textStyle: const TextStyle(fontWeight: FontWeight.w600)),
+      style: TextButton.styleFrom(minimumSize: minButton, shape: pill, textStyle: const TextStyle(fontFamily: font, fontWeight: FontWeight.w600)),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,

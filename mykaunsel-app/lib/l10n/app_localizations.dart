@@ -1698,7 +1698,7 @@ abstract class AppLocalizations {
   /// No description provided for @requestIntro.
   ///
   /// In en, this message translates to:
-  /// **'Choose a time inside {name}\'s working hours. {name} has {hours, plural, =1{1 hour} other{{hours} hours}} to answer, and nothing is booked until they approve. If they do not answer, the request closes by itself.'**
+  /// **'Choose a time inside {name}\'s working hours. They have {hours, plural, =1{1 hour} other{{hours} hours}} to answer, and nothing is booked until they approve. If they do not answer, the request closes by itself.'**
   String requestIntro(String name, int hours);
 
   /// No description provided for @requestNoHours.
