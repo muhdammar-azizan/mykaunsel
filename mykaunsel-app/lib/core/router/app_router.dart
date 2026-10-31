@@ -35,11 +35,13 @@ import '../../features/feed/presentation/muted_people_screen.dart';
 import '../../features/feed/presentation/new_post_screen.dart';
 import '../../features/feed/presentation/post_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/startup/presentation/maintenance_screen.dart';
 import '../../features/startup/presentation/splash_screen.dart';
 import '../../features/startup/presentation/startup_error_screen.dart';
 import '../../features/startup/presentation/update_required_screen.dart';
 import '../../shared/widgets/app_shell.dart';
+import '../providers.dart';
 import '../session/session_controller.dart';
 import '../session/session_state.dart';
 
@@ -48,6 +50,7 @@ abstract final class AppRoutes {
   static const maintenance = '/maintenance';
   static const updateRequired = '/update-required';
   static const startupError = '/startup-error';
+  static const onboarding = '/welcome';
   static const signIn = '/sign-in';
   static const twoFactor = '/two-factor';
   static const verifyEmail = '/verify-email';
@@ -99,22 +102,24 @@ abstract final class AppRoutes {
   static String requestPath(String id) => '/bookings/requests/${Uri.encodeComponent(id)}';
 
   /// Pages a signed-out person may be on.
-  static const signedOutPages = {signIn, twoFactor, verifyEmail, signUp, chooseAccountType, forgotPassword};
+  static const signedOutPages = {onboarding, signIn, twoFactor, verifyEmail, signUp, chooseAccountType, forgotPassword};
 
   /// Pages that only exist for a situation (starting, maintenance…); a signed-in person is never left on one.
   static const gatePages = {splash, maintenance, updateRequired, startupError};
 }
 
 /// Where the person has to be for this session state, or null when they are already in the right place. [returnTo] (already checked by
-/// [isSafeReturnPath]) is where a person goes after signing in again, instead of Home.
+/// [isSafeReturnPath]) is where a person goes after signing in again, instead of Home. [onboardingSeen] false sends a signed-out person to the
+/// first-time introduction, and true keeps that page closed.
 /// A plain function, so every rule is unit-tested without any screen.
-String? sessionRedirect(SessionState session, String location, {String? returnTo}) {
+String? sessionRedirect(SessionState session, String location, {String? returnTo, bool onboardingSeen = true}) {
   final target = switch (session) {
     SessionStarting() => AppRoutes.splash,
     SessionMaintenance() => AppRoutes.maintenance,
     SessionUpdateRequired() => AppRoutes.updateRequired,
     SessionStartupFailed() => AppRoutes.startupError,
-    SessionSignedOut() => AppRoutes.signedOutPages.contains(location) ? location : AppRoutes.signIn,
+    SessionSignedOut() when !onboardingSeen => AppRoutes.onboarding,
+    SessionSignedOut() => location != AppRoutes.onboarding && AppRoutes.signedOutPages.contains(location) ? location : AppRoutes.signIn,
     SessionSignedIn() =>
       AppRoutes.gatePages.contains(location) || AppRoutes.signedOutPages.contains(location) ? (returnTo ?? AppRoutes.home) : location,
   };
@@ -174,7 +179,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final saved = ref.read(returnPathProvider);
       final returnTo = isSafeReturnPath(saved) ? saved : null;
-      final target = sessionRedirect(current, location, returnTo: returnTo);
+      final target = sessionRedirect(current, location, returnTo: returnTo, onboardingSeen: ref.read(onboardingSeenProvider));
 
       if (target != null && target == returnTo && current is SessionSignedIn) {
         Future.microtask(() => ref.read(returnPathProvider.notifier).set(null)); // used once
@@ -192,6 +197,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: AppRoutes.maintenance, builder: (_, _) => const MaintenanceScreen()),
       GoRoute(path: AppRoutes.updateRequired, builder: (_, _) => const UpdateRequiredScreen()),
       GoRoute(path: AppRoutes.startupError, builder: (_, _) => const StartupErrorScreen()),
+      GoRoute(path: AppRoutes.onboarding, builder: (_, _) => const OnboardingScreen()),
       GoRoute(path: AppRoutes.signIn, builder: (_, _) => const SignInScreen()),
       GoRoute(path: AppRoutes.twoFactor, builder: (_, _) => const TwoFactorScreen()),
       GoRoute(path: AppRoutes.verifyEmail, builder: (_, _) => const VerifyEmailScreen()),

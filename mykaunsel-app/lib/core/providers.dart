@@ -17,6 +17,7 @@ import 'error/crash_reporter.dart';
 import 'network/api_client.dart';
 import 'session/session_controller.dart';
 import 'session/session_state.dart';
+import 'storage/onboarding_store.dart';
 import 'storage/token_storage.dart';
 
 /// Things that only exist once the app has started (read from the phone) are overridden in `main.dart` and in tests.
@@ -25,6 +26,21 @@ final appConfigProvider = Provider<AppConfig>((ref) => throw UnimplementedError(
 final appInfoProvider = Provider<AppInfo>((ref) => throw UnimplementedError('appInfoProvider must be overridden'));
 
 final tokenStorageProvider = Provider<TokenStorage>((ref) => throw UnimplementedError('tokenStorageProvider must be overridden'));
+
+final onboardingStoreProvider = Provider<OnboardingStore>((ref) => throw UnimplementedError('onboardingStoreProvider must be overridden'));
+
+/// Whether the first-time introduction has been seen. It changes the moment the person finishes or skips it.
+final onboardingSeenProvider = NotifierProvider<OnboardingSeen, bool>(OnboardingSeen.new);
+
+class OnboardingSeen extends Notifier<bool> {
+  @override
+  bool build() => ref.read(onboardingStoreProvider).seen;
+
+  Future<void> markSeen() async {
+    state = true;
+    await ref.read(onboardingStoreProvider).markSeen();
+  }
+}
 
 final crashReporterProvider = Provider<CrashReporter>((ref) => const NoopCrashReporter());
 

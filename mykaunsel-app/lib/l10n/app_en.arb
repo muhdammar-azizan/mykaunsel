@@ -685,5 +685,16 @@
   "feedDailyLimit": "You have reached today's limit of posts. Please come back tomorrow.",
   "feedGone": "This is no longer available.",
   "feedCrisisContinue": "OK, continue",
-  "feedLoadMoreFailed": "Could not load more."
+  "feedLoadMoreFailed": "Could not load more.",
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingStart": "Get started",
+  "onboardingStep": "Step {current} of {total}",
+  "@onboardingStep": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "onboardingTalkTitle": "Talk it through",
+  "onboardingTalkBody": "Chat any time with a supportive assistant. It listens and helps you think, and it is not a replacement for a counselor.",
+  "onboardingFindTitle": "Find a counselor",
+  "onboardingFindBody": "See verified counselors, pick a time that suits you and book a session online or in person.",
+  "onboardingFeedTitle": "Feel less alone",
+  "onboardingFeedBody": "Read and share short posts with others. You post under your own name, and you can report or mute anything you do not want to see."
 }

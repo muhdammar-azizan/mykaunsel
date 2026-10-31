@@ -1883,4 +1883,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedLoadMoreFailed => 'Could not load more.';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingStart => 'Get started';
+
+  @override
+  String onboardingStep(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get onboardingTalkTitle => 'Talk it through';
+
+  @override
+  String get onboardingTalkBody =>
+      'Chat any time with a supportive assistant. It listens and helps you think, and it is not a replacement for a counselor.';
+
+  @override
+  String get onboardingFindTitle => 'Find a counselor';
+
+  @override
+  String get onboardingFindBody =>
+      'See verified counselors, pick a time that suits you and book a session online or in person.';
+
+  @override
+  String get onboardingFeedTitle => 'Feel less alone';
+
+  @override
+  String get onboardingFeedBody =>
+      'Read and share short posts with others. You post under your own name, and you can report or mute anything you do not want to see.';
 }

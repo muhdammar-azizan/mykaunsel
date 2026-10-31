@@ -9,6 +9,7 @@ import 'package:mykaunsel/core/config/app_config.dart';
 import 'package:mykaunsel/core/config/app_info.dart';
 import 'package:mykaunsel/core/error/app_failure.dart';
 import 'package:mykaunsel/core/providers.dart';
+import 'package:mykaunsel/core/storage/onboarding_store.dart';
 import 'package:mykaunsel/core/storage/token_storage.dart';
 import 'package:mykaunsel/features/account/data/account_api.dart';
 import 'package:mykaunsel/features/account/domain/notification_preference.dart';
@@ -521,6 +522,16 @@ Finder findText(String text) => find.byWidgetPredicate((Widget w) => w is Text &
 Finder findTextContaining(String text) => find.byWidgetPredicate((Widget w) => w is Text && (w.data ?? '').replaceAll(' ', ' ').contains(text), description: 'text containing "$text"');
 
 /// Everything a test needs, wired the way main.dart wires the real ones.
+class FakeOnboardingStore implements OnboardingStore {
+  FakeOnboardingStore(this.seen);
+
+  @override
+  bool seen;
+
+  @override
+  Future<void> markSeen() async => seen = true;
+}
+
 List<Override> testOverrides({
   FakePlatformStatusApi? statusApi,
   FakeAuthApi? authApi,
@@ -533,6 +544,7 @@ List<Override> testOverrides({
   FakeRequestsApi? requestsApi,
   FakeChatApi? chatApi,
   FakeFeedApi? feedApi,
+  bool onboardingSeen = true,
 }) {
   return [
     appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, apiBaseUrl: 'http://test.local')),
@@ -548,6 +560,7 @@ List<Override> testOverrides({
     requestsApiProvider.overrideWithValue(requestsApi ?? FakeRequestsApi()),
     chatApiProvider.overrideWithValue(chatApi ?? FakeChatApi()),
     feedApiProvider.overrideWithValue(feedApi ?? FakeFeedApi()),
+    onboardingStoreProvider.overrideWithValue(FakeOnboardingStore(onboardingSeen)),
     clockProvider.overrideWithValue(() => testNow),
   ];
 }

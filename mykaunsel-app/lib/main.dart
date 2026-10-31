@@ -12,6 +12,7 @@ import 'core/config/app_config.dart';
 import 'core/config/app_info.dart';
 import 'core/error/crash_reporter.dart';
 import 'core/providers.dart';
+import 'core/storage/onboarding_store.dart';
 import 'core/storage/token_storage.dart';
 
 Future<void> main() async {
@@ -54,6 +55,7 @@ Future<void> main() async {
         appConfigProvider.overrideWithValue(config),
         appInfoProvider.overrideWithValue(AppInfo(version: packageInfo.version, platform: _platformName(), deviceName: deviceName)),
         tokenStorageProvider.overrideWithValue(tokenStorage),
+        onboardingStoreProvider.overrideWithValue(PrefsOnboardingStore(preferences)),
         crashReporterProvider.overrideWithValue(reporter),
       ],
       child: const MyKaunselApp(),

@@ -3188,6 +3188,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load more.'**
   String get feedLoadMoreFailed;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get onboardingStart;
+
+  /// No description provided for @onboardingStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String onboardingStep(int current, int total);
+
+  /// No description provided for @onboardingTalkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk it through'**
+  String get onboardingTalkTitle;
+
+  /// No description provided for @onboardingTalkBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat any time with a supportive assistant. It listens and helps you think, and it is not a replacement for a counselor.'**
+  String get onboardingTalkBody;
+
+  /// No description provided for @onboardingFindTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a counselor'**
+  String get onboardingFindTitle;
+
+  /// No description provided for @onboardingFindBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See verified counselors, pick a time that suits you and book a session online or in person.'**
+  String get onboardingFindBody;
+
+  /// No description provided for @onboardingFeedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Feel less alone'**
+  String get onboardingFeedTitle;
+
+  /// No description provided for @onboardingFeedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Read and share short posts with others. You post under your own name, and you can report or mute anything you do not want to see.'**
+  String get onboardingFeedBody;
 }
 
 class _AppLocalizationsDelegate

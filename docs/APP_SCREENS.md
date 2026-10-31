@@ -21,7 +21,7 @@ Status: ✅ built · ⚠️ partly built or a placeholder · ❌ not built.
 | | Screen | Details |
 |---|---|---|
 | ✅ | ★ Splash | Check the saved token and the maintenance status. Go to Home or Log in. |
-| ❌ | ★ Onboarding | 3 short screens, first time only, can be skipped. Keep a local "already seen" marker. |
+| ✅ | ★ Onboarding | **Built.** 3 short screens (Talk it through, Find a counselor, Feel less alone), shown once before the first sign-in, with Skip and Next/Get started. The "already seen" marker is kept in ordinary preferences (a reinstall shows it again). A signed-in person never sees it. Original spec: 3 short screens, first time only, can be skipped. |
 | ✅ | Log in | Email and password, Forgot password link. The same error for a wrong email or password. Rate limited. |
 | ✅ | Choose account type | **Built** (Individual goes to the form; Organization and Counselor open a sheet that e-mails the link; a closed kind is marked and shows the admin's words). Original spec: Individual goes straight to Create account. Organization and Counselor open a sheet "we will email you a link to sign up on a computer". The email-link endpoint is rate limited and answers the same whether the email exists or not. Respect Registration Control (a closed type is shown as closed). |
 | ⚠️ | Create account | Name, email, password (4 live rules), terms, **required AI-processing consent**. The closed message is shown before the form. **(Built: the AI-processing tick, required by the form and by the server, with "What this means". Terms are not on the form: the real text is an open decision.)** |
