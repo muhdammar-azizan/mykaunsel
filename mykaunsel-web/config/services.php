@@ -26,8 +26,8 @@ return [
     // with config('services.anthropic.key'), never env() outside config files. Empty = the AI feature is simply off.
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),
-        // The model the chatbot talks to (docs/CHAT.md). Set ANTHROPIC_CHAT_MODEL to use another one.
-        'model' => env('ANTHROPIC_CHAT_MODEL', 'claude-opus-5-5'),
+        // The model the chatbot talks to (docs/CHAT.md): Claude Sonnet 5.5, fast and half the price of Opus 5.5. Set ANTHROPIC_CHAT_MODEL to use another one.
+        'model' => env('ANTHROPIC_CHAT_MODEL', 'claude-sonnet-5-5'),
     ],
 
     'ses' => [

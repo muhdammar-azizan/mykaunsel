@@ -6,7 +6,7 @@ Code: `App\Services\Chat\*` (`ChatService`, `CrisisDetector`, `PromptScrubber`, 
 
 ## The model
 
-`services.anthropic.model` (env `ANTHROPIC_CHAT_MODEL`, default `claude-opus-5-5`), called through Anthropic's official PHP SDK (`anthropic-ai/sdk`, added to `composer.json`). Effort `low` (`CHAT_EFFORT`) so replies are quick (about 4 seconds in a first real check) and cheap; replies are short (the prompt asks for two to five sentences). `CHAT_REPLY_MAX_TOKENS` (2000) is the ceiling. To use a cheaper or faster model, set `ANTHROPIC_CHAT_MODEL`; nothing else changes. Every failure (no key, no network, an error, a refusal, an empty answer) becomes one `AssistantUnavailable`, which the chat turns into a friendly message; only its class and HTTP status go to the log, never the conversation.
+`services.anthropic.model` (env `ANTHROPIC_CHAT_MODEL`, default `claude-sonnet-5-5`, chosen by the owner; `claude-opus-5-5` is the more capable and twice as expensive alternative), called through Anthropic's official PHP SDK (`anthropic-ai/sdk`, added to `composer.json`). Effort `low` (`CHAT_EFFORT`) so replies are quick (about 4 seconds in a first real check) and cheap; replies are short (the prompt asks for two to five sentences). `CHAT_REPLY_MAX_TOKENS` (2000) is the ceiling. To use a cheaper or faster model, set `ANTHROPIC_CHAT_MODEL`; nothing else changes. Every failure (no key, no network, an error, a refusal, an empty answer) becomes one `AssistantUnavailable`, which the chat turns into a friendly message; only its class and HTTP status go to the log, never the conversation.
 
 ## What the model is told, and what it is sent
 

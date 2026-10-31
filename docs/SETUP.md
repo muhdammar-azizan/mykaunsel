@@ -113,6 +113,34 @@ php artisan serve
 
 Portal boleh diakses di `http://127.0.0.1:8000`.
 
+## 6. E-mel sebenar semasa ujian
+
+Secara asal `MAIL_MAILER=log`: e-mel (sahkan e-mel, tetapkan semula kata laluan, tempahan, jemputan) hanya ditulis ke `storage/logs`, tidak dihantar. Untuk menguji aliran sebenar tanpa domain, guna akaun Gmail awak sendiri:
+
+1. Hidupkan pengesahan dua langkah pada akaun Google, kemudian cipta **App Password** (Google Account > Security > App passwords). Kata laluan 16 huruf itu bukan kata laluan Gmail biasa.
+2. Dalam `.env` (fail ini tidak masuk git; **jangan** tampal kata laluan di tempat lain):
+
+```
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_SCHEME=null
+MAIL_USERNAME=alamat-anda@gmail.com
+MAIL_PASSWORD=app-password-16-huruf
+MAIL_FROM_ADDRESS=alamat-anda@gmail.com
+MAIL_FROM_NAME="MyKaunsel"
+```
+
+   `MAIL_FROM_ADDRESS` mesti sama dengan akaun Gmail itu. Gmail menulis semula pengirim lain, dan itulah yang menyebabkan e-mel masuk spam. Dihantar daripada Gmail sendiri, e-mel biasanya masuk peti masuk.
+3. **Pautan dalam e-mel guna `APP_URL`.** Ia mesti alamat yang boleh dibuka dari telefon, bukan `localhost`. Dua cara:
+   - **Wi-Fi yang sama:** `php artisan serve --host=0.0.0.0`, dan `APP_URL=http://ALAMAT-IP-KOMPUTER:8000` (lihat `ipconfig`). Android mungkin menyekat `http`; jika ya, guna cara seterusnya.
+   - **Terowong (disyorkan, dapat `https`):** contohnya `cloudflared tunnel --url http://localhost:8000` atau `ngrok http 8000`, kemudian `APP_URL=https://alamat-terowong`. Aplikasi pula dibina dengan alamat yang sama sebagai alamat API.
+4. Selepas menukar `.env`: `php artisan config:clear`.
+5. **E-mel tempahan dan lain-lain dihantar melalui baris gilir.** Hidupkan `php artisan queue:work` (e-mel sahkan akaun dan tetapkan semula kata laluan dihantar terus dan tidak perlukannya).
+6. Semak dengan `php artisan mail:test alamat@contoh.com`. Ia menyatakan mailer, pengirim dan `APP_URL`, memberi amaran jika tidak sesuai, dan menghantar satu e-mel ujian.
+
+Had Gmail kira-kira 500 e-mel sehari; cukup untuk ujian. Sebelum lancar, guna domain sendiri dengan SPF dan DKIM (perkhidmatan seperti Brevo, Mailgun atau Amazon SES).
+
 ## Nota
 
 - Aplikasi Flutter (`mykaunsel-app/`) belum bermula pembangunan; folder ini
