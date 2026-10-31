@@ -76,12 +76,12 @@ Closes the booking loop and makes the slot-restore contract (B9) real.
 
 ## 6. Wellness Feed
 
-Depends on Moderate Feed in the admin part. Build them together.
+Depends on Moderate Feed in the admin part. Build them together. **Decision (owner):** everyone posts as themselves, with their name, like Twitter/Threads. No anonymous posting for now. Server done (see [FEED.md](FEED.md)); app screens next.
 
 | | Screen | Details |
 |---|---|---|
 | ❌ | Feed | Open to every platform user, no AI. Reactions and comment counts. Empty state. |
-| ❌ | New post | Text only, 500 characters with a live count. A "Post anonymously" toggle. **Decision:** can an admin see the real identity for moderation? The FYP1 document says yes. State it in the toggle's text. |
+| ❌ | New post | Text only, 500 characters with a live count. Posted under the person's own name. (No anonymous toggle for now.) |
 | ❌ | Post details and comments | Full text, chronological comments, counselor replies with a badge. The comment input stays at the bottom. |
 | ❌ | Post menu and report | Owner: edit and delete. Others: report (five reasons) and mute. Reports go to the Moderate Feed queue. |
 

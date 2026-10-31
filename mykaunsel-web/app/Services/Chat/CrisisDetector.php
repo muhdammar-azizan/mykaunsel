@@ -51,6 +51,12 @@ class CrisisDetector
         '\bgantung diri\b',
     ];
 
+    /** Where to get help (config/chat.php, to be confirmed before launch): used by the chat and the feed. @return list<array{key: string, name: string, number: string}> */
+    public static function helplines(): array
+    {
+        return array_values(array_map(fn (array $h) => ['key' => (string) $h['key'], 'name' => (string) $h['name'], 'number' => (string) $h['number']], (array) config('chat.helplines')));
+    }
+
     public function flags(string $text): bool
     {
         $tidy = $this->tidy($text);

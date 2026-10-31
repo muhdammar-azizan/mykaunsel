@@ -182,7 +182,7 @@ class ChatService
     /** @return list<array{key: string, name: string, number: string}> */
     public function helplines(): array
     {
-        return array_values(array_map(fn (array $h) => ['key' => (string) $h['key'], 'name' => (string) $h['name'], 'number' => (string) $h['number']], (array) config('chat.helplines')));
+        return CrisisDetector::helplines();
     }
 
     // =============================================================================================================

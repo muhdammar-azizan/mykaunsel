@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\ChatController;
+use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\CounselorDirectoryController;
 use App\Http\Controllers\Api\V1\MyBookingController;
 use App\Http\Controllers\Api\V1\TimeRequestController;
@@ -82,6 +83,36 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::middleware(['auth:sanctum', 'api.verified', 'throttle:api-user'])->prefix('chat')->name('chat.')->group(function () {
         Route::get('/sessions', [ChatController::class, 'index'])->name('index');
         Route::get('/sessions/{publicId}', [ChatController::class, 'show'])->where('publicId', '[0-9A-Za-z]{26}')->name('show');
+    });
+
+    // The wellness Feed (docs/FEED.md). Writing (posts, comments, edits, deletes, reports, mutes) shares one limit, reacting has its own, reading is an
+    // ordinary read. Ids are 26 character public ids.
+    Route::middleware(['auth:sanctum', 'api.verified'])->prefix('feed')->name('feed.')->group(function () {
+        $id = '[0-9A-Za-z]{26}';
+
+        Route::middleware('throttle:api-user')->group(function () use ($id) {
+            Route::get('/', [FeedController::class, 'index'])->name('index');
+            Route::get('/posts/{id}', [FeedController::class, 'show'])->where('id', $id)->name('show');
+            Route::get('/posts/{id}/comments', [FeedController::class, 'comments'])->where('id', $id)->name('comments');
+            Route::get('/mutes', [FeedController::class, 'mutes'])->name('mutes');
+        });
+
+        Route::middleware('throttle:api-feed-write')->group(function () use ($id) {
+            Route::post('/posts', [FeedController::class, 'store'])->name('store');
+            Route::patch('/posts/{id}', [FeedController::class, 'update'])->where('id', $id)->name('update');
+            Route::delete('/posts/{id}', [FeedController::class, 'destroy'])->where('id', $id)->name('destroy');
+            Route::post('/posts/{id}/comments', [FeedController::class, 'comment'])->where('id', $id)->name('comment');
+            Route::delete('/comments/{id}', [FeedController::class, 'destroyComment'])->where('id', $id)->name('comment.destroy');
+            Route::post('/posts/{id}/report', [FeedController::class, 'report'])->where('id', $id)->name('report');
+            Route::post('/comments/{id}/report', [FeedController::class, 'report'])->where('id', $id)->name('comment.report');
+            Route::post('/posts/{id}/mute-author', [FeedController::class, 'muteAuthor'])->where('id', $id)->name('mute');
+            Route::delete('/mutes/{id}', [FeedController::class, 'unmute'])->where('id', $id)->name('unmute');
+        });
+
+        Route::middleware('throttle:api-feed-react')->group(function () use ($id) {
+            Route::put('/posts/{id}/reaction', [FeedController::class, 'react'])->where('id', $id)->name('react');
+            Route::delete('/posts/{id}/reaction', [FeedController::class, 'react'])->where('id', $id)->name('unreact');
+        });
     });
 
     // Mode B: asking a counselor for a time (docs/AVAILABILITY.md, "Time requests"). Asking and withdrawing share one limit.

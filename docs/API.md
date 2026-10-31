@@ -42,6 +42,9 @@ Laravel Sanctum bearer tokens. Base path `/api/v1`. Everything answers in JSON (
 | POST | `/chat/sessions/{id}/end` | token | Ends the conversation and stores its dominant emotion. Safe to repeat. |
 | GET | `/chat/sessions`, `/chat/sessions/{id}` | token | The person's own chat history, read only. |
 | GET | `/chat/helplines` | none | Where to get help in a crisis; needs no sign-in and no consent. |
+| GET | `/feed`, `/feed/posts/{id}`, `/feed/posts/{id}/comments`, `/feed/mutes` | token | The Wellness Feed: posts under the author's name, newest first. See [FEED.md](FEED.md). |
+| POST, PATCH, DELETE | `/feed/posts…`, `/feed/comments/{id}`, `/feed/mutes/{id}` | token | Write, edit, delete, comment, report (`202`), mute. A post that may signal danger answers `crisis` + `helplines` and is still saved. |
+| PUT, DELETE | `/feed/posts/{id}/reaction` | token | Like / take back; safe to repeat. |
 
 Send the token as `Authorization: Bearer <token>`. Tokens start with `<id>|mkp_` and last 30 days (`SANCTUM_EXPIRATION_MINUTES`); each device name gets its own token, at most 10 per person (the oldest are removed).
 

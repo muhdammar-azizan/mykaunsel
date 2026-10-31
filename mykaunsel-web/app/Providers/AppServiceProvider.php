@@ -135,6 +135,13 @@ class AppServiceProvider extends ServiceProvider
             Limit::perHour((int) config('chat.rate_per_hour'))->by('chat-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
         ]);
 
+        RateLimiter::for('api-feed-write', fn (Request $request) => [
+            Limit::perMinute((int) config('feed.write_rate_per_minute'))->by('feed-write|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+            Limit::perHour((int) config('feed.write_rate_per_hour'))->by('feed-write-hour|'.($request->user()?->getAuthIdentifier() ?? $request->ip())),
+        ]);
+
+        RateLimiter::for('api-feed-react', fn (Request $request) => Limit::perMinute((int) config('feed.react_rate_per_minute'))->by('feed-react|'.($request->user()?->getAuthIdentifier() ?? $request->ip())));
+
         RateLimiter::for('api-user', fn (Request $request) => Limit::perMinute(120)->by('user|'.($request->user()?->getAuthIdentifier() ?? $request->ip())));
     }
 }
