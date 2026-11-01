@@ -44,3 +44,6 @@ Schedule::command('requests:expire')->everyTenMinutes()->withoutOverlapping();
 // Chat: end conversations nobody wrote in for a while (storing their dominant emotion), and delete old ones after the retention period.
 Schedule::command('chat:end-idle')->everyFifteenMinutes()->withoutOverlapping();
 Schedule::command('chat:purge')->dailyAt('03:40')->withoutOverlapping();
+
+// Counselor session notes older than the retention period are erased (config/session-notes.php).
+Schedule::command('session-notes:purge')->dailyAt('03:10')->withoutOverlapping();

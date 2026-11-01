@@ -30,7 +30,7 @@
 
     <h2>{{ __('Who can see what') }}</h2>
     <ul>
-        <li>{{ __('A counselor you book sees your name as you gave it and the details of your sessions with them.') }}</li>
+        <li>{{ __('A counselor you book sees your name as you gave it and the details of your sessions with them. A counselor may write a private note about a session. It is stored encrypted and only that counselor can read it: not the organization, not the MyKaunsel team, and it is never shown to you in the app. You can ask for access to it under the PDPA.') }}</li>
         <li>{{ __('The people who run an organization you belong to can see your name and e-mail address as a member, when you joined, and that you left. They can not read your chat.') }}</li>
         <li>{{ __('Your Feed posts and comments can be read by everyone signed in to MyKaunsel, under your name. If someone reports one, the MyKaunsel team reads it to decide what to do. The person who reported it is not shown to you.') }}</li>
         <li>{{ __('If you report a counselor, the MyKaunsel team keeps who reported, as part of the record of the complaint. Nobody else sees it, not the counselor and not the organization.') }}</li>
@@ -43,6 +43,7 @@
         <li>{{ __('Chat conversations: :months months after the last message.', ['months' => config('chat.retention_months')]) }}</li>
         <li>{{ __('Notices inside the app: :read days after you read them, :unread days if you never do.', ['read' => config('notifications.retention.read_days'), 'unread' => config('notifications.retention.unread_days')]) }}</li>
         <li>{{ __('Complaints: the words of a complaint are erased :years years after it is closed. The record that it happened (reference, dates, outcome) stays.', ['years' => config('complaints.retention.closed_years')]) }}</li>
+        <li>{{ __('Counselor session notes: :years years after the session, then they are erased.', ['years' => config('session-notes.retention_years')]) }}</li>
         <li>{{ __('Booking records: while your account exists. After you delete your account, :days days (see below).', ['days' => config('account.deleted_booking_days')]) }}</li>
         <li>{{ __('The e-mail address on the sign-up reminder list: erased once the reminder has been sent.') }}</li>
     </ul>

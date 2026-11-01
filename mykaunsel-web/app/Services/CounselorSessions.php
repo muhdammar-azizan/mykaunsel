@@ -138,6 +138,7 @@ class CounselorSessions
         return $row + [
             'can_cancel' => $confirmed && ! $ended,
             'can_mark' => $confirmed && $ended,
+            'can_note' => app(SessionNotes::class)->allowed($booking),
             'can_set_meeting' => $confirmed && ! $ended && ($booking->session_mode ?? SessionMode::Online) === SessionMode::Online,
             'cancelled_by' => $booking->cancelled_by,
             'cancel_reason' => $booking->cancel_reason,

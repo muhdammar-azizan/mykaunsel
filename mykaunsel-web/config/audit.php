@@ -191,6 +191,9 @@ return [
         'notification.purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old notifications deleted'],
 
         // Written by the scheduler (bookings:purge-idempotency): expired booking request keys deleted. Counts only. Bookings are not audited.
+        'session_note.saved' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Session note saved (the text is never recorded)'],
+        'session_note.deleted' => ['category' => 'counselors', 'badge' => 'deleted', 'label' => 'Session note deleted'],
+        'session_note.purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old session notes erased'],
         'booking.idempotency_purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old booking request keys deleted'],
 
         // The audit log itself

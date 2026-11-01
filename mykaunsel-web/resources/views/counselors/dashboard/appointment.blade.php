@@ -61,6 +61,14 @@
         </section>
 
         <div class="space-y-5">
+            @if ($s['can_note'])
+                <section class="{{ $card }} p-6" aria-labelledby="note-link-title">
+                    <h2 id="note-link-title" class="text-[20px] font-bold tracking-tight">Session note</h2>
+                    <p class="mt-1 text-[14px] text-brand-ink/65">Your private note about this session. Only you can read it.</p>
+                    <a href="{{ route('counselor.notes.show', $s['id']) }}" class="{{ $outline }} mt-4">Open the note</a>
+                </section>
+            @endif
+
             @if ($s['can_mark'])
                 <section class="{{ $card }} p-6" aria-labelledby="mark-title">
                     <h2 id="mark-title" class="text-[20px] font-bold tracking-tight">What happened?</h2>
