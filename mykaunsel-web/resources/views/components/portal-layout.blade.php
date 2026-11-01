@@ -22,11 +22,11 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="flex h-screen flex-col overflow-hidden bg-white font-sans text-brand-ink antialiased" x-data="{ menuOpen: false }" @keydown.escape.window="menuOpen = false">
+<body class="flex h-screen flex-col overflow-hidden bg-white font-geist text-brand-ink antialiased" x-data="{ menuOpen: false }" @keydown.escape.window="menuOpen = false">
     <a href="#portal-main" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-[14px] focus:font-semibold">Skip to the page</a>
 
     <x-portal.topbar :items="$items" />

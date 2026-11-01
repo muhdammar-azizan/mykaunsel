@@ -28,6 +28,8 @@ export default {
             },
             fontFamily: {
                 sans: ['"Plus Jakarta Sans"', ...defaultTheme.fontFamily.sans],
+                // The counselor and organization admin portals (x-portal-layout) follow their reference design, which uses Geist.
+                geist: ['Geist', ...defaultTheme.fontFamily.sans],
             },
             letterSpacing: {
                 tightest: '-0.035em',
