@@ -63,6 +63,16 @@ final class CoreNotificationTypes
             self::stateOf(Organization::class, 'renewal_requested_at', fn ($at) => $at !== null),
         ));
 
+        // The organization admin's own bell (the portal): the subscription is about to end, and it has ended. Both open the Subscription page.
+        $registry->register(new NotificationType(
+            'subscription.ending', 'subscriptions', 'Your subscription is about to end',
+            'organization', fn (?int $id) => route('org.subscription'), self::existsOnly(Organization::class),
+        ));
+        $registry->register(new NotificationType(
+            'subscription.ended', 'subscriptions', 'Your subscription has ended',
+            'organization', fn (?int $id) => route('org.subscription'), self::existsOnly(Organization::class),
+        ));
+
         // ---- LKM ---------------------------------------------------------------------------------------------------------------
         $registry->register(new NotificationType(
             'lkm.review_requested', 'lkm', 'LKM re-check requested',

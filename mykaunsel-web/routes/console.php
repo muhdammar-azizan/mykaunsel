@@ -47,3 +47,7 @@ Schedule::command('chat:purge')->dailyAt('03:40')->withoutOverlapping();
 
 // Counselor session notes older than the retention period are erased (config/session-notes.php).
 Schedule::command('session-notes:purge')->dailyAt('03:10')->withoutOverlapping();
+
+// Warnings before an organization's subscription ends (60, 30, 14, 7 days for its admins, 30 and 14 for its counselors) and once when it has ended: see config/subscription-reminders.php.
+// 00:30 in the application timezone (UTC) is 08:30 in Malaysia, when people are at their desks.
+Schedule::command('subscriptions:remind')->dailyAt('00:30')->withoutOverlapping();

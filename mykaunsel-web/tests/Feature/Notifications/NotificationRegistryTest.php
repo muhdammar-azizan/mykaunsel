@@ -66,7 +66,7 @@ class NotificationRegistryTest extends TestCase
         $expected = [
             'organization.application_submitted' => 'applications', 'organization.application_resubmitted' => 'applications',
             'counselor.application_submitted' => 'applications', 'counselor.application_resubmitted' => 'applications', 'counselor.kb_duplicate_flagged' => 'applications',
-            'subscription.renewal_requested' => 'subscriptions',
+            'subscription.renewal_requested' => 'subscriptions', 'subscription.ending' => 'subscriptions', 'subscription.ended' => 'subscriptions',
             'lkm.review_requested' => 'lkm',
             'complaint.received' => 'complaints', 'complaint.escalated' => 'complaints',
             'admin.invitation_accepted' => 'admins',
