@@ -33,6 +33,12 @@ class CounselorAppointmentController extends Controller
         ]);
     }
 
+    /** The people who asked for a time inside the weekly hours, waiting for this counselor's answer. */
+    public function requests(Request $request, CounselorRequests $requests)
+    {
+        return view('counselors.dashboard.requests', ['requests' => $requests->pending($request->user())]);
+    }
+
     public function show(Request $request, string $publicId, CounselorSessions $sessions)
     {
         try {

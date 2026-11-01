@@ -9,6 +9,7 @@ return [
     'counselor' => [
         ['label' => 'Dashboard', 'route' => 'counselor.dashboard', 'icon' => 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z'],
         ['label' => 'Bookings', 'route' => 'counselor.appointments', 'match' => 'counselor.appointments*', 'icon' => 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM9 16l2 2 4-4'],
+        ['label' => 'Time requests', 'route' => 'counselor.requests', 'icon' => 'M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'],
         ['label' => 'Schedule', 'route' => 'counselor.planner', 'match' => 'counselor.planner*', 'icon' => 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2'],
         ['label' => 'Session notes', 'route' => 'counselor.notes', 'match' => 'counselor.notes*', 'icon' => 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8'],
         ['label' => 'Reviews', 'route' => 'counselor.reviews', 'match' => 'counselor.reviews*', 'icon' => 'm12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z'],

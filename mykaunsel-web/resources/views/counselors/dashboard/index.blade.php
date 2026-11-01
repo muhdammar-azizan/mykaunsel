@@ -5,7 +5,7 @@
         ['label' => 'Sessions today', 'value' => count($today), 'url' => route('counselor.appointments')],
         ['label' => 'Upcoming sessions', 'value' => $upcoming_count, 'url' => route('counselor.appointments')],
         ['label' => 'Waiting to be marked', 'value' => $to_mark, 'url' => route('counselor.appointments'), 'alert' => $to_mark > 0],
-        ['label' => 'Time requests', 'value' => $requests_count, 'url' => route('counselor.appointments'), 'alert' => $requests_count > 0],
+        ['label' => 'Time requests', 'value' => $requests_count, 'url' => route('counselor.requests'), 'alert' => $requests_count > 0],
     ];
 @endphp
 
@@ -83,7 +83,7 @@
                 @endforelse
 
                 @if ($requests_count > 0)
-                    <a href="{{ route('counselor.appointments') }}" class="{{ $outline }} mt-4">Answer requests</a>
+                    <a href="{{ route('counselor.requests') }}" class="{{ $outline }} mt-4">Answer requests</a>
                 @endif
             </section>
 

@@ -85,11 +85,20 @@ class CounselorRequestsTest extends TestCase
         $other = $this->counselor('Bakar', [$this->platform]);
         $this->request(['counselor_user_id' => $other->user_id, 'message' => 'Not for Aina', 'user_id' => User::factory()->create(['name' => 'Someone Else'])->id]);
 
-        $page = $this->as()->get(route('counselor.appointments'))->assertOk();
+        $page = $this->as()->get(route('counselor.requests'))->assertOk();
 
         $page->assertSee('Time requests')->assertSee('Siti Client')->assertSee('About exams')->assertSee('Thu, 5 Nov 2026')->assertSee('10:00 AM – 11:00 AM');
         $page->assertDontSee('11:00 AM – 12:00 PM')->assertDontSee('12:00 PM – 1:00 PM')->assertDontSee('Someone Else')->assertDontSee('Not for Aina');
         $page->assertDontSee($this->client->email);
+    }
+
+    public function test_the_bookings_page_only_points_to_the_requests_and_the_sidebar_has_the_page(): void
+    {
+        $this->as()->get(route('counselor.appointments'))->assertOk()->assertDontSee('time request is waiting')->assertSee('Time requests');
+
+        $this->request();
+
+        $this->as()->get(route('counselor.appointments'))->assertOk()->assertSee('1 time request is waiting for your answer.')->assertSee(route('counselor.requests'), false)->assertDontSee('About exams');
     }
 
     // ---- approving -------------------------------------------------------------------------------------------------
