@@ -116,6 +116,80 @@ class CounselorSessions
         });
     }
 
+    /**
+     * One of the counselor's own sessions with its details (the client is a display name only).
+     *
+     * @return array<string, mixed>
+     *
+     * @throws BookingRefused booking_not_found
+     */
+    public function find(User $counselor, string $publicId): array
+    {
+        $booking = $this->mine($counselor)->where('bookings.public_id', strtolower($publicId))->first();
+
+        if ($booking === null) {
+            throw new BookingRefused('booking_not_found');
+        }
+
+        $row = $this->row($booking);
+        $confirmed = $booking->status === BookingStatus::Confirmed;
+        $ended = $this->ended($booking);
+
+        return $row + [
+            'can_cancel' => $confirmed && ! $ended,
+            'can_mark' => $confirmed && $ended,
+            'can_set_meeting' => $confirmed && ! $ended && ($booking->session_mode ?? SessionMode::Online) === SessionMode::Online,
+            'cancelled_by' => $booking->cancelled_by,
+            'cancel_reason' => $booking->cancel_reason,
+        ];
+    }
+
+    /**
+     * The counselor cancels one of their own sessions that has not started: the status, who and why, and the time given back, in one
+     * transaction (B9). There is no deadline (a counselor may be ill the same morning); the caller tells the client after the commit.
+     * Cancelling again changes nothing and returns null.
+     *
+     * @return array{booking: Booking, client: User, when: string}|null
+     *
+     * @throws BookingRefused booking_not_found | not_cancellable
+     */
+    public function cancel(User $counselor, string $publicId, string $reason): ?array
+    {
+        return DB::transaction(function () use ($counselor, $publicId, $reason) {
+            $found = $this->lockOwn($counselor, $publicId);
+
+            // LOCK ORDER: the client, the counselor's profile, then the booking (the same as the client's own cancelling).
+            User::query()->whereKey($found->user_id)->lockForUpdate()->first();
+            \App\Models\CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
+            $booking = Booking::query()->with('calendarEntry')->whereKey($found->getKey())->lockForUpdate()->firstOrFail();
+
+            if ($booking->status === BookingStatus::Cancelled) {
+                return null; // a repeat
+            }
+
+            if ($booking->status !== BookingStatus::Confirmed || $this->ended($booking)) {
+                throw new BookingRefused('not_cancellable');
+            }
+
+            $changed = Booking::query()->whereKey($booking->getKey())->where('status', BookingStatus::Confirmed->value)->update([
+                'status' => BookingStatus::Cancelled->value,
+                'cancelled_by' => 'counselor',
+                'cancel_reason' => mb_substr(trim($reason), 0, 300),
+                'cancelled_at' => now(),
+            ]);
+
+            if ($changed !== 1) {
+                throw new BookingRefused('not_cancellable');
+            }
+
+            \App\Models\CalendarEntry::query()->whereKey($booking->calendar_entry_id)->update(['is_available' => true]);
+
+            $start = $this->availability->startOf($booking->calendarEntry);
+
+            return ['booking' => $booking->fresh(), 'client' => $booking->user()->firstOrFail(), 'when' => $start->format('D, j M Y').', '.$start->format('g:i A').' (Malaysia time)'];
+        });
+    }
+
     // ---------------------------------------------------------------------------------------------------------
 
     private function mine(User $counselor)

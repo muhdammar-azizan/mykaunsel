@@ -9,7 +9,7 @@ Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md.
 
 ## Counselor portal
 - [x] Dashboard: today's sessions, requests waiting for an answer, next free time, short notices (`CounselorDashboard` service; shows the next session when nothing is today, sessions waiting to be marked, profile and PA notices)
-- [ ] Bookings: list (upcoming, past, cancelled), one booking page, counselor cancels with a reason
+- [x] Bookings: list (needs marking, upcoming, past with cancelled), one booking page (`/counselor/appointments/{id}`), counselor cancels with a reason (required, 3 to 300 characters; no deadline; the time opens again; the client gets an e-mail with the reason and an app notification `booking.cancelled`)
 - [ ] Time requests: members asking for a time, accept or decline
 - [ ] Schedule: weekly slots, blocked times (leave, holidays)
 - [ ] Session notes: private notes per session, list and edit

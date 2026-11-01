@@ -27,6 +27,9 @@ class Booking extends Model
         'meeting_url',
         'meeting_space_id',
         'reschedule_count',
+        'cancelled_by',
+        'cancel_reason',
+        'cancelled_at',
     ];
 
     /**

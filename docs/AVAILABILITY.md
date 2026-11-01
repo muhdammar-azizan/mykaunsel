@@ -251,3 +251,7 @@ The Flutter side is described with its own screen. Keep the mapping of `physical
 ## Tests
 
 `AvailabilityApiTest` (access, the single "no" answer, the window to the minute, paging, midnight, modes and counts, booked in every layer, blocks and buffers and two contexts, contexts and names, the profile agreeing with the screen, the shape, nothing private, cache headers, the limit, a fixed number of queries), `AvailabilityServiceTest` (the clash rule to the minute, what counts as busy, one query for a whole list), `CalendarEntryPublicIdTest` and `PublicIdsAfterFullSeedTest` (the ids and the migration on existing data), `AvailabilityDemoSeederTest`, `BookingRulesConfigTest`. All also pass on MariaDB.
+
+### The counselor cancels a session (portal, built 2 November 2026)
+
+`CounselorSessions::cancel()`: only the counselor's own confirmed session that has not ended; there is no deadline. One transaction: status `cancelled`, `cancelled_by = counselor`, `cancel_reason` (required, shown to the client), `cancelled_at`, and the time given back (`is_available = 1`, B9). Cancelling again changes and sends nothing. The client is told by e-mail (`SessionCancelledByCounselor`, with the reason) and in the app (`booking.cancelled`). Tests: `CounselorCancelSessionTest`.

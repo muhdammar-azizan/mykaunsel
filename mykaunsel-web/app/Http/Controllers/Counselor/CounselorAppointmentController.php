@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Counselor;
 use App\Enums\BookingStatus;
 use App\Exceptions\BookingRefused;
 use App\Http\Controllers\Controller;
+use App\Notifications\SessionCancelledByCounselor;
 use App\Notifications\TimeRequestAnsweredClient;
 use App\Services\BookingRequests;
 use App\Services\CounselorRequests;
 use App\Services\CounselorSessions;
+use App\Services\NotificationCenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -29,6 +31,43 @@ class CounselorAppointmentController extends Controller
             'providers' => CounselorSessions::PROVIDERS,
             'requests' => $requests->pending($counselor),
         ]);
+    }
+
+    public function show(Request $request, string $publicId, CounselorSessions $sessions)
+    {
+        try {
+            $session = $sessions->find($request->user(), $publicId);
+        } catch (BookingRefused $refused) {
+            return $this->refused($refused);
+        }
+
+        return view('counselors.dashboard.appointment', ['s' => $session, 'providers' => CounselorSessions::PROVIDERS]);
+    }
+
+    /** The counselor cancels one of their own sessions with a reason for the client. The client is told by e-mail and in the app, after the commit. */
+    public function cancel(Request $request, string $publicId, CounselorSessions $sessions): RedirectResponse
+    {
+        $input = $request->validate(['reason' => ['required', 'string', 'min:3', 'max:300']], ['reason.required' => __('Write a short reason for the client.')]);
+
+        try {
+            $done = $sessions->cancel($request->user(), $publicId, $input['reason']);
+        } catch (BookingRefused $refused) {
+            return $this->refused($refused);
+        }
+
+        if ($done !== null) {
+            $counselor = $request->user();
+
+            try {
+                $done['client']->notify(new SessionCancelledByCounselor($counselor->name, $done['when'], $input['reason']));
+            } catch (Throwable $e) {
+                report($e);
+            }
+
+            app(NotificationCenter::class)->notify($done['client'], 'booking.cancelled', $done['booking'], $counselor->name);
+        }
+
+        return redirect()->route('counselor.appointments.show', $publicId)->with('status', __('Session cancelled. The client has been told.'));
     }
 
     public function meeting(Request $request, string $publicId, CounselorSessions $sessions): RedirectResponse
