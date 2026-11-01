@@ -62,17 +62,24 @@ Build order (decided 1 November 2026): **step 1 done** (clinic plans; invoices w
 - **Escrow:** explained. Nobody in government holds the money: it is held by a licensed payment provider or by a bank or trustee account. Who holds it is not decided; to ask the lawyer and two or three Malaysian providers (questions in the conversation of 31 October 2026: split payments with delayed payout to third parties, the licence under which they hold funds, onboarding of our counselors, payout schedule, refunds and chargebacks, fees for FPX, cards and e-wallets, the API and notifications, and a test environment).
 - Payments stay on hold until every other question is settled.
 
-## Subscription end date (decided in principle)
+## Subscription end date (decided by the owner, 2 November 2026; not built yet)
 
-`organizations.subscription_ends_at` already exists and is set from the plan (one year after the start). **It is not enforced anywhere yet.** Rule from the owner: a session can only be booked **inside the paid period**, so the counselors and clients of an organization can not run the service when it has not paid. How it is delivered (what people see) is proposed in the conversation of 31 October 2026 and is to be confirmed:
+`organizations.subscription_ends_at` is set from the plan (one year after the start). **Nothing enforces it yet.** All the bookings go through one check (`AvailabilityService::slotBookable`; time requests have their own time check), so the rule is small to add.
 
-- a session is bookable only if its **start** is on or before the end date (not merely the booking date);
-- the counselor's Planner can not open times after the end date and says why;
-- the clients of the organization simply do not see times after the end date (and the app says "your organization's access runs until …");
-- warnings before the end: the organization's admins at 60, 30, 14 and 7 days (e-mail, banner, notification), the counselors at 30 and 14 days;
-- sessions already booked inside the paid period go ahead;
-- after the end: no new bookings, existing sessions inside the period still happen, "Request renewal" for the admin;
-- a grace period (proposed: none for booking, but sessions already booked are honoured).
+**Locked:**
+1. **An organization must buy a plan to use the service. LOCKED (owner, 2 November 2026): an organization with NO plan can not book either.** A just-approved organization waits for the Platform Admin to give it a plan. The test data and demo organizations will be given plans. Independent counselors (the platform organization) have no plan and are never blocked. The owner will check the result in the system.
+2. **Only the end date blocks.** An unpaid or overdue invoice does not block before the end date: it only warns the organization admins and the Platform Admins (already built).
+3. **No grace period** for new bookings after the end. Sessions already booked inside the paid period still go ahead.
+4. **The filter is done in advance, inside the system:** no slot, time request or session can exist or be offered with a start after the end date. A session is bookable only if its start is on or before the end date, including a move to another time and the approval of a time request.
+5. **Renewing early starts the new year the day after the old end date** (no day is lost); a plan that has already ended starts today. (Today a new plan always starts today: to change.)
+6. **What people see:** clients do not see times after the end date (the app message "your organization's access runs until ..." waits for the owner's app design; the API will carry the date). A counselor can not open times after the end date and is told why. Times already open after the end date are **hidden, not deleted**, so they come back when the plan is renewed.
+7. **Warnings, once per step, every day automatically:** the organization admins at 60, 30, 14 and 7 days before the end (e-mail, Dashboard banner, bell) and one more when it has ended; the counselors at 30 and 14 days (e-mail). The owner may add ideas later.
+
+**Invoices and receipts. LOCKED (owner, 2 November 2026)** (very important: a company pays with company money):
+- A **real PDF file** for the invoice and for the receipt, downloadable on the organization's Subscription page and the Platform Admin's invoice page, and **attached to the e-mails**. The PDF library `dompdf` is approved to be installed with Composer.
+- The **receipt is its own document with its own number** (`RCT-<year>-<n>`, a counter like the invoice's), made **when the invoice is paid** (online, or marked paid by a Platform Admin). Until paid there is only an invoice.
+- **E-mails to every organization admin:** the invoice when it is issued, the receipt when it is paid (a link to the Subscription page and the PDF attached).
+- Defaults chosen while building (the owner may change them): no receipt for an invoice of RM 0.00 (nothing was paid); a voided invoice has no receipt; a receipt is never edited (a correction would be a credit note, not built yet).
 
 ## Research (31 October 2026)
 
