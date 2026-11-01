@@ -300,8 +300,25 @@ class SubscriptionAssignmentService
         }
 
         $zone = (string) config('platform-settings.public_timezone', 'Asia/Kuala_Lumpur');
-        $start = Carbon::now($zone)->startOfDay();
+        $today = Carbon::now($zone)->startOfDay();
         $members = $this->memberCount($org);
+
+        // A plan that is still running is not cut short: the new year starts the day after its last day, so no paid day is lost. One that has ended (or
+        // none at all) starts today (docs/PAYMENTS_PLAN.md, "Subscription end date", decided 2 November 2026).
+        $running = SubscriptionAssignment::query()->where('org_id', $org->getKey())->whereDate('starts_on', '<=', $today->toDateString())->orderByDesc('ends_on')->first();
+        $start = $running !== null && $running->ends_on->toDateString() >= $today->toDateString()
+            ? Carbon::parse($running->ends_on->toDateString(), $zone)->addDay()->startOfDay()
+            : $today;
+
+        $warnings = $plan->max_members !== null && $members > $plan->max_members
+            ? ['This organization has '.number_format($members).' members, which is more than the plan\'s maximum of '.number_format($plan->max_members).'. Nothing is blocked.']
+            : [];
+
+        $waiting = SubscriptionAssignment::query()->where('org_id', $org->getKey())->whereDate('starts_on', '>', $today->toDateString())->orderByDesc('starts_on')->first();
+
+        if ($waiting !== null) {
+            $warnings[] = 'A renewal that starts on '.$waiting->starts_on->format('j M Y').' is already waiting. This one starts at the same time and replaces it: void the invoice of the earlier one.';
+        }
 
         return [
             'plan' => $plan,
@@ -312,9 +329,7 @@ class SubscriptionAssignmentService
             'starts_on' => $start,
             'ends_on' => $start->copy()->addYearNoOverflow(),
             'members' => $members,
-            'warnings' => $plan->max_members !== null && $members > $plan->max_members
-                ? ['This organization has '.number_format($members).' members, which is more than the plan\'s maximum of '.number_format($plan->max_members).'. Nothing is blocked.']
-                : [],
+            'warnings' => $warnings,
         ];
     }
 

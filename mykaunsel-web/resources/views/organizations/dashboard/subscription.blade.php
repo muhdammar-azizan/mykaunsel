@@ -34,7 +34,7 @@
                     <dl class="mt-3 divide-y divide-[#EEEDEA] text-[14px]">
                         <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Plan</dt><dd class="font-semibold">{{ $current['plan_name'] }}</dd></div>
                         <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Price for the year</dt><dd class="text-right font-semibold">{{ $rm($current['price_cents']) }}@if ($current['discount_cents'] > 0)<span class="block text-[12.5px] font-normal text-brand-ink/60">Plan price {{ $rm($current['list_price_cents']) }}, discount {{ $rm($current['discount_cents']) }}</span>@endif</dd></div>
-                        <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Started</dt><dd class="font-semibold">{{ $current['starts_on']->format('j M Y') }}</dd></div>
+                        <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">{{ $current['starts_on']->toDateString() > now('Asia/Kuala_Lumpur')->toDateString() ? 'Starts' : 'Started' }}</dt><dd class="font-semibold">{{ $current['starts_on']->format('j M Y') }}</dd></div>
                         <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Ends</dt><dd class="font-semibold">{{ $current['ends_on']->format('j M Y') }}</dd></div>
                         <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Active members</dt><dd class="font-semibold">{{ number_format($members) }}@if ($max_members !== null) of {{ number_format($max_members) }}@endif</dd></div>
                     </dl>
