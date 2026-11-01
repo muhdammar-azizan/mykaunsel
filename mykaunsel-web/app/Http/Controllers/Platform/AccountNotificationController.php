@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Platform;
 
 use App\Http\Controllers\Controller;
+use App\Support\AccountArea;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class AccountNotificationController extends Controller
     {
         $user = $request->user();
 
-        $preferences = collect(config('account.notifications'))
+        $preferences = collect(AccountArea::notificationItems($request))
             ->map(fn ($item, $key) => $item + ['key' => $key, 'enabled' => $user->wantsNotification($key)])
             ->values();
 
@@ -29,7 +30,7 @@ class AccountNotificationController extends Controller
     public function update(Request $request): JsonResponse|RedirectResponse
     {
         $data = $request->validate([
-            'key' => ['required', 'string', Rule::in(array_keys(config('account.notifications')))],
+            'key' => ['required', 'string', Rule::in(array_keys(AccountArea::notificationItems($request)))],
             'enabled' => ['required', 'boolean'],
         ]);
 
@@ -43,6 +44,6 @@ class AccountNotificationController extends Controller
             return response()->json(['saved' => true, 'key' => $data['key'], 'enabled' => (bool) $data['enabled']]);
         }
 
-        return redirect()->route('platform.account.notifications')->with('status', 'Preference saved.');
+        return redirect()->to(\App\Support\AccountArea::route('account.notifications'))->with('status', 'Preference saved.');
     }
 }

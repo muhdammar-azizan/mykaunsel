@@ -1,4 +1,4 @@
-<x-platform-layout title="Account · Notifications">
+<x-account-layout title="Account · Notifications">
     <div>
         <x-platform.page-header title="Account" subtitle="Manage your profile, security and notifications" />
         <x-platform.account-tabs active="notifications" />
@@ -21,7 +21,7 @@
                                     this.state = 'saving';
                                     clearTimeout(this.timer);
                                     try {
-                                        const res = await fetch(@js(route('platform.account.notifications.update')), {
+                                        const res = await fetch(@js(\App\Support\AccountArea::route('account.notifications.update')), {
                                             method: 'PATCH',
                                             headers: {
                                                 'Content-Type': 'application/json',
@@ -74,4 +74,4 @@
     </div>
 
     <x-platform.toast />
-</x-platform-layout>
+</x-account-layout>

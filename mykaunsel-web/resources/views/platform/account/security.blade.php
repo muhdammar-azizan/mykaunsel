@@ -10,7 +10,7 @@
     ];
 @endphp
 
-<x-platform-layout title="Account · Security">
+<x-account-layout title="Account · Security">
     <div>
         <x-platform.page-header title="Account" subtitle="Manage your profile, security and notifications" />
         <x-platform.account-tabs active="security" />
@@ -21,7 +21,7 @@
             <x-platform.panel title="Change password">
                 <p class="mt-1 text-[13px] text-brand-ink/60">Choose a strong password you don't use anywhere else. Changing it signs out your other devices.</p>
 
-                <form method="POST" action="{{ route('platform.account.security.password') }}" class="mt-5"
+                <form method="POST" action="{{ \App\Support\AccountArea::route('account.security.password') }}" class="mt-5"
                       x-data="{ ready: false, show: false }">
                     @csrf @method('PUT')
 
@@ -85,7 +85,7 @@
                             <div x-show="open" x-cloak class="fixed inset-0 z-[95] flex items-center justify-center px-4" role="dialog" aria-modal="true" aria-label="Confirm with password"
                                  @keydown.escape.window="open = false">
                                 <div x-show="open" x-transition.opacity @click="open = false" class="absolute inset-0 bg-brand-deep/50 backdrop-blur-sm"></div>
-                                <form method="POST" action="{{ route('platform.account.security.sessions.revoke') }}" x-show="open"
+                                <form method="POST" action="{{ \App\Support\AccountArea::route('account.security.sessions.revoke') }}" x-show="open"
                                       x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100"
                                       class="relative w-full max-w-[420px] rounded-2xl bg-white p-6 shadow-2xl"
                                       x-data="{ show: false }">
@@ -134,4 +134,4 @@
     </div>
 
     <x-platform.toast />
-</x-platform-layout>
+</x-account-layout>

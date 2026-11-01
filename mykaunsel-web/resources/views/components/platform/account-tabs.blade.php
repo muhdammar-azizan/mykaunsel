@@ -3,16 +3,16 @@
 {{-- Account tabs. Needs a parent scope with a `dirty` flag (see platform/account/profile) to warn before leaving unsaved changes. --}}
 @php
     $tabs = [
-        'profile' => ['label' => 'Profile', 'route' => 'platform.account'],
-        'security' => ['label' => 'Security', 'route' => 'platform.account.security'],
-        'notifications' => ['label' => 'Notifications', 'route' => 'platform.account.notifications'],
+        'profile' => ['label' => 'Profile', 'route' => 'account'],
+        'security' => ['label' => 'Security', 'route' => 'account.security'],
+        'notifications' => ['label' => 'Notifications', 'route' => 'account.notifications'],
     ];
 @endphp
 
 <nav class="mt-6 flex gap-1 border-b border-brand-ink/10" aria-label="Account sections">
     @foreach ($tabs as $key => $tab)
         @if ($tab['route'])
-            <a href="{{ route($tab['route']) }}"
+            <a href="{{ \App\Support\AccountArea::route($tab['route']) }}"
                @click="if (typeof dirty !== 'undefined' && dirty && !confirm('You have unsaved changes. Leave without saving?')) $event.preventDefault()"
                @if ($active === $key) aria-current="page" @endif
                class="-mb-px border-b-2 px-4 py-2.5 text-[14px] font-semibold transition {{ $active === $key ? 'border-brand-blue text-brand-blue' : 'border-transparent text-brand-ink/60 hover:text-brand-ink' }}">

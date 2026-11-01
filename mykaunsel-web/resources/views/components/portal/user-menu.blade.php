@@ -26,7 +26,7 @@
         </div>
         <div class="mx-4 border-t border-brand-ink/10"></div>
         <div class="px-2 py-1.5">
-            <a href="{{ route('profile.edit') }}" class="flex min-h-[40px] items-center gap-3 rounded-lg px-3 text-[14px] transition hover:bg-brand-ink/5">
+            <a href="{{ route('portal.account') }}" class="flex min-h-[40px] items-center gap-3 rounded-lg px-3 text-[14px] transition hover:bg-brand-ink/5">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>
                 Account
             </a>

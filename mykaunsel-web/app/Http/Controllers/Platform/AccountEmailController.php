@@ -42,7 +42,7 @@ class AccountEmailController extends Controller
         $user->forceFill(['pending_email' => $new])->save();
 
         $url = URL::temporarySignedRoute(
-            'platform.account.email.verify',
+            \App\Support\AccountArea::prefix().'.account.email.verify',
             now()->addMinutes($minutes),
             ['user' => $user->id, 'hash' => sha1($new)],
         );
@@ -52,7 +52,7 @@ class AccountEmailController extends Controller
 
         Audit::log('account.email_change_requested', $user, ['new_email_domain' => substr(strrchr($new, '@'), 1)]);
 
-        return redirect()->route('platform.account')
+        return redirect()->to(\App\Support\AccountArea::route('account'))
             ->with('status', "Verification link sent to {$new}. Your current email stays active until you confirm it.");
     }
 
@@ -64,14 +64,14 @@ class AccountEmailController extends Controller
         abort_unless($account->id === $user, 403);
 
         if (! $account->pending_email || ! hash_equals(sha1($account->pending_email), $hash)) {
-            return redirect()->route('platform.account')->withErrors(['email' => 'That confirmation link is no longer valid.'], 'emailChange');
+            return redirect()->to(\App\Support\AccountArea::route('account'))->withErrors(['email' => 'That confirmation link is no longer valid.'], 'emailChange');
         }
 
         // Re-check uniqueness: someone may have taken the address while it was pending.
         if (User::where('email', $account->pending_email)->whereKeyNot($account->id)->exists()) {
             $account->forceFill(['pending_email' => null])->save();
 
-            return redirect()->route('platform.account')->withErrors(['email' => 'That email was taken in the meantime.'], 'emailChange');
+            return redirect()->to(\App\Support\AccountArea::route('account'))->withErrors(['email' => 'That email was taken in the meantime.'], 'emailChange');
         }
 
         $old = $account->email;
@@ -83,14 +83,14 @@ class AccountEmailController extends Controller
 
         Audit::log('account.email_changed', $account, ['previous_email_domain' => substr(strrchr($old, '@'), 1)]);
 
-        return redirect()->route('platform.account')->with('status', 'Your email address has been updated.');
+        return redirect()->to(\App\Support\AccountArea::route('account'))->with('status', 'Your email address has been updated.');
     }
 
     public function destroy(Request $request): RedirectResponse
     {
         $request->user()->forceFill(['pending_email' => null])->save();
 
-        return redirect()->route('platform.account')->with('status', 'Email change cancelled.');
+        return redirect()->to(\App\Support\AccountArea::route('account'))->with('status', 'Email change cancelled.');
     }
 
     private function mask(string $email): string

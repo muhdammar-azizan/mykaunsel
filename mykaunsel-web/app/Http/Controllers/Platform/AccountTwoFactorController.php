@@ -135,7 +135,7 @@ class AccountTwoFactorController extends Controller
 
     private function done(?string $status = null): RedirectResponse
     {
-        $redirect = redirect()->to(route('platform.account.security').'#two-factor');
+        $redirect = redirect()->to(\App\Support\AccountArea::route('account.security').'#two-factor');
 
         return $status ? $redirect->with('status', $status) : $redirect;
     }

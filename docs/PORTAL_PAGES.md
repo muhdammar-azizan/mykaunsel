@@ -5,7 +5,7 @@ Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md.
 ## Shared (build first)
 - [x] Layout: fixed dark header (menu, logo, search, notifications bell, help, avatar), left sidebar, content area, fixed footer (`x-portal-layout`, `config/portal-nav.php`; the 8 existing counselor and organization pages already use it)
 - [x] Notifications bell and list (`/portal/notifications`)
-- [ ] Account menu (profile, security, sign out) and role switch: menu, sign out and role switch are done; the Account page it links to is still the old basic profile page (security and notification settings for portal users are not built)
+- [x] Account menu (profile, security, sign out) and role switch (`/portal/account`, `/portal/account/security`, `/portal/account/notifications`: the same pages as Platform Admin, in the portal shell; see ACCOUNT_PAGES.md)
 
 ## Counselor portal
 - [x] Dashboard: today's sessions, requests waiting for an answer, next free time, short notices (`CounselorDashboard` service; shows the next session when nothing is today, sessions waiting to be marked, profile and PA notices)

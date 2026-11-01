@@ -104,7 +104,7 @@ class AccountSecurityController extends Controller
 
         Audit::log('account.password_changed', $user);
 
-        return redirect()->route('platform.account.security')
+        return redirect()->to(\App\Support\AccountArea::route('account.security'))
             ->with('status', 'Password updated. Other devices were signed out.');
     }
 
@@ -121,7 +121,7 @@ class AccountSecurityController extends Controller
 
         Audit::log('account.other_sessions_revoked', $request->user(), ['sessions' => $count]);
 
-        return redirect()->route('platform.account.security')
+        return redirect()->to(\App\Support\AccountArea::route('account.security'))
             ->with('status', $count ? "Signed out {$count} other ".str('session')->plural($count).'.' : 'There were no other sessions.');
     }
 }

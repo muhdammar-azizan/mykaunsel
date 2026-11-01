@@ -12,9 +12,9 @@
     x-data="{
         modal: @js(session('two_factor_modal')),
         actions: {
-            enable: { url: @js(route('platform.account.two-factor.begin')), title: 'Turn on two-factor authentication', text: 'Enter your password to continue. You will then scan a QR code with an authenticator app.', button: 'Continue', danger: false },
-            regenerate: { url: @js(route('platform.account.two-factor.recovery')), title: 'Generate new recovery codes?', text: 'Your old recovery codes will stop working. Enter your password to confirm.', button: 'Generate new codes', danger: false },
-            disable: { url: @js(route('platform.account.two-factor.disable')), title: 'Turn off two-factor authentication?', text: 'Your account will only be protected by your password. Enter your password to confirm.', button: 'Turn off', danger: true },
+            enable: { url: @js(\App\Support\AccountArea::route('account.two-factor.begin')), title: 'Turn on two-factor authentication', text: 'Enter your password to continue. You will then scan a QR code with an authenticator app.', button: 'Continue', danger: false },
+            regenerate: { url: @js(\App\Support\AccountArea::route('account.two-factor.recovery')), title: 'Generate new recovery codes?', text: 'Your old recovery codes will stop working. Enter your password to confirm.', button: 'Generate new codes', danger: false },
+            disable: { url: @js(\App\Support\AccountArea::route('account.two-factor.disable')), title: 'Turn off two-factor authentication?', text: 'Your account will only be protected by your password. Enter your password to confirm.', button: 'Turn off', danger: true },
         },
         showPwd: false,
         copied: false,
@@ -78,7 +78,7 @@
                     </p>
                 </li>
                 <li>
-                    <form method="POST" action="{{ route('platform.account.two-factor.confirm') }}">
+                    <form method="POST" action="{{ \App\Support\AccountArea::route('account.two-factor.confirm') }}">
                         @csrf
                         <label for="tf_code" class="font-semibold">2. Enter the 6-digit code from the app</label>
                         <input id="tf_code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required placeholder="123456"
@@ -88,7 +88,7 @@
                             <button type="submit" class="{{ $primary }}">Confirm and turn on</button>
                         </div>
                     </form>
-                    <form method="POST" action="{{ route('platform.account.two-factor.cancel') }}" class="mt-2">
+                    <form method="POST" action="{{ \App\Support\AccountArea::route('account.two-factor.cancel') }}" class="mt-2">
                         @csrf
                         <button type="submit" class="text-[12.5px] font-semibold text-brand-ink/55 hover:text-brand-ink">Cancel setup</button>
                     </form>

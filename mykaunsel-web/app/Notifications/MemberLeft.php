@@ -12,7 +12,7 @@ class MemberLeft extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $notifiable->wantsNotification('org_member_emails') ? ['mail'] : [];
     }
 
     public function toMail(object $notifiable): MailMessage

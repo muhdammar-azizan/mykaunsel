@@ -40,7 +40,7 @@ class AccountAvatarController extends Controller
 
         Audit::log('account.avatar_changed', $user, ['change' => 'uploaded']);
 
-        return redirect()->route('platform.account')->with('status', 'Photo updated.');
+        return redirect()->to(\App\Support\AccountArea::route('account'))->with('status', 'Photo updated.');
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -54,7 +54,7 @@ class AccountAvatarController extends Controller
             Audit::log('account.avatar_changed', $user, ['change' => 'removed']);
         }
 
-        return redirect()->route('platform.account')->with('status', 'Photo removed.');
+        return redirect()->to(\App\Support\AccountArea::route('account'))->with('status', 'Photo removed.');
     }
 
     /**

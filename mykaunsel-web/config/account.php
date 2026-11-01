@@ -44,6 +44,25 @@ return [
         ],
     ],
 
+    // The e-mails a person in a portal can switch off, by role (Account > Notifications on the website). The same rule as above: whatever sends one
+    // of these must check User::wantsNotification($key). Essential notices (a suspension, the end of an assignment) are NOT here: they are always sent.
+    'portal_notifications' => [
+        'counselor' => [
+            'counselor_session_emails' => [
+                'label' => 'Sessions and time requests',
+                'description' => 'Email me when a session is booked, moved or cancelled, and when someone asks for a time.',
+                'default' => true,
+            ],
+        ],
+        'org_admin' => [
+            'org_member_emails' => [
+                'label' => 'Members',
+                'description' => 'Email me when people are waiting for my approval and when a member leaves.',
+                'default' => true,
+            ],
+        ],
+    ],
+
     'notifications' => [
         'new_organization_application' => [
             'label' => 'New organization application',

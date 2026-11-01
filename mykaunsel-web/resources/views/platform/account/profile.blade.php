@@ -5,7 +5,7 @@
     $ghost = 'inline-flex min-h-[42px] items-center justify-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold transition hover:bg-brand-ink/5';
 @endphp
 
-<x-platform-layout title="Account">
+<x-account-layout title="Account">
     <div x-data="{ profileDirty: false, avatarDirty: false, get dirty() { return this.profileDirty || this.avatarDirty; } }"
          @beforeunload.window="if (dirty) { $event.preventDefault(); $event.returnValue = ''; }">
 
@@ -17,7 +17,7 @@
             {{-- LEFT: photo + read-only details --}}
             <div class="flex flex-col gap-5">
                 <x-platform.panel title="Profile photo">
-                    <form method="POST" action="{{ route('platform.account.avatar.store') }}" enctype="multipart/form-data"
+                    <form method="POST" action="{{ \App\Support\AccountArea::route('account.avatar.store') }}" enctype="multipart/form-data"
                           x-data="{ preview: null }" @submit="avatarDirty = false" class="mt-4">
                         @csrf
                         <div class="flex items-center gap-5">
@@ -51,7 +51,7 @@
                     </form>
 
                     @if ($user->avatar_url)
-                        <form method="POST" action="{{ route('platform.account.avatar.destroy') }}" class="mt-3" onsubmit="return confirm('Remove your profile photo?')">
+                        <form method="POST" action="{{ \App\Support\AccountArea::route('account.avatar.destroy') }}" class="mt-3" onsubmit="return confirm('Remove your profile photo?')">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-[13px] font-semibold text-brand-red hover:underline">Remove photo</button>
                         </form>
@@ -80,7 +80,7 @@
             {{-- RIGHT: editable details + email --}}
             <div class="flex flex-col gap-5">
                 <x-platform.panel title="Personal information">
-                    <form method="POST" action="{{ route('platform.account.update') }}" class="mt-4 space-y-4"
+                    <form method="POST" action="{{ \App\Support\AccountArea::route('account.update') }}" class="mt-4 space-y-4"
                           x-data="{ name: @js(old('name', $user->name)), tz: @js(old('timezone', $user->display_timezone)),
                                     orig: { name: @js($user->name), tz: @js($user->display_timezone) },
                                     get changed() { return this.name !== this.orig.name || this.tz !== this.orig.tz; } }"
@@ -124,14 +124,14 @@
                     @if ($user->pending_email)
                         <div class="mt-4 flex items-start justify-between gap-4 rounded-xl border border-brand-yellow/50 bg-brand-yellow/10 p-4 text-[13px]">
                             <p><span class="font-semibold">Waiting for confirmation:</span> we sent a link to <span class="font-semibold">{{ $user->pending_email }}</span>. Your current email keeps working until you open it.</p>
-                            <form method="POST" action="{{ route('platform.account.email.destroy') }}">
+                            <form method="POST" action="{{ \App\Support\AccountArea::route('account.email.destroy') }}">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="shrink-0 font-semibold text-brand-red hover:underline">Cancel</button>
                             </form>
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('platform.account.email.store') }}" class="mt-5 space-y-4 border-t border-brand-ink/10 pt-5">
+                    <form method="POST" action="{{ \App\Support\AccountArea::route('account.email.store') }}" class="mt-5 space-y-4 border-t border-brand-ink/10 pt-5">
                         @csrf
                         <p class="text-[13px] text-brand-ink/60">Change email — we will send a confirmation link to the new address. Your password is required.</p>
 
@@ -158,4 +158,4 @@
     </div>
 
     <x-platform.toast />
-</x-platform-layout>
+</x-account-layout>

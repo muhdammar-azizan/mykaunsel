@@ -32,7 +32,7 @@ class AccountController extends Controller
         $user = $request->user();
         $user->fill($data)->save();
 
-        return redirect()->route('platform.account')->with('status', 'Profile saved.');
+        return redirect()->to(\App\Support\AccountArea::route('account'))->with('status', 'Profile saved.');
     }
 
     /** Timezones offered in the select: Asia + UTC (the platform serves Malaysia). */

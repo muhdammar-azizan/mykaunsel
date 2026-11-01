@@ -182,6 +182,35 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/notifications/{notification}/read', [\App\Http\Controllers\Portal\PortalNotificationController::class, 'markRead'])->whereNumber('notification')->middleware('throttle:120,1')->name('notifications.read');
         Route::post('/notifications/{notification}/unread', [\App\Http\Controllers\Portal\PortalNotificationController::class, 'markUnread'])->whereNumber('notification')->middleware('throttle:120,1')->name('notifications.unread');
         Route::post('/notifications/{notification}/open', [\App\Http\Controllers\Portal\PortalNotificationController::class, 'open'])->whereNumber('notification')->middleware('throttle:60,1')->name('notifications.open');
+
+        // The same Account pages as Platform Admin has (profile, security, notifications), for the person working in a portal.
+        Route::prefix('account')->group(function () {
+            Route::get('/', [AccountController::class, 'show'])->name('account');
+            Route::patch('/', [AccountController::class, 'update'])->name('account.update');
+
+            Route::get('/security', [AccountSecurityController::class, 'show'])->name('account.security');
+            Route::put('/security/password', [AccountSecurityController::class, 'updatePassword'])->middleware('throttle:5,1')->name('account.security.password');
+            Route::post('/security/sessions/revoke', [AccountSecurityController::class, 'revokeOtherSessions'])->middleware('throttle:5,1')->name('account.security.sessions.revoke');
+
+            Route::prefix('/security/two-factor')->middleware('throttle:10,1')->group(function () {
+                Route::post('/begin', [AccountTwoFactorController::class, 'begin'])->name('account.two-factor.begin');
+                Route::post('/confirm', [AccountTwoFactorController::class, 'confirm'])->name('account.two-factor.confirm');
+                Route::post('/cancel', [AccountTwoFactorController::class, 'cancel'])->name('account.two-factor.cancel');
+                Route::post('/recovery-codes', [AccountTwoFactorController::class, 'regenerateRecoveryCodes'])->name('account.two-factor.recovery');
+                Route::post('/disable', [AccountTwoFactorController::class, 'disable'])->name('account.two-factor.disable');
+            });
+
+            Route::get('/notifications', [AccountNotificationController::class, 'show'])->name('account.notifications');
+            Route::patch('/notifications', [AccountNotificationController::class, 'update'])->middleware('throttle:60,1')->name('account.notifications.update');
+
+            Route::post('/avatar',[AccountAvatarController::class, 'store'])->middleware('throttle:10,1')->name('account.avatar.store');
+            Route::delete('/avatar', [AccountAvatarController::class, 'destroy'])->name('account.avatar.destroy');
+
+            Route::post('/email', [AccountEmailController::class, 'store'])->middleware('throttle:5,1')->name('account.email.store');
+            Route::delete('/email', [AccountEmailController::class, 'destroy'])->name('account.email.destroy');
+            Route::get('/email/verify/{user}/{hash}', [AccountEmailController::class, 'verify'])
+                ->middleware(['signed', 'throttle:10,1'])->whereNumber('user')->name('account.email.verify');
+        });
     });
 
     Route::prefix('counselor')->name('counselor.')->middleware('role:counselor')->group(function () {
