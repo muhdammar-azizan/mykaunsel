@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Counselor;
 use App\Enums\SessionMode;
 use App\Exceptions\BookingRefused;
 use App\Http\Controllers\Controller;
+use App\Services\CounselorBlocks;
 use App\Services\CounselorPlanner;
 use App\Services\CounselorWeeklyHours;
 use Illuminate\Http\RedirectResponse;
@@ -16,12 +17,13 @@ use Illuminate\Validation\Rule;
  */
 class CounselorPlannerController extends Controller
 {
-    public function index(Request $request, CounselorPlanner $planner, CounselorWeeklyHours $hours)
+    public function index(Request $request, CounselorPlanner $planner, CounselorWeeklyHours $hours, CounselorBlocks $blocks)
     {
         $counselor = $request->user();
 
         return view('counselors.dashboard.planner', [
             'times' => $planner->upcoming($counselor),
+            'blocks' => $blocks->upcoming($counselor),
             'lines' => $hours->lines($counselor),
             'maxWeeks' => CounselorWeeklyHours::MAX_WEEKS,
             'contexts' => $planner->contexts($counselor),
@@ -82,6 +84,39 @@ class CounselorPlannerController extends Controller
         }
 
         return back()->with('status', __('Weekly hours saved. Use "Open the next weeks" to make the times bookable.'));
+    }
+
+    public function storeBlock(Request $request, CounselorBlocks $blocks): RedirectResponse
+    {
+        $input = $request->validate([
+            'from' => ['required', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d'],
+            'all_day' => ['nullable', 'boolean'],
+            'start' => ['nullable', 'required_without:all_day', 'date_format:H:i'],
+            'end' => ['nullable', 'required_without:all_day', 'date_format:H:i'],
+            'title' => ['nullable', 'string', 'max:100'],
+        ]);
+        $input['all_day'] = $request->boolean('all_day');
+        $input['to'] = ($input['to'] ?? null) ?: $input['from'];
+
+        try {
+            $days = $blocks->add($request->user(), $input);
+        } catch (BookingRefused $refused) {
+            return back()->withInput()->withErrors(['block' => $refused->getMessage()]);
+        }
+
+        return back()->with('status', trans_choice(':count day blocked. Times open for booking inside it can not be booked until you remove the block.|:count days blocked. Times open for booking inside them can not be booked until you remove the block.', $days, ['count' => $days]));
+    }
+
+    public function destroyBlock(Request $request, string $publicId, CounselorBlocks $blocks): RedirectResponse
+    {
+        try {
+            $blocks->remove($request->user(), $publicId);
+        } catch (BookingRefused) {
+            abort(404);
+        }
+
+        return back()->with('status', __('Block removed.'));
     }
 
     public function destroyHours(Request $request, string $publicId, CounselorWeeklyHours $hours): RedirectResponse

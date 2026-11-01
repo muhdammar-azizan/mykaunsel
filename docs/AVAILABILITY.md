@@ -255,3 +255,7 @@ The Flutter side is described with its own screen. Keep the mapping of `physical
 ### The counselor cancels a session (portal, built 2 November 2026)
 
 `CounselorSessions::cancel()`: only the counselor's own confirmed session that has not ended; there is no deadline. One transaction: status `cancelled`, `cancelled_by = counselor`, `cancel_reason` (required, shown to the client), `cancelled_at`, and the time given back (`is_available = 1`, B9). Cancelling again changes and sends nothing. The client is told by e-mail (`SessionCancelledByCounselor`, with the reason) and in the app (`booking.cancelled`). Tests: `CounselorCancelSessionTest`.
+
+### Blocked times (portal, built 2 November 2026)
+
+`CounselorBlocks`: a block is a calendar entry of type `personal_block` (already treated as busy by `AvailabilityService`, so a free time inside it is not bookable, and becomes bookable again when the block is removed). Whole days (00:00, 1440 minutes) or a stretch of the day (5-minute marks, end after start), for one day or a range of at most 60 days (one entry per day); not in the past; refused with `block_has_session` over any confirmed booking (the counselor cancels that session first); at most 400 upcoming blocks. The note is private to the counselor. Done under the counselor's profile lock, like opening a time. Tests: `CounselorBlocksTest`.
