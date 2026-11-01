@@ -225,6 +225,167 @@ class OrgReports
 
     // =============================================================================================================
 
+    // =============================================================================================================
+    //  Counselors
+    // =============================================================================================================
+
+    /**
+     * Capacity and use per counselor of this organization. A counselor's name is shown (the organization chose them); a client never is. The number of
+     * sessions of one counselor is a small group, so it follows the same hiding rule, and the share booked is shown only when it is not hidden.
+     *
+     * @return array<string, mixed>
+     */
+    public function counselors(Organization $org, array $period): array
+    {
+        $people = DB::table('memberships')->join('users', 'users.id', '=', 'memberships.user_id')
+            ->where('memberships.org_id', $org->getKey())->where('memberships.role', MembershipRole::Counselor->value)->where('memberships.status', MembershipStatus::Active->value)
+            ->orderBy('users.name')->get(['users.id', 'users.name']);
+        $ids = $people->pluck('id')->all();
+
+        $offered = array_fill_keys($ids, 0);
+        $booked = array_fill_keys($ids, 0);
+        $sessions = array_fill_keys($ids, 0);
+
+        if ($ids !== []) {
+            $rows = DB::table('calendar_entries')
+                ->where('context_org_id', $org->getKey())->whereIn('counselor_user_id', $ids)->where('entry_type', 'available_slot')
+                ->whereDate('entry_date', '>=', $period['from']->format('Y-m-d'))->whereDate('entry_date', '<=', $period['to']->format('Y-m-d'))
+                ->select(['calendar_entries.counselor_user_id', 'calendar_entries.duration_minutes'])
+                ->selectRaw('(select count(*) from bookings where bookings.calendar_entry_id = calendar_entries.id and bookings.status != ?) as active_bookings', [BookingStatus::Cancelled->value])
+                ->get();
+
+            foreach ($rows as $row) {
+                $offered[$row->counselor_user_id] += (int) $row->duration_minutes;
+
+                if ((int) $row->active_bookings > 0) {
+                    $booked[$row->counselor_user_id] += (int) $row->duration_minutes;
+                    $sessions[$row->counselor_user_id] += (int) $row->active_bookings;
+                }
+            }
+        }
+
+        $first = $this->firstFree($org, $ids);
+        $min = (int) config('org-reports.min_group');
+        $perCounselor = ReportFigures::set(collect($people)->mapWithKeys(fn ($p) => [$p->name => $sessions[$p->id]])->all());
+
+        $list = [];
+
+        foreach ($people as $person) {
+            $cell = $perCounselor['cells'][$person->name];
+
+            $list[] = [
+                'name' => $person->name,
+                'offered_hours' => round($offered[$person->id] / 60, 1),
+                'sessions' => $cell['label'],
+                'booked_share' => ! $cell['hidden'] && $sessions[$person->id] >= $min && $offered[$person->id] > 0 ? round($booked[$person->id] / $offered[$person->id] * 100).'%' : null,
+                'first_free' => $first[$person->id] ?? null,
+            ];
+        }
+
+        $totalOffered = array_sum($offered);
+        $totalBooked = array_sum($booked);
+
+        return [
+            'list' => $list,
+            'offered_hours' => round($totalOffered / 60, 1),
+            'booked_hours' => round($totalBooked / 60, 1),
+            'booked_share' => $totalOffered > 0 && array_sum($sessions) >= $min ? round($totalBooked / $totalOffered * 100).'%' : null,
+            'sessions_total' => $perCounselor['total'],
+        ];
+    }
+
+    /** For each counselor, the next time still free for this organization: when, and how many days away. @param list<int> $ids @return array<int, string> */
+    private function firstFree(Organization $org, array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $now = $this->availability->now();
+        $today = $now->startOfDay();
+
+        $rows = DB::table('calendar_entries')->where('context_org_id', $org->getKey())->whereIn('counselor_user_id', $ids)
+            ->where('entry_type', 'available_slot')->where('is_available', true)
+            ->whereDate('entry_date', '>=', $now->format('Y-m-d'))
+            ->whereNotExists(fn ($q) => $q->select(DB::raw(1))->from('bookings')->whereColumn('bookings.calendar_entry_id', 'calendar_entries.id')->where('bookings.status', '!=', BookingStatus::Cancelled->value))
+            ->orderBy('entry_date')->orderBy('start_time')->get(['counselor_user_id', 'entry_date', 'start_time']);
+
+        $first = [];
+
+        foreach ($rows as $row) {
+            if (isset($first[$row->counselor_user_id])) {
+                continue;
+            }
+
+            $start = CarbonImmutable::parse(substr((string) $row->entry_date, 0, 10).' '.$row->start_time, $this->availability->timezone());
+
+            if ($start->lte($now)) {
+                continue;
+            }
+
+            $days = (int) $today->diffInDays($start->startOfDay());
+            $first[$row->counselor_user_id] = $start->format('D, j M').' ('.($days === 0 ? 'today' : ($days === 1 ? 'tomorrow' : "in {$days} days")).')';
+        }
+
+        return $first;
+    }
+
+    // =============================================================================================================
+    //  Quality
+    // =============================================================================================================
+
+    /**
+     * Ratings and cancelling for this organization's sessions in the period. NEVER a comment or a client. An average is shown only from
+     * `reviews.min_for_average` reviews (overall, and for each counselor on their own count); the cancelling rate only from `min_group` sessions.
+     *
+     * @return array<string, mixed>
+     */
+    public function quality(Organization $org, array $period): array
+    {
+        $needed = (int) config('reviews.min_for_average');
+
+        $reviews = DB::table('reviews')->join('bookings', 'bookings.id', '=', 'reviews.booking_id')->join('calendar_entries', 'calendar_entries.id', '=', 'bookings.calendar_entry_id')
+            ->join('users', 'users.id', '=', 'reviews.counselor_user_id')
+            ->where('bookings.org_id', $org->getKey())->where('reviews.status', '!=', 'removed')
+            ->whereDate('calendar_entries.entry_date', '>=', $period['from']->format('Y-m-d'))->whereDate('calendar_entries.entry_date', '<=', $period['to']->format('Y-m-d'))
+            ->get(['reviews.rating', 'reviews.counselor_user_id', 'users.name']);
+
+        $perCounselor = [];
+
+        foreach ($reviews as $review) {
+            $perCounselor[$review->counselor_user_id]['name'] = $review->name;
+            $perCounselor[$review->counselor_user_id]['ratings'][] = (int) $review->rating;
+        }
+
+        $counselors = collect($perCounselor)->map(fn ($c) => [
+            'name' => $c['name'],
+            'count' => count($c['ratings']),
+            'average' => count($c['ratings']) >= $needed ? number_format(array_sum($c['ratings']) / count($c['ratings']), 1) : null,
+        ])->sortBy('name')->values()->all();
+
+        $cancel = DB::table('bookings')->join('calendar_entries', 'calendar_entries.id', '=', 'bookings.calendar_entry_id')
+            ->where('bookings.org_id', $org->getKey())
+            ->whereDate('calendar_entries.entry_date', '>=', $period['from']->format('Y-m-d'))->whereDate('calendar_entries.entry_date', '<=', $period['to']->format('Y-m-d'))
+            ->get(['bookings.status', 'bookings.cancelled_by']);
+
+        $cancelled = $cancel->where('status', BookingStatus::Cancelled->value);
+        $by = [
+            'By the member' => $cancelled->whereIn('cancelled_by', [null, 'client'])->count(),
+            'By the counselor' => $cancelled->where('cancelled_by', 'counselor')->count(),
+            'By MyKaunsel or the organization' => $cancelled->where('cancelled_by', 'system')->count(),
+        ];
+
+        return [
+            'needed' => $needed,
+            'reviews' => ReportFigures::one($reviews->count()),
+            'average' => $reviews->count() >= $needed ? number_format($reviews->avg('rating'), 1) : null,
+            'counselors' => $counselors,
+            'sessions' => ReportFigures::one($cancel->count()),
+            'cancel_rate' => $cancel->count() >= (int) config('org-reports.min_group') ? round($cancelled->count() / $cancel->count() * 100).'%' : null,
+            'cancelled_by' => ReportFigures::set($by),
+        ];
+    }
+
     /**
      * The sessions of this organization on days in the period: status, mode, the day and time, and the day it was booked. No name of anyone.
      *

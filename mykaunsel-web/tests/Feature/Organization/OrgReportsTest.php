@@ -14,6 +14,7 @@ use App\Models\CounselorProfile;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\ReviewService;
 use App\Support\ReportFigures;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -198,6 +199,95 @@ class OrgReportsTest extends TestCase
         $this->hr()->get(route('org.reports.members'))->assertSee('20%');
     }
 
+    // ---- counselors -----------------------------------------------------------------------------------------------
+
+    public function test_the_counselors_page_shows_capacity_hours_sessions_and_the_first_free_time(): void
+    {
+        $this->sessions(6, '2026-11-10 08:00');                                  // six booked hours (one slot an hour)
+        $this->slot($this->aina, $this->acme, '2026-11-12 10:00');               // one free hour, 10 days ahead
+        $this->slot($this->aina, $this->acme, '2026-11-04 15:00');               // the nearest free hour: in 2 days
+        $bakar = $this->counselor('Bakar Counselor', [$this->acme]);
+        $this->sessions(2, '2026-11-11 08:00', who: $bakar);
+
+        $page = $this->hr()->get(route('org.reports.counselors', ['range' => 'month']))->assertOk();
+
+        $page->assertSeeInOrder(['Hours offered', '10', 'Hours booked', '8'])
+            ->assertSeeInOrder(['Aina Counselor', '8', 'hidden', '—', 'Wed, 4 Nov (in 2 days)'])
+            ->assertSeeInOrder(['Bakar Counselor', '2', 'fewer than 5', 'Nothing open'])
+            ->assertDontSee('Siti Secret');
+    }
+
+    public function test_when_every_counselor_has_enough_sessions_each_share_booked_is_shown(): void
+    {
+        $bakar = $this->counselor('Bakar Counselor', [$this->acme]);
+        $this->sessions(6, '2026-11-10 08:00');
+        $this->slot($this->aina, $this->acme, '2026-11-12 10:00');
+        $this->sessions(5, '2026-11-11 08:00', who: $bakar);
+
+        $this->hr()->get(route('org.reports.counselors', ['range' => 'month']))->assertOk()
+            ->assertSeeInOrder(['Aina Counselor', '7', '6', '86%'])->assertSeeInOrder(['Bakar Counselor', '5', '5', '100%']);
+    }
+
+    public function test_the_capacity_share_needs_five_sessions_and_another_organizations_hours_are_not_counted(): void
+    {
+        $this->sessions(2, '2026-11-10 08:00');
+        $beta = $this->org('Beta', AccessModel::Closed, OrgType::Corporate);
+        $this->sessions(9, '2026-11-10 12:00', org: $beta);
+
+        $page = $this->hr()->get(route('org.reports.counselors', ['range' => 'month']))->assertOk();
+
+        $page->assertSee('Shown from 5 sessions in the period')->assertSeeInOrder(['Hours offered', '2', 'Hours booked', '2']);
+    }
+
+    // ---- quality --------------------------------------------------------------------------------------------------
+
+    private function reviewed(int $n, int $stars, ?CounselorProfile $who = null, string $comment = 'A private remark about the session'): void
+    {
+        $who ??= $this->aina;
+
+        for ($i = 0; $i < $n; $i++) {
+            $booking = $this->book($this->slot($who, $this->acme, Carbon::parse('2026-10-20 08:00')->addHours($i)->format('Y-m-d H:i')), User::factory()->create(), BookingStatus::Completed);
+            app(ReviewService::class)->submit($booking->user, $booking->public_id, $stars, [], $comment);
+        }
+    }
+
+    public function test_the_average_is_shown_only_from_five_reviews_and_never_a_comment(): void
+    {
+        $this->reviewed(4, 5);
+
+        $this->hr()->get(route('org.reports.quality'))->assertOk()->assertSee('Not enough reviews yet')->assertSee('Not enough reviews')->assertDontSee('private remark');
+
+        $this->reviewed(1, 3, comment: 'Another private remark');   // the fifth: 5, 5, 5, 5, 3
+
+        $page = $this->hr()->get(route('org.reports.quality'))->assertOk();
+        $page->assertSee('4.6')->assertDontSee('private remark')->assertDontSee('Not enough reviews yet');
+    }
+
+    public function test_a_counselors_own_average_needs_their_own_five_reviews(): void
+    {
+        $bakar = $this->counselor('Bakar Counselor', [$this->acme]);
+        $this->reviewed(5, 4);
+        $this->reviewed(2, 1, who: $bakar);
+
+        $page = $this->hr()->get(route('org.reports.quality'))->assertOk();
+
+        $page->assertSeeInOrder(['Aina Counselor', '5', '4.0'])->assertSeeInOrder(['Bakar Counselor', 'fewer than 5', 'Not enough reviews']);
+    }
+
+    public function test_a_removed_review_does_not_count_and_the_cancelling_rate_needs_five_sessions(): void
+    {
+        $this->reviewed(5, 5);
+        \App\Models\Review::query()->first()->update(['status' => 'removed']);
+
+        $this->hr()->get(route('org.reports.quality'))->assertSee('Not enough reviews yet');
+
+        $this->sessions(6, '2026-11-10 08:00');
+        $this->sessions(2, '2026-11-11 08:00', BookingStatus::Cancelled);
+
+        $page = $this->hr()->get(route('org.reports.quality', ['range' => 'month']))->assertOk();
+        $page->assertSeeInOrder(['Cancelling', '25%', 'Sessions in this period', '8'])->assertSeeInOrder(['Who cancelled', 'Total', 'fewer than 5']);
+    }
+
     // ---- the overview and who may open it -------------------------------------------------------------------------
 
     public function test_the_overview_has_the_numbers_and_the_comparison_only_when_both_are_large_enough(): void
@@ -219,7 +309,7 @@ class OrgReportsTest extends TestCase
         $employee = User::factory()->create();
         Membership::create(['user_id' => $employee->id, 'org_id' => $this->acme->id, 'role' => MembershipRole::Employee, 'status' => MembershipStatus::Active, 'joined_at' => now()]);
 
-        foreach (['org.reports', 'org.reports.use', 'org.reports.members'] as $route) {
+        foreach (['org.reports', 'org.reports.use', 'org.reports.members', 'org.reports.counselors', 'org.reports.quality'] as $route) {
             $this->actingAs($employee)->withSession(['current_org_id' => $this->acme->id, 'current_role' => 'employee'])->get(route($route))->assertForbidden();
             $this->hr()->get(route($route))->assertOk()->assertHeader('Cache-Control', 'no-store, private');
         }

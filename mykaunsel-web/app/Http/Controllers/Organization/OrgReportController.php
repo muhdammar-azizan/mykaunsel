@@ -34,6 +34,20 @@ class OrgReportController extends Controller
         return $this->page('organizations.reports.members', ['report' => $reports->members($organization, $period)], $organization, $period, 'members');
     }
 
+    public function counselors(Request $request, OrgReports $reports)
+    {
+        [$organization, $period] = $this->context($request, $reports);
+
+        return $this->page('organizations.reports.counselors', ['report' => $reports->counselors($organization, $period)], $organization, $period, 'counselors');
+    }
+
+    public function quality(Request $request, OrgReports $reports)
+    {
+        [$organization, $period] = $this->context($request, $reports);
+
+        return $this->page('organizations.reports.quality', ['report' => $reports->quality($organization, $period)], $organization, $period, 'quality');
+    }
+
     /** @return array{0: Organization, 1: array<string, mixed>} */
     private function context(Request $request, OrgReports $reports): array
     {

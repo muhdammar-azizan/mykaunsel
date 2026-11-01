@@ -1,6 +1,6 @@
 {{-- The top of every report page: the title, the three pages, the period, and the one rule about small numbers. --}}
 @php
-    $tabs = ['overview' => ['Overview', route('org.reports')], 'use' => ['Use', route('org.reports.use')], 'members' => ['Members', route('org.reports.members')]];
+    $tabs = ['overview' => ['Overview', route('org.reports')], 'use' => ['Use', route('org.reports.use')], 'members' => ['Members', route('org.reports.members')], 'counselors' => ['Counselors', route('org.reports.counselors')], 'quality' => ['Quality', route('org.reports.quality')]];
 @endphp
 
 <h1 class="text-[24px] font-bold leading-tight tracking-tight">Reports</h1>
