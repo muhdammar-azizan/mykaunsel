@@ -24,12 +24,12 @@
         <!-- LEFT COLUMN -->
         <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
             <div class="flex h-full flex-col p-8">
-                <x-mykaunsel-logo />
+                <a href="/" aria-label="MyKaunsel"><img src="/images/mykaunsel-logo.png" alt="MyKaunsel" class="h-10 w-auto"></a>
 
                 <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
                      style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
                     <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
-                        <img src="/images/placeholder.jpg" data-slot="{{ $imageSlot }}" alt="" class="absolute inset-0 h-full w-full object-cover">
+                        <img src="{{ $imageSlot === 'login-visual' ? '/images/login-visual.jpg' : '/images/placeholder.jpg' }}" data-slot="{{ $imageSlot }}" alt="" class="absolute inset-0 h-full w-full object-cover">
                         <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
                     </div>
                     <div class="shrink-0 p-7">
@@ -53,7 +53,7 @@
             </div>
 
             <div class="my-auto w-full" style="max-width: {{ $contentMaxWidth }}; position:relative; z-index:1;">
-                <x-mykaunsel-logo class="mb-8 md:hidden" />
+                <a href="/" aria-label="MyKaunsel" class="mb-8 block md:hidden"><img src="/images/mykaunsel-logo.png" alt="MyKaunsel" class="h-9 w-auto"></a>
 
                 {{ $slot }}
             </div>
