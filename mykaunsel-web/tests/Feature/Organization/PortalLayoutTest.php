@@ -53,9 +53,11 @@ class PortalLayoutTest extends TestCase
     public function test_pages_not_built_yet_are_shown_as_soon_and_are_not_links(): void
     {
         [$user, $session] = $this->as(MembershipRole::OrgAdmin);
+        // Every page of the portals is built now, so a page that does not exist yet is made up to show what the sidebar does with one.
+        config(['portal-nav.org_admin' => array_merge(config('portal-nav.org_admin'), [['label' => 'Pretend page', 'route' => 'org.pretend', 'icon' => 'M0 0h24v24H0z']])]);
 
         $this->actingAs($user)->withSession($session)->get(route('org.dashboard'))->assertOk()
-            ->assertSee('Reports')->assertSee('Soon')->assertDontSee(route('org.dashboard').'/reports', false);
+            ->assertSee('Pretend page')->assertSee('Soon')->assertDontSee('org/pretend', false);
     }
 
     public function test_a_counselor_sees_the_counselor_sidebar(): void

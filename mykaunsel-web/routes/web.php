@@ -158,6 +158,7 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/invitations/{id}/revoke', [OrgMemberController::class, 'revokeInvitation'])->whereNumber('id')->middleware('throttle:30,1')->name('invitations.revoke');
         Route::post('/codes', [OrgMemberController::class, 'createCode'])->middleware('throttle:20,1')->name('codes.store');
         Route::post('/codes/{id}/revoke', [OrgMemberController::class, 'revokeCode'])->whereNumber('id')->middleware('throttle:30,1')->name('codes.revoke');
+        Route::get('/reviews', [\App\Http\Controllers\Organization\OrgReviewController::class, 'index'])->middleware('throttle:60,1')->name('reviews');
         Route::get('/reports', [\App\Http\Controllers\Organization\OrgReportController::class, 'overview'])->middleware('throttle:60,1')->name('reports');
         Route::get('/reports/use', [\App\Http\Controllers\Organization\OrgReportController::class, 'use'])->middleware('throttle:60,1')->name('reports.use');
         Route::get('/reports/members', [\App\Http\Controllers\Organization\OrgReportController::class, 'members'])->middleware('throttle:60,1')->name('reports.members');

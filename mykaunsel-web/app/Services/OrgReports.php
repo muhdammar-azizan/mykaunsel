@@ -356,6 +356,27 @@ class OrgReports
      */
     public function quality(Organization $org, array $period): array
     {
+        $ratings = $this->ratings($org, $period);
+        unset($ratings['distribution']);
+
+        return $ratings + $this->cancelling($org, $period);
+    }
+
+    /**
+     * The organization's Reviews page: the stars clients gave after sessions with its counselors, and nothing else. NEVER a comment, a client, or the
+     * date of one review. An average is shown from `reviews.min_for_average` reviews (overall, and per counselor on their own count); how the stars are
+     * spread follows the same hiding rule as every other set.
+     *
+     * @return array<string, mixed>
+     */
+    public function reviews(Organization $org, array $period): array
+    {
+        return $this->ratings($org, $period);
+    }
+
+    /** @return array<string, mixed> */
+    private function ratings(Organization $org, array $period): array
+    {
         $needed = (int) config('reviews.min_for_average');
 
         $reviews = DB::table('reviews')->join('bookings', 'bookings.id', '=', 'reviews.booking_id')->join('calendar_entries', 'calendar_entries.id', '=', 'bookings.calendar_entry_id')
@@ -377,6 +398,24 @@ class OrgReports
             'average' => count($c['ratings']) >= $needed ? number_format(array_sum($c['ratings']) / count($c['ratings']), 1) : null,
         ])->sortBy('name')->values()->all();
 
+        $stars = ['5 stars' => 0, '4 stars' => 0, '3 stars' => 0, '2 stars' => 0, '1 star' => 0];
+
+        foreach ($reviews as $review) {
+            $stars[(int) $review->rating === 1 ? '1 star' : (int) $review->rating.' stars']++;
+        }
+
+        return [
+            'needed' => $needed,
+            'reviews' => ReportFigures::one($reviews->count()),
+            'average' => $reviews->count() >= $needed ? number_format($reviews->avg('rating'), 1) : null,
+            'counselors' => $counselors,
+            'distribution' => ReportFigures::set($stars),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function cancelling(Organization $org, array $period): array
+    {
         $cancel = DB::table('bookings')->join('calendar_entries', 'calendar_entries.id', '=', 'bookings.calendar_entry_id')
             ->where('bookings.org_id', $org->getKey())
             ->whereDate('calendar_entries.entry_date', '>=', $period['from']->format('Y-m-d'))->whereDate('calendar_entries.entry_date', '<=', $period['to']->format('Y-m-d'))
@@ -390,10 +429,6 @@ class OrgReports
         ];
 
         return [
-            'needed' => $needed,
-            'reviews' => ReportFigures::one($reviews->count()),
-            'average' => $reviews->count() >= $needed ? number_format($reviews->avg('rating'), 1) : null,
-            'counselors' => $counselors,
             'sessions' => ReportFigures::one($cancel->count()),
             'cancel_rate' => $cancel->count() >= (int) config('org-reports.min_group') ? round($cancelled->count() / $cancel->count() * 100).'%' : null,
             'cancelled_by' => ReportFigures::set($by),
