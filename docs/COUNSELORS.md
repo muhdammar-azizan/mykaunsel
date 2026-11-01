@@ -91,3 +91,13 @@ Scheduled daily at **00:10 in the application timezone** (needs the scheduler / 
 
 **Timezone note:** `config/app.php` has `timezone => UTC`, and `PaValidity` uses it, so "valid until 22 Oct" ends at 23 Oct 00:00 UTC = 08:00 in Malaysia. Set the application timezone to `Asia/Kuala_Lumpur` if the PA should end at Malaysian midnight (the schedule time follows it automatically).
 
+## Counselors of an organization (built 2 November 2026)
+
+Before this, every counselor signed up on their own and belonged only to the platform organization (independent). An organization can now assign a counselor. Code: `App\Services\OrgCounselors`. Tests: `OrgCounselorsTest`.
+
+- **Assigning:** the organization admin invites an e-mail address (Counselors page). The counselor signs in to the website with that address (confirmed) and **accepts or declines on the counselor Dashboard**. Open for 30 days, at most 50 waiting. The counselor needs a counselor account **already approved by MyKaunsel**: verification (KB, PA, LKM) is always MyKaunsel's, never the organization's. Accepting adds an active counselor membership; the independent one stays, and a counselor may work for several organizations (the Schedule asks which one a time is for).
+- **Setting "may our counselors also take independent clients"** (`organizations.counselors_may_practise_independently`, yes by default): with "no", a counselor who works independently can not accept until that ends. **Ending an independent practice is not built**, so the counselor is told to contact MyKaunsel.
+- **Setting "who can book"** (`access_model`, closed = only members, open = anyone) can now be changed by the organization admin on the same page.
+- **Removing a counselor** ends the assignment at once (no grace period): later sessions with that organization are cancelled and the time given back (`cancelled_by = system`), the clients are told (e-mail and app notification), requests waiting for an answer are closed, times opened for that organization and never booked are deleted, the weekly lines for it are deleted, and the counselor is told (a count, no client names). Sessions in other organizations or independently are untouched.
+- **Audit** (ids and counts only): `counselor.invited`, `counselor.invitation_revoked`, `counselor.invitation_accepted`, `counselor.invitation_declined`, `counselor.removed_from_org`, `organization.counselor_settings_updated`.
+- **Not built:** the reference-code way for a counselor whose address has no company domain, ending an independent practice, and a bell notification to the organization when a counselor answers.

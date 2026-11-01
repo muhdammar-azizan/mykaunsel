@@ -13,6 +13,22 @@
     <h1 class="text-[24px] font-bold leading-tight tracking-tight">Welcome, {{ $name }}</h1>
     <p class="mt-1 text-[14px] text-brand-ink/65">{{ $today_label }} (Malaysia time)</p>
 
+    @foreach ($invitations as $invitation)
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-blue/30 bg-brand-blue/[.06] px-5 py-4 text-[14px]" role="status">
+            <span><span class="font-semibold">{{ $invitation['organization'] }}</span> invited you to be one of its counselors. MyKaunsel has already approved you; the organization will be able to see that you work for it.</span>
+            <span class="flex gap-2">
+                <form method="POST" action="{{ route('counselor.invitations.accept', $invitation['id']) }}">@csrf<button class="inline-flex min-h-[40px] items-center rounded-md bg-brand-blue px-4 text-[14px] font-semibold text-white">Accept</button></form>
+                <form method="POST" action="{{ route('counselor.invitations.decline', $invitation['id']) }}">@csrf<button class="{{ $outline }}">Decline</button></form>
+            </span>
+        </div>
+    @endforeach
+    @if (session('status'))
+        <div role="status" class="mt-4 rounded-xl border border-emerald-300 bg-emerald-50 px-5 py-3 text-[14px] font-semibold text-emerald-800">{{ session('status') }}</div>
+    @endif
+    @if ($errors->has('invitation'))
+        <div role="alert" class="mt-4 rounded-xl border border-brand-red/25 bg-brand-red/[.06] px-5 py-3 text-[14px] font-semibold text-brand-red">{{ $errors->first('invitation') }}</div>
+    @endif
+
     @foreach ($notices as $notice)
         <div class="mt-4 flex items-start gap-3 rounded-xl px-5 py-4 text-[14px] font-semibold {{ $notice['tone'] === 'red' ? 'bg-brand-red/[.07] text-brand-red' : 'bg-[#FDF4E3] text-[#6B4C0C]' }}" role="status">
             <svg class="mt-0.5 shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>

@@ -199,6 +199,12 @@ return [
         'review.replied' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Counselor replied to a review'],
         'review.flagged' => ['category' => 'counselors', 'badge' => 'security', 'label' => 'Counselor flagged a review'],
         'counselor.profile_updated' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Counselor changed their own profile (which fields, not the values)'],
+        'counselor.invited' => ['category' => 'members', 'badge' => 'created', 'label' => 'Counselor invited by an organization'],
+        'counselor.invitation_revoked' => ['category' => 'members', 'badge' => 'deleted', 'label' => 'Counselor invitation cancelled'],
+        'counselor.invitation_accepted' => ['category' => 'members', 'badge' => 'approved', 'label' => 'Counselor accepted an organization'],
+        'counselor.invitation_declined' => ['category' => 'members', 'badge' => 'rejected', 'label' => 'Counselor declined an organization'],
+        'counselor.removed_from_org' => ['category' => 'members', 'badge' => 'suspended', 'label' => 'Counselor removed by an organization'],
+        'organization.counselor_settings_updated' => ['category' => 'members', 'badge' => 'updated', 'label' => 'Organization changed who may be booked'],
         'booking.idempotency_purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old booking request keys deleted'],
 
         // The audit log itself

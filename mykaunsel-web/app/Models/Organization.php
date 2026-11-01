@@ -34,6 +34,7 @@ class Organization extends Model
         'ssm_number',
         'estimated_size',
         'access_model',
+        'counselors_may_practise_independently',
         'subscription_status',
         'rejection_reason',
         'submission_count',
@@ -73,6 +74,7 @@ class Organization extends Model
         return [
             'org_type' => OrgType::class,
             'access_model' => AccessModel::class,
+            'counselors_may_practise_independently' => 'boolean',
             'subscription_status' => OrgStatus::class,
             'subscription_ends_at' => 'datetime',
             'submission_count' => 'integer',

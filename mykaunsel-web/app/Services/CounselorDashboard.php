@@ -46,6 +46,7 @@ class CounselorDashboard
             'requests_count' => count($requests),
             'next_free' => $this->nextFree($counselor, $now),
             'notices' => $this->notices($counselor, $now),
+            'invitations' => app(OrgCounselors::class)->invitationsFor($counselor)->map(fn ($i) => ['id' => $i->public_id, 'organization' => $i->organization->name])->all(),
         ];
     }
 

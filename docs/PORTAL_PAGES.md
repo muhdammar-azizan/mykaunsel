@@ -19,7 +19,7 @@ Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md.
 ## Organization admin portal
 - [x] Dashboard: members, counselors, sessions this month, items waiting for approval (`OrgDashboard` service; sessions under 5 shown as "fewer than 5", `config/org-reports.php`; notices for waiting people, plan and invoices)
 - [ ] Members: list, waiting for approval, invitations, invite code, remove or end membership
-- [ ] Counselors: the organization's counselors, add or remove, who may be booked (the two settings)
+- [x] Counselors: the organization's counselors, invite by e-mail, remove, who may be booked (the two settings) (`/org/counselors`; the counselor answers on the counselor Dashboard; the reference-code way for counselors and ending an independent practice are NOT built: see COUNSELORS.md)
 - [ ] Reviews: reviews of the organization's counselors
 - [ ] Reports: overview, use, members, counselors, quality; CSV and PDF export; compare two periods
 - [ ] Subscription: current plan and end date, pay by the online page, invoices, receipts, request renewal

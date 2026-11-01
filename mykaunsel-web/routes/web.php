@@ -146,6 +146,10 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
     Route::prefix('org')->name('org.')->middleware('role:org_admin')->group(function () {
         Route::get('/dashboard', [OrgDashboardController::class, 'index'])->name('dashboard');
         Route::get('/counselors', [OrgCounselorController::class, 'index'])->name('counselors');
+        Route::post('/counselors/invitations', [OrgCounselorController::class, 'invite'])->middleware('throttle:20,1')->name('counselors.invite');
+        Route::post('/counselor-invitations/{id}/revoke', [OrgCounselorController::class, 'revokeInvitation'])->whereNumber('id')->middleware('throttle:30,1')->name('counselor-invitations.revoke');
+        Route::post('/counselors/{id}/remove', [OrgCounselorController::class, 'remove'])->whereNumber('id')->middleware('throttle:20,1')->name('counselors.remove');
+        Route::put('/counselors/settings', [OrgCounselorController::class, 'settings'])->middleware('throttle:20,1')->name('counselors.settings');
         Route::get('/members', [OrgMemberController::class, 'index'])->name('members');
         Route::post('/members/{id}/approve', [OrgMemberController::class, 'approve'])->whereNumber('id')->middleware('throttle:60,1')->name('members.approve');
         Route::post('/members/{id}/decline', [OrgMemberController::class, 'decline'])->whereNumber('id')->middleware('throttle:60,1')->name('members.decline');
@@ -179,6 +183,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/planner/hours/fill', [CounselorPlannerController::class, 'fillHours'])->middleware('throttle:20,1')->name('planner.hours.fill');
         Route::delete('/planner/hours/{publicId}', [CounselorPlannerController::class, 'destroyHours'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('planner.hours.destroy');
         Route::get('/appointments', [CounselorAppointmentController::class, 'index'])->name('appointments');
+        Route::post('/invitations/{publicId}/accept', [\App\Http\Controllers\Counselor\CounselorInvitationController::class, 'accept'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:20,1')->name('invitations.accept');
+        Route::post('/invitations/{publicId}/decline', [\App\Http\Controllers\Counselor\CounselorInvitationController::class, 'decline'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:20,1')->name('invitations.decline');
         Route::get('/notes', [\App\Http\Controllers\Counselor\CounselorNoteController::class, 'index'])->name('notes');
         Route::get('/notes/{publicId}', [\App\Http\Controllers\Counselor\CounselorNoteController::class, 'show'])->where('publicId', '[0-9A-Za-z]{26}')->name('notes.show');
         Route::put('/notes/{publicId}', [\App\Http\Controllers\Counselor\CounselorNoteController::class, 'save'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('notes.save');
