@@ -71,7 +71,7 @@ class OrgCounselorController extends Controller
     {
         $input = $request->validate(['access_model' => ['required', Rule::in([AccessModel::Open->value, AccessModel::Closed->value])]]);
 
-        $counselors->updateSettings($this->organization($request), $request->user(), AccessModel::from($input['access_model']), $request->boolean('counselors_may_practise_independently'));
+        $counselors->updateSettings($this->organization($request), $request->user(), AccessModel::from($input['access_model']), $request->boolean('allow_counselor_freelance'));
 
         return back()->with('status', 'Settings saved.');
     }

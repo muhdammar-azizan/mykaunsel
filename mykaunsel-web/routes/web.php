@@ -163,6 +163,7 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/subscription/invoices/{publicId}/pay', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'pay'])->where('publicId', '[0-9a-z]{26}')->middleware('throttle:20,1')->name('subscription.pay');
         Route::post('/subscription/renewal', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'requestRenewal'])->middleware('throttle:10,1')->name('subscription.renewal');
         Route::get('/settings', [OrgSettingController::class, 'index'])->name('settings');
+        Route::put('/settings', [OrgSettingController::class, 'update'])->middleware('throttle:20,1')->name('settings.update');
     });
 
     // The bell of the counselor and organization admin portals: only ever your own notifications (PortalNotificationController).

@@ -214,15 +214,15 @@ class OrgCounselors
                 $changes['access_model'] = ['old' => $locked->access_model->value, 'new' => $access->value];
             }
 
-            if ((bool) $locked->counselors_may_practise_independently !== $mayPractiseIndependently) {
-                $changes['counselors_may_practise_independently'] = ['old' => (bool) $locked->counselors_may_practise_independently, 'new' => $mayPractiseIndependently];
+            if ((bool) $locked->allow_counselor_freelance !== $mayPractiseIndependently) {
+                $changes['allow_counselor_freelance'] = ['old' => (bool) $locked->allow_counselor_freelance, 'new' => $mayPractiseIndependently];
             }
 
             if ($changes === []) {
                 return;
             }
 
-            $locked->forceFill(['access_model' => $access, 'counselors_may_practise_independently' => $mayPractiseIndependently])->save();
+            $locked->forceFill(['access_model' => $access, 'allow_counselor_freelance' => $mayPractiseIndependently])->save();
             Audit::log('organization.counselor_settings_updated', $locked, ['changes' => $changes], $admin);
         });
     }
@@ -256,7 +256,7 @@ class OrgCounselors
                 throw new RuntimeException('MyKaunsel has to approve your counselor account before you can work for an organization.');
             }
 
-            if (! $org->counselors_may_practise_independently && $this->practisesIndependently($counselor)) {
+            if (! $org->allow_counselor_freelance && $this->practisesIndependently($counselor)) {
                 throw new RuntimeException("{$org->name} does not allow its counselors to take independent clients on MyKaunsel, and you do. Ending an independent practice is not available here yet: please contact MyKaunsel.");
             }
 

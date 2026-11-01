@@ -163,14 +163,14 @@ class OrgCounselorsTest extends TestCase
 
     public function test_an_organization_that_does_not_allow_independent_practice_refuses_an_independent_counselor(): void
     {
-        $this->acme->update(['counselors_may_practise_independently' => false]);
+        $this->acme->update(['allow_counselor_freelance' => false]);
         $aina = $this->independent();
         $invitation = $this->invitation($aina->user->email);
 
         $this->asCounselor($aina)->post(route('counselor.invitations.accept', $invitation->public_id))->assertSessionHasErrors('invitation');
         $this->assertNull($invitation->fresh()->accepted_at);
 
-        $this->acme->update(['counselors_may_practise_independently' => true]);
+        $this->acme->update(['allow_counselor_freelance' => true]);
         $this->asCounselor($aina)->post(route('counselor.invitations.accept', $invitation->public_id))->assertSessionHas('status');
     }
 
@@ -245,7 +245,7 @@ class OrgCounselorsTest extends TestCase
 
         $this->acme->refresh();
         $this->assertSame(AccessModel::Open, $this->acme->access_model);
-        $this->assertFalse($this->acme->counselors_may_practise_independently);
+        $this->assertFalse($this->acme->allow_counselor_freelance);
         $this->assertSame(1, $this->audit('organization.counselor_settings_updated')->count());
 
         $this->hr()->put(route('org.counselors.settings'), ['access_model' => 'open']);

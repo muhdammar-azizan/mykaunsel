@@ -96,7 +96,7 @@
             </fieldset>
 
             <label class="flex items-start gap-3 border-t border-[#EEEDEA] pt-5">
-                <input type="checkbox" name="counselors_may_practise_independently" value="1" @checked(old('counselors_may_practise_independently', $organization->counselors_may_practise_independently)) class="mt-1 h-5 w-5 rounded border-brand-ink/30 text-brand-blue">
+                <input type="checkbox" name="allow_counselor_freelance" value="1" @checked(old('allow_counselor_freelance', $organization->allow_counselor_freelance)) class="mt-1 h-5 w-5 rounded border-brand-ink/30 text-brand-blue">
                 <span class="text-[14px]"><span class="font-semibold">Our counselors may also take independent clients on MyKaunsel</span><span class="block text-[13px] text-brand-ink/65">Switched off, a counselor who already works independently on MyKaunsel can not accept your invitation until that ends.</span></span>
             </label>
 

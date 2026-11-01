@@ -23,4 +23,4 @@ Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md.
 - [ ] Reviews: reviews of the organization's counselors
 - [ ] Reports: overview, use, members, counselors, quality; CSV and PDF export; compare two periods
 - [x] Subscription: current plan and end date, pay by the online page, invoices, receipts, request renewal (`/org/subscription`; paying uses the test page, no real money; invoice and receipt e-mails and enforcing the end date are NOT built)
-- [ ] Organization settings: name, details, domains, access model
+- [x] Organization settings: name, details, domains, access model (`/org/settings`; name, kind, SSM and domains are read only because MyKaunsel verified them; the cancellation deadline is editable; "who may be booked" is on the Counselors page; `OrgSettings` service)

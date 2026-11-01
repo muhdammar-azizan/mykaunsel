@@ -36,7 +36,6 @@ class Organization extends Model
         'access_model',
         'renewal_requested_at',
         'renewal_requested_by',
-        'counselors_may_practise_independently',
         'subscription_status',
         'rejection_reason',
         'submission_count',
@@ -76,7 +75,6 @@ class Organization extends Model
         return [
             'org_type' => OrgType::class,
             'access_model' => AccessModel::class,
-            'counselors_may_practise_independently' => 'boolean',
             'subscription_status' => OrgStatus::class,
             'subscription_ends_at' => 'datetime',
             'renewal_requested_at' => 'datetime',
