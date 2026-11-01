@@ -41,6 +41,15 @@ return [
         'card_specializations' => 3,
     ],
 
-    // Platform Admin "Send renewal reminder": at most one email to the same counselor in this many hours.
+    // What a counselor may pick on their own Profile page. Lists, not free text, so nothing unreviewed reaches a public profile. A starting
+    // list for the owner to edit; what a counselor already has that is not listed is kept.
+    'profile' => [
+        'languages' => ['English', 'Bahasa Malaysia', 'Mandarin', 'Tamil', 'Cantonese', 'Hokkien', 'Arabic'],
+        'specializations' => ['Anxiety', 'Depression', 'Stress', 'Relationships', 'Family', 'Grief and loss', 'Trauma', 'Addiction', 'Career', 'Study and exams', 'Self-esteem', 'Sleep'],
+        // Gap kept free between two sessions, in minutes.
+        'buffer_minutes' => [0, 5, 10, 15, 30, 45, 60],
+    ],
+
+    // Platform Admin "Send renewal reminder\": at most one email to the same counselor in this many hours.
     'renewal_reminder_cooldown_hours' => 24,
 ];

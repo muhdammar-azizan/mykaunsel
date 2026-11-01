@@ -198,6 +198,7 @@ return [
         'review.edited' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Review edited'],
         'review.replied' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Counselor replied to a review'],
         'review.flagged' => ['category' => 'counselors', 'badge' => 'security', 'label' => 'Counselor flagged a review'],
+        'counselor.profile_updated' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Counselor changed their own profile (which fields, not the values)'],
         'booking.idempotency_purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old booking request keys deleted'],
 
         // The audit log itself
