@@ -194,6 +194,10 @@ return [
         'session_note.saved' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Session note saved (the text is never recorded)'],
         'session_note.deleted' => ['category' => 'counselors', 'badge' => 'deleted', 'label' => 'Session note deleted'],
         'session_note.purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old session notes erased'],
+        'review.submitted' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Review written (the words are never recorded)'],
+        'review.edited' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Review edited'],
+        'review.replied' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Counselor replied to a review'],
+        'review.flagged' => ['category' => 'counselors', 'badge' => 'security', 'label' => 'Counselor flagged a review'],
         'booking.idempotency_purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old booking request keys deleted'],
 
         // The audit log itself
@@ -220,6 +224,7 @@ return [
         LkmDirectorySnapshot::class => 'lkm_record',
         Complaint::class => 'complaint',
         Booking::class => 'booking',
+        \App\Models\Review::class => 'review',
         FeedPost::class => 'feed_post',
         FeedComment::class => 'feed_comment',
         AdminInvitation::class => 'admin_invitation',

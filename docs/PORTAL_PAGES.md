@@ -13,7 +13,7 @@ Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md.
 - [x] Time requests: members asking for a time, accept or decline (own page `/counselor/requests` and a sidebar item; the Bookings page keeps a pointer when some are waiting; the reason on a decline is optional and the client sees it)
 - [x] Schedule: weekly slots, blocked times (leave, holidays) (`/counselor/planner`; blocks are whole days or part of a day, one day or up to 60 days; refused over a booked session; free times inside a block can not be booked until it is removed; `CounselorBlocks`)
 - [x] Session notes: private notes per session, list and edit (`/counselor/notes`; see SESSION_NOTES.md: encrypted, only the writer reads, erased after 7 years (placeholder))
-- [ ] Reviews: reviews received, reply, per the agreed review rules
+- [x] Reviews: reviews received, reply, flag (`/counselor/reviews`; the counselor's page and the server rules are built; the client's screen, the Platform Admin moderation pages and the weekly summary are NOT: see REVIEWS.md)
 - [ ] Profile: photo, bio, specialties, languages, session types, verification status
 
 ## Organization admin portal

@@ -183,6 +183,9 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::get('/notes/{publicId}', [\App\Http\Controllers\Counselor\CounselorNoteController::class, 'show'])->where('publicId', '[0-9A-Za-z]{26}')->name('notes.show');
         Route::put('/notes/{publicId}', [\App\Http\Controllers\Counselor\CounselorNoteController::class, 'save'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('notes.save');
         Route::delete('/notes/{publicId}', [\App\Http\Controllers\Counselor\CounselorNoteController::class, 'destroy'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:30,1')->name('notes.destroy');
+        Route::get('/reviews', [\App\Http\Controllers\Counselor\CounselorReviewController::class, 'index'])->name('reviews');
+        Route::post('/reviews/{publicId}/reply', [\App\Http\Controllers\Counselor\CounselorReviewController::class, 'reply'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:30,1')->name('reviews.reply');
+        Route::post('/reviews/{publicId}/flag', [\App\Http\Controllers\Counselor\CounselorReviewController::class, 'flag'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:30,1')->name('reviews.flag');
         Route::get('/requests', [CounselorAppointmentController::class, 'requests'])->name('requests');
         Route::get('/appointments/{publicId}', [CounselorAppointmentController::class, 'show'])->where('publicId', '[0-9A-Za-z]{26}')->name('appointments.show');
         Route::post('/appointments/{publicId}/cancel', [CounselorAppointmentController::class, 'cancel'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:30,1')->name('appointments.cancel');
