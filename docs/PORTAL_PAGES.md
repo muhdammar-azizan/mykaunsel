@@ -17,7 +17,7 @@ Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md.
 - [x] Profile: verification status (read only), names clients see, languages, specializations, meeting app, gap between sessions, accept time requests (`/counselor/profile`; picked from lists in `config/counselors.php`). Photo and a written bio are NOT built: they need an approval step first (PUBLIC_COUNSELOR_DATA.md)
 
 ## Organization admin portal
-- [ ] Dashboard: members, counselors, sessions this month, items waiting for approval
+- [x] Dashboard: members, counselors, sessions this month, items waiting for approval (`OrgDashboard` service; sessions under 5 shown as "fewer than 5", `config/org-reports.php`; notices for waiting people, plan and invoices)
 - [ ] Members: list, waiting for approval, invitations, invite code, remove or end membership
 - [ ] Counselors: the organization's counselors, add or remove, who may be booked (the two settings)
 - [ ] Reviews: reviews of the organization's counselors
