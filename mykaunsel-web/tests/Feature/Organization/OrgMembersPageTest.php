@@ -301,4 +301,31 @@ class OrgMembersPageTest extends TestCase
 
         $this->assertSame(MembershipStatus::PendingApproval, $joined->fresh()->status);
     }
+
+    public function test_the_search_finds_people_by_name_or_e_mail_in_both_lists_and_only_in_this_organization(): void
+    {
+        $siti = $this->person('Siti Aminah');
+        $this->join($siti, $this->acme, MembershipRole::Employee, MembershipStatus::Active);
+        $ali = $this->person('Ali Baba');
+        $this->join($ali, $this->acme, MembershipRole::Employee, MembershipStatus::Active);
+        $this->waiting('Siti Waiting');
+        $this->join($this->person('Siti Elsewhere'), $this->beta, MembershipRole::Employee, MembershipStatus::Active);
+
+        $page = $this->hr()->get(route('org.members', ['q' => 'siti']))->assertOk();
+        $page->assertSee('Members (1)')->assertSee('Siti Aminah')->assertSee('Siti Waiting')->assertDontSee('Ali Baba')->assertDontSee('Siti Elsewhere')->assertSee('Clear');
+
+        $this->hr()->get(route('org.members', ['q' => strtolower($ali->email)]))->assertSee('Ali Baba')->assertDontSee('Siti Aminah');
+        $this->hr()->get(route('org.members', ['q' => 'nobody like this']))->assertSee('Nobody matches your search.')->assertSee('Nobody waiting matches your search.');
+        $this->hr()->get(route('org.members', ['q' => '%']))->assertSee('Nobody matches your search.');
+    }
+
+    public function test_members_are_shown_a_page_at_a_time_with_the_whole_count_in_the_heading(): void
+    {
+        foreach (range(1, 27) as $i) {
+            $this->join($this->person('Member '.str_pad((string) $i, 2, '0', STR_PAD_LEFT)), $this->acme, MembershipRole::Employee, MembershipStatus::Active);
+        }
+
+        $this->hr()->get(route('org.members'))->assertSee('Members (27)')->assertSee('Member 25')->assertDontSee('Member 26');
+        $this->hr()->get(route('org.members', ['page' => 2]))->assertSee('Member 26')->assertSee('Member 27')->assertDontSee('Member 01');
+    }
 }

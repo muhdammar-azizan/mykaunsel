@@ -22,7 +22,7 @@ Nothing tells a new employee where a code is typed, so there are two nudges: (1)
 
 ## Web (organization admin): `/org/members`
 
-Waiting for approval (Approve / Decline), Invite by e-mail (send, list, cancel), Reference codes (create with expiry and number of people, switch off), Members (Remove). Always about the admin's current organization; an id from another organization is a 404. The page still uses the older look, like the counselor portal.
+Waiting for approval (Approve / Decline), Invite by e-mail (send, list, cancel), Reference codes (create with expiry and number of people, switch off), Members (Remove). Always about the admin's current organization; an id from another organization is a 404. The page uses the portal look (restyled 2 November 2026). A search (name or e-mail, in both the waiting list and the members) and paging (25 members a page) were added.
 
 ## API (all need a signed-in, verified person)
 

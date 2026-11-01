@@ -26,6 +26,9 @@ use RuntimeException;
 class OrgMemberController extends Controller
 {
     /** Days a new code works, as offered on the form. */
+    /** Members per page. */
+    public const PER_PAGE = 25;
+
     public const EXPIRY_CHOICES = ['7' => '7 days', '30' => '30 days', '90' => '90 days', 'never' => 'No expiry'];
 
     public function index(Request $request)
@@ -33,14 +36,19 @@ class OrgMemberController extends Controller
         $organization = $this->organization($request);
 
         $clientRoles = array_map(fn ($role) => $role->value, MembershipService::CLIENT_ROLES);
+        $search = trim((string) $request->query('q'));
+        $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_strtolower($search)).'%';
         $members = fn (MembershipStatus $status) => Membership::query()
             ->where('org_id', $organization->getKey())->whereIn('role', $clientRoles)->where('status', $status->value)
+            ->when($search !== '', fn ($query) => $query->whereHas('user', fn ($user) => $user
+                ->whereRaw("lower(name) like ? escape '!'", [$like])->orWhereRaw("lower(email) like ? escape '!'", [$like])))
             ->with('user:id,name,email');
 
         return view('organizations.dashboard.members', [
             'organization' => $organization,
             'waiting' => $members(MembershipStatus::PendingApproval)->orderBy('joined_at')->get(),
-            'members' => $members(MembershipStatus::Active)->orderBy('joined_at')->get(),
+            'members' => $members(MembershipStatus::Active)->orderBy('joined_at')->orderBy('id')->paginate(self::PER_PAGE)->withQueryString(),
+            'search' => $search,
             'codes' => OrgInviteCode::query()->where('org_id', $organization->getKey())->orderByDesc('id')->limit(50)->get(),
             'invitations' => OrgMemberInvitation::query()->where('org_id', $organization->getKey())->orderByDesc('id')->limit(50)->get(),
             'expiryChoices' => self::EXPIRY_CHOICES,
