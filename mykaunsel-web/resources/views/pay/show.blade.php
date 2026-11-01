@@ -12,6 +12,7 @@
 
         @if ($payment->status === \App\Models\InvoicePayment::SUCCEEDED)
             <p class="mt-5 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-[14px] font-semibold text-emerald-800" role="status">Payment received. Thank you. Reference {{ $payment->provider_reference }}.</p>
+            <p class="mt-4"><a href="{{ route('dashboard') }}" class="text-[14px] font-semibold underline">Back to MyKaunsel</a></p>
         @elseif ($payment->status === \App\Models\InvoicePayment::FAILED)
             <p class="mt-5 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-[14px] font-semibold text-red-700" role="alert">The payment failed. Nothing was charged. Ask for a new payment page to try again.</p>
         @elseif ($payment->isExpired())

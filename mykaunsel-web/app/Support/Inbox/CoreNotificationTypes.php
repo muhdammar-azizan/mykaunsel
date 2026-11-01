@@ -55,6 +55,14 @@ final class CoreNotificationTypes
             self::existsOnly(CounselorProfile::class), 'attempt',
         ));
 
+        // ---- Subscriptions -----------------------------------------------------------------------------------------------------
+        // Waiting means "still asking": MyKaunsel giving the organization a new plan clears the request and it is shown as already reviewed.
+        $registry->register(new NotificationType(
+            'subscription.renewal_requested', 'subscriptions', 'Organization asked to renew',
+            'organization', fn (?int $id) => $id ? route('platform.organizations.show', $id) : null,
+            self::stateOf(Organization::class, 'renewal_requested_at', fn ($at) => $at !== null),
+        ));
+
         // ---- LKM ---------------------------------------------------------------------------------------------------------------
         $registry->register(new NotificationType(
             'lkm.review_requested', 'lkm', 'LKM re-check requested',

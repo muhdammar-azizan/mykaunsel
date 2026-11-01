@@ -172,6 +172,9 @@
                         </x-platform.detail-row>
                     @endif
                     <x-platform.detail-row label="Members">{{ number_format($memberCount) }}</x-platform.detail-row>
+                    @if ($org->renewal_requested_at)
+                        <x-platform.detail-row label="Renewal"><span class="inline-flex rounded-full bg-brand-yellow/20 px-2.5 py-0.5 text-[11.5px] font-bold text-[#6B4C0C]">Asked on {{ $org->renewal_requested_at->format('j M Y') }}</span></x-platform.detail-row>
+                    @endif
                 </dl>
                 @if ($org->currentAssignment?->plan->max_members !== null && $org->currentAssignment && $memberCount > $org->currentAssignment->plan->max_members)
                     <p class="mt-3 rounded-xl border border-brand-yellow/50 bg-brand-yellow/10 px-4 py-2.5 text-[13px] font-semibold text-[#6B4C0C]" role="alert">Warning: {{ number_format($memberCount) }} members is more than the plan's maximum of {{ number_format($org->currentAssignment->plan->max_members) }}. Nothing is blocked.</p>

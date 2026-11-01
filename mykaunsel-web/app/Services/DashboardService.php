@@ -221,6 +221,12 @@ class DashboardService
             $ended, 'Organizations whose plan has ended', route('platform.organizations', ['tab' => 'approved']),
         );
 
+        $asked = Organization::query()->whereNotNull('renewal_requested_at')->count();
+        $sources['renewals_requested'] = $this->source(
+            collect($asked > 0 ? [$this->item('renewals_requested', 'renewals-requested', null, $asked.' '.Str::plural('organization', $asked).' asked to renew', route('platform.organizations', ['tab' => 'approved']), 'amber')] : []),
+            $asked, 'Organizations that asked to renew', route('platform.organizations', ['tab' => 'approved']),
+        );
+
         $overdue = Invoice::query()->overdue()->count();
         $sources['invoices_overdue'] = $this->source(
             collect($overdue > 0 ? [$this->item('invoices_overdue', 'invoices-overdue', null, $overdue.' '.Str::plural('invoice', $overdue).' unpaid after the due date', route('platform.invoices', ['tab' => 'overdue']), 'amber')] : []),

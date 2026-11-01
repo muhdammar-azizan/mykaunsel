@@ -66,6 +66,7 @@ class NotificationRegistryTest extends TestCase
         $expected = [
             'organization.application_submitted' => 'applications', 'organization.application_resubmitted' => 'applications',
             'counselor.application_submitted' => 'applications', 'counselor.application_resubmitted' => 'applications', 'counselor.kb_duplicate_flagged' => 'applications',
+            'subscription.renewal_requested' => 'subscriptions',
             'lkm.review_requested' => 'lkm',
             'complaint.received' => 'complaints', 'complaint.escalated' => 'complaints',
             'admin.invitation_accepted' => 'admins',
@@ -85,7 +86,7 @@ class NotificationRegistryTest extends TestCase
 
     public function test_the_groups_of_the_full_page_each_have_types(): void
     {
-        $this->assertSame(['applications', 'lkm', 'complaints', 'admins', 'system', 'activity'], array_keys(config('notifications.groups')));
+        $this->assertSame(['applications', 'subscriptions', 'lkm', 'complaints', 'admins', 'system', 'activity'], array_keys(config('notifications.groups')));
 
         foreach (array_keys(config('notifications.groups')) as $group) {
             $this->assertNotEmpty($this->registry()->keysInGroup($group), $group);

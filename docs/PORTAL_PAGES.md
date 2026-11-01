@@ -22,5 +22,5 @@ Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md.
 - [x] Counselors: the organization's counselors, invite by e-mail, remove, who may be booked (the two settings) (`/org/counselors`; the counselor answers on the counselor Dashboard; the reference-code way for counselors and ending an independent practice are NOT built: see COUNSELORS.md)
 - [ ] Reviews: reviews of the organization's counselors
 - [ ] Reports: overview, use, members, counselors, quality; CSV and PDF export; compare two periods
-- [ ] Subscription: current plan and end date, pay by the online page, invoices, receipts, request renewal
+- [x] Subscription: current plan and end date, pay by the online page, invoices, receipts, request renewal (`/org/subscription`; paying uses the test page, no real money; invoice and receipt e-mails and enforcing the end date are NOT built)
 - [ ] Organization settings: name, details, domains, access model

@@ -80,18 +80,18 @@ class OrgDashboard
             if ($org->currentAssignment === null) {
                 $notices[] = ['tone' => 'amber', 'text' => 'Your organization has no subscription plan yet. MyKaunsel will set one up with you.', 'url' => null, 'link' => null];
             } elseif ($state === 'ended') {
-                $notices[] = ['tone' => 'red', 'text' => 'Your subscription ended on '.$org->subscription_ends_at->format('j M Y').'.', 'url' => null, 'link' => null];
+                $notices[] = ['tone' => 'red', 'text' => 'Your subscription ended on '.$org->subscription_ends_at->format('j M Y').'.', 'url' => route('org.subscription'), 'link' => 'Open'];
             } elseif ($state === 'ending_soon') {
-                $notices[] = ['tone' => 'amber', 'text' => 'Your subscription ends on '.$org->subscription_ends_at->format('j M Y').'.', 'url' => null, 'link' => null];
+                $notices[] = ['tone' => 'amber', 'text' => 'Your subscription ends on '.$org->subscription_ends_at->format('j M Y').'.', 'url' => route('org.subscription'), 'link' => 'Open'];
             }
 
             $overdue = Invoice::query()->where('org_id', $org->getKey())->overdue()->count();
             $unpaid = Invoice::query()->where('org_id', $org->getKey())->open()->count();
 
             if ($overdue > 0) {
-                $notices[] = ['tone' => 'red', 'text' => $overdue.' '.($overdue === 1 ? 'invoice is' : 'invoices are').' unpaid after the due date.', 'url' => null, 'link' => null];
+                $notices[] = ['tone' => 'red', 'text' => $overdue.' '.($overdue === 1 ? 'invoice is' : 'invoices are').' unpaid after the due date.', 'url' => route('org.subscription'), 'link' => 'Pay'];
             } elseif ($unpaid > 0) {
-                $notices[] = ['tone' => 'amber', 'text' => $unpaid.' '.($unpaid === 1 ? 'invoice is' : 'invoices are').' waiting for payment.', 'url' => null, 'link' => null];
+                $notices[] = ['tone' => 'amber', 'text' => $unpaid.' '.($unpaid === 1 ? 'invoice is' : 'invoices are').' waiting for payment.', 'url' => route('org.subscription'), 'link' => 'Pay'];
             }
         }
 

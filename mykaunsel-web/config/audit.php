@@ -205,6 +205,7 @@ return [
         'counselor.invitation_declined' => ['category' => 'members', 'badge' => 'rejected', 'label' => 'Counselor declined an organization'],
         'counselor.removed_from_org' => ['category' => 'members', 'badge' => 'suspended', 'label' => 'Counselor removed by an organization'],
         'organization.counselor_settings_updated' => ['category' => 'members', 'badge' => 'updated', 'label' => 'Organization changed who may be booked'],
+        'subscription.renewal_requested' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Organization asked to renew its subscription'],
         'booking.idempotency_purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old booking request keys deleted'],
 
         // The audit log itself

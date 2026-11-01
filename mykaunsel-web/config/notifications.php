@@ -23,6 +23,7 @@ return [
     // Filter groups of the full page.
     'groups' => [
         'applications' => 'Applications',
+        'subscriptions' => 'Subscriptions',
         'lkm' => 'LKM',
         'complaints' => 'Complaints',
         'admins' => 'Admins',

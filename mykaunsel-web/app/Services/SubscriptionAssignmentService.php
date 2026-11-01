@@ -173,6 +173,9 @@ class SubscriptionAssignmentService
             $org->forceFill([
                 'current_assignment_id' => $assignment->id,
                 'subscription_ends_at' => $quote['ends_on']->copy()->endOfDay(),
+                // A renewal request is answered by giving a new plan.
+                'renewal_requested_at' => null,
+                'renewal_requested_by' => null,
             ])->save();
 
             Audit::log($previousId === null ? 'organization.plan_assigned' : 'organization.plan_changed', $org, array_filter([
