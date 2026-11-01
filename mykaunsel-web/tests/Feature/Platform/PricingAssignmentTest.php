@@ -387,15 +387,15 @@ class PricingAssignmentTest extends CounselorTestCase
         $a = $this->service()->assign($this->admin, $org, $plan->id, 'SAVE10');
 
         $this->assertSame([$org->id, $plan->id, $promo->id, 120000, 12000, 108000, $this->admin->id], [$a->org_id, $a->plan_id, $a->promo_code_id, $a->plan_price_cents, $a->discount_cents, $a->final_price_cents, $a->assigned_by]);
-        $this->assertSame(['2027-02-28', '2028-02-28'], [$a->starts_on->toDateString(), $a->ends_on->toDateString()]);
+        $this->assertSame(['2027-02-28', '2028-02-27'], [$a->starts_on->toDateString(), $a->ends_on->toDateString()]);
 
         $org->refresh();
         $this->assertSame($a->id, $org->current_assignment_id);
-        $this->assertSame('2028-02-28', $org->subscription_ends_at->toDateString());
+        $this->assertSame('2028-02-27', $org->subscription_ends_at->toDateString());
 
         $log = $this->logs('organization.plan_assigned')->sole();
         $this->assertSame(['organization', $org->id, $this->admin->id], [$log->target_type, (int) $log->target_id, (int) $log->actor_user_id]);
-        $this->assertSame(['plan_id' => $plan->id, 'assignment_id' => $a->id, 'promo_code_id' => $promo->id, 'plan_price_cents' => 120000, 'discount_cents' => 12000, 'final_price_cents' => 108000, 'starts_on' => '2027-02-28', 'ends_on' => '2028-02-28'], $log->metadata);
+        $this->assertSame(['plan_id' => $plan->id, 'assignment_id' => $a->id, 'promo_code_id' => $promo->id, 'plan_price_cents' => 120000, 'discount_cents' => 12000, 'final_price_cents' => 108000, 'starts_on' => '2027-02-28', 'ends_on' => '2028-02-27'], $log->metadata);
 
         $redeemed = $this->logs('promo.redeemed')->sole();
         $this->assertSame(['promo_code', $promo->id, 'SAVE10'], [$redeemed->target_type, (int) $redeemed->target_id, $redeemed->target_name]);
@@ -407,7 +407,7 @@ class PricingAssignmentTest extends CounselorTestCase
         Carbon::setTestNow(Carbon::parse('2028-02-29 10:00:00', 'UTC'));
         $a = $this->service()->assign($this->admin, $this->umpsa(), $this->plan()->id, null);
 
-        $this->assertSame('2029-02-28', $a->ends_on->toDateString());
+        $this->assertSame('2029-02-27', $a->ends_on->toDateString());   // the anniversary is 28 February (no 29th that year): the last day is the day before
     }
 
     public function test_changing_the_plan_makes_a_new_assignment_keeps_the_old_one_and_does_not_reuse_the_old_code(): void

@@ -11,6 +11,7 @@ use App\Exceptions\PricingChangeBlocked;
 use App\Facades\Audit;
 use App\Models\Membership;
 use App\Models\Organization;
+use App\Models\Invoice;
 use App\Models\PromoCode;
 use App\Models\SubscriptionAssignment;
 use App\Models\SubscriptionPlan;
@@ -158,6 +159,11 @@ class SubscriptionAssignmentService
 
             $previousId = $org->current_assignment_id;
 
+            // A renewal that was waiting is replaced: its unpaid invoice is voided and the promo code use it took is given back, in this same transaction.
+            if ($quote['replaces'] !== null) {
+                $this->replace($quote['replaces'], $actor);
+            }
+
             $assignment = SubscriptionAssignment::create([
                 'org_id' => $org->id,
                 'plan_id' => $plan->id,
@@ -205,6 +211,20 @@ class SubscriptionAssignmentService
 
             return $assignment->load('plan');
         });
+    }
+
+    /** Takes a waiting renewal out of the way: voids its (unpaid) invoice, gives back the promo code use, and says so in the audit log. */
+    private function replace(SubscriptionAssignment $waiting, User $actor): void
+    {
+        if ($waiting->invoice !== null && $waiting->invoice->isOpen()) {
+            app(InvoiceService::class)->void($waiting->invoice, $actor, 'Replaced by another plan before it started');
+        }
+
+        if ($waiting->promo_code_id !== null) {
+            PromoCode::query()->whereKey($waiting->promo_code_id)->where('used_count', '>', 0)->decrement('used_count');
+        }
+
+        Audit::log('subscription.renewal_replaced', $waiting->organization, ['assignment_id' => $waiting->getKey(), 'plan_id' => $waiting->plan_id, 'starts_on' => $waiting->starts_on->toDateString(), 'promo_use_returned' => $waiting->promo_code_id !== null], $actor);
     }
 
     // ---- reading it back -------------------------------------------------------------------------------------
@@ -314,10 +334,16 @@ class SubscriptionAssignmentService
             ? ['This organization has '.number_format($members).' members, which is more than the plan\'s maximum of '.number_format($plan->max_members).'. Nothing is blocked.']
             : [];
 
-        $waiting = SubscriptionAssignment::query()->where('org_id', $org->getKey())->whereDate('starts_on', '>', $today->toDateString())->orderByDesc('starts_on')->first();
+        // The renewal that is waiting (the organization's current plan, not begun yet): a new one takes its place. Once it has been PAID it can not be replaced.
+        $current = $org->current_assignment_id === null ? null : SubscriptionAssignment::query()->with('invoice')->find($org->current_assignment_id);
+        $waiting = $current !== null && $current->starts_on->toDateString() > $today->toDateString() ? $current : null;
+
+        if ($waiting !== null && $waiting->invoice?->status === Invoice::PAID) {
+            throw new PricingChangeBlocked(['The renewal that starts on '.$waiting->starts_on->format('j M Y').' has already been paid, so it can not be replaced.']);
+        }
 
         if ($waiting !== null) {
-            $warnings[] = 'A renewal that starts on '.$waiting->starts_on->format('j M Y').' is already waiting. This one starts at the same time and replaces it: void the invoice of the earlier one.';
+            $warnings[] = 'A renewal that starts on '.$waiting->starts_on->format('j M Y').' is already waiting. This one replaces it: the invoice of the earlier one is voided, and its promo code use is given back.';
         }
 
         return [
@@ -327,9 +353,10 @@ class SubscriptionAssignmentService
             'discount_cents' => $discount,
             'final_price_cents' => max(0, $plan->price_cents - $discount),
             'starts_on' => $start,
-            'ends_on' => $start->copy()->addYearNoOverflow(),
+            'ends_on' => $start->copy()->addYearNoOverflow()->subDay(),
             'members' => $members,
             'warnings' => $warnings,
+            'replaces' => $waiting,
         ];
     }
 

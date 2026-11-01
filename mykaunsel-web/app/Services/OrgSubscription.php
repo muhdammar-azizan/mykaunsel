@@ -40,6 +40,8 @@ class OrgSubscription
         return [
             'applicable' => $this->plans->canHavePlan($org),
             'current' => $current,
+            'started' => $org->currentAssignment?->hasStarted() ?? true,
+            'running_until' => $org->currentAssignment !== null && ! $org->currentAssignment->hasStarted() ? $org->currentAssignment->starts_on->copy()->subDay() : null,
             'state' => $org->subscriptionState(),
             'ends_on' => $org->subscription_ends_at,
             'members' => $members,

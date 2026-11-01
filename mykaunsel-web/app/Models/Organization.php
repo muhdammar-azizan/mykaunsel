@@ -53,19 +53,30 @@ class Organization extends Model
         'cancellation_deadline_hours',
     ];
 
-    /** none | active | ending_soon (30 days or less) | ended. The date counts as a Malaysian day. */
-    public function subscriptionState(): string
+    /**
+     * Whole Malaysian days from today to the plan's last day: 0 on the last day itself, negative once it has ended, null when there is no plan.
+     * The one place this is worked out (the state below and the reminders both use it).
+     */
+    public function daysLeft(): ?int
     {
         if ($this->subscription_ends_at === null) {
-            return 'none';
+            return null;
         }
 
         $today = \App\Models\Invoice::today();
-        $end = \Illuminate\Support\Carbon::parse($this->subscription_ends_at->toDateString(), $today->getTimezone())->startOfDay();
+
+        return (int) $today->diffInDays(\Illuminate\Support\Carbon::parse($this->subscription_ends_at->toDateString(), $today->getTimezone())->startOfDay(), false);
+    }
+
+    /** none | active | ending_soon (30 days or less) | ended. The date counts as a Malaysian day. */
+    public function subscriptionState(): string
+    {
+        $left = $this->daysLeft();
 
         return match (true) {
-            $end->lt($today) => 'ended',
-            $end->lte($today->copy()->addDays(30)) => 'ending_soon',
+            $left === null => 'none',
+            $left < 0 => 'ended',
+            $left <= 30 => 'ending_soon',
             default => 'active',
         };
     }

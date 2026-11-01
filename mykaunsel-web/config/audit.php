@@ -210,6 +210,7 @@ return [
         'organization.settings_updated' => ['category' => 'members', 'badge' => 'updated', 'label' => 'Organization changed its settings'],
         'organization.report_exported' => ['category' => 'members', 'badge' => 'exported', 'label' => 'Organization downloaded a report (which page, never the figures)'],
         'subscription.reminders_sent' => ['category' => 'system', 'badge' => 'system', 'label' => 'Subscription ending warnings sent (counts only)'],
+        'subscription.renewal_replaced' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'A renewal that had not started was replaced by another plan'],
         'booking.idempotency_purged' => ['category' => 'system', 'badge' => 'system', 'label' => 'Old booking request keys deleted'],
 
         // The audit log itself

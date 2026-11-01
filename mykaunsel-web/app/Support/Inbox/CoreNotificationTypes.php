@@ -66,11 +66,13 @@ final class CoreNotificationTypes
         // The organization admin's own bell (the portal): the subscription is about to end, and it has ended. Both open the Subscription page.
         $registry->register(new NotificationType(
             'subscription.ending', 'subscriptions', 'Your subscription is about to end',
-            'organization', fn (?int $id) => route('org.subscription'), self::existsOnly(Organization::class),
+            'organization', fn (?int $id) => route('org.subscription'),
+            self::stateOf(Organization::class, 'subscription_ends_at', fn ($at) => $at !== null && self::daysTo($at) >= 0 && self::daysTo($at) <= (int) max((array) config('subscription-reminders.admin_days'))),
         ));
         $registry->register(new NotificationType(
             'subscription.ended', 'subscriptions', 'Your subscription has ended',
-            'organization', fn (?int $id) => route('org.subscription'), self::existsOnly(Organization::class),
+            'organization', fn (?int $id) => route('org.subscription'),
+            self::stateOf(Organization::class, 'subscription_ends_at', fn ($at) => $at !== null && self::daysTo($at) < 0),
         ));
 
         // ---- LKM ---------------------------------------------------------------------------------------------------------------
@@ -120,6 +122,14 @@ final class CoreNotificationTypes
      * @param  class-string<Model>  $model
      * @param  Closure(mixed): bool  $waiting
      */
+    /** Whole Malaysian days from today to a plan's last day (negative: it has ended). */
+    private static function daysTo(\DateTimeInterface $lastDay): int
+    {
+        $today = \App\Models\Invoice::today();
+
+        return (int) $today->diffInDays(\Illuminate\Support\Carbon::parse($lastDay->format('Y-m-d'), $today->getTimezone())->startOfDay(), false);
+    }
+
     private static function stateOf(string $model, string $column, Closure $waiting): Closure
     {
         return function (array $ids) use ($model, $column, $waiting): array {

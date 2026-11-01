@@ -158,7 +158,7 @@
                                 <span class="block text-[12.5px] font-normal text-brand-ink/60">Plan price {{ \App\Support\Money::rm($org->currentAssignment->plan_price_cents) }}, discount {{ \App\Support\Money::rm($org->currentAssignment->discount_cents) }}@if ($org->currentAssignment->promoCode) ({{ $org->currentAssignment->promoCode->code }})@endif</span>
                             @endif
                         </x-platform.detail-row>
-                        <x-platform.detail-row :label="$org->currentAssignment->starts_on->toDateString() > now('Asia/Kuala_Lumpur')->toDateString() ? 'Starts' : 'Started'">{{ $org->currentAssignment->starts_on->format('j M Y') }}</x-platform.detail-row>
+                        <x-platform.detail-row :label="$org->currentAssignment->hasStarted() ? 'Started' : 'Starts'">{{ $org->currentAssignment->starts_on->format('j M Y') }}</x-platform.detail-row>
                     @endif
                     @if ($org->subscription_ends_at)
                         <x-platform.detail-row label="Ends">

@@ -127,7 +127,7 @@ class SubscriptionRemindersTest extends TestCase
 
     public function test_the_mail_says_when_it_ends_what_happens_and_where_to_renew(): void
     {
-        $mail = (new SubscriptionEndingMail($this->acme->id, 30, 'admin'))->toMail($this->hana);
+        $mail = (new SubscriptionEndingMail($this->acme->id, 30, 'admin', '2027-01-31'))->toMail($this->hana);
         $text = implode("\n", array_map(fn ($line) => (string) $line, $mail->introLines));
 
         $this->assertSame('Your subscription ends in 30 days (Acme Berhad)', $mail->subject);
@@ -135,10 +135,10 @@ class SubscriptionRemindersTest extends TestCase
         $this->assertStringContainsString('no paid day is lost', $text);
         $this->assertSame(route('org.subscription'), $mail->actionUrl);
 
-        $this->assertSame('Your subscription ends tomorrow (Acme Berhad)', (new SubscriptionEndingMail($this->acme->id, 1, 'admin'))->toMail($this->hana)->subject);
-        $this->assertSame('Your subscription ends today (Acme Berhad)', (new SubscriptionEndingMail($this->acme->id, 0, 'admin'))->toMail($this->hana)->subject);
+        $this->assertSame('Your subscription ends tomorrow (Acme Berhad)', (new SubscriptionEndingMail($this->acme->id, 1, 'admin', '2027-01-31'))->toMail($this->hana)->subject);
+        $this->assertSame('Your subscription ends today (Acme Berhad)', (new SubscriptionEndingMail($this->acme->id, 0, 'admin', '2027-01-31'))->toMail($this->hana)->subject);
 
-        $counselor = (new SubscriptionEndingMail($this->acme->id, 14, 'counselor'))->toMail($this->aina);
+        $counselor = (new SubscriptionEndingMail($this->acme->id, 14, 'counselor', '2027-01-31'))->toMail($this->aina);
         $this->assertStringContainsString('hidden from them', implode("\n", array_map(fn ($line) => (string) $line, $counselor->introLines)));
         $this->assertNull($counselor->actionUrl);
     }
@@ -208,6 +208,88 @@ class SubscriptionRemindersTest extends TestCase
         $this->on('2027-12-02');                                          // 60 days before the new last day
         $this->remind();
         Notification::assertSentToTimes($this->hana, SubscriptionEndingMail::class, 2);
+    }
+
+    // ---- nothing is lost -----------------------------------------------------------------------------------------
+
+    public function test_a_step_is_not_written_down_when_there_is_nobody_to_tell_and_the_next_run_tries_again(): void
+    {
+        Notification::fake();
+        $empty = $this->organization('Empty Berhad', '2027-01-31');
+        $later = null;
+
+        $this->on('2026-12-02');
+        $this->remind();
+        $this->assertSame(0, DB::table('subscription_reminders')->where('org_id', $empty->id)->count());          // nobody to tell: nothing written down
+
+        $later = $this->person($empty, MembershipRole::OrgAdmin, 'Joins Later');                                   // an admin arrives afterwards
+
+        $this->on('2026-12-03');
+        $this->remind();
+
+        Notification::assertSentTo($later, SubscriptionEndingMail::class);
+    }
+
+    public function test_a_step_is_taken_back_when_not_one_message_could_be_handed_over(): void
+    {
+        $this->on('2026-12-02');
+        $broken = new class extends User
+        {
+            public function notify($instance): void
+            {
+                throw new \RuntimeException('mail server down');
+            }
+        };
+        // Every recipient fails: the run must not mark the step as done.
+        $billing = new class($broken) extends \App\Services\BillingMail
+        {
+            public function __construct(private $broken) {}
+
+            public function recipients(Organization $org): \Illuminate\Support\Collection
+            {
+                return collect([$this->broken->newInstance()->forceFill(['id' => 99999, 'name' => 'X'])]);
+            }
+        };
+        app()->instance(\App\Services\BillingMail::class, $billing);
+        $counts = app(\App\Services\SubscriptionReminders::class)->run();
+
+        $this->assertSame(0, $counts['admin_mails']);
+        $this->assertSame(0, DB::table('subscription_reminders')->where(['org_id' => $this->acme->id, 'audience' => 'admin'])->count());
+    }
+
+    public function test_a_mail_still_says_what_was_true_when_it_was_made_even_after_a_renewal(): void
+    {
+        $mail = new SubscriptionEndingMail($this->acme->id, 7, 'admin', '2027-01-31');
+        $this->acme->update(['subscription_ends_at' => '2028-01-31 23:59:59']);                                   // renewed before the worker got to it
+
+        $text = implode("\n", array_map(fn ($line) => (string) $line, $mail->toMail($this->hana)->introLines));
+
+        $this->assertStringContainsString('Its last day is 31 Jan 2027', $text);
+        $this->assertStringContainsString('ended on 31 Jan 2027', implode("\n", array_map(fn ($line) => (string) $line, (new SubscriptionEndedMail($this->acme->id, '2027-01-31'))->toMail($this->hana)->introLines)));
+    }
+
+    // ---- the bell tells the truth ----------------------------------------------------------------------------------
+
+    public function test_the_bell_items_show_as_dealt_with_once_the_organization_has_renewed(): void
+    {
+        $this->on('2027-01-24');
+        $this->remind();
+        $registry = app(\App\Support\Inbox\NotificationRegistry::class);
+        $state = fn () => $registry->get('subscription.ending')->states([$this->acme->id])[$this->acme->id];
+
+        $this->assertSame('open', $state());
+
+        $this->acme->update(['subscription_ends_at' => '2028-01-31 23:59:59']);
+
+        $this->assertSame('handled', $state());
+
+        $ended = fn () => $registry->get('subscription.ended')->states([$this->acme->id])[$this->acme->id];
+        $this->acme->update(['subscription_ends_at' => '2027-01-31 23:59:59']);
+        $this->on('2027-02-02');
+        $this->assertSame('open', $ended());
+
+        $this->acme->update(['subscription_ends_at' => '2028-01-31 23:59:59']);
+        $this->assertSame('handled', $ended());
     }
 
     // ---- who is not written to ---------------------------------------------------------------------------------

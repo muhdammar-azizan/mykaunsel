@@ -27,6 +27,12 @@ class SubscriptionAssignment extends Model
         ];
     }
 
+    /** Has this plan begun? A renewal that starts tomorrow has not. (Malaysian days, like everything about a plan.) */
+    public function hasStarted(): bool
+    {
+        return $this->starts_on->toDateString() <= Invoice::today()->toDateString();
+    }
+
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class, 'org_id');

@@ -64,14 +64,14 @@ Build order (decided 1 November 2026): **step 1 done** (clinic plans; invoices w
 
 ## Subscription end date (decided by the owner, 2 November 2026; steps D, E and F BUILT 2 November 2026)
 
-`organizations.subscription_ends_at` is set from the plan (one year after the start). **Nothing enforces it yet.** All the bookings go through one check (`AvailabilityService::slotBookable`; time requests have their own time check), so the rule is small to add.
+`organizations.subscription_ends_at` is set from the plan (its last day: one year after the start, minus a day). **Nothing enforces it yet.** All the bookings go through one check (`AvailabilityService::slotBookable`; time requests have their own time check), so the rule is small to add.
 
 **Locked:**
 1. **An organization must buy a plan to use the service. LOCKED (owner, 2 November 2026): an organization with NO plan can not book either.** A just-approved organization waits for the Platform Admin to give it a plan. The test data and demo organizations will be given plans. Independent counselors (the platform organization) have no plan and are never blocked. The owner will check the result in the system.
 2. **Only the end date blocks.** An unpaid or overdue invoice does not block before the end date: it only warns the organization admins and the Platform Admins (already built).
 3. **No grace period** for new bookings after the end. Sessions already booked inside the paid period still go ahead.
 4. **The filter is done in advance, inside the system:** no slot, time request or session can exist or be offered with a start after the end date. A session is bookable only if its start is on or before the end date, including a move to another time and the approval of a time request.
-5. **Renewing early starts the new year the day after the old end date** (no day is lost); a plan that has already ended starts today. (Today a new plan always starts today: to change.)
+5. **Renewing early starts the new year the day after the old end date** (no day is lost); a plan that has already ended starts today.
 6. **What people see:** clients do not see times after the end date (the app message "your organization's access runs until ..." waits for the owner's app design; the API will carry the date). A counselor can not open times after the end date and is told why. Times already open after the end date are **hidden, not deleted**, so they come back when the plan is renewed.
 7. **Warnings, once per step, every day automatically:** the organization admins at 60, 30, 14 and 7 days before the end (e-mail, Dashboard banner, bell) and one more when it has ended; the counselors at 30 and 14 days (e-mail). The owner may add ideas later.
 
@@ -109,3 +109,10 @@ Mostly blog posts that disagree with each other, so the figures are indicative; 
 ## To check with an accountant and a lawyer before building
 
 Licensing for holding funds; sales and service tax on the commission and on the counselors' fees; e-invoicing (LHDN MyInvois); the Apple and Google rules for paying for real-world services inside an app (they generally allow outside payment for one-to-one services, to be confirmed at release); the provider's fees and who bears them; the counselor's identity and bank checks before a payout.
+
+**Corrections after the code review of 2 November 2026** (found by `/code-review high`, all fixed and tested):
+- **A year is a year.** A plan's last day is the day BEFORE its anniversary (starts 2 Nov 2026, last day 1 Nov 2027, 365 days), so a renewal that starts the day after neither overlaps nor drifts one day later every year. Before, the last day was the anniversary itself.
+- **A renewal that is waiting is replaced, not doubled.** Giving the organization another plan before the waiting renewal has started replaces it: its unpaid invoice is voided and its promo code use is given back, in the same transaction, and the audit log says so (`subscription.renewal_replaced`). A waiting renewal that has already been paid can not be replaced.
+- **The organization's page says which plan is in force:** while a renewal has not begun, the Subscription page says "Your current plan keeps running until <date>" (`SubscriptionAssignment::hasStarted()`, `Organization::daysLeft()` are the single places this is worked out).
+- **A warning is never lost:** a reminder step is written down only when there is someone to tell, and taken back if not one message could be handed over, so the next run tries again. The mails carry the last day they were made for, and the bell items show as dealt with once the organization has renewed.
+- **Decision kept as is (the owner may change it):** counselors can not switch off the two subscription warnings, although they can switch off session e-mails.

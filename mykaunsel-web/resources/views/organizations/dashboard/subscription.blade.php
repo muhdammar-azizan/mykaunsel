@@ -34,10 +34,13 @@
                     <dl class="mt-3 divide-y divide-[#EEEDEA] text-[14px]">
                         <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Plan</dt><dd class="font-semibold">{{ $current['plan_name'] }}</dd></div>
                         <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Price for the year</dt><dd class="text-right font-semibold">{{ $rm($current['price_cents']) }}@if ($current['discount_cents'] > 0)<span class="block text-[12.5px] font-normal text-brand-ink/60">Plan price {{ $rm($current['list_price_cents']) }}, discount {{ $rm($current['discount_cents']) }}</span>@endif</dd></div>
-                        <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">{{ $current['starts_on']->toDateString() > now('Asia/Kuala_Lumpur')->toDateString() ? 'Starts' : 'Started' }}</dt><dd class="font-semibold">{{ $current['starts_on']->format('j M Y') }}</dd></div>
+                        <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">{{ $started ? 'Started' : 'Starts' }}</dt><dd class="font-semibold">{{ $current['starts_on']->format('j M Y') }}</dd></div>
                         <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Ends</dt><dd class="font-semibold">{{ $current['ends_on']->format('j M Y') }}</dd></div>
                         <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Active members</dt><dd class="font-semibold">{{ number_format($members) }}@if ($max_members !== null) of {{ number_format($max_members) }}@endif</dd></div>
                     </dl>
+                    @if ($running_until)
+                        <p class="mt-3 rounded-lg bg-brand-blue/[.07] px-4 py-2.5 text-[13px] font-semibold text-brand-blue">Your current plan keeps running until {{ $running_until->format('j M Y') }}. This plan starts the day after, so no paid day is lost.</p>
+                    @endif
                     @if ($over_limit)
                         <p class="mt-3 rounded-lg bg-[#FDF4E3] px-4 py-2.5 text-[13px] font-semibold text-[#6B4C0C]">You have more members than your plan covers. Nothing is blocked; ask MyKaunsel for a bigger plan when you renew.</p>
                     @endif
