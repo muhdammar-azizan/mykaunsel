@@ -49,6 +49,8 @@ class BookingRefused extends RuntimeException
         'reply_exists' => [409, 'You have already replied to this review.'],
         'reply_closed' => [409, 'You can reply once the review has been checked.'],
         'flag_exists' => [409, 'You have already sent this review to MyKaunsel.'],
+        'planner_no_plan' => [409, "Your organization has no subscription plan yet, so a time can not be opened for it. MyKaunsel sets the plan up with your organization."],
+        'planner_after_plan' => [409, "That day is after your organization's subscription ends, so a time can not be opened. It can be opened again once the subscription is renewed."],
         'planner_not_found' => [404, 'This time was not found.'],
         'planner_has_booking' => [409, 'This time is booked, or has had a booking, so it can\'t be removed.'],
         'weekly_time_invalid' => [422, 'Choose a weekday, a start and end on 5-minute marks (the end after the start, with room for at least one time) and an allowed length.'],

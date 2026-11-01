@@ -87,6 +87,9 @@ class InvoiceService
                 'total_cents' => $invoice->total_cents,
             ], $actor ?? 'system');
 
+            // E-mailed to the organization's admins once this is committed.
+            app(BillingMail::class)->invoiceIssued($invoice);
+
             return $invoice;
         });
     }
@@ -114,6 +117,9 @@ class InvoiceService
             ]);
 
             Audit::log('invoice.marked_paid', $locked, ['invoice_id' => $locked->getKey(), 'org_id' => $locked->org_id, 'total_cents' => $locked->total_cents, 'method' => 'manual'], $admin);
+
+            // The receipt, in the same transaction: a paid invoice never lacks it.
+            app(ReceiptService::class)->issueFor($locked->fresh());
 
             return $locked;
         });

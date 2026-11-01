@@ -352,6 +352,7 @@ class PricingAssignmentTest extends CounselorTestCase
         $plan = $this->plan();
         $promo = $this->promo(['usage_limit' => 5]);
         $org = $this->umpsa();
+        $endsBefore = $org->fresh()->subscription_ends_at;          // the demo organization already has a plan: it must be exactly as it was
 
         // The audit write for the redemption fails: the unknown key makes the logger throw after the assignment and the count.
         $keep = config('audit.actions');
@@ -370,7 +371,7 @@ class PricingAssignmentTest extends CounselorTestCase
         $this->assertSame(0, SubscriptionAssignment::count());
         $this->assertSame(0, $promo->fresh()->used_count);
         $this->assertNull($org->fresh()->current_assignment_id);
-        $this->assertNull($org->fresh()->subscription_ends_at);
+        $this->assertEquals($endsBefore, $org->fresh()->subscription_ends_at);
         $this->assertCount(0, $this->logs('organization.plan_assigned'));
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Subscription;
 use App\Enums\CalendarEntryType;
 use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
@@ -293,7 +294,7 @@ class CounselorDirectory
         $earliest = $this->availability->earliestStart();
         $last = $this->availability->lastDate();
 
-        return CalendarEntry::query()
+        return Subscription::scope(CalendarEntry::query())
             ->where('calendar_entries.entry_type', CalendarEntryType::AvailableSlot->value)
             ->whereIn('calendar_entries.context_org_id', $orgIds)
             ->where(fn (Builder $q) => $q

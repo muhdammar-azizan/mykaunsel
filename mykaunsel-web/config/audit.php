@@ -150,6 +150,7 @@ return [
         'invoice.payment_failed' => ['category' => 'pricing', 'badge' => 'rejected', 'label' => 'Online payment failed'],
         'invoice.paid_twice' => ['category' => 'pricing', 'badge' => 'security', 'label' => 'Invoice paid twice (refund needed)'],
         'invoice.payment_started' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Payment page opened'],
+        'receipt.issued' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Receipt issued'],
         'invoice.voided' => ['category' => 'pricing', 'badge' => 'deleted', 'label' => 'Invoice voided'],
         'invoice.settings_updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Invoice settings updated'],
         'commission.updated' => ['category' => 'pricing', 'badge' => 'updated', 'label' => 'Commission updated'],

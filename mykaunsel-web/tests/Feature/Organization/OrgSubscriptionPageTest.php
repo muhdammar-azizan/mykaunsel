@@ -97,7 +97,7 @@ class OrgSubscriptionPageTest extends TestCase
         $this->post(route('pay.result', $payment), ['outcome' => 'paid', 'signature' => app(SimulatedGateway::class)->sign($payment, 'paid')]);
 
         $this->hr()->get(route('org.subscription'))->assertSee('Receipt')->assertSee('Paid');
-        $this->hr()->get(route('org.subscription.invoice', $invoice->public_id))->assertOk()->assertSee('Receipt '.$invoice->number)->assertSee('Online (test page)')->assertSee($payment->fresh()->provider_reference);
+        $this->hr()->get(route('org.subscription.invoice', $invoice->public_id))->assertOk()->assertSee('Invoice '.$invoice->number)->assertSee('Online (test page)')->assertSee($payment->fresh()->provider_reference)->assertSee('Receipt RCT-2026-0001');
     }
 
     public function test_a_paid_invoice_can_not_be_paid_again_and_another_organizations_invoice_is_a_404(): void

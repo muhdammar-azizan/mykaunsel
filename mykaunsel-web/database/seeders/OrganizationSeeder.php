@@ -32,6 +32,7 @@ class OrganizationSeeder extends Seeder
             'org_type' => OrgType::University,
             'access_model' => AccessModel::Closed,
             'subscription_status' => OrgStatus::Active,
+            'subscription_ends_at' => now()->addYear()->endOfDay(),
         ]);
 
         OrgDomain::create([
@@ -80,6 +81,7 @@ class OrganizationSeeder extends Seeder
             'org_type' => OrgType::Clinic,
             'access_model' => AccessModel::Open,
             'subscription_status' => OrgStatus::Active,
+            'subscription_ends_at' => now()->addYear()->endOfDay(),
         ]);
 
         PracticeLocation::create([

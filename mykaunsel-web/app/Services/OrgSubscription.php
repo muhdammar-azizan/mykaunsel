@@ -9,6 +9,7 @@ use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\Membership;
 use App\Models\Organization;
+use App\Models\Receipt;
 use App\Models\User;
 use App\Services\Payments\InvoicePayments;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -45,7 +46,7 @@ class OrgSubscription
             'max_members' => $max,
             'over_limit' => $max !== null && $members > $max,
             'renewal_requested_at' => $org->renewal_requested_at,
-            'invoices' => Invoice::query()->where('org_id', $org->getKey())->where('status', '!=', Invoice::VOID)->orderByDesc('issued_on')->orderByDesc('id')->limit(100)->get(),
+            'invoices' => Invoice::query()->where('org_id', $org->getKey())->where('status', '!=', Invoice::VOID)->with('receipt')->orderByDesc('issued_on')->orderByDesc('id')->limit(100)->get(),
         ];
     }
 
@@ -53,6 +54,12 @@ class OrgSubscription
     public function invoice(Organization $org, string $publicId): Invoice
     {
         return Invoice::query()->where('org_id', $org->getKey())->where('status', '!=', Invoice::VOID)->where('public_id', strtolower($publicId))->firstOrFail();
+    }
+
+    /** One of this organization's receipts. @throws ModelNotFoundException */
+    public function receipt(Organization $org, string $publicId): Receipt
+    {
+        return Receipt::query()->where('org_id', $org->getKey())->where('public_id', strtolower($publicId))->with('invoice')->firstOrFail();
     }
 
     /**

@@ -101,7 +101,8 @@ class NotificationApiTest extends TestCase
         $this->assertFalse($item['read']);
         $this->assertSame(now()->toIso8601String(), $item['occurred_at']);
         $this->assertNull($item['target'], 'an organization needs no page of its own in the app');
-        $this->assertStringNotContainsString((string) $org->id.'"', json_encode($item));
+        // Only these keys: no counter, no row id (a check on the text would clash with the random public id when it happens to end in the same digit).
+        $this->assertSame(['id', 'type', 'title', 'label', 'count', 'occurred_at', 'read', 'target'], array_keys($item));
     }
 
     public function test_a_booking_or_request_comes_with_its_public_id_and_vanishes_when_it_does_not_exist(): void

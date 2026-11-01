@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Support\Subscription;
+use App\Models\Organization;
 use App\Enums\CalendarEntryType;
 use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
@@ -70,7 +72,7 @@ class CounselorPlanner
         $entries = CalendarEntry::query()
             ->where('counselor_user_id', $counselor->getKey())->where('entry_type', CalendarEntryType::AvailableSlot->value)
             ->whereDate('entry_date', '>=', $today)
-            ->with(['location:id,name,city', 'contextOrg:id,name'])
+            ->with(['location:id,name,city', 'contextOrg:id,name,org_type,subscription_ends_at'])
             ->withExists('bookings as has_history')
             ->withExists(['bookings as has_active' => fn ($q) => $q->where('status', '!=', 'cancelled')])
             ->orderBy('entry_date')->orderBy('start_time')->limit(400)->get();
@@ -87,6 +89,7 @@ class CounselorPlanner
                 'mode' => ($entry->session_mode ?? SessionMode::Online)->value,
                 'place' => $entry->location === null ? null : $entry->location->name.', '.$entry->location->city,
                 'context' => (string) $entry->contextOrg?->name,
+                'offered' => Subscription::allows($entry->contextOrg, $start->format('Y-m-d')),
                 'booked' => ! $entry->is_available || $entry->has_active,
                 'removable' => ! $entry->has_history && $entry->is_available,
             ];
@@ -121,6 +124,13 @@ class CounselorPlanner
             CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
 
             ['context' => $contextId, 'location' => $locationId] = $this->placement($counselor, (int) $input['context'], $mode, isset($input['location']) ? (int) $input['location'] : null);
+
+            // Only inside the organization's paid period: no plan yet, or a day after the plan ends, is told in plain words.
+            $organization = Organization::query()->find($contextId);
+
+            if (! Subscription::allows($organization, $start->format('Y-m-d'))) {
+                throw new BookingRefused($organization?->subscription_ends_at === null ? 'planner_no_plan' : 'planner_after_plan');
+            }
 
             $minutes = (int) $input['duration'];
 

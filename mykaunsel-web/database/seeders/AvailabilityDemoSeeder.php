@@ -166,7 +166,7 @@ class AvailabilityDemoSeeder extends Seeder
 
     private function organization(string $name, OrgType $type, AccessModel $access): Organization
     {
-        $organization = Organization::create(['name' => $name, 'org_type' => $type, 'access_model' => $access, 'subscription_status' => OrgStatus::Active]);
+        $organization = Organization::create(['name' => $name, 'org_type' => $type, 'access_model' => $access, 'subscription_status' => OrgStatus::Active, 'subscription_ends_at' => now()->addYear()->endOfDay()]);
         $organization->forceFill(['submitted_at' => now()->subMonths(2), 'reviewed_at' => now()->subMonth()])->saveQuietly();
 
         return $organization;

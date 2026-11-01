@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\CalendarEntryType;
 use App\Enums\SessionMode;
 use App\Models\CalendarEntry;
+use App\Support\Subscription;
 use App\Models\CounselorProfile;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -110,6 +111,13 @@ class AvailabilityService
     public function slotBookable(CalendarEntry $slot, ?CarbonImmutable $now = null): bool
     {
         if (! $slot->isSlot() || $this->isBooked($slot)) {
+            return false;
+        }
+
+        $slot->loadMissing('contextOrg');
+
+        // The organization's paid period (docs/PAYMENTS_PLAN.md): no plan, or a day after the plan ends, is the same "no" as a taken time.
+        if (! Subscription::allows($slot->contextOrg, $slot->entry_date->format('Y-m-d'))) {
             return false;
         }
 

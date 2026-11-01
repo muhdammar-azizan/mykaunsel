@@ -146,3 +146,31 @@ Giving an organization a plan (**Approve** with a plan, or **Change plan**) make
 - **Pay:** opens a try on the payment provider (`InvoicePayments`, the simulated test page for now) and sends the admin there. The invoice is marked paid only by the provider's signed result, never by this page. Bank transfer still works: a Platform Admin marks it paid.
 - **Ask to renew:** sets `organizations.renewal_requested_at` once; the Platform Admins get a bell notification (group Subscriptions), the organization page and the Dashboard show it, and giving the organization a new plan clears it. Nothing is charged by asking. Audit: `subscription.renewal_requested`.
 - **Not built:** invoice and receipt e-mails, and enforcing the end date (bookings and times only inside the subscription, warnings 60/30/14/7 days).
+
+## Invoice PDF (built 2 November 2026, step A of the invoice and receipt work)
+
+`App\Services\InvoicePdf` makes the PDF file of an invoice with `dompdf` (a Composer package). It is made **on demand from the invoice's own snapshot and never stored**, so it can never differ from the invoice. dompdf runs with no remote files, no embedded PHP and no JavaScript, and only reads from `resources/views/pdf`. The template is `resources/views/pdf/invoice.blade.php` (plain tables: dompdf does not draw Tailwind, flex or grid). It shows who sells and who is billed, the lines, the discount, the tax and the total, the status (UNPAID, PAID, VOID), how to pay (bank details, or the Subscription page) or when and how it was paid, and the reference.
+
+- **Download:** the organization admin's Subscription > invoice page (`/org/subscription/invoices/{id}/pdf`, only that organization's own, not a voided one) and the Platform Admin's invoice page (`/platform/invoices/{id}/pdf`, any invoice). The file is named after the invoice number and is not cached.
+- **Not yet:** the receipt as its own numbered document (step B), and the PDFs attached to the e-mails (step C). Tests: `InvoicePdfTest` (it checks the document's text through the HTML, and that the PDF is a real PDF; nobody has looked at the drawn page yet, so look at one).
+
+## Receipts (built 2 November 2026, step B of the invoice and receipt work)
+
+A receipt is the proof that an invoice was paid: **a document of its own with its own number** (`RCT-2026-0001`, a counter that starts again each year, like the invoice's). Code: `App\Models\Receipt`, `App\Services\ReceiptService`, `ReceiptPdf`, table `receipts` (+ `receipt_counters`). Tests: `ReceiptsTest`.
+
+- **When:** at the moment an invoice becomes paid, **in the same transaction** (so a paid invoice never lacks it): by the provider's signed result (online) or by a Platform Admin marking it paid by hand. One per invoice (a unique key): a second payment, or two at once, gives the one that exists (a payment on an already paid invoice is flagged `invoice.paid_twice` and gets no receipt). **None** for an invoice that is not paid, voided, or of RM 0.00 (nothing was paid).
+- **What it keeps, as it was that day:** who was paid and who paid, the amounts, the tax name and rate, the plan and its period, how it was paid, the reference, and the date paid. Editing a plan, a setting or an organization later never changes it. It is never edited or deleted (a correction would be a credit note: not built). Audit: `receipt.issued` (ids and amounts only).
+- **The number's year** is the year the invoice was paid (Malaysian day). Invoices paid before receipts existed were given theirs by the migration, in the order they were paid, dated the day they were paid.
+- **Seen:** the organization's Subscription page (an invoice and its receipt side by side, the receipt page with Download PDF and Print, `/org/subscription/receipts/{id}`; only that organization's own, else 404), and the Platform Admin's invoice page (a link to download the receipt PDF). The invoice page keeps being the invoice; the invoice PDF of a paid invoice names its receipt.
+- **Not yet:** the invoice and receipt e-mails with the PDFs attached (step C).
+- A shared `PdfRenderer` now runs dompdf for both documents.
+
+## Invoice and receipt e-mails (built 2 November 2026, step C of the invoice and receipt work)
+
+`App\Services\BillingMail`, `InvoiceIssuedMail`, `ReceiptIssuedMail`. Tests: `BillingMailTest`.
+
+- **When:** the invoice by e-mail the moment it is issued (giving an organization a plan, including approving one with a plan); the receipt the moment the invoice is paid (online or by hand). A repeated call that returns the invoice or receipt that already exists sends nothing again, and a payment on an already paid invoice sends no second receipt.
+- **To whom:** **every active organization admin who has a confirmed e-mail address**, and nobody else (not the Platform Admins, not another organization, not a former admin).
+- **What:** the number, what it is for, the amount (tax included), the period, and for an unpaid invoice the due date and how to pay (online or by bank transfer); a link to the invoice or receipt page; **the PDF attached**, made when the mail is built from the stored document. An invoice that is already paid (nothing to pay) says so. It is always sent: a person can not switch it off.
+- **Safe:** it is only sent after the database transaction that made the document has been committed (an invoice that is rolled back is never mailed), and a failing e-mail never undoes or fails the invoice or the payment (it is only reported). The mails are queued: **a queue worker must be running** (`php artisan queue:work`), like the other mails.
+- **Not built:** the reminders before the end date (step F), and a button to send the invoice or the receipt again.

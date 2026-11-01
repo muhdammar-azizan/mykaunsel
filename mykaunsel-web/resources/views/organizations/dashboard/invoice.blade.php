@@ -6,13 +6,16 @@
     $methods = ['simulated' => 'Online (test page)', 'billplz' => 'Online', 'manual' => 'Bank transfer', 'no_charge' => 'Nothing to pay'];
 @endphp
 
-<x-portal-layout :title="($paid ? 'Receipt ' : 'Invoice ').$invoice->number">
+<x-portal-layout :title="'Invoice '.$invoice->number">
     <p><a href="{{ route('org.subscription') }}" class="text-[14px] font-semibold text-brand-blue hover:underline">&larr; Subscription</a></p>
 
     <div class="mt-3 flex flex-wrap items-center gap-3">
-        <h1 class="text-[24px] font-bold leading-tight tracking-tight">{{ $paid ? 'Receipt' : 'Invoice' }} {{ $invoice->number }}</h1>
+        <h1 class="text-[24px] font-bold leading-tight tracking-tight">Invoice {{ $invoice->number }}</h1>
         <span class="inline-flex rounded-full px-2.5 py-0.5 text-[12px] font-bold {{ $paid ? 'bg-emerald-50 text-emerald-700' : ($label === 'Overdue' ? 'bg-brand-red/10 text-brand-red' : 'bg-brand-yellow/25 text-[#6B4C0C]') }}">{{ $label }}</span>
-        <button type="button" onclick="window.print()" class="ml-auto inline-flex min-h-[40px] items-center rounded-md border border-brand-ink/70 bg-white px-4 text-[14px] font-semibold text-brand-ink hover:bg-brand-ink/5 print:hidden">Print</button>
+        <span class="ml-auto flex gap-2 print:hidden">
+            <a href="{{ route('org.subscription.invoice.pdf', $invoice->public_id) }}" class="inline-flex min-h-[40px] items-center rounded-md bg-brand-blue px-4 text-[14px] font-semibold text-white hover:bg-brand-deep">Download PDF</a>
+            <button type="button" onclick="window.print()" class="inline-flex min-h-[40px] items-center rounded-md border border-brand-ink/70 bg-white px-4 text-[14px] font-semibold text-brand-ink hover:bg-brand-ink/5">Print</button>
+        </span>
     </div>
 
     @if ($errors->any())
@@ -33,6 +36,9 @@
                         <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Method</dt><dd class="text-right font-semibold">{{ $methods[$invoice->payment_method] ?? $invoice->payment_method }}</dd></div>
                         @if ($invoice->payment_reference)<div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Reference</dt><dd class="text-right font-semibold">{{ $invoice->payment_reference }}</dd></div>@endif
                     </dl>
+                    @if ($invoice->receipt)
+                        <a href="{{ route('org.subscription.receipt', $invoice->receipt->public_id) }}" class="mt-4 inline-flex min-h-[40px] items-center rounded-md border border-brand-ink/70 bg-white px-4 text-[14px] font-semibold text-brand-ink hover:bg-brand-ink/5">Receipt {{ $invoice->receipt->number }}</a>
+                    @endif
                 @else
                     <p class="mt-2 text-[14px] text-brand-ink/65">Pay online, or by bank transfer using the details on the invoice. MyKaunsel marks a transfer paid when it arrives.</p>
                     <form method="POST" action="{{ route('org.subscription.pay', $invoice->public_id) }}" class="mt-4">@csrf<button class="{{ $primary }}">Pay {{ \App\Support\Money::rm($invoice->total_cents) }}</button></form>

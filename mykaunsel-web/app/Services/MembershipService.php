@@ -39,7 +39,7 @@ class MembershipService
             ->where('user_id', $user->getKey())
             ->whereIn('role', array_map(fn ($r) => $r->value, self::CLIENT_ROLES))
             ->whereIn('status', array_map(fn ($s) => $s->value, self::HOLDING))
-            ->with('organization:id,name')
+            ->with('organization:id,name,org_type,subscription_ends_at')
             ->first();
     }
 

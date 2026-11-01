@@ -22,6 +22,14 @@
         <x-invoice-document :invoice="$invoice" />
 
         <div class="space-y-5">
+            <x-platform.panel title="Document">
+                <a href="{{ route('platform.invoices.pdf', $invoice) }}" class="inline-flex min-h-[40px] items-center rounded-full border border-brand-ink/20 px-4 text-[13px] font-semibold transition hover:bg-brand-ink/5">Download PDF</a>
+                @if ($invoice->receipt)
+                    <a href="{{ route('platform.receipts.pdf', $invoice->receipt) }}" class="mt-2 inline-flex min-h-[40px] items-center rounded-full border border-brand-ink/20 px-4 text-[13px] font-semibold transition hover:bg-brand-ink/5">Download receipt {{ $invoice->receipt->number }} (PDF)</a>
+                @endif
+                <p class="mt-2 text-[12.5px] text-brand-ink/55">The PDFs are made from the invoice and the receipt as they were issued.</p>
+            </x-platform.panel>
+
             <x-platform.panel title="Payment">
                 @if ($invoice->status === \App\Models\Invoice::PAID)
                     <dl class="mt-2 divide-y divide-brand-ink/[.07]">

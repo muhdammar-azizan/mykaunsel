@@ -235,6 +235,9 @@
                                             <p class="text-sm text-brand-ink/65">{{ $t['mode'] === 'online' ? __('Online') : __('In-person').($t['place'] ? ' · '.$t['place'] : '') }}@if (count($contexts) > 1 && $t['context']) · {{ $t['context'] }}@endif</p>
                                         </div>
                                         <div class="flex items-center gap-3">
+                                            @if (! $t['offered'])
+                                                <span class="rounded-full px-2.5 py-0.5 text-xs font-medium bg-brand-yellow/25 text-[#6B4C0C]" title="{{ __('After your organization\'s subscription ends. Clients can not see it until the subscription is renewed.') }}">{{ __('Hidden: plan ended') }}</span>
+                                            @endif
                                             @if ($t['booked'])
                                                 <span class="rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800">{{ __('Booked') }}</span>
                                             @else

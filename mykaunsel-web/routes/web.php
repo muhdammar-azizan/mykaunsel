@@ -167,6 +167,9 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::get('/reports/{page}/export', [\App\Http\Controllers\Organization\OrgReportController::class, 'export'])->where('page', '[a-z]+')->middleware('throttle:20,1')->name('reports.export');
         Route::get('/subscription', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'index'])->name('subscription');
         Route::get('/subscription/invoices/{publicId}', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'invoice'])->where('publicId', '[0-9a-z]{26}')->name('subscription.invoice');
+        Route::get('/subscription/invoices/{publicId}/pdf', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'invoicePdf'])->where('publicId', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('subscription.invoice.pdf');
+        Route::get('/subscription/receipts/{publicId}', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'receipt'])->where('publicId', '[0-9a-z]{26}')->name('subscription.receipt');
+        Route::get('/subscription/receipts/{publicId}/pdf', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'receiptPdf'])->where('publicId', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('subscription.receipt.pdf');
         Route::post('/subscription/invoices/{publicId}/pay', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'pay'])->where('publicId', '[0-9a-z]{26}')->middleware('throttle:20,1')->name('subscription.pay');
         Route::post('/subscription/renewal', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'requestRenewal'])->middleware('throttle:10,1')->name('subscription.renewal');
         Route::get('/settings', [OrgSettingController::class, 'index'])->name('settings');
@@ -351,6 +354,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         // Invoices of the yearly subscription: the list, one invoice, marking it paid by hand (a bank transfer) and voiding it.
         Route::get('/invoices', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'index'])->name('invoices');
         Route::get('/invoices/{invoice}', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'show'])->where('invoice', '[0-9a-z]{26}')->name('invoices.show');
+        Route::get('/invoices/{invoice}/pdf', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'pdf'])->where('invoice', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('invoices.pdf');
+        Route::get('/receipts/{receipt}/pdf', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'receiptPdf'])->where('receipt', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('receipts.pdf');
         Route::post('/invoices/{invoice}/paid', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'markPaid'])->where('invoice', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('invoices.paid');
         Route::post('/invoices/{invoice}/pay-link', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'payLink'])->where('invoice', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('invoices.pay-link');
         Route::post('/invoices/{invoice}/void', [\App\Http\Controllers\Platform\PlatformInvoiceController::class, 'void'])->where('invoice', '[0-9a-z]{26}')->middleware('throttle:30,1')->name('invoices.void');

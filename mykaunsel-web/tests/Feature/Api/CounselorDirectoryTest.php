@@ -60,7 +60,7 @@ class CounselorDirectoryTest extends TestCase
 
     private function org(string $name, AccessModel $access, OrgType $type = OrgType::Clinic, OrgStatus $status = OrgStatus::Active): Organization
     {
-        return Organization::create(['name' => $name, 'org_type' => $type, 'access_model' => $access, 'subscription_status' => $status]);
+        return Organization::create(['name' => $name, 'org_type' => $type, 'access_model' => $access, 'subscription_status' => $status, 'subscription_ends_at' => '2030-12-31 23:59:59']);
     }
 
     /** A signed-in, email-confirmed individual (optionally a member of some organizations). */

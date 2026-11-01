@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Organization;
 use App\Exceptions\InvoiceNotOpen;
 use App\Http\Controllers\Controller;
 use App\Models\Organization;
+use App\Services\InvoicePdf;
 use App\Services\OrgSubscription;
+use App\Services\ReceiptPdf;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,6 +36,40 @@ class OrgSubscriptionController extends Controller
             'attempts' => $subscription->attempts($invoice),
             'timezone' => $request->user()->display_timezone,
         ]);
+    }
+
+    /** The invoice as a PDF file. The same rule as the page: only this organization's own invoice, and a voided one is a 404. */
+    public function invoicePdf(Request $request, string $publicId, OrgSubscription $subscription, InvoicePdf $pdf)
+    {
+        try {
+            $invoice = $subscription->invoice($this->organization($request), $publicId);
+        } catch (ModelNotFoundException) {
+            abort(404);
+        }
+
+        return $pdf->download($invoice);
+    }
+
+    public function receipt(Request $request, string $publicId, OrgSubscription $subscription)
+    {
+        try {
+            $receipt = $subscription->receipt($this->organization($request), $publicId);
+        } catch (ModelNotFoundException) {
+            abort(404);
+        }
+
+        return view('organizations.dashboard.receipt', ['receipt' => $receipt, 'timezone' => $request->user()->display_timezone]);
+    }
+
+    public function receiptPdf(Request $request, string $publicId, OrgSubscription $subscription, ReceiptPdf $pdf)
+    {
+        try {
+            $receipt = $subscription->receipt($this->organization($request), $publicId);
+        } catch (ModelNotFoundException) {
+            abort(404);
+        }
+
+        return $pdf->download($receipt);
     }
 
     public function pay(Request $request, string $publicId, OrgSubscription $subscription): RedirectResponse

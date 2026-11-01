@@ -97,6 +97,8 @@ class OrganizationController extends Controller
             'name' => $membership->organization->name,
             'status' => $membership->status === MembershipStatus::PendingApproval ? 'waiting' : 'member',
             'grace_days' => MembershipEnding::GRACE_DAYS,
+            // The last day the organization's counselors can be booked (its plan's last day), or null: it has no plan (or is the platform itself).
+            'access_until' => $membership->organization->org_type === \App\Enums\OrgType::Platform ? null : $membership->organization->subscription_ends_at?->toDateString(),
         ];
     }
 

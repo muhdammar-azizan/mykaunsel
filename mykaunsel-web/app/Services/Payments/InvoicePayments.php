@@ -7,6 +7,7 @@ use App\Facades\Audit;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
 use App\Models\User;
+use App\Services\ReceiptService;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -77,6 +78,9 @@ class InvoicePayments
             if ($invoice->isOpen()) {
                 $invoice->update(['status' => Invoice::PAID, 'paid_at' => now(), 'payment_method' => $locked->provider, 'payment_reference' => $locked->provider_reference]);
                 Audit::log('invoice.paid_online', $invoice, $context + ['total_cents' => $invoice->total_cents, 'method' => $locked->provider], 'system');
+
+                // The receipt, in the same transaction: a paid invoice never lacks it.
+                app(ReceiptService::class)->issueFor($invoice->fresh());
             } else {
                 Audit::log('invoice.paid_twice', $invoice, $context + ['total_cents' => $locked->amount_cents], 'system');
             }

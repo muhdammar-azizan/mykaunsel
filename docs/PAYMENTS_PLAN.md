@@ -62,7 +62,7 @@ Build order (decided 1 November 2026): **step 1 done** (clinic plans; invoices w
 - **Escrow:** explained. Nobody in government holds the money: it is held by a licensed payment provider or by a bank or trustee account. Who holds it is not decided; to ask the lawyer and two or three Malaysian providers (questions in the conversation of 31 October 2026: split payments with delayed payout to third parties, the licence under which they hold funds, onboarding of our counselors, payout schedule, refunds and chargebacks, fees for FPX, cards and e-wallets, the API and notifications, and a test environment).
 - Payments stay on hold until every other question is settled.
 
-## Subscription end date (decided by the owner, 2 November 2026; not built yet)
+## Subscription end date (decided by the owner, 2 November 2026; step D BUILT 2 November 2026)
 
 `organizations.subscription_ends_at` is set from the plan (one year after the start). **Nothing enforces it yet.** All the bookings go through one check (`AvailabilityService::slotBookable`; time requests have their own time check), so the rule is small to add.
 
@@ -74,6 +74,13 @@ Build order (decided 1 November 2026): **step 1 done** (clinic plans; invoices w
 5. **Renewing early starts the new year the day after the old end date** (no day is lost); a plan that has already ended starts today. (Today a new plan always starts today: to change.)
 6. **What people see:** clients do not see times after the end date (the app message "your organization's access runs until ..." waits for the owner's app design; the API will carry the date). A counselor can not open times after the end date and is told why. Times already open after the end date are **hidden, not deleted**, so they come back when the plan is renewed.
 7. **Warnings, once per step, every day automatically:** the organization admins at 60, 30, 14 and 7 days before the end (e-mail, Dashboard banner, bell) and one more when it has ended; the counselors at 30 and 14 days (e-mail). The owner may add ideas later.
+
+**Built (step D):** one rule, `App\Support\Subscription` (`allows()` for one organization, `scope()` for a query), used by:
+- `AvailabilityService::slotBookable`: the one answer for booking and for moving a booking, so a time without a plan, or on a day after the plan's last day, is the same "no" (`slot_taken`) as a taken time;
+- `CounselorDirectory::windowQuery`: every list a client sees (availability, next available, filters, profile), so such times are simply not offered (hidden, not deleted: they return when the plan is renewed);
+- a time request (`BookingRequests::create`, refused `request_time_invalid`) and approving one (`CounselorRequests::approve`, `request_cannot_approve`);
+- a counselor opening a time (`CounselorPlanner::open`, `planner_no_plan` / `planner_after_plan` with a plain message) and the weekly hours (the days outside the plan count as skipped); the Schedule page marks such times "Hidden: plan ended".
+The last day of the plan counts whole. The platform organization (independent counselors) is never held to a plan. `GET /api/v1/account/organization` carries `access_until` (the last day, or null) for the app's message, which waits for the owner's app design. Demo seeders give their organizations a plan of a year; **an organization that already exists in a database has no plan until a Platform Admin gives it one**, so it can not be booked until then. **Still to build:** step E (an early renewal starts the day after the old end) and step F (the warnings).
 
 **Invoices and receipts. LOCKED (owner, 2 November 2026)** (very important: a company pays with company money):
 - A **real PDF file** for the invoice and for the receipt, downloadable on the organization's Subscription page and the Platform Admin's invoice page, and **attached to the e-mails**. The PDF library `dompdf` is approved to be installed with Composer.

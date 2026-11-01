@@ -60,7 +60,7 @@ class OrganizationApiTest extends TestCase
     public function test_joining_with_a_code_waits_for_approval_and_shows_the_name_and_nothing_else(): void
     {
         $this->join(strtolower($this->code()->display()))->assertCreated()
-            ->assertExactJson(['organization' => ['name' => 'Universiti Contoh', 'status' => 'waiting', 'grace_days' => 7]]);
+            ->assertExactJson(['organization' => ['name' => 'Universiti Contoh', 'status' => 'waiting', 'grace_days' => 7, 'access_until' => '2030-12-31']]);
 
         $this->getJson('/api/v1/account/organization')->assertOk()->assertJsonPath('organization.status', 'waiting');
 

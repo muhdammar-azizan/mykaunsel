@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Subscription;
 use App\Enums\BookingRequestStatus;
 use App\Enums\SessionMode;
 use App\Exceptions\BookingRefused;
@@ -101,7 +102,7 @@ class BookingRequests
 
         $line = $this->lineFor($found['profile']->user_id, $found['orgIds'], $start);
 
-        if ($line === null) {
+        if ($line === null || ! Subscription::allows($line->contextOrg, $start->format('Y-m-d'))) {
             throw new BookingRefused('request_time_invalid');
         }
 

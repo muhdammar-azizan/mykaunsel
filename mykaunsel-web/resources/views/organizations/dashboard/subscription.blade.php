@@ -77,7 +77,10 @@
                         <div class="flex flex-wrap items-center gap-3">
                             <span class="text-[15px] font-semibold tabular-nums">{{ $rm($invoice->total_cents) }}</span>
                             <span class="inline-flex rounded-full px-2.5 py-0.5 text-[12px] font-bold {{ $invoicePill[$label] ?? 'bg-brand-ink/10 text-brand-ink/65' }}">{{ $label }}</span>
-                            <a href="{{ route('org.subscription.invoice', $invoice->public_id) }}" class="{{ $outline }}">{{ $invoice->status === \App\Models\Invoice::PAID ? 'Receipt' : 'View' }}</a>
+                            <a href="{{ route('org.subscription.invoice', $invoice->public_id) }}" class="{{ $outline }}">{{ $invoice->status === \App\Models\Invoice::PAID ? 'Invoice' : 'View' }}</a>
+                            @if ($invoice->receipt)
+                                <a href="{{ route('org.subscription.receipt', $invoice->receipt->public_id) }}" class="{{ $outline }}">Receipt</a>
+                            @endif
                             @if ($invoice->status === \App\Models\Invoice::UNPAID)
                                 <form method="POST" action="{{ route('org.subscription.pay', $invoice->public_id) }}">@csrf<button class="{{ $primary }} !min-h-[40px]">Pay</button></form>
                             @endif

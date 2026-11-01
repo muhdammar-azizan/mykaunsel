@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Support\Subscription;
+use App\Models\Organization;
 use App\Enums\BookingMode;
 use App\Enums\BookingRequestStatus;
 use App\Enums\BookingStatus;
@@ -89,6 +91,7 @@ class CounselorRequests
             $minutes = (int) $request->duration_minutes;
 
             $stillFits = $start->gt($this->availability->now())
+                && Subscription::allows(Organization::query()->find($request->context_org_id), $start->format('Y-m-d'))
                 && collect($this->planner->contexts($counselor))->contains('id', (int) $request->context_org_id)
                 && $this->availability->isFree((int) $counselor->getKey(), $start, $minutes)
                 && $this->bookings->limitsRefusalAt($client, $start, $minutes) === null;

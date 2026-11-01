@@ -8,8 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Invoice;
 use App\Models\Organization;
+use App\Models\Receipt;
+use App\Services\InvoicePdf;
 use App\Services\InvoiceService;
 use App\Services\Payments\InvoicePayments;
+use App\Services\ReceiptPdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -90,6 +93,16 @@ class PlatformInvoiceController extends Controller
         Audit::log('invoice.payment_started', $invoice, ['invoice_id' => $invoice->getKey(), 'org_id' => $invoice->org_id, 'payment_id' => $payment->getKey()], $request->user());
 
         return redirect($payments->gateway()->payUrl($payment));
+    }
+
+    public function pdf(Invoice $invoice, InvoicePdf $pdf)
+    {
+        return $pdf->download($invoice);
+    }
+
+    public function receiptPdf(Receipt $receipt, ReceiptPdf $pdf)
+    {
+        return $pdf->download($receipt);
     }
 
     public function markPaid(Request $request, Invoice $invoice, InvoiceService $invoices): RedirectResponse
