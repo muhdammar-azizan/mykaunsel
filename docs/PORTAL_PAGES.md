@@ -8,7 +8,7 @@ Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md.
 - [ ] Account menu (profile, security, sign out) and role switch: menu, sign out and role switch are done; the Account page it links to is still the old basic profile page (security and notification settings for portal users are not built)
 
 ## Counselor portal
-- [ ] Dashboard: today's sessions, requests waiting for an answer, next free time, short notices
+- [x] Dashboard: today's sessions, requests waiting for an answer, next free time, short notices (`CounselorDashboard` service; shows the next session when nothing is today, sessions waiting to be marked, profile and PA notices)
 - [ ] Bookings: list (upcoming, past, cancelled), one booking page, counselor cancels with a reason
 - [ ] Time requests: members asking for a time, accept or decline
 - [ ] Schedule: weekly slots, blocked times (leave, holidays)
