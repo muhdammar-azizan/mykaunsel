@@ -3,7 +3,7 @@
     $tiles = [
         ['Active members', number_format($report['members_active']), 'People who belong to your organization now.'],
         ['Waiting for approval', number_format($report['members_waiting']), 'People who used a reference code and wait for you.'],
-        ['Left in this period', $report['members_left'], 'People who left or were removed.'],
+        ['Left in this period', $report['members_left'], 'People who left or were removed.'.($previous !== null ? ' Before: '.$previous['members_left'].'.' : '')],
         ['Counselors', number_format($report['counselors']), 'Counselors who work for your organization.'],
     ];
 @endphp

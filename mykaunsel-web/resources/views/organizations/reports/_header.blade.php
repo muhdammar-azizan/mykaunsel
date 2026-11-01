@@ -14,13 +14,24 @@
         @endforeach
     </nav>
 
-    <form method="GET" class="flex items-center gap-2">
+    <form method="GET" class="flex flex-wrap items-center gap-3 print:hidden">
         <label for="range" class="text-[13px] font-semibold text-brand-ink/70">Period</label>
         <select id="range" name="range" onchange="this.form.submit()" class="min-h-[40px] rounded-md border border-brand-ink/20 px-3 text-[14px]">
             @foreach ($period['choices'] as $key => $label)<option value="{{ $key }}" @selected($period['key'] === $key)>{{ $label }}</option>@endforeach
         </select>
+        @if ($comparable)
+            <label class="inline-flex min-h-[40px] items-center gap-2 text-[13px] font-semibold text-brand-ink/70"><input type="checkbox" name="compare" value="1" @checked($previous !== null) onchange="this.form.submit()" class="h-4 w-4 rounded border-brand-ink/30 text-brand-blue">Compare with the period before</label>
+        @endif
         <noscript><button class="min-h-[40px] rounded-md bg-brand-blue px-4 text-[14px] font-semibold text-white">Show</button></noscript>
     </form>
 </div>
 
-<p class="mt-3 text-[13px] text-brand-ink/65">{{ $period['from']->format('j M Y') }} to {{ $period['to']->format('j M Y') }} (Malaysia time). A number from 1 to {{ $minGroup - 1 }} is shown as "fewer than {{ $minGroup }}" so nobody can be recognised; when that would give a number away, one more is marked "hidden".</p>
+<div class="mt-3 flex flex-wrap items-center justify-between gap-3 print:hidden">
+    <p class="text-[13px] text-brand-ink/65">Download this page for the period, or print it to keep it as a PDF.</p>
+    <div class="flex gap-2">
+        <a href="{{ route('org.reports.export', ['page' => $tab, 'range' => $period['key']]) }}" class="inline-flex min-h-[40px] items-center rounded-md border border-brand-ink/70 bg-white px-4 text-[14px] font-semibold text-brand-ink transition hover:bg-brand-ink/5">Download CSV</a>
+        <button type="button" onclick="window.print()" class="inline-flex min-h-[40px] items-center rounded-md border border-brand-ink/70 bg-white px-4 text-[14px] font-semibold text-brand-ink transition hover:bg-brand-ink/5">Print or save as PDF</button>
+    </div>
+</div>
+
+<p class="mt-3 text-[13px] text-brand-ink/65">{{ $period['from']->format('j M Y') }} to {{ $period['to']->format('j M Y') }} (Malaysia time)@if ($previous !== null), compared with {{ $previousPeriod['from']->format('j M Y') }} to {{ $previousPeriod['to']->format('j M Y') }}@endif. A number from 1 to {{ $minGroup - 1 }} is shown as "fewer than {{ $minGroup }}" so nobody can be recognised; when that would give a number away, one more is marked "hidden".</p>

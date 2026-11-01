@@ -163,6 +163,7 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::get('/reports/members', [\App\Http\Controllers\Organization\OrgReportController::class, 'members'])->middleware('throttle:60,1')->name('reports.members');
         Route::get('/reports/counselors', [\App\Http\Controllers\Organization\OrgReportController::class, 'counselors'])->middleware('throttle:60,1')->name('reports.counselors');
         Route::get('/reports/quality', [\App\Http\Controllers\Organization\OrgReportController::class, 'quality'])->middleware('throttle:60,1')->name('reports.quality');
+        Route::get('/reports/{page}/export', [\App\Http\Controllers\Organization\OrgReportController::class, 'export'])->where('page', '[a-z]+')->middleware('throttle:20,1')->name('reports.export');
         Route::get('/subscription', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'index'])->name('subscription');
         Route::get('/subscription/invoices/{publicId}', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'invoice'])->where('publicId', '[0-9a-z]{26}')->name('subscription.invoice');
         Route::post('/subscription/invoices/{publicId}/pay', [\App\Http\Controllers\Organization\OrgSubscriptionController::class, 'pay'])->where('publicId', '[0-9a-z]{26}')->middleware('throttle:20,1')->name('subscription.pay');

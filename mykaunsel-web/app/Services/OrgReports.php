@@ -48,6 +48,20 @@ class OrgReports
         ];
     }
 
+    /**
+     * The period of the same length just before this one (this month -> last month, the last 3 months -> the 3 months before them), for comparing.
+     *
+     * @param  array<string, mixed>  $period
+     * @return array<string, mixed>
+     */
+    public function previous(array $period): array
+    {
+        $months = (int) config('org-reports.ranges')[$period['key']][1] + 1;
+        $from = $period['from']->subMonths($months);
+
+        return ['label' => 'The '.($months === 1 ? 'month' : $months.' months').' before'] + ['from' => $from, 'to' => $period['from']->subDay()->endOfDay()] + $period;
+    }
+
     // =============================================================================================================
     //  Overview (the glance page)
     // =============================================================================================================

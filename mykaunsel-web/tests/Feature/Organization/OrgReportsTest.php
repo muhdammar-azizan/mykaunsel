@@ -9,12 +9,14 @@ use App\Enums\JoinSource;
 use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
 use App\Enums\OrgType;
+use App\Models\AuditLog;
 use App\Models\BookingRequest;
 use App\Models\CounselorProfile;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\ReviewService;
+use App\Support\ReportCsv;
 use App\Support\ReportFigures;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -286,6 +288,104 @@ class OrgReportsTest extends TestCase
 
         $page = $this->hr()->get(route('org.reports.quality', ['range' => 'month']))->assertOk();
         $page->assertSeeInOrder(['Cancelling', '25%', 'Sessions in this period', '8'])->assertSeeInOrder(['Who cancelled', 'Total', 'fewer than 5']);
+    }
+
+    // ---- comparing two periods ------------------------------------------------------------------------------------
+
+    public function test_comparing_puts_the_period_before_next_to_this_one_with_the_same_hiding(): void
+    {
+        $this->sessions(6, '2026-11-03 08:00');                                  // this month, completed
+        $this->sessions(2, '2026-10-20 08:00', BookingStatus::NoShow);           // last month: too few to show
+        $this->sessions(7, '2026-10-21 08:00');                                  // last month, completed
+
+        $page = $this->hr()->get(route('org.reports.use', ['range' => 'month', 'compare' => 1]))->assertOk();
+
+        $page->assertSee('compared with 1 Oct 2026 to 31 Oct 2026')->assertSee('before 9')->assertSeeTextInOrder(['Completed', '6', 'Before: hidden'])     // last month's 7 sits next to a hidden 2, so it is hidden too
+            ->assertSee('Compare with the period before');
+        $page->assertDontSee('Siti Secret');
+
+        $without = $this->hr()->get(route('org.reports.use', ['range' => 'month']))->assertOk();
+        $without->assertDontSee('compared with')->assertDontSee('Before:');
+    }
+
+    public function test_the_period_before_has_the_same_length(): void
+    {
+        $reports = app(\App\Services\OrgReports::class);
+
+        $month = $reports->previous($reports->period('month'));
+        $this->assertSame('2026-10-01', $month['from']->format('Y-m-d'));
+        $this->assertSame('2026-10-31', $month['to']->format('Y-m-d'));
+
+        $quarter = $reports->previous($reports->period('3months'));
+        $this->assertSame('2026-06-01', $quarter['from']->format('Y-m-d'));
+        $this->assertSame('2026-08-31', $quarter['to']->format('Y-m-d'));
+    }
+
+    public function test_the_counselors_and_quality_pages_do_not_offer_a_comparison(): void
+    {
+        $this->hr()->get(route('org.reports.counselors', ['compare' => 1]))->assertOk()->assertDontSee('Compare with the period before')->assertDontSee('compared with');
+        $this->hr()->get(route('org.reports.quality', ['compare' => 1]))->assertOk()->assertDontSee('Compare with the period before');
+    }
+
+    // ---- the CSV --------------------------------------------------------------------------------------------------
+
+    public function test_the_csv_says_what_the_page_says_and_never_more(): void
+    {
+        $this->sessions(6, '2026-10-20 08:00');
+        $this->sessions(2, '2026-10-21 08:00', BookingStatus::NoShow);
+        $this->sessions(1, '2026-10-22 08:00', BookingStatus::Cancelled);
+
+        $response = $this->hr()->get(route('org.reports.export', ['page' => 'use', 'range' => '3months']))->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+        $csv = $response->getContent();
+
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $csv);
+        $this->assertStringContainsString('Acme Berhad', $csv);
+        $this->assertStringContainsString('Last 3 months', $csv);
+        $this->assertMatchesRegularExpression('/Status,Completed,6/', $csv);
+        $this->assertStringContainsString('Status,No-show,"fewer than 5"', $csv);
+        $this->assertStringContainsString('Status,Cancelled,"fewer than 5"', $csv);
+        $this->assertStringNotContainsString('Siti Secret', $csv);
+        $this->assertStringContainsString('text/csv', $response->headers->get('Content-Type'));
+        $this->assertSame('attachment; filename="acme-berhad-report-use-3months.csv"', $response->headers->get('Content-Disposition'));
+    }
+
+    public function test_every_page_can_be_downloaded_an_unknown_page_is_a_404_and_each_download_is_audited_without_figures(): void
+    {
+        foreach (['overview', 'use', 'members', 'counselors', 'quality'] as $page) {
+            $this->hr()->get(route('org.reports.export', ['page' => $page]))->assertOk();
+        }
+
+        $this->hr()->get(route('org.reports.export', ['page' => 'secrets']))->assertNotFound();
+        $this->assertSame(5, AuditLog::where('action', 'organization.report_exported')->count());
+        $this->assertStringNotContainsString('Completed', json_encode(AuditLog::where('action', 'organization.report_exported')->get()->toArray()));
+    }
+
+    public function test_the_csv_lists_the_counselors_and_makes_a_formula_in_a_name_harmless(): void
+    {
+        $this->counselor('=HYPERLINK("http://evil.example")', [$this->acme]);
+
+        $csv = $this->hr()->get(route('org.reports.export', ['page' => 'counselors']))->assertOk()->getContent();
+
+        $this->assertStringContainsString("'=HYPERLINK", $csv);
+        $this->assertStringNotContainsString(',=HYPERLINK', $csv);
+        $this->assertSame("'=1+1", ReportCsv::safe('=1+1'));
+        $this->assertSame("'@x", ReportCsv::safe('@x'));
+        $this->assertSame('Aina', ReportCsv::safe('Aina'));
+        $this->assertSame('', ReportCsv::safe(''));
+    }
+
+    public function test_only_an_organization_admin_downloads_and_only_their_own_organization(): void
+    {
+        $employee = User::factory()->create();
+        Membership::create(['user_id' => $employee->id, 'org_id' => $this->acme->id, 'role' => MembershipRole::Employee, 'status' => MembershipStatus::Active, 'joined_at' => now()]);
+        $this->actingAs($employee)->withSession(['current_org_id' => $this->acme->id, 'current_role' => 'employee'])->get(route('org.reports.export', ['page' => 'use']))->assertForbidden();
+
+        $beta = $this->org('Beta', AccessModel::Closed, OrgType::Corporate);
+        $this->sessions(9, '2026-10-20 08:00', org: $beta, who: $this->counselor('Bakar', [$this->platform]));
+
+        $csv = $this->hr()->get(route('org.reports.export', ['page' => 'use']))->assertOk()->getContent();
+        $this->assertStringNotContainsString('Beta', $csv);
+        $this->assertDoesNotMatchRegularExpression('/Status,Completed,9/', $csv);
     }
 
     // ---- the overview and who may open it -------------------------------------------------------------------------
