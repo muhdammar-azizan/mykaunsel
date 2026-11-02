@@ -125,11 +125,12 @@ class WebIndividualRegistrationTest extends CounselorTestCase
         $app = config('registration.mobile_app_url');
 
         // The pages individuals might land on: none links to the form, and each points to the app instead.
+        // The landing page is in Malay (its design); the others say it in English.
         foreach (['/' => 'landing page', route('login', absolute: false) => 'log in page', route('register.type', absolute: false) => 'account type page'] as $path => $page) {
             $html = $this->get($path)->assertOk()->getContent();
 
             $this->assertDoesNotMatchRegularExpression('#href="[^"]*'.preg_quote($register, '#').'"#', $html, "{$page} must not link to the individual sign-up form");
-            $this->assertStringContainsString('Get the mobile app', $html, "{$page} should point individuals to the app");
+            $this->assertStringContainsString($path === '/' ? 'Muat turun aplikasi' : 'Get the mobile app', $html, "{$page} should point individuals to the app");
             $this->assertStringContainsString('href="'.$app.'"', $html, $page);
         }
 
@@ -143,7 +144,7 @@ class WebIndividualRegistrationTest extends CounselorTestCase
     {
         $this->visitor();
 
-        $this->get('/')->assertOk()->assertSee('id="get-the-app"', false)->assertSee('coming soon')->assertDontSee('Mula Sekarang');
+        $this->get('/')->assertOk()->assertSee('id="get-the-app"', false)->assertSee('Akan datang')->assertDontSee('Mula Sekarang');
         $this->assertSame('/#get-the-app', config('registration.mobile_app_url'));
     }
 
