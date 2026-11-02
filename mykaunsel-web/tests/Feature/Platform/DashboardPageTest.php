@@ -263,42 +263,28 @@ class DashboardPageTest extends TestCase
 
     // ---- hooks: Ask anything, quick actions, search, bell, menu ----------------------------------------------------------------------
 
-    public function test_ask_anything_is_switched_off_and_does_not_pretend_to_be_ai(): void
+    public function test_ask_anything_is_live_and_asks_the_server_not_the_model_directly(): void
     {
         $html = $this->dashboard()->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('/<input id="ai-ask"[^>]*\sdisabled\s/', $html);
-        $this->assertMatchesRegularExpression('/disabled aria-disabled="true" aria-label="Send \(coming soon\)"/', $html);
-        $this->assertMatchesRegularExpression('/disabled aria-disabled="true" aria-label="Attach \(coming soon\)"/', $html);
-        $this->assertStringContainsString('Coming soon', $html);
-        $this->assertStringNotContainsString('Powered by AI', $html);
-        $this->assertStringNotContainsString('@submit', $html, 'nothing is submitted anywhere');
-        $this->assertStringNotContainsString('<form class="group mt-5', $html);
+        $this->assertMatchesRegularExpression('/<input id="ai-ask"(?![^>]*\sdisabled)/', $html);
+        $this->assertStringContainsString(route('platform.assistant'), str_replace('\/', '/', $html));
+        $this->assertStringContainsString('Powered by AI', $html);
+        $this->assertStringNotContainsString('(coming soon)', $html);
+        $this->assertStringNotContainsString('anthropic', strtolower($html), 'the model and its key are never in the page');
     }
 
-    public function test_the_quick_action_pills_are_links_to_pages_that_open(): void
+    public function test_the_quick_action_pills_type_their_question_into_the_box(): void
     {
-        $page = $this->dashboard()->assertOk();
+        $html = $this->dashboard()->assertOk()->getContent();
 
-        preg_match('/<nav[^>]*aria-label="Quick actions"[^>]*>(.*?)<\/nav>/s', $page->getContent(), $nav);
-        preg_match_all('/<a href="([^"]+)"/', $nav[1], $links);
-        $urls = array_map('html_entity_decode', $links[1]);
-
-        $this->assertSame([
-            route('platform.organizations', ['tab' => 'pending']),
-            route('platform.counselors', ['tab' => 'pending']),
-            route('platform.complaints', ['tab' => 'open']),
-            route('platform.audit-log'),
-            route('platform.lkm'),
-        ], $urls);
-
-        foreach ($urls as $url) {
-            $this->actingAs($this->admin)->withSession($this->session)->get($url)->assertOk();
-        }
+        preg_match('/<div[^>]*aria-label="Quick actions"[^>]*>(.*?)<\/div>/s', $html, $pills);
 
         foreach (['Review organizations', 'Review counselors', 'View complaints', 'Audit log', 'LKM directory'] as $label) {
-            $this->assertStringContainsString($label, $nav[1]);
+            $this->assertStringContainsString($label, $pills[1]);
         }
+
+        $this->assertSame(5, substr_count($pills[1], '@click="type('));
     }
 
     public function test_the_bell_is_on_and_shows_a_badge_only_when_something_is_unread(): void

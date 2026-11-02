@@ -23,11 +23,11 @@
     ];
 
     $suggestions = [
-        ['label' => 'Review organizations', 'url' => route('platform.organizations', ['tab' => 'pending']), 'icon' => 'M3 4h18v17H3zM3 9h18M9 4v17'],
-        ['label' => 'Review counselors', 'url' => route('platform.counselors', ['tab' => 'pending']), 'icon' => 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M17 11l2 2 4-4M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
-        ['label' => 'View complaints', 'url' => route('platform.complaints', ['tab' => 'open']), 'icon' => 'M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'],
-        ['label' => 'Audit log', 'url' => route('platform.audit-log'), 'icon' => 'M9 12h6M9 16h6M9 8h6M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'],
-        ['label' => 'LKM directory', 'url' => route('platform.lkm'), 'icon' => 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'],
+        ['label' => 'Review organizations', 'prompt' => 'how many organizations are waiting for approval?', 'url' => route('platform.organizations', ['tab' => 'pending']), 'icon' => 'M3 4h18v17H3zM3 9h18M9 4v17'],
+        ['label' => 'Review counselors', 'prompt' => 'how many counselors need their credentials reviewed?', 'url' => route('platform.counselors', ['tab' => 'pending']), 'icon' => 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M17 11l2 2 4-4M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
+        ['label' => 'View complaints', 'prompt' => 'how many complaints are open right now?', 'url' => route('platform.complaints', ['tab' => 'open']), 'icon' => 'M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'],
+        ['label' => 'Audit log', 'prompt' => 'where can I see what admins did recently?', 'url' => route('platform.audit-log'), 'icon' => 'M9 12h6M9 16h6M9 8h6M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'],
+        ['label' => 'LKM directory', 'prompt' => 'where do I check a counselor against the LKM directory?', 'url' => route('platform.lkm'), 'icon' => 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'],
     ];
 
     $toneClass = ['red' => 'font-semibold text-brand-red', 'amber' => 'font-semibold text-[#B98417]', 'ok' => 'text-brand-ink/50'];

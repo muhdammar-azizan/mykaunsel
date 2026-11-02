@@ -249,6 +249,7 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
 
     Route::prefix('platform')->name('platform.')->middleware('role:platform_admin')->group(function () {
         Route::get('/dashboard', [PlatformDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/assistant', [\App\Http\Controllers\Platform\PlatformAssistantController::class, 'ask'])->middleware('throttle:20,1')->name('assistant');
         Route::get('/organizations', [PlatformOrganizationController::class, 'index'])->name('organizations');
         Route::get('/organizations/{organization}', [PlatformOrganizationController::class, 'show'])->whereNumber('organization')->name('organizations.show');
         Route::post('/organizations/{organization}/plan', [\App\Http\Controllers\Platform\PlatformOrganizationPlanController::class, 'change'])->whereNumber('organization')->middleware('throttle:20,1')->name('organizations.plan');
