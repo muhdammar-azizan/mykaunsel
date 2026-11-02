@@ -1,4 +1,4 @@
-{{-- Frameless bar on the dark page background. Logo shows the icon only; the wordmark slides out on hover. --}}
+{{-- Frameless bar on the dark page background. The logo always shows the icon and the wordmark. --}}
 <header class="relative z-40 flex h-[72px] shrink-0 items-center justify-between px-4 sm:px-6">
     <div class="flex items-center gap-3">
         <button type="button" class="grid h-11 w-11 place-items-center rounded-full text-white hover:bg-white/10 md:hidden" aria-label="Open menu" @click="menuOpen = !menuOpen">
@@ -7,7 +7,7 @@
 
         <a href="{{ route('platform.dashboard') }}" aria-label="MyKaunsel" class="group flex items-center gap-2.5">
             <img src="{{ asset('images/mykaunsel-icon.png') }}" alt="" class="h-10 w-auto transition-transform duration-300 group-hover:scale-105">
-            <span class="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 ease-out group-hover:max-w-[180px] group-hover:opacity-100 group-focus-visible:max-w-[180px] group-focus-visible:opacity-100">
+            <span class="whitespace-nowrap">
                 <span class="block text-[24px] font-extrabold leading-none tracking-tightest text-white">MyKaunsel</span>
                 <span class="mt-1 flex h-[3px] gap-0.5">
                     <span class="flex-1 rounded-full bg-[#4A9BE8]"></span>
