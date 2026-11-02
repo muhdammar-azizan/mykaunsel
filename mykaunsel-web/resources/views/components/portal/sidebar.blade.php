@@ -4,7 +4,7 @@
 <aside class="fixed inset-y-0 left-0 z-50 flex w-[240px] -translate-x-full flex-col border-r border-[#EAEAEA] bg-[#FAFAFA] pb-6 shadow-2xl transition-transform lg:static lg:z-30 lg:translate-x-0 lg:shadow-none"
        :class="menuOpen ? 'translate-x-0' : ''">
     <a href="{{ route('dashboard') }}" aria-label="MyKaunsel" class="flex h-[64px] shrink-0 items-center border-b border-[#EAEAEA] px-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-blue">
-        <img src="{{ asset('images/mykaunsel-logo.png') }}" alt="" class="h-8 w-auto">
+        <img src="{{ asset('images/mykaunsel-logo.png') }}" alt="" class="h-10 w-auto">
     </a>
     {{-- Find a page: a button here, a small panel over the page when opened (click it or press F). Enter goes to the first match. --}}
     <div class="relative shrink-0 px-2 pt-3" x-data="{ q: '', open: false, pages: @js(collect($items)->whereNotNull('url')->map(fn ($i) => ['label' => $i['label'], 'url' => $i['url']])->values()->all()),
