@@ -38,7 +38,7 @@
                                     <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" class="sr-only"
                                            @change="const f = $event.target.files[0]; if (f) { preview = URL.createObjectURL(f); avatarDirty = true; }">
                                 </label>
-                                <p class="mt-2 text-[12px] text-brand-ink/50">JPG, PNG or WEBP, up to 2MB. Shown as a square.</p>
+                                <p class="mt-2 text-[12px] text-brand-ink/50">JPG, PNG or WEBP, up to 2MB.</p>
                             </div>
                         </div>
 
