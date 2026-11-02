@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\GoogleSignInController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -28,6 +29,10 @@ Route::middleware('guest')->group(function () {
 
     // Named on purpose: maintenance mode lets this route through by name, so a Platform Admin can always sign in.
     Route::post('login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+
+    // "Continue with Google": signs in an existing account with the same verified e-mail; never creates one.
+    Route::get('auth/google', [GoogleSignInController::class, 'redirect'])->name('google.redirect');
+    Route::get('auth/google/callback', [GoogleSignInController::class, 'callback'])->name('google.callback');
 
     // Second step of sign-in for accounts with two-factor authentication on.
     Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.challenge');

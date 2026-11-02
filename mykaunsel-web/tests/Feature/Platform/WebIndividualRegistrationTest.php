@@ -214,14 +214,14 @@ class WebIndividualRegistrationTest extends CounselorTestCase
         $this->assertFalse($settings()->canCreateIndividualOnWeb(), 'both shut');
     }
 
-    public function test_there_is_no_working_google_sign_in_yet_and_adding_one_must_use_the_guard(): void
+    public function test_google_sign_in_never_creates_an_account_so_it_can_not_bypass_the_registration_switches(): void
     {
-        // Today "Continue with Google" is only a "coming soon" button: nothing to sign in or sign up with.
-        $this->assertFalse(class_exists('Laravel\Socialite\Facades\Socialite'), 'Socialite is installed: new accounts made through Google on the web MUST be refused unless PlatformSettings::canCreateIndividualOnWeb() is true (an existing account signing in is fine). See docs/REGISTRATION_CONTROL.md, then update this test with a real one.');
-        $this->assertSame([], collect(Route::getRoutes())->filter(fn ($r) => str_contains($r->uri(), 'auth/google') || str_contains($r->uri(), 'oauth'))->map->uri()->all());
+        // "Continue with Google" only signs in an account that already exists (GoogleSignInTest covers the behaviour). If it ever creates accounts,
+        // it MUST refuse unless PlatformSettings::canCreateIndividualOnWeb() is true. See docs/REGISTRATION_CONTROL.md.
+        $this->assertStringNotContainsString('::create(', file_get_contents(app_path('Http/Controllers/Auth/GoogleSignInController.php')));
 
         $this->visitor();
-        $this->get(route('login'))->assertOk()->assertSee('Coming soon')->assertSee('Continue with Google');
+        $this->get(route('login'))->assertOk()->assertSee('Continue with Google')->assertSee(route('google.redirect'), false);
     }
 
     public function test_the_audit_log_is_not_written_by_a_blocked_web_sign_up(): void

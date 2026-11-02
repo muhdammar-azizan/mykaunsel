@@ -30,6 +30,13 @@ return [
         'model' => env('ANTHROPIC_CHAT_MODEL', 'claude-sonnet-5-5'),
     ],
 
+    // "Continue with Google" on the login page (Google Cloud Console → OAuth client). The values live only in .env. Empty = the button does nothing.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
