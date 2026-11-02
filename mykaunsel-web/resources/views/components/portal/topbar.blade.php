@@ -14,9 +14,9 @@
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
 
-    <a href="{{ route('dashboard') }}" aria-label="MyKaunsel" class="flex shrink-0 items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
-        <img src="{{ asset('images/mykaunsel-icon.png') }}" alt="" class="h-9 w-auto">
-        <span class="hidden text-[20px] font-extrabold tracking-tightest sm:block">MyKaunsel</span>
+    {{-- The official logo (dark wordmark with its coloured underline) on a flat light blue block (lighter than the bar, so it does not blend into the white sidebar). --}}
+    <a href="{{ route('dashboard') }}" aria-label="MyKaunsel" class="flex shrink-0 items-center rounded-md bg-[#9DBBF6] px-3 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white lg:-ml-5 lg:h-full lg:rounded-none lg:py-0 lg:pl-5 lg:pr-8">
+        <img src="{{ asset('images/mykaunsel-logo.png') }}" alt="" class="h-8 w-auto sm:h-9">
     </a>
 
     {{-- Page finder: type a page name, Enter goes to the first match. --}}
