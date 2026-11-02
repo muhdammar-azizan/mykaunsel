@@ -30,7 +30,7 @@
         /* On paper the page is just the page: no header, sidebar or footer, and it may run over several sheets. */
         @media print {
             body { height: auto !important; overflow: visible !important; display: block !important; }
-            body > header, body > footer, body aside, body > a.sr-only { display: none !important; }
+            header, footer, aside, body > a.sr-only { display: none !important; }
             body > div { display: block !important; }
             main { overflow: visible !important; padding: 0 !important; }
         }
@@ -39,19 +39,22 @@
 <body class="flex h-screen flex-col overflow-hidden bg-white font-geist text-brand-ink antialiased" x-data="{ menuOpen: false }" @keydown.escape.window="menuOpen = false">
     <a href="#portal-main" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-[14px] focus:font-semibold">Skip to the page</a>
 
-    <x-portal.topbar :items="$items" />
-
     <div class="flex min-h-0 flex-1">
         <x-portal.sidebar :items="$items" />
 
-        <main id="portal-main" tabindex="-1" class="min-w-0 flex-1 overflow-y-auto scroll-subtle px-4 pb-10 pt-6 focus:outline-none sm:px-8 lg:px-[60px]">
-            @if ($header)
-                <div class="mb-5 [&_h2]:text-[24px] [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:tracking-tight [&_h2]:text-brand-ink">{{ $header }}</div>
-            @endif
-            {{ $slot }}
-        </main>
+        <div class="flex min-w-0 flex-1 flex-col">
+            <x-portal.topbar :items="$items" />
+
+            <main id="portal-main" tabindex="-1" class="min-h-0 min-w-0 flex-1 overflow-y-auto scroll-subtle px-4 pb-10 pt-6 focus:outline-none sm:px-8 lg:px-[60px]">
+                @if ($header)
+                    <div class="mb-5 [&_h2]:text-[24px] [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:tracking-tight [&_h2]:text-brand-ink">{{ $header }}</div>
+                @endif
+                {{ $slot }}
+            </main>
+        </div>
     </div>
 
+    {{-- Full width, under the sidebar too. --}}
     <x-portal.footer />
 </body>
 </html>

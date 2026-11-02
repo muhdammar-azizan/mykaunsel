@@ -5,35 +5,22 @@
     $org = \App\Models\Organization::query()->whereKey(session('current_org_id'))->value('name');
     $roleLabel = ['counselor' => 'Counselor', 'org_admin' => 'Organization admin'][session('current_role')] ?? '';
     $several = $user->memberships()->count() > 1;
-    $pages = collect($items)->whereNotNull('url')->map(fn ($i) => ['label' => $i['label'], 'url' => $i['url']])->values()->all();
 @endphp
 
-{{-- Fixed dark bar. Left: menu button (small screens), logo. Middle: page finder. Right: who you are working as, help, notifications, account. --}}
+{{-- Fixed dark bar to the right of the sidebar. Left: menu button (small screens). Middle: free for the AI chat. Middle: page finder. Right: who you are working as, help, notifications, account. --}}
 <header class="relative z-40 flex h-[64px] shrink-0 items-center gap-3 bg-brand-ink px-3 text-white sm:gap-5 sm:px-5">
     <button type="button" class="grid h-10 w-10 shrink-0 place-items-center rounded-md text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white lg:hidden" aria-label="Open menu" @click="menuOpen = !menuOpen">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
 
-    {{-- The official logo (dark wordmark with its coloured underline) sits on a small cream chip so it stays readable on the dark bar. --}}
-    <a href="{{ route('dashboard') }}" aria-label="MyKaunsel" class="flex shrink-0 items-center rounded-lg bg-cream px-3 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
-        <img src="{{ asset('images/mykaunsel-logo.png') }}" alt="" class="h-7 w-auto sm:h-8">
+    {{-- Small screens: the sidebar is a drawer, so the small icon stays here. Large screens: the logo is at the top of the sidebar. --}}
+    <a href="{{ route('dashboard') }}" aria-label="MyKaunsel" class="shrink-0 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white lg:hidden">
+        <img src="{{ asset('images/mykaunsel-icon.png') }}" alt="" class="h-9 w-auto">
     </a>
 
-    {{-- Page finder: type a page name, Enter goes to the first match. --}}
-    <div class="relative mx-auto hidden min-w-0 max-w-[740px] flex-1 md:block" x-data="{ q: '', pages: @js($pages), open: false,
-            get found() { const q = this.q.trim().toLowerCase(); return q === '' ? [] : this.pages.filter(p => p.label.toLowerCase().includes(q)); } }"
-         @click.outside="open = false">
-        <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/80" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <label for="portal-find" class="sr-only">Find a page</label>
-        <input id="portal-find" type="search" x-model="q" @focus="open = true" @input="open = true" @keydown.enter.prevent="if (found.length) window.location = found[0].url" @keydown.escape="open = false" autocomplete="off"
-               placeholder="Find a page" class="block h-[40px] w-full rounded-md border border-white/30 bg-[#111C36] pl-11 pr-3 text-[14.5px] text-white placeholder:text-white/70 focus:border-white focus:outline-none focus:ring-1 focus:ring-white">
-        <div x-show="open && q.trim() !== ''" x-cloak class="absolute left-0 right-0 top-[46px] z-50 overflow-hidden rounded-lg border border-brand-ink/10 bg-white py-1 text-brand-ink shadow-[0_16px_36px_-12px_rgba(14,42,51,.45)]">
-            <template x-for="p in found" :key="p.url"><a :href="p.url" class="block px-4 py-2.5 text-[14px] hover:bg-brand-ink/5" x-text="p.label"></a></template>
-            <p x-show="found.length === 0" class="px-4 py-3 text-[13.5px] text-brand-ink/60">No page found.</p>
-        </div>
-    </div>
+    {{-- The middle is left free: the AI chat goes here later. The page finder is in the sidebar. --}}
 
-    <div class="ml-auto flex items-center gap-1 sm:gap-2 md:ml-0">
+    <div class="ml-auto flex items-center gap-1 sm:gap-2">
         {{-- "Working as": the organization and the role. With more than one, it leads to the role chooser. --}}
         @if ($several)
             <a href="{{ route('context.select') }}" class="hidden max-w-[260px] items-center gap-2 rounded-md px-3 py-2 text-[14px] font-semibold hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white lg:flex" title="Switch organization or role">
