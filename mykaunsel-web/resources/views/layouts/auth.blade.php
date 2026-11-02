@@ -22,7 +22,7 @@
     <div class="flex min-h-screen md:h-screen md:overflow-hidden">
 
         <!-- LEFT COLUMN -->
-        <aside class="relative z-10 hidden w-[45%] shrink-0 bg-cream md:block">
+        <aside class="relative z-10 hidden w-[45%] shrink-0 bg-white md:block">
             <div class="flex h-full flex-col p-8">
                 <a href="/" aria-label="MyKaunsel"><img src="/images/mykaunsel-logo.png" alt="MyKaunsel" class="h-10 w-auto"></a>
 
