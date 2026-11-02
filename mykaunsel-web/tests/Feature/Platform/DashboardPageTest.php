@@ -268,7 +268,7 @@ class DashboardPageTest extends TestCase
         $html = $this->dashboard()->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('/<input id="ai-ask"(?![^>]*\sdisabled)/', $html);
-        $this->assertStringContainsString(route('platform.assistant'), str_replace('\/', '/', $html));
+        $this->assertStringContainsString(route('platform.assistant', [], false), str_replace('\/', '/', $html));
         $this->assertStringContainsString('Powered by AI', $html);
         $this->assertStringNotContainsString('(coming soon)', $html);
         $this->assertStringNotContainsString('anthropic', strtolower($html), 'the model and its key are never in the page');

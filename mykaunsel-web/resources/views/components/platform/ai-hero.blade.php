@@ -13,6 +13,8 @@
         answer: '',
         links: [],
         failed: false,
+        abort: null,
+        cancelled: false,
         init() {
             // Typewriter: type a prompt, pause, erase it, move to the next one.
             const tick = () => {
@@ -33,6 +35,12 @@
             };
             tick();
         },
+        clear() {
+            this.cancelled = true;
+            if (this.abort) this.abort.abort();
+            this.q = ''; this.answer = ''; this.links = []; this.busy = false;
+            this.$refs.input.focus();
+        },
         type(text) {
             clearTimeout(this.timer);
             this.q = '';
@@ -48,8 +56,13 @@
             const question = this.q.trim();
             if (!question || this.busy) return;
             this.busy = true; this.failed = false; this.answer = ''; this.links = [];
+            // A relative address (always this same site) and a time limit, so the box can never spin forever.
+            this.cancelled = false;
+            this.abort = new AbortController();
+            const limit = setTimeout(() => this.abort.abort(), 30000);
             try {
-                const res = await fetch(@js(route('platform.assistant')), {
+                const res = await fetch(@js(route('platform.assistant', [], false)), {
+                    signal: this.abort.signal,
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
                     body: JSON.stringify({ question }),
@@ -58,8 +71,9 @@
                 if (!res.ok) { this.failed = true; this.answer = body.message || 'The assistant can not answer right now. Please try again in a moment.'; }
                 else { this.answer = body.answer; this.links = body.links || []; }
             } catch (e) {
-                this.failed = true; this.answer = 'The assistant can not answer right now. Please try again in a moment.';
+                if (!this.cancelled) { this.failed = true; this.answer = e.name === 'AbortError' ? 'The assistant took too long. Please try again.' : 'The assistant can not answer right now. Please try again in a moment.'; }
             } finally {
+                clearTimeout(limit);
                 this.busy = false;
             }
         },
@@ -83,7 +97,7 @@
                     <span x-text="shown"></span><span class="ml-px inline-block h-[15px] w-px animate-pulse bg-brand-ink/50"></span>
                 </span>
             </div>
-            <button type="button" aria-label="Clear" @click="q = ''; answer = ''; links = []; $refs.input.focus()" x-show="q || answer" x-cloak class="grid h-9 w-9 shrink-0 place-items-center rounded-full text-brand-ink transition hover:bg-brand-ink/5">
+            <button type="button" aria-label="Clear" @click="clear()" x-show="q || answer" x-cloak class="grid h-9 w-9 shrink-0 place-items-center rounded-full text-brand-ink transition hover:bg-brand-ink/5">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
             </button>
             <button type="submit" aria-label="Send" :disabled="busy || !q.trim()" class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#4A7DFF] transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100">
