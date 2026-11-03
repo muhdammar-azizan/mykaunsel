@@ -39,10 +39,7 @@
 
     <x-platform.panel class="mt-4 !p-0">
         @if ($empty === 'none')
-            <div class="px-6 py-14 text-center">
-                <p class="text-[14px] font-semibold">No notifications yet</p>
-                <p class="mt-1 text-[13px] text-brand-ink/60">They appear here when something happens, such as a new application.</p>
-            </div>
+            <x-empty-state-mailbox title="No notifications yet" text="They appear here when something happens, such as a new application." class="py-14" />
         @elseif ($empty === 'no_unread')
             <div class="px-6 py-14 text-center">
                 <p class="text-[14px] font-semibold">You're all caught up</p>

@@ -36,7 +36,11 @@
                 </form>
             </div>
         @empty
-            <p class="px-5 py-12 text-center text-[14px] text-brand-ink/60">{{ $tab === 'unread' ? 'Nothing is unread.' : 'No notifications yet.' }}</p>
+            @if ($tab === 'unread')
+                <x-empty-state-mailbox title="Nothing is unread." text="You are all caught up. New things will show up here." />
+            @else
+                <x-empty-state-mailbox title="No notifications yet." text="We will let you know here when something happens." />
+            @endif
         @endforelse
     </div>
 
