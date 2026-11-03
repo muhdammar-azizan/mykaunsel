@@ -1,12 +1,21 @@
-@props(['kind' => 'upcoming', 'title'])
+@props(['kind' => 'upcoming', 'title', 'size' => 112])
 
-{{-- A small empty state for a list of sessions. $kind picks the picture: 'mark' (nothing to mark: a clipboard with a tick), 'upcoming' (nothing coming: a desk clock),
-     'past' (nothing yet: an empty archive box). Same style as the other empty states, only smaller. --}}
+{{-- A small empty state for a list of sessions or requests. $kind picks the picture: 'mark' (nothing to mark: a clipboard with a tick), 'upcoming' (nothing coming: a
+     desk clock), 'past' (nothing yet: an empty archive box), 'requests' (no time requests: an empty tray with a clock). Same style as the other empty states, only smaller. --}}
 <div {{ $attributes->merge(['class' => 'flex flex-col items-center rounded-xl border border-[#E4E2DE] bg-white px-4 py-6 text-center']) }}>
-    <svg width="112" height="84" viewBox="0 0 150 112" fill="none" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="{{ $size }}" height="{{ round($size * 0.75) }}" viewBox="0 0 150 112" fill="none" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
         <ellipse cx="75" cy="104" rx="46" ry="4" fill="#1B2A4E" opacity=".08"/>
 
-        @if ($kind === 'mark')
+        @if ($kind === 'requests')
+            {{-- an empty inbox tray, with a little clock: nobody is waiting for an answer --}}
+            <path d="M28 62 40 30h70l12 32z" fill="#fff" stroke="#1B2A4E" stroke-width="2.500"/>
+            <path d="M28 62h30a6 6 0 0 0 6 6h22a6 6 0 0 0 6-6h30v30a8 8 0 0 1-8 8H36a8 8 0 0 1-8-8z" fill="#F1F3F8" stroke="#1B2A4E" stroke-width="2.500"/>
+            <path d="M52 44h46M58 52h34" stroke="#1B2A4E" stroke-width="2.200" opacity=".25"/>
+            <circle cx="112" cy="24" r="15" fill="#0A4F88" stroke="#1B2A4E" stroke-width="2.500"/>
+            <path d="M112 24v-7M112 24l6 3.500" stroke="#fff" stroke-width="2.600"/>
+            <path d="M24 28v10M19 33h10" stroke="#E3AF39" stroke-width="3"/>
+            <circle cx="132" cy="80" r="3" fill="#D62839" stroke="#1B2A4E" stroke-width="1.800"/>
+        @elseif ($kind === 'mark')
             {{-- a clipboard with a big tick: all marked --}}
             <rect x="42" y="14" width="64" height="86" rx="9" fill="#fff" stroke="#1B2A4E" stroke-width="2.5"/>
             <rect x="60" y="8" width="28" height="14" rx="5" fill="#E3AF39" stroke="#1B2A4E" stroke-width="2.5"/>

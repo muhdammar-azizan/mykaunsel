@@ -41,7 +41,7 @@
                         </div>
                     </div>
                 @empty
-                    <p class="rounded-xl border border-[#E4E2DE] bg-white p-4 text-brand-ink/65">{{ __('No requests waiting.') }}</p>
+                    <x-empty-state-sessions kind="requests" :size="150" class="py-10" :title="__('No requests waiting.')" />
                 @endforelse
             </div>
         </section>
