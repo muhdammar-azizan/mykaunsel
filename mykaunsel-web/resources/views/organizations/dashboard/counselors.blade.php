@@ -75,7 +75,7 @@
                         </span>
                     </li>
                 @empty
-                    <li class="py-3 text-[14px] text-brand-ink/65">No invitations yet.</li>
+                    <li><x-empty-state-invitation title="No invitations yet." text="Invitations you send will show up here." /></li>
                 @endforelse
             </ul>
         </section>
