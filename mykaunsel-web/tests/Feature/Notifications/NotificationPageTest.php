@@ -168,7 +168,7 @@ class NotificationPageTest extends TestCase
 
         $this->item($this->admin, label: 'Already Read', read: true);
 
-        $this->as()->get(route('platform.notifications', ['tab' => 'unread']))->assertSee("You're all caught up", false)->assertSee('Nothing is unread')->assertDontSee('No notifications yet')->assertDontSee('No notifications match');
+        $this->as()->get(route('platform.notifications', ['tab' => 'unread']))->assertSee("You're all caught up")->assertSee('Nothing is unread')->assertDontSee('No notifications yet')->assertDontSee('No notifications match');
 
         $this->as()->get(route('platform.notifications', ['group' => 'complaints']))->assertSee('No notifications match this filter')->assertSee('Clear the filter')->assertDontSee('No notifications yet');
         $this->as()->get(route('platform.notifications', ['group' => 'complaints', 'tab' => 'unread']))->assertSee('No notifications match this filter');

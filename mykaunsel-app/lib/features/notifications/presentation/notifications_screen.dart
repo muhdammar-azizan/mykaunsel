@@ -9,6 +9,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../feed/presentation/feed_support.dart';
 import '../domain/app_notification.dart';
+import 'mailbox_illustration.dart';
 import 'notifications_controller.dart';
 
 /// The sentence for one notification, written from its type (so it can be translated). A type this version does not know yet, or one that arrived
@@ -125,7 +126,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         child: LayoutBuilder(
           builder: (context, box) => SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            child: SizedBox(height: box.maxHeight, child: _Message(icon: Icons.notifications_none, title: l10n.notificationsEmptyTitle, body: l10n.notificationsEmptyBody)),
+            child: SizedBox(height: box.maxHeight, child: _Message(illustration: const MailboxIllustration(), title: l10n.notificationsEmptyTitle, body: l10n.notificationsEmptyBody)),
           ),
         ),
       );
@@ -221,9 +222,10 @@ class _Tile extends StatelessWidget {
 }
 
 class _Message extends StatelessWidget {
-  const _Message({required this.icon, required this.title, required this.body, this.action});
+  const _Message({this.icon, this.illustration, required this.title, required this.body, this.action});
 
-  final IconData icon;
+  final IconData? icon;
+  final Widget? illustration;
   final String title;
   final String body;
   final Widget? action;
@@ -238,7 +240,7 @@ class _Message extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 48, color: Theme.of(context).colorScheme.primary),
+            illustration ?? Icon(icon, size: 48, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: AppSpacing.l),
             Semantics(header: true, child: Text(title, textAlign: TextAlign.center, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w800))),
             const SizedBox(height: AppSpacing.s),

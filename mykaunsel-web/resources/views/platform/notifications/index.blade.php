@@ -41,15 +41,13 @@
         @if ($empty === 'none')
             <x-empty-state-mailbox title="No notifications yet" text="They appear here when something happens, such as a new application." class="py-14" />
         @elseif ($empty === 'no_unread')
-            <div class="px-6 py-14 text-center">
-                <p class="text-[14px] font-semibold">You're all caught up</p>
-                <p class="mt-1 text-[13px] text-brand-ink/60">Nothing is unread. <a href="{{ route('platform.notifications') }}" class="font-semibold text-brand-blue hover:underline">See all notifications</a></p>
-            </div>
+            <x-empty-state-mailbox title="You're all caught up" text="Nothing is unread." class="py-14">
+                <a href="{{ route('platform.notifications') }}" class="mt-3 text-[13.5px] font-semibold text-brand-blue hover:underline">See all notifications</a>
+            </x-empty-state-mailbox>
         @elseif ($empty === 'no_match')
-            <div class="px-6 py-14 text-center">
-                <p class="text-[14px] font-semibold">No notifications match this filter</p>
-                <p class="mt-1 text-[13px] text-brand-ink/60"><a href="{{ route('platform.notifications') }}" class="font-semibold text-brand-blue hover:underline">Clear the filter</a></p>
-            </div>
+            <x-empty-state-mailbox title="No notifications match this filter" class="py-14">
+                <a href="{{ route('platform.notifications') }}" class="mt-3 text-[13.5px] font-semibold text-brand-blue hover:underline">Clear the filter</a>
+            </x-empty-state-mailbox>
         @else
             <ul class="divide-y divide-brand-ink/[.06]">
                 @foreach ($items as $item)
