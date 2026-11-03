@@ -1,6 +1,13 @@
 @props(['title'])
 
 <x-auth-centered-layout :title="$title.' — MyKaunsel'" content-max-width="720px">
+    {{-- Back goes to the page the visitor came from (when it was on this site); otherwise to the home page. --}}
+    <a href="{{ auth()->check() ? route('dashboard') : url('/') }}"
+       onclick="if (document.referrer.indexOf(location.origin) === 0 && history.length > 1) { history.back(); return false; }"
+       class="mb-4 inline-flex items-center gap-1.5 rounded-full border border-navy/15 bg-white/85 px-4 py-2 text-[13.5px] font-medium text-navy transition hover:border-navy/30 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal">
+        <span aria-hidden="true">←</span> {{ __('Back') }}
+    </a>
+
     <article class="rounded-2xl border border-navy/10 bg-white/85 p-6 shadow-sm md:p-10">
         @if (config('legal.draft'))
             <p role="note" class="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-[14px] leading-relaxed text-amber-900">
