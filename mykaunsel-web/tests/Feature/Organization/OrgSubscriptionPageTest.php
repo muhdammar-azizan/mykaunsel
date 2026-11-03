@@ -113,6 +113,34 @@ class OrgSubscriptionPageTest extends TestCase
         $this->hr()->get(route('org.subscription.invoice', $other->public_id))->assertNotFound();
     }
 
+    public function test_an_organization_with_no_plan_sees_the_plans_it_is_offered_and_asking_for_one_is_only_a_request(): void
+    {
+        $starter = SubscriptionPlan::create(['org_type' => OrgType::Corporate->value, 'name' => 'Starter', 'min_members' => 1, 'max_members' => 500, 'price_cents' => 120000, 'active' => true, 'version' => 1]);
+        SubscriptionPlan::create(['org_type' => OrgType::Corporate->value, 'name' => 'Old plan', 'min_members' => 1, 'max_members' => 500, 'price_cents' => 99900, 'active' => false, 'version' => 1]);
+        SubscriptionPlan::create(['org_type' => OrgType::University->value, 'name' => 'Uni plan', 'min_members' => 1, 'max_members' => 500, 'price_cents' => 50000, 'active' => true, 'version' => 1]);
+
+        $this->hr()->get(route('org.subscription'))->assertOk()
+            ->assertSee('Pick the plan that fits your organization')->assertSee('Starter')->assertSee('RM 1,200', false)->assertSee('without tax (SST)')
+            ->assertDontSee('Old plan')->assertDontSee('Uni plan');
+
+        // Asking is a request: nothing is assigned or charged, and the plan looked at is kept in the audit log.
+        $this->hr()->post(route('org.subscription.renewal'), ['plan_id' => $starter->id])->assertSessionHas('status');
+
+        $this->assertNull($this->acme->fresh()->current_assignment_id);
+        $this->assertSame(0, Invoice::count());
+        $this->assertSame($starter->id, AuditLog::where('action', 'subscription.renewal_requested')->first()->metadata['requested_plan_id'] ?? null);
+        $this->hr()->get(route('org.subscription'))->assertDontSee('Pick the plan that fits your organization');
+    }
+
+    public function test_a_plan_the_organization_is_not_offered_is_not_written_into_the_request(): void
+    {
+        $uni = SubscriptionPlan::create(['org_type' => OrgType::University->value, 'name' => 'Uni plan', 'min_members' => 1, 'max_members' => 500, 'price_cents' => 50000, 'active' => true, 'version' => 1]);
+
+        $this->hr()->post(route('org.subscription.renewal'), ['plan_id' => $uni->id])->assertSessionHas('status');
+
+        $this->assertArrayNotHasKey('requested_plan_id', AuditLog::where('action', 'subscription.renewal_requested')->first()->metadata ?? []);
+    }
+
     public function test_asking_to_renew_flags_the_organization_tells_the_platform_admins_once_and_a_new_plan_clears_it(): void
     {
         $this->plan();

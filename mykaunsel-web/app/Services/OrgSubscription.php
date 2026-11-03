@@ -48,6 +48,8 @@ class OrgSubscription
             'max_members' => $max,
             'over_limit' => $max !== null && $members > $max,
             'renewal_requested_at' => $org->renewal_requested_at,
+            // The plans on the "no plan yet" card: only when the organization has none; the ones that fit its stated size come first.
+            'offered' => $current === null ? $this->plans->offeredPlans($org)['plans'] : collect(),
             'invoices' => Invoice::query()->where('org_id', $org->getKey())->where('status', '!=', Invoice::VOID)->with('receipt')->orderByDesc('issued_on')->orderByDesc('id')->limit(100)->get(),
         ];
     }
@@ -87,13 +89,16 @@ class OrgSubscription
     }
 
     /** @throws RuntimeException in plain words */
-    public function requestRenewal(Organization $org, User $admin): void
+    public function requestRenewal(Organization $org, User $admin, ?int $planId = null): void
     {
         if (! $this->plans->canHavePlan($org)) {
             throw new RuntimeException('This kind of organization has no subscription to renew.');
         }
 
-        DB::transaction(function () use ($org, $admin) {
+        // The plan the admin looked at is kept (in the audit log only) when it is one this organization is offered; anything else is ignored.
+        $requestedPlan = $planId !== null && $this->plans->offeredPlans($org)['plans']->contains(fn (array $row) => $row['plan']->getKey() === $planId) ? $planId : null;
+
+        DB::transaction(function () use ($org, $admin, $requestedPlan) {
             $locked = Organization::query()->lockForUpdate()->findOrFail($org->getKey());
 
             if ($locked->renewal_requested_at !== null) {
@@ -101,7 +106,7 @@ class OrgSubscription
             }
 
             $locked->forceFill(['renewal_requested_at' => now(), 'renewal_requested_by' => $admin->getKey()])->save();
-            Audit::log('subscription.renewal_requested', $locked, ['organization_id' => $locked->getKey()], $admin);
+            Audit::log('subscription.renewal_requested', $locked, array_filter(['organization_id' => $locked->getKey(), 'requested_plan_id' => $requestedPlan], fn ($v) => $v !== null), $admin);
 
             DB::afterCommit(fn () => app(NotificationCenter::class)->publish('subscription.renewal_requested', $locked, $locked->name, (string) $locked->renewal_requested_at->getTimestamp()));
         });

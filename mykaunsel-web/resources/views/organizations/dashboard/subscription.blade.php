@@ -46,6 +46,10 @@
                     @endif
                 @else
                     <p class="mt-3 text-[14px] text-brand-ink/65">Your organization has no plan yet. MyKaunsel sets one up with you.</p>
+
+                    @if ($offered->isNotEmpty() && ! $renewal_requested_at)
+                        @include('organizations.dashboard._plan-offer', ['offered' => $offered])
+                    @endif
                 @endif
 
                 @if ($state === 'ended')

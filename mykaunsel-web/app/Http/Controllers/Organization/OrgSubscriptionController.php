@@ -86,7 +86,7 @@ class OrgSubscriptionController extends Controller
     public function requestRenewal(Request $request, OrgSubscription $subscription): RedirectResponse
     {
         try {
-            $subscription->requestRenewal($this->organization($request), $request->user());
+            $subscription->requestRenewal($this->organization($request), $request->user(), $request->integer('plan_id') ?: null);
         } catch (RuntimeException $e) {
             return back()->withErrors(['renewal' => $e->getMessage()]);
         }
