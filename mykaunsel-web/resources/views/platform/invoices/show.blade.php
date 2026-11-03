@@ -82,7 +82,7 @@
             @if ($invoice->status === \App\Models\Invoice::UNPAID)
                 <x-platform.panel title="Cancel this invoice">
                     <p class="text-[13px] text-brand-ink/65">Only for an invoice made by mistake. It can not be undone, and the plan the organization was given does not change.</p>
-                    <form method="POST" action="{{ route('platform.invoices.void', $invoice) }}" class="mt-3" onsubmit="return confirm('Void this invoice? It can not be undone.');">
+                    <form method="POST" action="{{ route('platform.invoices.void', $invoice) }}" class="mt-3" data-confirm-title="Void this invoice?" data-confirm="It can not be undone." data-confirm-button="Void invoice" data-confirm-cancel="Keep invoice">
                         @csrf
                         <label for="reason" class="block text-[12.5px] font-semibold text-brand-ink/70">Why</label>
                         <input id="reason" name="reason" type="text" maxlength="200" required value="{{ $voidErrors->any() ? old('reason') : '' }}" class="{{ $input }}">

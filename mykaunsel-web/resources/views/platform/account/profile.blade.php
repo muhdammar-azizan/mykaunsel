@@ -51,7 +51,7 @@
                     </form>
 
                     @if ($user->avatar_url)
-                        <form method="POST" action="{{ \App\Support\AccountArea::route('account.avatar.destroy') }}" class="mt-3" onsubmit="return confirm('Remove your profile photo?')">
+                        <form method="POST" action="{{ \App\Support\AccountArea::route('account.avatar.destroy') }}" class="mt-3" data-confirm-title="Remove your profile photo?" data-confirm="" data-confirm-button="Remove photo" data-confirm-cancel="Keep photo">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-[13px] font-semibold text-brand-red hover:underline">Remove photo</button>
                         </form>

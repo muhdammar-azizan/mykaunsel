@@ -49,7 +49,7 @@
                             @csrf
                             <button type="submit" class="inline-flex min-h-[40px] items-center rounded-md bg-brand-blue px-4 text-sm font-semibold text-white transition hover:bg-brand-deep">Approve</button>
                         </form>
-                        <form method="POST" action="{{ route('org.members.decline', $row->id) }}" onsubmit="return confirm('Decline this request? The person will be told by e-mail.');">
+                        <form method="POST" action="{{ route('org.members.decline', $row->id) }}" data-confirm-title="Decline this request?" data-confirm="The person will be told by e-mail." data-confirm-button="Decline request" data-confirm-cancel="Go back">
                             @csrf
                             <button type="submit" class="inline-flex min-h-[40px] items-center rounded-md border border-brand-red/50 px-4 text-sm font-semibold text-brand-red transition hover:bg-brand-red/[.06]">Decline</button>
                         </form>
@@ -93,7 +93,7 @@
                                         <td class="py-2 pr-4">{{ $invitation->state() }}</td>
                                         <td class="py-2">
                                             @if ($invitation->isOpen())
-                                                <form method="POST" action="{{ route('org.invitations.revoke', $invitation->id) }}" onsubmit="return confirm('Cancel this invitation?');">
+                                                <form method="POST" action="{{ route('org.invitations.revoke', $invitation->id) }}" data-confirm-title="Cancel this invitation?" data-confirm="" data-confirm-button="Cancel invitation" data-confirm-cancel="Keep it">
                                                     @csrf
                                                     <button type="submit" class="text-sm font-semibold text-brand-red hover:underline">Cancel</button>
                                                 </form>
@@ -154,7 +154,7 @@
                                         <td class="py-2 pr-4">{{ $state }}</td>
                                         <td class="py-2">
                                             @if ($code->isUsable())
-                                                <form method="POST" action="{{ route('org.codes.revoke', $code->id) }}" onsubmit="return confirm('Switch this code off? Nobody new can use it.');">
+                                                <form method="POST" action="{{ route('org.codes.revoke', $code->id) }}" data-confirm-title="Switch this code off?" data-confirm="Nobody new can use it." data-confirm-button="Switch off" data-confirm-cancel="Keep it on">
                                                     @csrf
                                                     <button type="submit" class="text-sm font-semibold text-brand-red hover:underline">Switch off</button>
                                                 </form>
@@ -190,7 +190,7 @@
                         <p class="font-medium text-brand-ink">{{ $row->user->name }}</p>
                         <p class="text-sm text-brand-ink/65">{{ $row->user->email }}</p>
                         <p class="text-sm text-brand-ink/55">{{ ucfirst($row->role->value) }} · since {{ $when($row->joined_at) }}</p>
-                        <form method="POST" action="{{ route('org.members.remove', $row->id) }}" class="ml-auto" onsubmit="return confirm('Remove this person? Their later sessions with your counselors are cancelled, except those in the next {{ \App\Services\MembershipEnding::GRACE_DAYS }} days. They are told by e-mail.');">
+                        <form method="POST" action="{{ route('org.members.remove', $row->id) }}" class="ml-auto" data-confirm-title="Remove this person?" data-confirm="Their later sessions with your counselors are cancelled, except those in the next {{ \App\Services\MembershipEnding::GRACE_DAYS }} days. They are told by e-mail." data-confirm-button="Remove person" data-confirm-cancel="Keep">
                             @csrf
                             <button type="submit" class="text-sm font-semibold text-brand-red hover:underline">Remove</button>
                         </form>

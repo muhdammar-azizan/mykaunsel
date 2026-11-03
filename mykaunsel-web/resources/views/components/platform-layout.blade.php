@@ -38,5 +38,6 @@
         </main>
     </div>
     <x-platform.search-palette />
+    <x-confirm-dialog />
 </body>
 </html>

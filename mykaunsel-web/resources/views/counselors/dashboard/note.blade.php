@@ -26,7 +26,7 @@
         </form>
 
         @if ($s['has_note'])
-            <form method="POST" action="{{ route('counselor.notes.destroy', $s['id']) }}" class="mt-5 border-t border-[#EEEDEA] pt-5" onsubmit="return confirm('Delete this note for good? It can not be undone.');">
+            <form method="POST" action="{{ route('counselor.notes.destroy', $s['id']) }}" class="mt-5 border-t border-[#EEEDEA] pt-5" data-confirm-title="Delete this note?" data-confirm="It will be deleted for good. It can not be undone." data-confirm-button="Delete note" data-confirm-cancel="Keep note">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="inline-flex min-h-[44px] items-center rounded-md border border-brand-red/50 px-5 text-[14px] font-semibold text-brand-red transition hover:bg-brand-red/[.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red">Delete note</button>

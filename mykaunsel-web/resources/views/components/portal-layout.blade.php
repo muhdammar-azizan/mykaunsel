@@ -57,5 +57,6 @@
 
     {{-- Full width, under the sidebar too. --}}
     <x-portal.footer />
+    <x-confirm-dialog />
 </body>
 </html>

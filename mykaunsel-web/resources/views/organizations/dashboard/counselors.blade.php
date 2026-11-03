@@ -38,7 +38,7 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="inline-flex rounded-full px-2.5 py-0.5 text-[12px] font-bold {{ $pill[$status] ?? 'bg-brand-ink/10 text-brand-ink/65' }}">{{ $status === 'approved' ? 'Verified' : ucfirst($status) }}</span>
-                        <form method="POST" action="{{ route('org.counselors.remove', $m->id) }}" onsubmit="return confirm('Remove {{ addslashes($m->user->name) }}? Their later sessions with your organization are cancelled and the clients are told. It can not be undone.');">
+                        <form method="POST" action="{{ route('org.counselors.remove', $m->id) }}" data-confirm-title="Remove {{ $m->user->name }}?" data-confirm="Their later sessions with your organization are cancelled and the clients are told. It can not be undone." data-confirm-button="Remove counselor" data-confirm-cancel="Keep">
                             @csrf
                             <button class="inline-flex min-h-[40px] items-center rounded-md border border-brand-red/50 px-4 text-[14px] font-semibold text-brand-red transition hover:bg-brand-red/[.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red">Remove</button>
                         </form>

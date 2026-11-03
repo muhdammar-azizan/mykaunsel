@@ -13,7 +13,7 @@
     @foreach ($tabs as $key => $tab)
         @if ($tab['route'])
             <a href="{{ \App\Support\AccountArea::route($tab['route']) }}"
-               @click="if (typeof dirty !== 'undefined' && dirty && !confirm('You have unsaved changes. Leave without saving?')) $event.preventDefault()"
+               @click="if (typeof dirty !== 'undefined' && dirty) { $event.preventDefault(); const href = $el.href; mkConfirm({ title: 'Leave without saving?', message: 'You have unsaved changes.', confirmLabel: 'Leave', cancelLabel: 'Stay', tone: 'neutral' }).then(ok => { if (ok) window.location = href; }); }"
                @if ($active === $key) aria-current="page" @endif
                class="-mb-px border-b-2 px-4 py-2.5 text-[14px] font-semibold transition {{ $active === $key ? 'border-brand-blue text-brand-blue' : 'border-transparent text-brand-ink/60 hover:text-brand-ink' }}">
                 {{ $tab['label'] }}

@@ -85,7 +85,7 @@
                 <section class="{{ $card }} p-6" aria-labelledby="cancel-title">
                     <h2 id="cancel-title" class="text-[20px] font-bold tracking-tight">Cancel this session</h2>
                     <p class="mt-1 text-[14px] text-brand-ink/65">The client is told by e-mail and in the app, with your reason. The time opens for booking again. You can not undo this.</p>
-                    <form method="POST" action="{{ route('counselor.appointments.cancel', $s['id']) }}" class="mt-4" onsubmit="return confirm('Cancel this session? The client will be told.');">
+                    <form method="POST" action="{{ route('counselor.appointments.cancel', $s['id']) }}" class="mt-4" data-confirm-title="Cancel this session?" data-confirm="The client will be told." data-confirm-button="Cancel session" data-confirm-cancel="Keep session">
                         @csrf
                         <label for="reason" class="block text-[13px] font-semibold text-brand-ink/70">Reason for the client</label>
                         <textarea id="reason" name="reason" rows="3" maxlength="300" required class="mt-1 block w-full rounded-md border border-brand-ink/20 px-3 py-2 text-[14px] focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20">{{ old('reason') }}</textarea>
