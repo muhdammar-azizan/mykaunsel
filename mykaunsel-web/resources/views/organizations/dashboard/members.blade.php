@@ -55,7 +55,11 @@
                         </form>
                     </div>
                 @empty
-                    <p class="mt-4 text-sm text-brand-ink/55">{{ $search !== '' ? 'Nobody waiting matches your search.' : 'Nobody is waiting.' }}</p>
+                    @if ($search !== '')
+                        <p class="mt-4 text-sm text-brand-ink/55">Nobody waiting matches your search.</p>
+                    @else
+                        <x-empty-state-waiting title="Nobody is waiting." text="New requests will show up here for you to approve." />
+                    @endif
                 @endforelse
             </section>
 
