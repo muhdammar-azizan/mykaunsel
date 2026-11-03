@@ -94,7 +94,7 @@
                                 @csrf
                                 <div>
                                     <label for="flag-{{ $r['id'] }}" class="block text-[13px] font-semibold text-brand-ink/70">Why</label>
-                                    <select id="flag-{{ $r['id'] }}" name="reason" required class="mt-1 block min-h-[40px] rounded-md border border-brand-ink/20 px-3 text-[14px]">
+                                    <select id="flag-{{ $r['id'] }}" name="reason" required class="mt-1 block min-h-[40px] rounded-md border border-brand-ink/20 pl-3 pr-9 text-[14px]">
                                         @foreach ($flagReasons as $key => $text)<option value="{{ $key }}">{{ $text }}</option>@endforeach
                                     </select>
                                 </div>

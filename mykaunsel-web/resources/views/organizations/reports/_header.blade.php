@@ -16,7 +16,7 @@
 
     <form method="GET" class="flex flex-wrap items-center gap-3 print:hidden">
         <label for="range" class="text-[13px] font-semibold text-brand-ink/70">Period</label>
-        <select id="range" name="range" onchange="this.form.submit()" class="min-h-[40px] rounded-md border border-brand-ink/20 px-3 text-[14px]">
+        <select id="range" name="range" onchange="this.form.submit()" class="min-h-[40px] rounded-md border border-brand-ink/20 pl-3 pr-9 text-[14px]">
             @foreach ($period['choices'] as $key => $label)<option value="{{ $key }}" @selected($period['key'] === $key)>{{ $label }}</option>@endforeach
         </select>
         @if ($comparable)
