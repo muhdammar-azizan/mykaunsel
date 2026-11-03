@@ -117,15 +117,18 @@
         </div>
     </div>
 
-    <!-- Skip confirmation modal -->
-    <div id="vdModalWrap" hidden class="fixed inset-0 z-50 grid place-items-center p-6">
-        <div id="vdModalBg" class="absolute inset-0" style="background:rgba(14,42,51,.45)"></div>
-        <div id="vdModal" class="relative w-full max-w-[400px] rounded-2xl bg-cream p-7" style="box-shadow:0 30px 70px -20px rgba(14,42,51,.35)">
-            <h2 class="text-[19px] font-semibold tracking-tightest">{{ __('Continue without verification?') }}</h2>
-            <p class="mt-3 text-[13.5px] leading-relaxed text-navy/60">{{ __('Your organization will be reviewed manually by our team, which may take longer. You can verify your domain anytime from your dashboard settings.') }}</p>
-            <div class="mt-6 flex gap-3">
-                <button type="button" id="vdGoBack" class="grid h-[42px] flex-1 place-items-center rounded-full border border-navy/20 text-[13.5px] font-medium text-navy">{{ __('Go back') }}</button>
-                <button type="submit" form="vdContinueForm" id="vdAnyway" class="btn-utama grid h-[42px] flex-1 place-items-center rounded-full text-[13.5px] font-medium text-white" style="background:#4A7DFF">{{ __('Continue anyway') }}</button>
+    <!-- Skip confirmation modal. It is moved to <body> by the script below, so it covers the whole screen and not only this column. -->
+    <div id="vdModalWrap" hidden class="fixed inset-0 z-[100] grid place-items-center p-5" role="dialog" aria-modal="true" aria-labelledby="vdModalTitle" aria-describedby="vdModalText">
+        <div id="vdModalBg" class="absolute inset-0 backdrop-blur-[2px]" style="background:rgba(14,42,51,.5)"></div>
+        <div id="vdModal" class="relative w-full max-w-[420px] rounded-[22px] bg-cream p-7" style="box-shadow:0 30px 70px -20px rgba(14,42,51,.45)">
+            <span class="grid h-11 w-11 place-items-center rounded-full" style="background:rgba(217,143,74,.14);color:#D98F4A" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 17h.01"/></svg>
+            </span>
+            <h2 id="vdModalTitle" class="mt-4 text-[20px] font-semibold leading-snug tracking-tightest">{{ __('Continue without verification?') }}</h2>
+            <p id="vdModalText" class="mt-2 text-[14px] leading-relaxed text-navy/60">{{ __('Your organization will be reviewed manually by our team, which may take longer. You can verify your domain anytime from your dashboard settings.') }}</p>
+            <div class="mt-7 grid gap-3 sm:grid-cols-2">
+                <button type="button" id="vdGoBack" class="grid h-[44px] place-items-center rounded-full border border-navy/20 text-[14px] font-medium text-navy transition hover:bg-navy/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal">{{ __('Go back') }}</button>
+                <button type="submit" form="vdContinueForm" id="vdAnyway" class="btn-utama grid h-[44px] place-items-center rounded-full text-[14px] font-medium text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2" style="background:#4A7DFF">{{ __('Continue anyway') }}</button>
             </div>
         </div>
     </div>
@@ -254,12 +257,35 @@
                 document.getElementById('vdContinue').addEventListener('click', function (e) {
                     if (this.dataset.siap !== '1') e.preventDefault();
                 });
-                document.getElementById('vdSkip').addEventListener('click', function (e) {
+                // The skip dialog sits on <body>: inside this column it could only cover the column, not the screen.
+                var modalWrap = document.getElementById('vdModalWrap');
+                document.body.appendChild(modalWrap);
+                var opener = null;
+
+                function vdBukaModal(e) {
                     e.preventDefault();
-                    document.getElementById('vdModalWrap').hidden = false;
-                });
-                document.getElementById('vdGoBack').addEventListener('click', function () {
-                    document.getElementById('vdModalWrap').hidden = true;
+                    opener = document.activeElement;
+                    modalWrap.hidden = false;
+                    document.getElementById('vdGoBack').focus();
+                }
+                function vdTutupModal() {
+                    if (modalWrap.hidden) return;
+                    modalWrap.hidden = true;
+                    if (opener && opener.focus) opener.focus();
+                }
+
+                document.getElementById('vdSkip').addEventListener('click', vdBukaModal);
+                document.getElementById('vdGoBack').addEventListener('click', vdTutupModal);
+                document.getElementById('vdModalBg').addEventListener('click', vdTutupModal);
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') vdTutupModal();
+                    // Keep the Tab key inside the dialog while it is open.
+                    if (e.key === 'Tab' && !modalWrap.hidden) {
+                        var buttons = [document.getElementById('vdGoBack'), document.getElementById('vdAnyway')];
+                        var first = buttons[0], last = buttons[1];
+                        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+                    }
                 });
             });
         </script>
