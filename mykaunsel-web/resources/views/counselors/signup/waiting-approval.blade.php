@@ -31,8 +31,16 @@
 <body class="font-sans text-navy antialiased">
 
     <div class="relative flex min-h-screen flex-col overflow-hidden bg-cream">
-        <img src="/images/placeholder.jpg" alt="" class="absolute inset-0 h-full w-full object-cover">
-        <span class="pointer-events-none absolute inset-0" style="background:rgba(250,248,245,.62)"></span>
+        {{-- The soft pastel background shared with the other account pages (the same one as the account type page) --}}
+        <div class="b1-wrap" aria-hidden="true">
+            <div class="b1-plume">
+                <div class="b1-strand b1-s1"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+                <div class="b1-strand b1-s2"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+                <div class="b1-strand b1-s3"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+                <div class="b1-strand b1-s4"><div class="b1-inner"></div><div class="b1-lines"></div></div>
+            </div>
+            <div class="b1-veil"></div>
+        </div>
 
         <div class="relative z-10 flex items-start justify-between p-8">
             <x-mykaunsel-logo href="/" />
