@@ -48,9 +48,8 @@
             @csrf
             <input type="hidden" name="plan_id" :value="picked">
             <button class="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-brand-blue px-5 text-[14px] font-semibold text-white transition hover:bg-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2">
-                Ask for this plan <span aria-hidden="true">→</span>
+                Get started <span aria-hidden="true">→</span>
             </button>
         </form>
-        <p class="mt-3 text-[12px] leading-relaxed text-brand-ink/55">Nothing is charged now. MyKaunsel confirms the plan with you first.</p>
     </div>
 </div>
