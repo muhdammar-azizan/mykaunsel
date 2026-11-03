@@ -13,7 +13,13 @@ class CounselorSpecialization extends Model
     protected $fillable = [
         'counselor_profile_id',
         'specialization',
+        'is_custom',
     ];
+
+    protected function casts(): array
+    {
+        return ['is_custom' => 'boolean'];
+    }
 
     public function counselorProfile(): BelongsTo
     {

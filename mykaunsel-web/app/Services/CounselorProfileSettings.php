@@ -22,13 +22,22 @@ use Illuminate\Support\Facades\DB;
  */
 class CounselorProfileSettings
 {
+    /** How many specializations of their own a counselor may add (they are shown on the profile only: not a search filter, not in the analytics). */
+    public const CUSTOM_MAX = 3;
+
+    /** One of their own: at most this many characters and words, letters only (with spaces, & - ' /), so no number, address or link fits. */
+    public const CUSTOM_MAX_CHARS = 30;
+
+    public const CUSTOM_MAX_WORDS = 3;
+
     /** @return array<string, mixed> */
     public function for(User $counselor): array
     {
         $profile = $this->profile($counselor);
 
         $languages = $profile->languages()->pluck('language')->all();
-        $specializations = $profile->specializations()->pluck('specialization')->all();
+        $specializations = $profile->specializations()->where('is_custom', false)->pluck('specialization')->all();
+        $custom = $profile->specializations()->where('is_custom', true)->pluck('specialization')->all();
         $left = PaValidity::daysLeft($profile->pa_valid_until);
 
         return [
@@ -46,6 +55,8 @@ class CounselorProfileSettings
             'buffer_minutes' => (int) $profile->buffer_minutes,
             'languages' => $languages,
             'specializations' => $specializations,
+            'custom_specializations' => $custom,
+            'custom_specialization_max' => self::CUSTOM_MAX,
             // The lists, plus anything the counselor already has that is not on them (so saving never silently drops it).
             'language_options' => $this->options(config('counselors.profile.languages'), $languages),
             'specialization_options' => $this->options(config('counselors.profile.specializations'), $specializations),
@@ -85,7 +96,11 @@ class CounselorProfileSettings
                 $changed[] = 'languages';
             }
 
-            if ($this->sync($profile->specializations(), 'specialization', $input['specializations'] ?? [])) {
+            // The listed ones and the ones the counselor wrote themselves are kept apart, so saving one never removes the other.
+            $listedChanged = $this->sync($profile->specializations()->where('is_custom', false), 'specialization', $input['specializations'] ?? [], ['is_custom' => false]);
+            $customChanged = $this->sync($profile->specializations()->where('is_custom', true), 'specialization', $input['custom_specializations'] ?? [], ['is_custom' => true]);
+
+            if ($listedChanged || $customChanged) {
                 $changed[] = 'specializations';
             }
 
@@ -117,7 +132,7 @@ class CounselorProfileSettings
      * @param  \Illuminate\Database\Eloquent\Relations\HasMany  $relation
      * @param  list<string>  $values
      */
-    private function sync($relation, string $column, array $values): bool
+    private function sync($relation, string $column, array $values, array $extra = []): bool
     {
         $wanted = collect($values)->map(fn ($v) => trim((string) $v))->filter()->unique()->values();
         $current = $relation->pluck($column);
@@ -129,7 +144,7 @@ class CounselorProfileSettings
         $relation->whereNotIn($column, $wanted->all())->delete();
 
         foreach ($wanted->diff($current) as $value) {
-            $relation->create([$column => $value]);
+            $relation->create([$column => $value] + $extra);
         }
 
         return true;

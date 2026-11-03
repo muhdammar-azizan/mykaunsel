@@ -377,6 +377,7 @@ class AnalyticsService
             $rows = DB::table('counselor_specializations')
                 ->join('counselor_profiles', 'counselor_profiles.id', '=', 'counselor_specializations.counselor_profile_id')
                 ->whereIn('counselor_profiles.user_id', $chunk)
+                ->where('counselor_specializations.is_custom', false)   // a counselor's own words are not counted until MyKaunsel adds them to the list
                 ->get(['counselor_profiles.user_id', 'counselor_specializations.specialization']);
 
             foreach ($rows as $row) {

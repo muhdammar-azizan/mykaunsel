@@ -79,6 +79,47 @@
                         <label class="inline-flex min-h-[32px] items-center gap-2 text-[14px]"><input type="checkbox" name="specializations[]" value="{{ $option }}" @checked(in_array($option, old('specializations', $p['specializations']), true)) class="h-4 w-4 rounded border-brand-ink/30 text-brand-blue">{{ $option }}</label>
                     @endforeach
                 </div>
+
+                {{-- Their own: up to a few short words, shown on the profile only (not a search filter). --}}
+                <div class="mt-4"
+                     x-data="{
+                        items: @js(array_values(old('custom_specializations', $p['custom_specializations']))), draft: '', error: '', max: {{ $p['custom_specialization_max'] }},
+                        add() {
+                            const v = this.draft.replace(/\s+/g, ' ').trim();
+                            this.error = '';
+                            if (v === '') return;
+                            if (this.items.length >= this.max) { this.error = 'You can add up to ' + this.max + ' of your own.'; return; }
+                            if (v.length > {{ \App\Services\CounselorProfileSettings::CUSTOM_MAX_CHARS }}) { this.error = 'Keep it under {{ \App\Services\CounselorProfileSettings::CUSTOM_MAX_CHARS + 1 }} characters.'; return; }
+                            if (v.split(' ').length > {{ \App\Services\CounselorProfileSettings::CUSTOM_MAX_WORDS }}) { this.error = 'Use at most {{ \App\Services\CounselorProfileSettings::CUSTOM_MAX_WORDS }} words.'; return; }
+                            if (!/^\p{L}[\p{L} &'\/-]*$/u.test(v)) { this.error = 'Use letters only (you can also use & - / and spaces).'; return; }
+                            if (this.items.some(i => i.toLowerCase() === v.toLowerCase()) || @js(array_map('mb_strtolower', $p['specialization_options'])).includes(v.toLowerCase())) { this.error = 'That one is already there.'; return; }
+                            this.items.push(v.charAt(0).toUpperCase() + v.slice(1));
+                            this.draft = '';
+                        },
+                     }">
+                    <label for="custom-spec" class="block text-[13px] font-semibold text-brand-ink/70">Add your own <span class="font-normal text-brand-ink/55">(up to {{ $p['custom_specialization_max'] }}, a few words each)</span></label>
+                    <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                        <input id="custom-spec" type="text" x-model="draft" @keydown.enter.prevent="add()" maxlength="{{ \App\Services\CounselorProfileSettings::CUSTOM_MAX_CHARS }}" :disabled="items.length >= max" autocomplete="off" placeholder="For example: Parenting"
+                               class="min-h-[40px] w-full max-w-[260px] rounded-md border border-brand-ink/20 px-3 text-[14px] focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue disabled:cursor-not-allowed disabled:bg-brand-ink/5">
+                        <button type="button" @click="add()" :disabled="items.length >= max" class="inline-flex min-h-[40px] items-center rounded-md border border-brand-ink/25 px-4 text-[14px] font-semibold transition hover:bg-brand-ink/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue disabled:cursor-not-allowed disabled:opacity-50">+ Add</button>
+                    </div>
+                    <p x-show="error" x-cloak role="alert" class="mt-1.5 text-[13px] font-semibold text-brand-red" x-text="error"></p>
+                    @error('custom_specializations')<p class="mt-1.5 text-[13px] font-semibold text-brand-red">{{ $message }}</p>@enderror
+                    @error('custom_specializations.*')<p class="mt-1.5 text-[13px] font-semibold text-brand-red">{{ $message }}</p>@enderror
+
+                    <ul class="mt-2 flex flex-wrap gap-2" x-show="items.length" x-cloak>
+                        <template x-for="(item, i) in items" :key="item">
+                            <li class="inline-flex items-center gap-1.5 rounded-full bg-brand-blue/10 py-1 pl-3 pr-1.5 text-[13.5px] font-medium text-brand-blue">
+                                <span x-text="item"></span>
+                                <input type="hidden" name="custom_specializations[]" :value="item">
+                                <button type="button" @click="items.splice(i, 1)" :aria-label="'Remove ' + item" class="grid h-5 w-5 place-items-center rounded-full hover:bg-brand-blue/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
+                    <p class="mt-2 text-[12.5px] text-brand-ink/55">Your own words show on your profile. They are not used to filter or search; MyKaunsel can add a popular one to the list.</p>
+                </div>
             </fieldset>
 
             <div class="grid gap-4 border-t border-[#EEEDEA] pt-5 sm:grid-cols-2">

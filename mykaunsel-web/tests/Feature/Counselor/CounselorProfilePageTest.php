@@ -120,6 +120,59 @@ class CounselorProfilePageTest extends TestCase
         $this->assertStringNotContainsString('Secret Display Name', json_encode($entry->toArray()));
     }
 
+    // ---- their own specializations: shown on the profile, never a filter -------------------------------------------
+
+    public function test_a_counselor_can_add_a_few_short_specializations_of_their_own_and_keep_the_listed_ones(): void
+    {
+        $this->save(['specializations' => ['Anxiety'], 'custom_specializations' => ['parenting', '  Play   therapy  ']])->assertSessionHas('status', 'Profile saved.');
+
+        $rows = $this->aina->specializations()->get();
+        $this->assertEqualsCanonicalizing(['Parenting', 'Play therapy'], $rows->where('is_custom', true)->pluck('specialization')->all());
+        $this->assertSame(['Anxiety'], $rows->where('is_custom', false)->pluck('specialization')->all());
+
+        // The page shows them back, and saving the listed ones again does not remove the counselor's own (or the other way round).
+        $this->as()->get(route('counselor.profile'))->assertOk()->assertSee('Parenting')->assertSee('Play therapy');
+        $this->save(['specializations' => ['Anxiety', 'Stress'], 'custom_specializations' => ['Parenting', 'Play therapy']]);
+        $this->assertCount(4, $this->aina->specializations()->get());
+        $this->save(['specializations' => ['Anxiety', 'Stress']]);
+        $this->assertSame(['Anxiety', 'Stress'], $this->aina->specializations()->where('is_custom', false)->pluck('specialization')->sort()->values()->all());
+        $this->assertSame(0, $this->aina->specializations()->where('is_custom', true)->count());
+    }
+
+    public function test_their_own_specializations_are_short_plain_words_and_at_most_three(): void
+    {
+        $bad = [
+            ['one two three four'],                       // more than 3 words
+            [str_repeat('a', 31)],                        // more than 30 characters
+            ['Call 0123456789'],                          // digits
+            ['visit.my-site.com'],                        // a link
+            ['a@b'],                                      // an e-mail address
+            ['<b>Bold</b>'],                              // markup
+            ['Anxiety'],                                  // already in the list
+            ['One', 'Two', 'Three', 'Four'],              // more than 3
+        ];
+
+        foreach ($bad as $values) {
+            $this->save(['custom_specializations' => $values])->assertSessionHasErrors();
+        }
+
+        $this->assertSame(0, $this->aina->specializations()->where('is_custom', true)->count());
+        $this->save(['custom_specializations' => ['Child & family', 'Self-worth', 'Burnout']])->assertSessionHasNoErrors();
+        $this->assertSame(3, $this->aina->specializations()->where('is_custom', true)->count());
+    }
+
+    public function test_their_own_specializations_are_not_a_search_filter_and_not_counted_in_the_analytics(): void
+    {
+        $this->save(['specializations' => ['Anxiety'], 'custom_specializations' => ['Parenting']]);
+
+        $options = app(\App\Services\CounselorDirectory::class)->filterOptions($this->aina->user);
+        $this->assertContains('Anxiety', $options['specializations']);
+        $this->assertNotContains('Parenting', $options['specializations']);
+
+        $offered = collect((new \ReflectionMethod(\App\Services\AnalyticsService::class, 'specializationsOf'))->invoke(app(\App\Services\AnalyticsService::class), [$this->aina->user_id]));
+        $this->assertSame(['anxiety'], array_keys($offered[$this->aina->user_id] ?? []));
+    }
+
     public function test_only_a_counselor_with_a_profile_opens_it_and_the_verification_fields_can_not_be_posted(): void
     {
         $kb = $this->aina->kb_number;

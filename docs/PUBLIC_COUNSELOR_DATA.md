@@ -1,4 +1,4 @@
-# What clients may see about counselors (mobile app search)
+﻿# What clients may see about counselors (mobile app search)
 
 This is a **privacy rule set**, not just an API description. Change it only on purpose, and change the tests with it
 (`tests/Feature/Api/CounselorDirectoryTest.php` fails if a field is added or a forbidden one appears).
@@ -78,3 +78,4 @@ and a number are `404` too.
 - Slots with no organization (`context_org_id` empty) are never shown (their visibility cannot be decided).
 - Specializations and languages are free text. The filter lists are built from real data, case-insensitively, so
   "Grief" and "grief " are one choice; a controlled list can be added later.
+- **A counselor's own specializations** (Profile page, "Add your own"): at most 3, each at most 30 characters and 3 words, letters only (with spaces, & - / and an apostrophe), never the same as a listed one. They are stored with `counselor_specializations.is_custom = true` and are **shown on the counselor's profile only**: they are NOT offered in the search filter (`CounselorDirectory::filterOptions` and the `specialization` filter use listed ones only) and are NOT counted in the Platform Admin analytics. Because they are free text on a public profile, the tight limits above are the guard; there is no approval step yet.

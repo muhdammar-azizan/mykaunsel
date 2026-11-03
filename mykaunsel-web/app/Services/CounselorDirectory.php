@@ -221,7 +221,8 @@ class CounselorDirectory
         $slots = $this->slotsFor($orgIds, $userIds);
 
         return [
-            'specializations' => $distinct(\App\Models\CounselorSpecialization::whereIn('counselor_profile_id', $profileIds)->pluck('specialization')),
+            // Only the listed ones: a counselor's own words are shown on the profile but are not a filter.
+            'specializations' => $distinct(\App\Models\CounselorSpecialization::whereIn('counselor_profile_id', $profileIds)->where('is_custom', false)->pluck('specialization')),
             'languages' => $distinct(\App\Models\CounselorLanguage::whereIn('counselor_profile_id', $profileIds)->pluck('language')),
             'session_modes' => $slots->pluck('session_mode')->map(fn ($m) => $m->value)->unique()->sort()->values()->all(),
             'states' => $distinct($slots->filter(fn ($s) => $s->session_mode === SessionMode::Physical)->map(fn ($s) => $s->location?->state)),
@@ -257,7 +258,7 @@ class CounselorDirectory
         }
 
         if (filled($filters['specialization'] ?? null)) {
-            $query->whereHas('specializations', fn (Builder $s) => $s->whereRaw('lower(specialization) = ?', [mb_strtolower(trim($filters['specialization']))]));
+            $query->whereHas('specializations', fn (Builder $s) => $s->where('is_custom', false)->whereRaw('lower(specialization) = ?', [mb_strtolower(trim($filters['specialization']))]));
         }
 
         if (filled($filters['language'] ?? null)) {

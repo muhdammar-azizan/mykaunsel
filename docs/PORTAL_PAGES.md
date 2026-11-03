@@ -1,4 +1,4 @@
-# Portal pages checklist (counselor and organization admin)
+﻿# Portal pages checklist (counselor and organization admin)
 
 Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md. Colours follow the MyKaunsel theme; structure follows the owner's two reference screenshots (dark fixed header, left sidebar, cards, fixed footer). Platform Admin keeps its own design.
 
@@ -14,7 +14,7 @@ Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md.
 - [x] Schedule: weekly slots, blocked times (leave, holidays) (`/counselor/planner`; blocks are whole days or part of a day, one day or up to 60 days; refused over a booked session; free times inside a block can not be booked until it is removed; `CounselorBlocks`)
 - [x] Session notes: private notes per session, list and edit (`/counselor/notes`; see SESSION_NOTES.md: encrypted, only the writer reads, erased after 7 years (placeholder))
 - [x] Reviews: reviews received, reply, flag (`/counselor/reviews`; the counselor's page and the server rules are built; the client's screen, the Platform Admin moderation pages and the weekly summary are NOT: see REVIEWS.md)
-- [x] Profile: verification status (read only), names clients see, languages, specializations, meeting app, gap between sessions, accept time requests (`/counselor/profile`; picked from lists in `config/counselors.php`). Photo and a written bio are NOT built: they need an approval step first (PUBLIC_COUNSELOR_DATA.md)
+- [x] Profile: verification status (read only), names clients see, languages, specializations, meeting app, gap between sessions, accept time requests (`/counselor/profile`; picked from lists in `config/counselors.php`, plus up to 3 short specializations of their own that are shown on the profile only, see PUBLIC_COUNSELOR_DATA.md). Photo and a written bio are NOT built: they need an approval step first (PUBLIC_COUNSELOR_DATA.md)
 
 ## Organization admin portal
 - [x] Dashboard: members, counselors, sessions this month, items waiting for approval (`OrgDashboard` service; sessions under 5 shown as "fewer than 5", `config/org-reports.php`; notices for waiting people, plan and invoices)
