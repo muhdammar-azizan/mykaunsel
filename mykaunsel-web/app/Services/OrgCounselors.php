@@ -126,16 +126,17 @@ class OrgCounselors
     }
 
     /**
-     * Ends the assignment of one counselor.
+     * Ends the assignment of one counselor. The organization's written reason is kept on the membership and sent only to that counselor: a client is only told
+     * the time was cancelled, and the audit log (ids and numbers only) never holds it.
      *
      * @return array{counselor: string, cancelled: int}
      */
-    public function remove(Organization $org, int $membershipId, User $admin): array
+    public function remove(Organization $org, int $membershipId, User $admin, string $reason): array
     {
         $notices = [];
         $cancelledIds = [];
 
-        $counselor = DB::transaction(function () use ($org, $membershipId, $admin, &$notices, &$cancelledIds) {
+        $counselor = DB::transaction(function () use ($org, $membershipId, $admin, $reason, &$notices, &$cancelledIds) {
             $membership = Membership::query()->where('org_id', $org->getKey())->where('role', MembershipRole::Counselor->value)->lockForUpdate()->find($membershipId)
                 ?? throw new ModelNotFoundException;
 
@@ -146,7 +147,7 @@ class OrgCounselors
             $counselor = $membership->user()->firstOrFail();
             $profile = CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
 
-            $membership->update(['status' => MembershipStatus::Offboarded, 'offboarded_at' => now(), 'offboard_reason' => 'removed_by_organization']);
+            $membership->update(['status' => MembershipStatus::Offboarded, 'offboarded_at' => now(), 'offboard_reason' => $reason]);
 
             // Sessions still ahead with THIS organization are cancelled and the time given back (B9). Others are not touched.
             $today = $this->availability->now()->format('Y-m-d');
@@ -183,7 +184,7 @@ class OrgCounselors
         });
 
         // Told after the change is saved; a failing e-mail never undoes it.
-        (function () use ($org, $counselor, $notices, $cancelledIds) {
+        (function () use ($org, $counselor, $notices, $cancelledIds, $reason) {
             $center = app(NotificationCenter::class);
 
             foreach ($notices as [$userId, $when]) {
@@ -194,7 +195,7 @@ class OrgCounselors
                 $center->notify($booking->user, 'booking.cancelled', $booking, $counselor->name);
             }
 
-            $this->tell($counselor, new CounselorRemovedFromOrganization($org->name, count($cancelledIds)));
+            $this->tell($counselor, new CounselorRemovedFromOrganization($org->name, count($cancelledIds), $reason));
         })();
 
         return ['counselor' => $counselor->name, 'cancelled' => count($cancelledIds)];

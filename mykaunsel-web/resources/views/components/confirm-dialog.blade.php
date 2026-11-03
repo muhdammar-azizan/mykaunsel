@@ -1,15 +1,17 @@
 {{-- The confirmation dialog (resources/js/confirm-dialog.js): "Are you sure?" before something that can not be undone. Put once in a page layout. --}}
 <div x-data="{
-        open: false, title: '', message: '', confirmLabel: 'Confirm', cancelLabel: 'Cancel', tone: 'danger', resolve: null, opener: null,
+        open: false, title: '', message: '', confirmLabel: 'Confirm', cancelLabel: 'Cancel', tone: 'danger', resolve: null, opener: null, input: null, value: '',
         show(d) {
             this.title = d.title || 'Are you sure?'; this.message = d.message || ''; this.confirmLabel = d.confirmLabel || 'Confirm'; this.cancelLabel = d.cancelLabel || 'Cancel';
-            this.tone = d.tone || 'danger'; this.resolve = d.resolve; this.opener = document.activeElement; this.open = true;
-            this.$nextTick(() => this.$refs.cancel.focus());
+            this.tone = d.tone || 'danger'; this.input = d.input || null; this.value = ''; this.resolve = d.resolve; this.opener = document.activeElement; this.open = true;
+            this.$nextTick(() => (this.input ? this.$refs.reason : this.$refs.cancel).focus());
         },
+        get blocked() { return this.input !== null && this.value.trim() === ''; },
         close(answer) {
             if (!this.open) return;
+            if (answer === true && this.blocked) return;
             this.open = false;
-            if (this.resolve) this.resolve(answer);
+            if (this.resolve) this.resolve(answer === true && this.input ? this.value.trim() : answer);
             this.resolve = null;
             if (this.opener && this.opener.focus) this.opener.focus();
         },
@@ -21,7 +23,7 @@
 
         <div x-show="open" x-transition:enter="transition duration-150 ease-out" x-transition:enter-start="translate-y-2 scale-95 opacity-0" x-transition:enter-end="translate-y-0 scale-100 opacity-100"
              class="relative w-full max-w-[420px] rounded-2xl bg-white p-6 shadow-[0_24px_60px_-20px_rgba(14,42,51,.55)]" @keydown.tab="
-                const f = [...$el.querySelectorAll('button')]; const first = f[0]; const last = f[f.length - 1];
+                const f = [...$el.querySelectorAll('button, textarea')]; const first = f[0]; const last = f[f.length - 1];
                 if ($event.shiftKey && document.activeElement === first) { $event.preventDefault(); last.focus(); } else if (!$event.shiftKey && document.activeElement === last) { $event.preventDefault(); first.focus(); }">
             <div class="flex items-start gap-4">
                 <span class="grid h-11 w-11 shrink-0 place-items-center rounded-full" :class="tone === 'danger' ? 'bg-brand-red/10 text-brand-red' : 'bg-brand-blue/10 text-brand-blue'" aria-hidden="true">
@@ -33,9 +35,16 @@
                 </div>
             </div>
 
+            {{-- A written reason, when the action asks for one --}}
+            <div x-show="input" x-cloak class="mt-4">
+                <label for="mk-confirm-reason" class="block text-[13px] font-semibold text-brand-ink/75" x-text="input ? input.label : ''"></label>
+                <textarea id="mk-confirm-reason" x-ref="reason" x-model="value" rows="3" :maxlength="input ? input.max : 500" :placeholder="input ? input.placeholder : ''"
+                          class="mt-1.5 block w-full resize-none rounded-xl border border-brand-ink/20 px-3.5 py-2.5 text-[14px] placeholder:text-brand-ink/40 focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"></textarea>
+            </div>
+
             <div class="mt-6 flex flex-wrap justify-end gap-2">
                 <button type="button" x-ref="cancel" @click="close(false)" class="inline-flex min-h-[42px] items-center rounded-full border border-brand-ink/20 px-5 text-[13.5px] font-semibold text-brand-ink transition hover:bg-brand-ink/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue" x-text="cancelLabel"></button>
-                <button type="button" @click="close(true)" class="inline-flex min-h-[42px] items-center rounded-full px-6 text-[13.5px] font-semibold text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                <button type="button" @click="close(true)" :disabled="blocked" class="inline-flex min-h-[42px] items-center rounded-full px-6 text-[13.5px] font-semibold text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         :class="tone === 'danger' ? 'bg-brand-red hover:brightness-110 focus-visible:ring-brand-red' : 'bg-brand-blue hover:bg-brand-deep focus-visible:ring-brand-blue'" x-text="confirmLabel"></button>
             </div>
         </div>

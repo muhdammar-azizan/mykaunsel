@@ -204,7 +204,7 @@ class OrgCounselorsTest extends TestCase
         $free = $this->slot($aina, $this->acme, '2026-11-07 10:00');
         $line = CounselorWeeklyHour::create(['counselor_user_id' => $aina->user_id, 'context_org_id' => $this->acme->id, 'weekday' => 1, 'start_time' => '09:00', 'end_time' => '12:00', 'slot_minutes' => 60, 'session_mode' => 'online']);
 
-        $this->hr()->post(route('org.counselors.remove', $membership->id))->assertSessionHas('status');
+        $this->hr()->post(route('org.counselors.remove', $membership->id), ['reason' => 'The contract ended'])->assertSessionHas('status');
 
         $this->assertSame(MembershipStatus::Offboarded, $membership->fresh()->status);
         $this->assertSame(BookingStatus::Cancelled, $later->fresh()->status);
@@ -216,10 +216,28 @@ class OrgCounselorsTest extends TestCase
         $this->assertNull(CounselorWeeklyHour::find($line->id));
         $this->assertTrue(Membership::where('user_id', $aina->user_id)->where('org_id', $beta->id)->where('status', 'active')->exists());
 
-        Notification::assertSentTo($client, ClientSessionNotice::class);
-        Notification::assertSentTo($aina->user, CounselorRemovedFromOrganization::class);
+        Notification::assertSentTo($client, ClientSessionNotice::class, fn ($n) => ! str_contains(json_encode($n->toMail($client)->toArray()), 'The contract ended'));
+        Notification::assertSentTo($aina->user, CounselorRemovedFromOrganization::class, fn ($n) => str_contains(implode(' ', $n->toMail($aina->user)->introLines), 'The reason they gave: The contract ended'));
+        $this->assertSame('The contract ended', $membership->fresh()->offboard_reason);
+        $this->assertStringNotContainsString('The contract ended', json_encode($this->audit('counselor.removed_from_org')->first()->metadata));
+        $this->assertStringNotContainsString('The contract ended', (string) $later->fresh()->cancel_reason);
         $this->assertSame(1, UserNotification::query()->ownedBy($client)->where('type', 'booking.cancelled')->count());
         $this->assertSame(1, $this->audit('counselor.removed_from_org')->count());
+    }
+
+    public function test_removing_a_counselor_needs_a_written_reason(): void
+    {
+        Notification::fake();
+
+        $aina = $this->counselor('Aina', [$this->acme]);
+        $membership = Membership::where('user_id', $aina->user_id)->where('org_id', $this->acme->id)->sole();
+
+        $this->hr()->post(route('org.counselors.remove', $membership->id))->assertSessionHasErrors('reason');
+        $this->hr()->post(route('org.counselors.remove', $membership->id), ['reason' => '   '])->assertSessionHasErrors('reason');
+        $this->hr()->post(route('org.counselors.remove', $membership->id), ['reason' => str_repeat('a', 501)])->assertSessionHasErrors('reason');
+
+        $this->assertSame(MembershipStatus::Active, $membership->fresh()->status);
+        Notification::assertNothingSent();
     }
 
     public function test_removing_works_once_and_only_inside_the_own_organization(): void
@@ -230,11 +248,11 @@ class OrgCounselorsTest extends TestCase
         $bakar = $this->counselor('Bakar', [$beta]);
         $theirs = Membership::where('user_id', $bakar->user_id)->where('org_id', $beta->id)->sole();
 
-        $this->hr()->post(route('org.counselors.remove', $theirs->id))->assertNotFound();
+        $this->hr()->post(route('org.counselors.remove', $theirs->id), ['reason' => 'Not theirs'])->assertNotFound();
         $this->assertSame(MembershipStatus::Active, $theirs->fresh()->status);
 
-        $this->hr()->post(route('org.counselors.remove', $membership->id))->assertSessionHas('status');
-        $this->hr()->post(route('org.counselors.remove', $membership->id))->assertSessionHasErrors('counselor');
+        $this->hr()->post(route('org.counselors.remove', $membership->id), ['reason' => 'The contract ended'])->assertSessionHas('status');
+        $this->hr()->post(route('org.counselors.remove', $membership->id), ['reason' => 'The contract ended'])->assertSessionHasErrors('counselor');
     }
 
     // ---- the two settings -----------------------------------------------------------------------------------------

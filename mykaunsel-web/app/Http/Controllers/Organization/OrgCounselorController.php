@@ -56,8 +56,10 @@ class OrgCounselorController extends Controller
 
     public function remove(Request $request, int $id, OrgCounselors $counselors): RedirectResponse
     {
+        $input = $request->validate(['reason' => ['required', 'string', 'max:500']], ['reason.required' => 'Write a reason. Only the counselor will see it, never the clients.']);
+
         try {
-            $done = $counselors->remove($this->organization($request), $id, $request->user());
+            $done = $counselors->remove($this->organization($request), $id, $request->user(), trim($input['reason']));
         } catch (ModelNotFoundException) {
             abort(404);
         } catch (RuntimeException $e) {
