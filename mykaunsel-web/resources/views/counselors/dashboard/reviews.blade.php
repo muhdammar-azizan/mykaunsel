@@ -20,7 +20,7 @@
     <section class="{{ $card }} mt-5 p-6" aria-labelledby="summary-title">
         <h2 id="summary-title" class="sr-only">Summary</h2>
         @if ($summary['count'] === 0)
-            <p class="text-[14px] text-brand-ink/65">No reviews yet. Clients are asked for a review the day after a session.</p>
+            <x-empty-state-reviews title="No reviews yet." text="Clients are asked for a review the day after a session." class="!py-6" />
         @else
             <div class="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-center">
                 <div>
