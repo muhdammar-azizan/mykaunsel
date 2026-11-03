@@ -24,7 +24,7 @@
         <!-- LEFT COLUMN -->
         <aside class="relative z-10 hidden w-[45%] shrink-0 bg-white md:block">
             <div class="flex h-full flex-col p-8">
-                <a href="/" aria-label="MyKaunsel"><img src="/images/mykaunsel-logo.png" alt="MyKaunsel" class="h-10 w-auto"></a>
+                <a href="/" aria-label="MyKaunsel" class="inline-flex w-fit self-start rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"><img src="/images/mykaunsel-logo.png" alt="MyKaunsel" class="h-10 w-auto"></a>
 
                 <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
                      style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
@@ -53,7 +53,7 @@
             </div>
 
             <div class="my-auto w-full" style="max-width: {{ $contentMaxWidth }}; position:relative; z-index:1;">
-                <a href="/" aria-label="MyKaunsel" class="mb-8 block md:hidden"><img src="/images/mykaunsel-logo.png" alt="MyKaunsel" class="h-9 w-auto"></a>
+                <a href="/" aria-label="MyKaunsel" class="mb-8 flex w-fit rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue md:hidden"><img src="/images/mykaunsel-logo.png" alt="MyKaunsel" class="h-9 w-auto"></a>
 
                 {{ $slot }}
             </div>

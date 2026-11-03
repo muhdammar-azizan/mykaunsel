@@ -69,7 +69,7 @@
         {{-- The five menus (wide screens) --}}
         <nav class="hidden items-center gap-1 lg:flex" aria-label="{{ __('landing.a11y.main_nav') }}">
             @foreach ($menuKeys as $key => $label)
-                <button type="button" @mouseenter="show('{{ $key }}')" @click="toggle('{{ $key }}')" :aria-expanded="open === '{{ $key }}'" aria-haspopup="true"
+                <button type="button" @mouseenter="show('{{ $key }}')" @click="show('{{ $key }}')" :aria-expanded="open === '{{ $key }}'" aria-haspopup="true"
                         class="inline-flex items-center gap-1 rounded-md px-3 py-2 text-[14.5px] font-medium text-brand-ink/80 transition hover:text-brand-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue"
                         :class="open === '{{ $key }}' ? 'text-brand-ink' : ''">
                     {{ $nav[$label] }}<span class="transition-transform" :class="open === '{{ $key }}' ? 'rotate-180' : ''">{!! $chevron !!}</span>
