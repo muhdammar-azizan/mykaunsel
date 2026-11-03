@@ -25,10 +25,14 @@
         </g>
 
         {{-- the padlock: private --}}
-        <path d="M60 40v-8a14 14 0 0 1 28 0v8" stroke="#1B2A4E" stroke-width="3" transform="translate(-4 -4)"/>
-        <rect x="46" y="32" width="38" height="30" rx="7" fill="#0A4F88" stroke="#1B2A4E" stroke-width="2.5" transform="translate(-4 -4)"/>
-        <circle cx="61" cy="45" r="3.4" fill="#fff" transform="translate(-4 -4)"/>
-        <path d="M61 47v6" stroke="#fff" stroke-width="2.6" transform="translate(-4 -4)"/>
+        <g transform="translate(-4 -2)">
+            {{-- the shackle is centred on the body and closed --}}
+            <path d="M54 36v-7a11 11 0 0 1 22 0v7" stroke="#1B2A4E" stroke-width="3.2"/>
+            <rect x="46" y="34" width="38" height="30" rx="8" fill="#0A4F88" stroke="#1B2A4E" stroke-width="2.5"/>
+            <path d="M52 42h8" stroke="#fff" stroke-width="2" opacity=".35"/>
+            <circle cx="65" cy="46.500" r="3.800" fill="#fff"/>
+            <path d="M65 49v8" stroke="#fff" stroke-width="3"/>
+        </g>
 
         {{-- a little sparkle --}}
         <path d="M200 30v14M193 37h14" stroke="#E3AF39" stroke-width="3"/>
