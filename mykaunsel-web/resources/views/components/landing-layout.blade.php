@@ -78,9 +78,10 @@
         </nav>
 
         <div class="ml-auto flex items-center gap-2">
-            <a href="{{ route('login') }}" class="hidden rounded-md border border-[#D9DEE9] bg-white px-4 py-2 text-[14px] font-medium text-brand-blue transition hover:border-brand-blue/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue sm:inline-flex">{{ $nav['login'] }}</a>
+            <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="hidden rounded-md border border-[#D9DEE9] bg-white px-4 py-2 text-[14px] font-medium text-brand-blue transition hover:border-brand-blue/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue sm:inline-flex">{{ auth()->check() ? $nav['dashboard'] : $nav['login'] }}</a>
 
-            {{-- Sign up: organization or counselor only --}}
+            {{-- Sign up: organization or counselor only (not for someone who is already signed in) --}}
+@guest
             <div class="relative hidden sm:block" x-data="{ s: false }" @click.outside="s = false" @keydown.escape="s = false">
                 <button type="button" @click="s = !s" :aria-expanded="s" aria-haspopup="true" class="inline-flex items-center gap-1.5 rounded-md border border-[#D9DEE9] bg-white px-4 py-2 text-[14px] font-medium text-brand-blue transition hover:border-brand-blue/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue">{{ $nav['signup'] }}{!! $chevron !!}</button>
                 <div x-show="s" x-cloak x-transition.opacity class="absolute right-0 top-full mt-2 w-[230px] overflow-hidden rounded-xl border border-[#E6E9F0] bg-white p-1.5 shadow-[0_20px_40px_-18px_rgba(27,42,78,.35)]">
@@ -93,6 +94,7 @@
                 </div>
             </div>
 
+@endguest
             <a href="{{ Links::url('get-the-app') }}" class="hidden items-center gap-1.5 rounded-md bg-brand-blue px-4 py-2 text-[14px] font-medium text-white transition hover:bg-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 sm:inline-flex">{{ $nav['get_app'] }} <span aria-hidden="true">›</span></a>
 
             <button type="button" class="grid h-10 w-10 place-items-center rounded-md text-brand-ink hover:bg-brand-ink/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue lg:hidden" @click="mobile = !mobile" :aria-expanded="mobile" aria-label="{{ __('landing.a11y.menu') }}">
@@ -179,10 +181,12 @@
         @endforeach
         <div class="mt-5 grid gap-2.5">
             <a href="{{ Links::url('get-the-app') }}" class="rounded-md bg-brand-blue px-4 py-3 text-center text-[15px] font-medium text-white">{{ $nav['get_app'] }}</a>
-            <a href="{{ route('login') }}" class="rounded-md border border-[#D9DEE9] px-4 py-3 text-center text-[15px] font-medium text-brand-blue">{{ $nav['login'] }}</a>
+            <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="rounded-md border border-[#D9DEE9] px-4 py-3 text-center text-[15px] font-medium text-brand-blue">{{ auth()->check() ? $nav['dashboard'] : $nav['login'] }}</a>
+@guest
             @foreach (['organization' => 'signup_org', 'counselor' => 'signup_counselor'] as $role => $labelKey)
                 <a href="{{ $doors[$role]['url'] }}" class="rounded-md border border-[#D9DEE9] px-4 py-3 text-center text-[15px] font-medium text-brand-blue">{{ $nav['signup'] }}: {{ $doors[$role]['waitlist'] ? $nav['waitlist'] : $nav[$labelKey] }}</a>
             @endforeach
+@endguest
         </div>
     </div>
 </header>

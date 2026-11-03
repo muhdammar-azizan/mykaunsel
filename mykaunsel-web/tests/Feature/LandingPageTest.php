@@ -69,6 +69,20 @@ class LandingPageTest extends TestCase
         $this->assertStringContainsString('href="'.route('privacy').'"', $html);
     }
 
+    public function test_someone_who_is_signed_in_sees_a_dashboard_button_instead_of_log_in_and_sign_up(): void
+    {
+        $guest = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('href="'.route('login').'"', $guest);
+        $this->assertStringContainsString('aria-haspopup="true" class="inline-flex items-center gap-1.5 rounded-md border', $guest);
+
+        $user = \App\Models\User::factory()->create();
+        $html = $this->actingAs($user)->get('/')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('href="'.route('login').'"', $html);
+        $this->assertStringContainsString('href="'.route('dashboard').'"', $html);
+        $this->assertStringNotContainsString('aria-haspopup="true" class="inline-flex items-center gap-1.5 rounded-md border', $html);
+    }
+
     public function test_the_urgent_help_strip_the_contact_address_and_the_media_slots_are_there(): void
     {
         $this->get('/')->assertOk()

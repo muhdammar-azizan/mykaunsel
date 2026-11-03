@@ -15,7 +15,7 @@ return [
 
     'nav' => [
         'platform' => 'Platform', 'solutions' => 'Penyelesaian', 'how_it_works' => 'Cara ia berfungsi', 'pricing' => 'Harga', 'resources' => 'Sumber',
-        'login' => 'Log masuk', 'signup' => 'Daftar', 'signup_org' => 'Sebagai organisasi', 'signup_counselor' => 'Sebagai kaunselor',
+        'login' => 'Log masuk', 'dashboard' => 'Papan pemuka', 'signup' => 'Daftar', 'signup_org' => 'Sebagai organisasi', 'signup_counselor' => 'Sebagai kaunselor',
         'waitlist' => 'Sertai senarai menunggu', 'get_app' => 'Dapatkan aplikasi', 'soon' => 'Tidak lama lagi', 'see_all' => 'Lihat semua', 'more' => 'Lagi',
     ],
 

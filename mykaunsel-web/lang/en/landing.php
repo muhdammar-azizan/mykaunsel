@@ -15,7 +15,7 @@ return [
 
     'nav' => [
         'platform' => 'Platform', 'solutions' => 'Solutions', 'how_it_works' => 'How it works', 'pricing' => 'Pricing', 'resources' => 'Resources',
-        'login' => 'Log in', 'signup' => 'Sign up', 'signup_org' => 'As an organization', 'signup_counselor' => 'As a counselor',
+        'login' => 'Log in', 'dashboard' => 'Dashboard', 'signup' => 'Sign up', 'signup_org' => 'As an organization', 'signup_counselor' => 'As a counselor',
         'waitlist' => 'Join the waitlist', 'get_app' => 'Get the app', 'soon' => 'Soon', 'see_all' => 'See all', 'more' => 'More',
     ],
 
