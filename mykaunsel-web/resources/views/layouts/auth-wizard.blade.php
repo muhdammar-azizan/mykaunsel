@@ -23,7 +23,7 @@
 
         <!-- LEFT COLUMN — static -->
         <aside class="hidden w-[45%] shrink-0 relative overflow-hidden md:block" style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%)">
-            <img src="/images/placeholder.jpg" data-slot="{{ $imageSlot }}" alt="" class="absolute inset-0 h-full w-full object-cover">
+            <img src="{{ is_file(public_path("images/{$imageSlot}.jpg")) ? "/images/{$imageSlot}.jpg" : "/images/placeholder.jpg" }}" data-slot="{{ $imageSlot }}" alt="" class="absolute inset-0 h-full w-full object-cover">
             <span class="pointer-events-none absolute inset-0" style="background:linear-gradient(to bottom, rgba(14,42,51,.45) 0%, rgba(14,42,51,.25) 40%, rgba(14,42,51,.85) 82%, #08202A 100%)"></span>
 
             <div class="relative flex h-full flex-col justify-between p-10 lg:p-12">

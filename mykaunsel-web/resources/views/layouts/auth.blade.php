@@ -29,7 +29,7 @@
                 <div class="mt-8 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] text-cream"
                      style="background:linear-gradient(150deg,#0B3A42 0%,#0E2A33 55%,#08202A 100%); box-shadow: 0 24px 60px -24px rgba(14,42,51,.35)">
                     <div class="relative min-h-0 flex-1" style="aspect-ratio: 4 / 3">
-                        <img src="{{ $imageSlot === 'login-visual' ? '/images/login-visual.jpg' : '/images/placeholder.jpg' }}" data-slot="{{ $imageSlot }}" alt="" class="absolute inset-0 h-full w-full object-cover">
+                        <img src="{{ is_file(public_path("images/{$imageSlot}.jpg")) ? "/images/{$imageSlot}.jpg" : '/images/placeholder.jpg' }}" data-slot="{{ $imageSlot }}" alt="" class="absolute inset-0 h-full w-full object-cover">
                         <span class="pointer-events-none absolute inset-x-0 bottom-0 h-24" style="background:linear-gradient(to bottom, rgba(11,58,66,0) 0%, rgba(11,58,66,.85) 100%)"></span>
                     </div>
                     <div class="shrink-0 p-7">
