@@ -94,7 +94,7 @@
                         </div>
                     </li>
                 @empty
-                    <li class="py-6 text-[14px] text-brand-ink/65">No invoices yet. One is made when MyKaunsel gives your organization a plan.</li>
+                    <li><x-empty-state-invoice title="No invoices yet." text="One is made when MyKaunsel gives your organization a plan." /></li>
                 @endforelse
             </ul>
             <p class="mt-3 text-[12.5px] text-brand-ink/55">Paying uses a test page for now: no real money moves. The bank details on each invoice also work for a bank transfer; MyKaunsel then marks it paid.</p>
