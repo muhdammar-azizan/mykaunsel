@@ -44,7 +44,7 @@ class PortalLayoutTest extends TestCase
 
         $page = $this->actingAs($user)->withSession($session)->get(route('org.members'))->assertOk();
 
-        $page->assertSee('Find a page')->assertSee('Acme Berhad · Organization admin')->assertSee('Account menu', false)
+        $page->assertSee('Find a page')->assertSee('Acme Berhad')->assertSee('Account menu', false)
             ->assertSee('Members')->assertSee('Counselors')->assertSee('Subscription')->assertSee('Terms of Use')->assertSee('All rights reserved');
         $page->assertSee('aria-current="page"', false);
         $page->assertDontSee('Session notes');

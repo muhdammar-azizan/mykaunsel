@@ -27,15 +27,23 @@
     </div>
 
     <div class="ml-auto flex items-center gap-1 sm:gap-2 md:ml-0">
-        {{-- "Working as": the organization and the role. With more than one, it leads to the role chooser. --}}
-        @if ($several)
-            <a href="{{ route('context.select') }}" class="hidden max-w-[260px] items-center gap-2 rounded-md px-3 py-2 text-[14px] font-semibold hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white lg:flex" title="Switch organization or role">
-                <span class="truncate">{{ $org }} · {{ $roleLabel }}</span>
-                <svg class="shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-            </a>
-        @else
-            <span class="hidden max-w-[260px] truncate px-3 text-[14px] font-semibold lg:block">{{ $org }} · {{ $roleLabel }}</span>
-        @endif
+        {{-- "Working as": the organization's name. A long name is cut short here; the small tooltip on hover or keyboard focus shows all of it.
+             With more than one organization or role, it leads to the chooser. --}}
+        <div class="group relative hidden lg:block">
+            @if ($several)
+                <a href="{{ route('context.select') }}" class="flex max-w-[260px] items-center gap-2 rounded-md px-3 py-2 text-[14px] font-semibold hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="{{ $org }}. Switch organization or role">
+                    <span class="truncate">{{ $org }}</span>
+                    <svg class="shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </a>
+            @else
+                <span class="block max-w-[260px] truncate px-3 text-[14px] font-semibold" tabindex="0" aria-label="{{ $org }}">{{ $org }}</span>
+            @endif
+
+            <span role="tooltip" class="pointer-events-none absolute right-0 top-full z-50 mt-1.5 w-max max-w-[320px] rounded-lg bg-[#0B1226] px-3 py-2 text-left text-[12.5px] font-medium leading-snug text-white opacity-0 shadow-[0_10px_24px_-10px_rgba(0,0,0,.6)] ring-1 ring-white/10 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+                {{ $org }}
+                @if ($several)<span class="mt-0.5 block text-[11.5px] font-normal text-white/60">Click to switch organization or role</span>@endif
+            </span>
+        </div>
 
         <a href="{{ route('help') }}" aria-label="Help" class="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>
