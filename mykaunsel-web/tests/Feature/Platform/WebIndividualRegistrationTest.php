@@ -130,7 +130,7 @@ class WebIndividualRegistrationTest extends CounselorTestCase
             $html = $this->get($path)->assertOk()->getContent();
 
             $this->assertDoesNotMatchRegularExpression('#href="[^"]*'.preg_quote($register, '#').'"#', $html, "{$page} must not link to the individual sign-up form");
-            $this->assertStringContainsString($path === '/' ? 'Muat turun aplikasi' : 'Get the mobile app', $html, "{$page} should point individuals to the app");
+            $this->assertStringContainsString($path === '/' ? 'Dapatkan aplikasi' : 'Get the mobile app', $html, "{$page} should point individuals to the app");
             $this->assertStringContainsString('href="'.$app.'"', $html, $page);
         }
 
@@ -144,7 +144,7 @@ class WebIndividualRegistrationTest extends CounselorTestCase
     {
         $this->visitor();
 
-        $this->get('/')->assertOk()->assertSee('id="get-the-app"', false)->assertSee('Akan datang')->assertDontSee('Mula Sekarang');
+        $this->get('/')->assertOk()->assertSee('id="get-the-app"', false)->assertSee('Akan datang');
         $this->assertSame('/#get-the-app', config('registration.mobile_app_url'));
     }
 

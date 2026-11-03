@@ -48,8 +48,15 @@ use App\Http\Controllers\Platform\PlatformRegistrationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+// The public website (docs/LANDING_PAGE.md): Malay by default, English with ?lang=en. A page of the planned site that is not built yet opens "Coming soon".
+Route::middleware(\App\Http\Middleware\SetLandingLocale::class)->group(function () {
+    Route::get('/', function () {
+        return view('welcome');
+    })->name('home');
+
+    Route::get('/coming-soon/{page?}', function (?string $page = null) {
+        return response()->view('landing.soon', ['page' => $page], 200, ['X-Robots-Tag' => 'noindex']);
+    })->where('page', '[a-z0-9-]+')->name('landing.soon');
 });
 
 // Privacy Policy, Terms of Use and Help: public pages, drafts until the owner and a lawyer have reviewed them (config/legal.php, docs/LEGAL_PAGES.md).
