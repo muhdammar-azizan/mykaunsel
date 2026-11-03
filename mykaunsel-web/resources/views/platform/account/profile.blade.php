@@ -21,7 +21,7 @@
                           x-data="{ preview: null }" @submit="avatarDirty = false" class="mt-4">
                         @csrf
                         <div class="flex items-center gap-5">
-                            <div class="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-yellow text-[28px] font-bold text-brand-ink shadow-md ring-4 ring-white">
+                            <div class="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-[10px] bg-brand-yellow text-[28px] font-bold text-brand-ink shadow-md ring-4 ring-white">
                                 <template x-if="preview"><img :src="preview" alt="New photo preview" class="h-full w-full object-cover"></template>
                                 <template x-if="!preview">
                                     @if ($user->avatar_url)
