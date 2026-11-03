@@ -72,12 +72,11 @@
                     @endforeach
                 </ul>
             @else
-                <div class="px-6 pb-6 pt-4">
-                    <p class="text-[14px] text-brand-ink/65">No sessions today.</p>
+                <x-empty-state-today title="No sessions today.">
                     @if ($next)
                         <p class="mt-2 text-[14px]"><span class="font-semibold">Next session:</span> {{ $next['client'] }}, {{ $next['date'] }}, {{ $next['time'] }}</p>
                     @endif
-                </div>
+                </x-empty-state-today>
             @endif
         </section>
 
