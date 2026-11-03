@@ -25,7 +25,7 @@
                 </div>
             </div>
         @empty
-            <p class="px-6 py-12 text-center text-[14px] text-brand-ink/65">No sessions yet. A note can be written once a session has started.</p>
+            <x-empty-state-notes title="No sessions yet." text="A note can be written once a session has started. Only you can read your notes." />
         @endforelse
     </div>
 
