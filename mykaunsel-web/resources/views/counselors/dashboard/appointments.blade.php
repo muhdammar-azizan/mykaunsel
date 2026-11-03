@@ -53,7 +53,7 @@
                             </form>
                         </div>
                     @empty
-                        <p class="rounded-xl border border-[#E4E2DE] bg-white p-4 text-brand-ink/65">{{ __('Nothing to mark.') }}</p>
+                        <x-empty-state-sessions kind="mark" :title="__('Nothing to mark.')" />
                     @endforelse
                 </div>
             </section>
@@ -95,7 +95,7 @@
                             @endif
                         </div>
                     @empty
-                        <p class="rounded-xl border border-[#E4E2DE] bg-white p-4 text-brand-ink/65">{{ __('No upcoming sessions.') }}</p>
+                        <x-empty-state-sessions kind="upcoming" :title="__('No upcoming sessions.')" />
                     @endforelse
                 </div>
             </section>
@@ -113,7 +113,7 @@
                             <div class="flex items-center gap-3"><a href="{{ route('counselor.appointments.show', $s['id']) }}" class="text-[13px] font-semibold text-brand-blue hover:underline">{{ __('Details') }}</a><span class="rounded-full px-2.5 py-0.5 text-xs font-medium {{ $badge[$s['status']] ?? $badge['cancelled'] }}">{{ $label[$s['status']] ?? $s['status'] }}</span></div>
                         </div>
                     @empty
-                        <p class="rounded-xl border border-[#E4E2DE] bg-white p-4 text-brand-ink/65">{{ __('No past sessions yet.') }}</p>
+                        <x-empty-state-sessions kind="past" :title="__('No past sessions yet.')" />
                     @endforelse
                 </div>
 
