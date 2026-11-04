@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\BookingStatus;
 use App\Enums\CalendarEntryType;
 use App\Exceptions\BookingRefused;
+use App\Facades\Audit;
 use App\Models\CalendarEntry;
 use App\Models\CounselorProfile;
 use App\Models\User;
@@ -92,9 +93,9 @@ class CounselorBlocks
             $days[] = $day;
         }
 
-        return DB::transaction(function () use ($counselor, $days, $startTime, $minutes, $input, $tz) {
+        return DB::transaction(function () use ($counselor, $days, $startTime, $minutes, $input, $tz, $allDay) {
             // The lock booking and opening a time take: no session can be booked into the range while it is checked.
-            CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
+            $profile = CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
 
             if (CalendarEntry::query()->where('counselor_user_id', $counselor->getKey())->where('entry_type', CalendarEntryType::PersonalBlock->value)
                 ->whereDate('entry_date', '>=', $this->availability->now()->format('Y-m-d'))->count() + count($days) > self::MAX_BLOCKS) {
@@ -121,6 +122,12 @@ class CounselorBlocks
                 ]);
             }
 
+            // One entry for the whole range, in the same transaction. The counselor's own title is never recorded.
+            Audit::log('calendar.block_added', $profile, [
+                'counselor_id' => $profile?->getKey(), 'from' => $days[0]->format('Y-m-d'), 'to' => end($days)->format('Y-m-d'), 'days' => count($days),
+                'all_day' => $allDay, 'start' => $allDay ? null : substr((string) $startTime, 0, 5), 'minutes' => $minutes,
+            ], $counselor);
+
             return count($days);
         });
     }
@@ -128,13 +135,24 @@ class CounselorBlocks
     /** @throws BookingRefused block_not_found */
     public function remove(User $counselor, string $publicId): void
     {
-        $deleted = CalendarEntry::query()
-            ->where('counselor_user_id', $counselor->getKey())->where('entry_type', CalendarEntryType::PersonalBlock->value)
-            ->where('public_id', strtolower($publicId))->delete();
+        DB::transaction(function () use ($counselor, $publicId) {
+            $profile = CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
 
-        if ($deleted === 0) {
-            throw new BookingRefused('block_not_found');
-        }
+            $entry = CalendarEntry::query()
+                ->where('counselor_user_id', $counselor->getKey())->where('entry_type', CalendarEntryType::PersonalBlock->value)
+                ->where('public_id', strtolower($publicId))->first();
+
+            if ($entry === null) {
+                throw new BookingRefused('block_not_found');
+            }
+
+            $entry->delete();
+
+            Audit::log('calendar.block_removed', $profile, [
+                'counselor_id' => $profile?->getKey(), 'date' => $entry->entry_date->format('Y-m-d'),
+                'all_day' => (int) $entry->duration_minutes >= 1440, 'minutes' => (int) $entry->duration_minutes,
+            ], $counselor);
+        });
     }
 
     /** Is a confirmed session of this counselor inside [start, start + minutes)? */

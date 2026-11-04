@@ -92,6 +92,15 @@ return [
         // The start of a web application (account made, then the application counted as submitted once all three documents are in). Ids and counts only.
         'counselor.signed_up' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Counselor signed up (application started)'],
         'counselor.application_submitted' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Counselor application submitted'],
+        // The counselor's own calendar (Part 2). One entry per action; ids, dates, lengths and counts only: never a client, never the title of a block,
+        // never a list of time ids. "Open the next weeks" writes ONE summary (counts, date range, contexts), not one entry per time.
+        'calendar.time_opened' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Counselor opened a time'],
+        'calendar.time_removed' => ['category' => 'counselors', 'badge' => 'deleted', 'label' => 'Counselor removed an open time'],
+        'calendar.block_added' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Counselor blocked time off'],
+        'calendar.block_removed' => ['category' => 'counselors', 'badge' => 'deleted', 'label' => 'Counselor removed a blocked day'],
+        'calendar.hours_line_added' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Counselor added weekly hours'],
+        'calendar.hours_line_removed' => ['category' => 'counselors', 'badge' => 'deleted', 'label' => 'Counselor removed weekly hours'],
+        'calendar.weeks_opened' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Counselor opened the next weeks from weekly hours'],
         // One entry per run of the daily PA check, with counts only (written by the "system" actor; nothing when the run changed and sent nothing).
         'counselor.pa_check_completed' => ['category' => 'counselors', 'badge' => 'system', 'label' => 'Daily PA check finished'],
 

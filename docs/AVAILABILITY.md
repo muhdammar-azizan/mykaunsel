@@ -217,6 +217,12 @@ On the same page. Code: `CounselorWeeklyHours`, table `counselor_weekly_hours` (
 - **Lines** may not overlap on the same weekday (any context); at most 30 per counselor; the window must hold at least one time; 5-minute marks; the same lengths as the planner. Removing a line leaves the times it opened alone.
 - **Not automatic.** Nothing opens new weeks by itself (no scheduler), so the counselor presses the button again as the weeks pass. A scheduled top-up is a later decision. These lines are also what "inside the counselor's working hours" will mean for Mode B.
 
+### Limit and audit (Part 2, 4 November 2026)
+
+- **At most 200 times per "Open the next weeks".** The number the request would TRY (every time of every line over the chosen weeks, counted before the skip rules) is checked before anything is written. Over 200: the whole request is refused (`weekly_fill_too_many`, "Nothing was opened"), never cut short silently. `CounselorWeeklyHours::MAX_FILL`.
+- **The calendar is audited**, category Counselors, one entry per action, written in the same transaction as the change: `calendar.time_opened`, `calendar.time_removed`, `calendar.block_added` (one entry for the whole range), `calendar.block_removed`, `calendar.hours_line_added`, `calendar.hours_line_removed`, and ONE summary `calendar.weeks_opened` for a fill (weeks, created, skipped, date range, context ids). Never a client, never a block's title, never a list of time ids. A refused action writes nothing. Tests: `CounselorCalendarAuditTest`.
+- **Practising certificate and the scheduler use Malaysian time** (`Asia/Kuala_Lumpur`): a PA is valid to the end of its last day there, and `counselors:check-pa-expiry` runs at 00:10 Malaysian time.
+
 ## Time requests (Mode B)
 
 "Ask this counselor for a time inside their weekly hours; they approve or decline." Code: `BookingRequests` (the client), `CounselorRequests` (the counselor), `Api\V1\TimeRequestController`, `Counselor\CounselorAppointmentController`, `requests:expire`. Table `booking_requests` extended by migration `2026_11_08_000001` (needs `php artisan migrate`). Tests: `TimeRequestApiTest`, `CounselorRequestsTest`, `ExpireTimeRequestsTest`. The app screens are built (see APP_ARCHITECTURE.md, "Ask for a time").

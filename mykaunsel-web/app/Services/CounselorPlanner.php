@@ -9,6 +9,7 @@ use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
 use App\Enums\SessionMode;
 use App\Exceptions\BookingRefused;
+use App\Facades\Audit;
 use App\Models\CalendarEntry;
 use App\Models\CounselorProfile;
 use App\Models\Membership;
@@ -99,9 +100,11 @@ class CounselorPlanner
     /**
      * @param  array{context: int, date: string, start: string, duration: int, mode: string, location: int|null}  $input
      *
+     * $audit is false only for CounselorWeeklyHours::fill, which writes ONE summary entry for the whole fill instead of one per time.
+     *
      * @throws BookingRefused
      */
-    public function open(User $counselor, array $input): CalendarEntry
+    public function open(User $counselor, array $input, bool $audit = true): CalendarEntry
     {
         $mode = SessionMode::from($input['mode']);
         $start = CarbonImmutable::createFromFormat('Y-m-d H:i', $input['date'].' '.$input['start'], $this->availability->timezone());
@@ -119,9 +122,9 @@ class CounselorPlanner
             throw new BookingRefused('planner_too_far');
         }
 
-        return DB::transaction(function () use ($counselor, $input, $mode, $start) {
+        return DB::transaction(function () use ($counselor, $input, $mode, $start, $audit) {
             // The same lock booking takes: opening a time and booking one of this counselor never interleave.
-            CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
+            $profile = CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
 
             ['context' => $contextId, 'location' => $locationId] = $this->placement($counselor, (int) $input['context'], $mode, isset($input['location']) ? (int) $input['location'] : null);
 
@@ -138,7 +141,7 @@ class CounselorPlanner
                 throw new BookingRefused('planner_overlap');
             }
 
-            return CalendarEntry::create([
+            $entry = CalendarEntry::create([
                 'counselor_user_id' => $counselor->getKey(),
                 'entry_type' => CalendarEntryType::AvailableSlot,
                 'context_org_id' => $contextId,
@@ -149,6 +152,16 @@ class CounselorPlanner
                 'location_id' => $locationId,
                 'is_available' => true,
             ]);
+
+            // Same transaction as the time itself: both are kept or neither. Ids, date, length and mode only.
+            if ($audit) {
+                Audit::log('calendar.time_opened', $profile, [
+                    'counselor_id' => $profile?->getKey(), 'context_org_id' => $contextId, 'date' => $start->format('Y-m-d'),
+                    'start' => $start->format('H:i'), 'minutes' => $minutes, 'mode' => $mode->value,
+                ], $counselor);
+            }
+
+            return $entry;
         });
     }
 
@@ -187,7 +200,7 @@ class CounselorPlanner
     public function remove(User $counselor, string $publicId): void
     {
         DB::transaction(function () use ($counselor, $publicId) {
-            CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
+            $profile = CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
 
             $entry = CalendarEntry::query()
                 ->where('counselor_user_id', $counselor->getKey())->where('entry_type', CalendarEntryType::AvailableSlot->value)
@@ -202,6 +215,11 @@ class CounselorPlanner
             }
 
             $entry->delete();
+
+            Audit::log('calendar.time_removed', $profile, [
+                'counselor_id' => $profile?->getKey(), 'context_org_id' => $entry->context_org_id, 'date' => $entry->entry_date->format('Y-m-d'),
+                'start' => substr((string) $entry->start_time, 0, 5), 'minutes' => (int) $entry->duration_minutes,
+            ], $counselor);
         });
     }
 
