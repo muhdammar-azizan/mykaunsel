@@ -16,6 +16,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Services\CounselorKbAttemptRecorder;
 use App\Services\LkmVerificationService;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -52,33 +53,51 @@ class CounselorSignupController extends Controller
         $lkmRecord = LkmDirectorySnapshot::where('kb_number', $kbNumber)->firstOrFail();
         $platform = Organization::where('org_type', 'platform')->firstOrFail();
 
-        DB::transaction(function () use ($data, $kbNumber, $paNumber, $lkmRecord, $platform) {
-            $user = User::create([
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'password' => Hash::make($data['password']),
-            ]);
+        try {
+            DB::transaction(function () use ($data, $kbNumber, $paNumber, $lkmRecord, $platform) {
+                $user = User::create([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'password' => Hash::make($data['password']),
+                ]);
 
-            CounselorProfile::create([
-                'user_id' => $user->id,
-                'kb_number' => $kbNumber,
-                'pa_number' => $paNumber,
-                'pa_valid_until' => $lkmRecord->pa_valid_until,
-                'verification_type' => VerificationType::PlatformVerified,
-                'verification_status' => VerificationStatus::Pending,
-            ]);
+                CounselorProfile::create([
+                    'user_id' => $user->id,
+                    'kb_number' => $kbNumber,
+                    'pa_number' => $paNumber,
+                    'pa_valid_until' => $lkmRecord->pa_valid_until,
+                    'verification_type' => VerificationType::PlatformVerified,
+                    'verification_status' => VerificationStatus::Pending,
+                ]);
 
-            Membership::create([
-                'user_id' => $user->id,
-                'org_id' => $platform->id,
-                'role' => MembershipRole::Counselor,
-                'status' => MembershipStatus::Active,
-                'join_source' => JoinSource::Manual,
-                'joined_at' => now(),
-            ]);
+                Membership::create([
+                    'user_id' => $user->id,
+                    'org_id' => $platform->id,
+                    'role' => MembershipRole::Counselor,
+                    'status' => MembershipStatus::Active,
+                    'join_source' => JoinSource::Manual,
+                    'joined_at' => now(),
+                ]);
 
-            Auth::login($user);
-        });
+                Auth::login($user);
+            });
+        } catch (UniqueConstraintViolationException) {
+            // Two sign-ups with the same KB number or e-mail at the same moment: the database let only one through. Nothing was saved for this one.
+            Auth::guard('web')->logout();
+
+            if ($lkmService->isAlreadyRegistered($kbNumber)) {
+                $kbAttempts->record($kbNumber, $data['name'], $request->ip());
+            }
+
+            return back()
+                ->withInput($request->except(['password', 'password_confirmation']))
+                ->withErrors($lkmService->isAlreadyRegistered($kbNumber)
+                    ? ['lkm' => LkmVerificationService::ALREADY_REGISTERED_MESSAGE]
+                    : ['email' => 'That e-mail address is already used. Sign in instead, or use another address.']);
+        }
+
+        // A new sign-in gets a new session id (the one from before the sign-up must never carry on as a signed-in session).
+        $request->session()->regenerate();
 
         return redirect()->route('counselors.signup.verified');
     }

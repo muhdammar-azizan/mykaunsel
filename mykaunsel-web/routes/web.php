@@ -102,7 +102,8 @@ Route::middleware('guest')->group(function () {
 
     Route::middleware('registration.open:counselor')->group(function () {
         Route::get('/counselors/signup', [CounselorSignupController::class, 'create'])->name('counselors.signup.create');
-        Route::post('/counselors/signup', [CounselorSignupController::class, 'store'])->name('counselors.signup.store');
+        // Limited per address: the answers must not be usable to search the LKM directory or to fill the system with accounts.
+        Route::post('/counselors/signup', [CounselorSignupController::class, 'store'])->middleware('throttle:10,1')->name('counselors.signup.store');
     });
 });
 

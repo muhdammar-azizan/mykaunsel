@@ -47,29 +47,28 @@ class LkmVerificationService
         return CounselorProfile::where('kb_number', $kbNumber)->exists();
     }
 
+    /** The one answer for "this KB number, name and PA number do not match a record". It never says which part is wrong, so the sign-up can not be used to search the directory. */
+    public const NOT_VERIFIED_MESSAGE = 'We could not verify these details against the LKM directory. Please check your KB number, PA number and full name exactly as they are in your LKM registration.';
+
+    public const ALREADY_REGISTERED_MESSAGE = 'This KB number is already registered on MyKaunsel.';
+
     /**
-     * Returns a specific, human-readable reason the given details failed
-     * verification, or null if they would pass. Checked in priority order
-     * so the counselor sees the single most relevant problem first.
+     * Returns a human-readable reason the given details failed verification, or null if they would pass.
+     *
+     * Nothing specific is said until the KB number, the name AND the PA number all match one record (someone who knows all three is
+     * the person the record belongs to). Before that every failure gets the same message: no record, a wrong name and a wrong PA
+     * number look identical, and so does a KB number that already has an account. Only then: already registered, or a PA that has run out.
      */
     public function verificationFailureReason(string $kbNumber, string $paNumber, string $fullName): ?string
     {
         $record = LkmDirectorySnapshot::where('kb_number', $kbNumber)->first();
 
-        if (! $record) {
-            return 'No record found for this KB number.';
+        if (! $record || ! $this->namesMatch($record->full_name, $fullName) || $record->pa_number !== $paNumber) {
+            return self::NOT_VERIFIED_MESSAGE;
         }
 
         if ($this->isAlreadyRegistered($kbNumber)) {
-            return 'This KB number is already registered on MyKaunsel.';
-        }
-
-        if (! $this->namesMatch($record->full_name, $fullName)) {
-            return "The name provided doesn't match our records for {$kbNumber}. Please check the spelling matches your official LKM registration exactly.";
-        }
-
-        if ($record->pa_number !== $paNumber) {
-            return "The PA number provided doesn't match our records for {$kbNumber}.";
+            return self::ALREADY_REGISTERED_MESSAGE;
         }
 
         if ($record->status !== self::ACTIVE_STATUS || ! $this->recordHasValidPa($record)) {

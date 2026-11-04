@@ -306,8 +306,8 @@ class CounselorRulesTest extends CounselorTestCase
 
         $response = $this->register('KB10891', 'Not Tan At All', ['REMOTE_ADDR' => '203.0.113.99']);
 
-        // The person trying sees the usual message — nothing about who owns the number.
-        $response->assertSessionHasErrors(['lkm' => 'This KB number is already registered on MyKaunsel.']);
+        // The person trying sees the one answer every failed sign-up gets: nothing about who owns the number, or whether it is registered.
+        $response->assertSessionHasErrors(['lkm' => LkmVerificationService::NOT_VERIFIED_MESSAGE]);
         $response->assertRedirect();
         foreach (['Tan Wei Ming', 'tan.weiming@gmail.com', 'KB10891 belongs'] as $leak) {
             $this->assertStringNotContainsString($leak, json_encode(session('errors')->getBag('default')->all()));

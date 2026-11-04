@@ -19,9 +19,9 @@
             </span>
             <h1 class="mt-6 text-[24px] font-semibold leading-[1.15] tracking-tightest">{{ __('Check your email') }}</h1>
             <p class="mx-auto mt-3 max-w-[40ch] text-[14px] leading-relaxed text-navy/70">
-                {{ __("We've sent a password reset link to") }}
-                <strong class="font-semibold text-navy">{{ old('email') }}</strong>.
-                {{ __('The link expires in 30 minutes.') }}
+                {{ __('If an account uses') }}
+                <strong class="font-semibold text-navy">{{ old('email') }}</strong>,
+                {{ __('a reset link is on its way. The link expires in 30 minutes.') }}
             </p>
             <p class="mx-auto mt-5 max-w-[40ch] text-[12.5px] leading-relaxed text-navy/55">
                 {{ __("Didn't receive the email? Check your spam folder or") }}
