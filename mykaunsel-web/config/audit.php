@@ -199,6 +199,10 @@ return [
         'account.other_sessions_revoked' => ['category' => 'security', 'badge' => 'security', 'label' => 'Signed out other sessions'],
         'account.records_purged' => ['category' => 'system', 'badge' => 'deleted', 'label' => 'Bookings of deleted accounts purged (retention)'],
         'account.deleted' => ['category' => 'account', 'badge' => 'deleted', 'label' => 'Account deleted by the person'],
+        // Which fields changed (name, timezone), never the values.
+        'account.profile_updated' => ['category' => 'account', 'badge' => 'updated', 'label' => 'Account details changed (which fields, not the values)'],
+        // Which choice was switched and to what (on or off): the key of the e-mail, never anything else.
+        'account.notification_preference_changed' => ['category' => 'account', 'badge' => 'updated', 'label' => 'E-mail choice changed'],
         'account.avatar_changed' => ['category' => 'account', 'badge' => 'updated', 'label' => 'Profile photo changed'],
 
         // Sign-in activity (hidden on the Audit Log page by default)

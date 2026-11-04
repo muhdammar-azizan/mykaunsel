@@ -70,7 +70,7 @@ class NotificationRegistryTest extends TestCase
             'lkm.review_requested' => 'lkm',
             'complaint.received' => 'complaints', 'complaint.escalated' => 'complaints',
             'admin.invitation_accepted' => 'admins',
-            'counselor.pa_expired_suspended' => 'system', 'system.maintenance_auto_reopened' => 'system',
+            'counselor.pa_expired_suspended' => 'system', 'counselor.name_changed' => 'system', 'system.maintenance_auto_reopened' => 'system',
         ];
 
         foreach ($expected as $key => $group) {

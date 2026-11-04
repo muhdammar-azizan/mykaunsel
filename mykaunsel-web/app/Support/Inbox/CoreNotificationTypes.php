@@ -109,6 +109,13 @@ final class CoreNotificationTypes
             self::stateOf(CounselorProfile::class, 'verification_status', fn ($status) => $status === VerificationStatus::Suspended),
         ));
 
+        // A heads-up only (no waiting state): a counselor changed the name on their account and it no longer matches the LKM record.
+        $registry->register(new NotificationType(
+            'counselor.name_changed', 'system', 'Counselor changed their name: it no longer matches LKM',
+            'counselor_profile', fn (?int $id) => $id ? route('platform.counselors.show', $id) : null,
+            self::existsOnly(CounselorProfile::class),
+        ));
+
         $registry->register(new NotificationType(
             'system.maintenance_auto_reopened', 'system', 'Maintenance mode switched off by itself',
             null, fn (?int $id) => route('platform.registration'),

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Facades\Audit;
 use App\Http\Controllers\Controller;
 use App\Support\AccountArea;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -36,9 +38,17 @@ class AccountNotificationController extends Controller
 
         $user = $request->user();
         $preferences = $user->notification_preferences ?? [];
+        $before = $user->wantsNotification($data['key']);
         $preferences[$data['key']] = (bool) $data['enabled'];
 
-        $user->forceFill(['notification_preferences' => $preferences])->save();
+        // One transaction with its audit entry, and only when the choice really changed.
+        DB::transaction(function () use ($user, $preferences, $data, $before) {
+            $user->forceFill(['notification_preferences' => $preferences])->save();
+
+            if ($before !== (bool) $data['enabled']) {
+                Audit::log('account.notification_preference_changed', $user, ['key' => $data['key'], 'enabled' => (bool) $data['enabled']]);
+            }
+        });
 
         if ($request->expectsJson()) {
             return response()->json(['saved' => true, 'key' => $data['key'], 'enabled' => (bool) $data['enabled']]);

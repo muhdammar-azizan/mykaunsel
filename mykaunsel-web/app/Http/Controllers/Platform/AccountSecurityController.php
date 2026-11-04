@@ -96,13 +96,20 @@ class AccountSecurityController extends Controller
         ]);
 
         $user = $request->user();
-        $user->forceFill(['password' => $data['password']])->save();
 
-        // Sign out every OTHER device; this session stays signed in (AuthenticateSession keeps it in sync).
-        Auth::logoutOtherDevices($data['password']);
-        $sessions->forgetOthers($request);
+        // ONE transaction: the new password, the other devices signed out, the app's access tokens ended and the audit entry (never the password).
+        DB::transaction(function () use ($user, $data, $request, $sessions) {
+            $user->forceFill(['password' => $data['password']])->save();
 
-        Audit::log('account.password_changed', $user);
+            // Sign out every OTHER device; this session stays signed in (AuthenticateSession keeps it in sync).
+            Auth::logoutOtherDevices($data['password']);
+            $sessions->forgetOthers($request);
+
+            // The mobile app signs in with tokens, which a changed password must end too.
+            $tokens = $user->tokens()->delete();
+
+            Audit::log('account.password_changed', $user, ['api_tokens_ended' => $tokens]);
+        });
 
         return redirect()->to(\App\Support\AccountArea::route('account.security'))
             ->with('status', 'Password updated. Other devices were signed out.');
@@ -115,13 +122,26 @@ class AccountSecurityController extends Controller
         ], ['current_password.current_password' => 'That password is not correct.']);
 
         $count = $sessions->countOthers($request);
+        $tokens = 0;
 
-        Auth::logoutOtherDevices($data['current_password']);
-        $sessions->forgetOthers($request);
+        // ONE transaction: the other sessions, the app's access tokens and the audit entry.
+        DB::transaction(function () use ($request, $data, $sessions, &$tokens, $count) {
+            Auth::logoutOtherDevices($data['current_password']);
+            $sessions->forgetOthers($request);
 
-        Audit::log('account.other_sessions_revoked', $request->user(), ['sessions' => $count]);
+            // "Sign out my other devices" includes the phone: its tokens end as well.
+            $tokens = $request->user()->tokens()->delete();
 
-        return redirect()->to(\App\Support\AccountArea::route('account.security'))
-            ->with('status', $count ? "Signed out {$count} other ".str('session')->plural($count).'.' : 'There were no other sessions.');
+            Audit::log('account.other_sessions_revoked', $request->user(), ['sessions' => $count, 'api_tokens_ended' => $tokens]);
+        });
+
+        $status = match (true) {
+            $count > 0 && $tokens > 0 => "Signed out {$count} other ".str('session')->plural($count).' and the app.',
+            $count > 0 => "Signed out {$count} other ".str('session')->plural($count).'.',
+            $tokens > 0 => 'Signed out the app.',
+            default => 'There were no other sessions.',
+        };
+
+        return redirect()->to(\App\Support\AccountArea::route('account.security'))->with('status', $status);
     }
 }
