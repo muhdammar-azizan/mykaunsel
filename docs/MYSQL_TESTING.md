@@ -32,6 +32,8 @@ php artisan test
 
 ## What runs only on MySQL
 
+`tests/Feature/Counselor/CounselorSignupConcurrencyTest.php`: six **processes** (`tests/Support/signup_child.php`, each sends one real sign up through the web stack) sign up as a counselor with the **same KB number** at the same moment; exactly one account must be made, the other five must get a clear message (never an error page) and leave nothing behind. Skipped on SQLite for the same reason as the next one. Run it alone with `SUITE_ARGS="tests/Feature/Counselor/CounselorSignupConcurrencyTest.php" bash tool/test-on-mysql.sh`.
+
 `tests/Feature/Platform/PricingConcurrencyTest.php`: six **processes** redeem the last use of a promo code at the same moment; exactly one must succeed. SQLite cannot run two transactions side by side, so it is **skipped** there (the skip message says why) and **runs by itself** on MySQL. `tests/Feature/DatabaseCompatibilityTest.php` has four more "MySQL only" tests (below).
 
 ## Where SQLite and MySQL differ (and what we did about it)

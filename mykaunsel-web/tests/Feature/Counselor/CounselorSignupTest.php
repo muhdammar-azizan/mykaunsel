@@ -119,6 +119,50 @@ class CounselorSignupTest extends TestCase
         $this->signUp()->assertSessionHasErrors(['lkm' => 'Your practicing certificate (PA) has expired.']);
     }
 
+    // ---- what the form itself asks for ----------------------------------------------------------------------
+
+    public function test_the_form_rejects_a_wrong_kb_or_pa_format_a_weak_password_and_missing_confirmations_before_any_check(): void
+    {
+        // Twelve tries in a minute: each from its own address, so the limit on sign ups (10 a minute) is not what refuses them.
+        $n = 0;
+        $try = function (array $over) use (&$n) {
+            return $this->signUp($over, '203.0.113.'.(++$n));
+        };
+
+        $try(['kb_number' => 'KB1234'])->assertSessionHasErrors('kb_number');
+        $try(['kb_number' => 'AB12345'])->assertSessionHasErrors('kb_number');
+        $try(['kb_number' => 'KB123456'])->assertSessionHasErrors('kb_number');
+        $try(['pa_number' => 'PA1234'])->assertSessionHasErrors('pa_number');
+        $try(['pa_number' => 'KB12345'])->assertSessionHasErrors('pa_number');
+        $try(['name' => 'A'])->assertSessionHasErrors('name');
+        $try(['email' => 'not-an-email'])->assertSessionHasErrors('email');
+        $try(['password' => 'short', 'password_confirmation' => 'short'])->assertSessionHasErrors('password');
+        $try(['password' => 'alllowercase1!', 'password_confirmation' => 'alllowercase1!'])->assertSessionHasErrors('password');
+        $try(['password_confirmation' => 'Different#Pass99'])->assertSessionHasErrors('password');
+        $try(['confirm_accurate' => 0])->assertSessionHasErrors('confirm_accurate');
+        $try(['confirm_terms' => 0])->assertSessionHasErrors('confirm_terms');
+
+        // None of these reached the LKM check (no "could not verify" answer, no attempt, no account).
+        $this->assertSame(0, CounselorKbAttempt::count());
+        $this->assertSame(0, User::where('email', 'aminah@example.test')->count());
+    }
+
+    public function test_the_format_is_read_in_any_case_and_the_numbers_are_stored_in_capitals(): void
+    {
+        $this->signUp(['kb_number' => 'kb12345', 'pa_number' => 'pa12345'])->assertRedirect(route('counselors.signup.verified'));
+
+        $profile = CounselorProfile::where('kb_number', 'KB12345')->firstOrFail();
+        $this->assertSame(['KB12345', 'PA12345'], [$profile->kb_number, $profile->pa_number]);
+    }
+
+    public function test_an_e_mail_address_that_is_already_used_is_said_so_on_the_form(): void
+    {
+        User::factory()->create(['email' => 'aminah@example.test']);
+
+        $this->signUp()->assertSessionHasErrors('email');
+        $this->assertSame(0, CounselorProfile::where('kb_number', 'KB12345')->count());
+    }
+
     public function test_an_lkm_record_that_is_not_active_is_not_called_an_expired_certificate(): void
     {
         LkmDirectorySnapshot::where('kb_number', 'KB12345')->update(['status' => 'Digantung']);
