@@ -3,6 +3,12 @@
 @endphp
 
 <x-legal-page :title="__('Help')">
+    <p>{{ __('This is the general Help for everyone who uses MyKaunsel: clients, counselors and organizations.') }}
+        @if (session('current_role') === 'counselor')
+            {{ __('For help with your work as a counselor, open') }} <a href="{{ route('counselor.help') }}">{{ __('Help for counselors') }}</a> {{ __('(the ? icon at the top of the portal).') }}
+        @endif
+    </p>
+
     <h2>{{ __('If you need to talk to someone right now') }}</h2>
     <p>{{ __('These lines are free to call. Please call if you or someone you know may be in danger.') }}</p>
     <ul>

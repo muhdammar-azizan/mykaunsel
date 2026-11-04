@@ -45,7 +45,8 @@
             </span>
         </div>
 
-        <a href="{{ route('help') }}" aria-label="Help" class="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+        {{-- Help for the work in this portal: a counselor's own page; anyone else the general Help (the footer always has the general one). --}}
+        <a href="{{ route(session('current_role') === 'counselor' ? 'counselor.help' : 'help') }}" aria-label="Help" class="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>
         </a>
 

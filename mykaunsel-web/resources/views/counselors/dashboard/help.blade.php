@@ -180,6 +180,8 @@
                 @endforeach
             </ul>
 
+            <p class="{{ $p }}">{{ __('This page is about your work as a counselor. The general Help for everyone who uses MyKaunsel (also in the footer) is here:') }} <a href="{{ route('help') }}" class="font-semibold text-brand-blue hover:underline">{{ __('General Help') }}</a></p>
+
             <p class="{{ $p }}">
                 <a href="{{ route('terms') }}" class="font-semibold text-brand-blue hover:underline">{{ __('Terms of Use') }}</a> ·
                 <a href="{{ route('privacy') }}" class="font-semibold text-brand-blue hover:underline">{{ __('Privacy Policy') }}</a>
