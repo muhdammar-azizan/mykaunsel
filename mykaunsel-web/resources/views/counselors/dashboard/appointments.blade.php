@@ -1,6 +1,6 @@
 <x-portal-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-brand-ink leading-tight">{{ __('Temujanji') }}</h2>
+        <h2 class="font-semibold text-xl text-brand-ink leading-tight">{{ __('Bookings') }}</h2>
     </x-slot>
 
     @php
@@ -56,6 +56,8 @@
                         <x-empty-state-sessions kind="mark" :title="__('Nothing to mark.')" />
                     @endforelse
                 </div>
+
+                <div class="mt-4">{{ $to_mark->links() }}</div>
             </section>
 
             <section aria-labelledby="upcoming">
@@ -98,10 +100,50 @@
                         <x-empty-state-sessions kind="upcoming" :title="__('No upcoming sessions.')" />
                     @endforelse
                 </div>
+
+                <div class="mt-4">{{ $upcoming->links() }}</div>
             </section>
 
             <section aria-labelledby="past">
                 <h3 id="past" class="text-[20px] font-bold tracking-tight text-brand-ink">{{ __('Past') }}</h3>
+
+                @php($filtered = collect($filters)->filter(fn ($v) => filled($v))->isNotEmpty())
+                <form method="GET" action="{{ route('counselor.appointments') }}#past" class="mt-3 grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                    <div>
+                        <label for="f-status" class="block text-sm font-medium text-brand-ink/70">{{ __('Status') }}</label>
+                        <select id="f-status" name="status" class="mt-1 block w-full min-h-[44px] rounded-md border-brand-ink/20">
+                            <option value="">{{ __('All') }}</option>
+                            @foreach (['completed' => __('Completed'), 'no_show' => __('No-show'), 'cancelled' => __('Cancelled')] as $value => $text)
+                                <option value="{{ $value }}" @selected(($filters['status'] ?? null) === $value)>{{ $text }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="f-from" class="block text-sm font-medium text-brand-ink/70">{{ __('From') }}</label>
+                        <input id="f-from" name="from" type="date" value="{{ $filters['from'] ?? '' }}" class="mt-1 block w-full min-h-[44px] rounded-md border-brand-ink/20">
+                    </div>
+                    <div>
+                        <label for="f-to" class="block text-sm font-medium text-brand-ink/70">{{ __('To') }}</label>
+                        <input id="f-to" name="to" type="date" value="{{ $filters['to'] ?? '' }}" class="mt-1 block w-full min-h-[44px] rounded-md border-brand-ink/20">
+                    </div>
+                    @if (count($contexts) > 1)
+                        <div>
+                            <label for="f-context" class="block text-sm font-medium text-brand-ink/70">{{ __('Where you work') }}</label>
+                            <select id="f-context" name="context" class="mt-1 block w-full min-h-[44px] rounded-md border-brand-ink/20">
+                                <option value="">{{ __('All') }}</option>
+                                @foreach ($contexts as $id => $name)
+                                    <option value="{{ $id }}" @selected((int) ($filters['context'] ?? 0) === $id)>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                    <div class="flex gap-2">
+                        <button class="min-h-[44px] px-4 rounded-md bg-brand-blue text-white text-sm font-medium">{{ __('Filter') }}</button>
+                        @if ($filtered)
+                            <a href="{{ route('counselor.appointments') }}#past" class="inline-flex min-h-[44px] items-center px-4 rounded-md border border-brand-ink/20 text-sm font-medium text-brand-ink">{{ __('Clear') }}</a>
+                        @endif
+                    </div>
+                </form>
 
                 <div class="mt-3 space-y-3">
                     @forelse ($past as $s)
@@ -113,7 +155,11 @@
                             <div class="flex items-center gap-3"><a href="{{ route('counselor.appointments.show', $s['id']) }}" class="text-[13px] font-semibold text-brand-blue hover:underline">{{ __('Details') }}</a><span class="rounded-full px-2.5 py-0.5 text-xs font-medium {{ $badge[$s['status']] ?? $badge['cancelled'] }}">{{ $label[$s['status']] ?? $s['status'] }}</span></div>
                         </div>
                     @empty
-                        <x-empty-state-sessions kind="past" :title="__('No past sessions yet.')" />
+                        @if ($filtered)
+                            <p class="rounded-xl border border-[#E4E2DE] bg-white p-6 text-brand-ink/65">{{ __('No past sessions match this filter.') }}</p>
+                        @else
+                            <x-empty-state-sessions kind="past" :title="__('No past sessions yet.')" />
+                        @endif
                     @endforelse
                 </div>
 

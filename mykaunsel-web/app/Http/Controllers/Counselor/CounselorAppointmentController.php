@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Notifications\SessionCancelledByCounselor;
 use App\Notifications\TimeRequestAnsweredClient;
 use App\Services\BookingRequests;
+use App\Services\CounselorPlanner;
 use App\Services\CounselorRequests;
 use App\Services\CounselorSessions;
 use App\Services\NotificationCenter;
@@ -22,12 +23,27 @@ use Throwable;
  */
 class CounselorAppointmentController extends Controller
 {
-    public function index(Request $request, CounselorSessions $sessions, CounselorRequests $requests)
+    public function index(Request $request, CounselorSessions $sessions, CounselorRequests $requests, CounselorPlanner $planner)
     {
         $counselor = $request->user();
 
-        return view('counselors.dashboard.appointments', $sessions->open($counselor) + [
-            'past' => $sessions->past($counselor, (int) $request->query('page', 1))->withPath(route('counselor.appointments')),
+        // The filters belong to the Past list: status, first and last day, and (only for someone who works for several organizations) which one.
+        $contexts = collect($planner->contexts($counselor))->pluck('name', 'id')->all();
+        $filters = $request->validate([
+            'status' => ['nullable', Rule::in([BookingStatus::Completed->value, BookingStatus::NoShow->value, BookingStatus::Cancelled->value])],
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
+            'context' => ['nullable', 'integer', Rule::in(array_keys($contexts))],
+        ]);
+
+        $lists = $sessions->lists($counselor, (int) $request->query('up_page', 1), (int) $request->query('mark_page', 1));
+
+        return view('counselors.dashboard.appointments', [
+            'upcoming' => $lists['upcoming']->withPath(route('counselor.appointments'))->withQueryString(),
+            'to_mark' => $lists['to_mark']->withPath(route('counselor.appointments'))->withQueryString(),
+            'past' => $sessions->past($counselor, (int) $request->query('page', 1), $filters)->withPath(route('counselor.appointments'))->withQueryString(),
+            'filters' => $filters,
+            'contexts' => $contexts,
             'providers' => CounselorSessions::PROVIDERS,
             'requests' => $requests->pending($counselor),
         ]);

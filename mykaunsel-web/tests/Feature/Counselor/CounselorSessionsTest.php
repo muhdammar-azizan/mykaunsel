@@ -235,4 +235,78 @@ class CounselorSessionsTest extends TestCase
         $this->getJson('/api/v1/bookings?scope=past')->assertOk()->assertJsonPath('data.0.status', 'no_show');
         $this->getJson('/api/v1/bookings?scope=upcoming')->assertOk()->assertJsonCount(0, 'data');
     }
+
+    // ---- the list: pages and filters ---------------------------------------------------------------------------------
+
+    public function test_a_session_that_ended_today_is_in_needs_marking_and_one_later_today_is_upcoming(): void
+    {
+        $this->mine('2026-11-02 07:00');
+        $this->mine('2026-11-02 15:00');
+
+        $this->as()->get(route('counselor.appointments'))->assertOk()->assertSeeInOrder(['Needs marking', '7:00 AM', 'Upcoming', '3:00 PM']);
+    }
+
+    public function test_upcoming_sessions_come_in_pages_and_none_is_cut_off(): void
+    {
+        foreach (range(0, 20) as $i) {   // 21 sessions, one a day
+            $this->mine(Carbon::parse('2026-11-05')->addDays($i)->format('Y-m-d').' 10:00');
+        }
+        $last = Carbon::parse('2026-11-05')->addDays(20)->format('D, j M Y');
+
+        $this->as()->get(route('counselor.appointments'))->assertOk()->assertSee('Thu, 5 Nov 2026')->assertDontSee($last);
+        $this->as()->get(route('counselor.appointments', ['up_page' => 2]))->assertOk()->assertSee($last)->assertDontSee('Thu, 5 Nov 2026');
+    }
+
+    public function test_the_past_list_can_be_filtered_by_status_and_dates(): void
+    {
+        $this->mine('2026-10-30 10:00', BookingStatus::Completed);
+        $this->mine('2026-10-20 10:00', BookingStatus::NoShow);
+        $this->mine('2026-10-10 10:00', BookingStatus::Cancelled);
+
+        $this->as()->get(route('counselor.appointments'))->assertOk()
+            ->assertSee('Fri, 30 Oct 2026')->assertSee('Tue, 20 Oct 2026')->assertSee('Sat, 10 Oct 2026');
+
+        $this->as()->get(route('counselor.appointments', ['status' => 'no_show']))
+            ->assertSee('Tue, 20 Oct 2026')->assertDontSee('Fri, 30 Oct 2026')->assertDontSee('Sat, 10 Oct 2026');
+
+        $this->as()->get(route('counselor.appointments', ['from' => '2026-10-15', 'to' => '2026-10-25']))
+            ->assertSee('Tue, 20 Oct 2026')->assertDontSee('Fri, 30 Oct 2026')->assertDontSee('Sat, 10 Oct 2026');
+
+        $this->as()->get(route('counselor.appointments', ['status' => 'cancelled', 'from' => '2026-10-15']))
+            ->assertSee('No past sessions match this filter.')->assertSee('Clear');
+    }
+
+    public function test_a_bad_filter_is_refused_and_a_filter_never_shows_someone_elses_sessions(): void
+    {
+        $bakar = $this->counselor('Bakar', [$this->platform]);
+        $this->mine('2026-10-30 10:00', BookingStatus::Completed, $bakar);
+
+        $this->as()->get(route('counselor.appointments', ['status' => 'confirmed']))->assertSessionHasErrors('status');
+        $this->as()->get(route('counselor.appointments', ['from' => '2026-10-25', 'to' => '2026-10-20']))->assertSessionHasErrors('to');
+        $this->as()->get(route('counselor.appointments', ['from' => 'x']))->assertSessionHasErrors('from');
+        $this->as()->get(route('counselor.appointments', ['context' => $this->open->id]))->assertSessionHasErrors('context');   // not one of my places
+
+        $this->as()->get(route('counselor.appointments', ['status' => 'completed']))->assertOk()->assertDontSee('Fri, 30 Oct 2026');
+    }
+
+    public function test_the_place_filter_shows_only_for_someone_who_works_in_several_places(): void
+    {
+        $this->as()->get(route('counselor.appointments'))->assertOk()->assertDontSee('f-context', false);
+
+        $bakar = $this->counselor('Bakar', [$this->platform, $this->open]);
+        $this->book($this->slot($bakar, $this->platform, '2026-10-30 10:00'), User::factory()->create(), BookingStatus::Completed);
+        $this->book($this->slot($bakar, $this->open, '2026-10-20 10:00'), User::factory()->create(), BookingStatus::Completed);
+
+        $this->as($bakar)->get(route('counselor.appointments'))->assertOk()->assertSee('f-context', false)
+            ->assertSee('Fri, 30 Oct 2026')->assertSee('Tue, 20 Oct 2026');
+
+        $this->as($bakar)->get(route('counselor.appointments', ['context' => $this->open->id]))
+            ->assertSee('Tue, 20 Oct 2026')->assertDontSee('Fri, 30 Oct 2026');
+    }
+
+    public function test_the_page_is_called_bookings(): void
+    {
+        $this->as()->get(route('counselor.appointments'))->assertOk()->assertSee('Bookings')->assertDontSee('Temujanji');
+    }
 }
+

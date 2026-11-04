@@ -56,11 +56,54 @@ class CounselorSessions
         return ['upcoming' => $upcoming, 'to_mark' => array_reverse($toMark)];
     }
 
-    /** Completed, no-show and cancelled sessions, newest first. */
-    public function past(User $counselor, int $page): LengthAwarePaginator
+    /**
+     * The Bookings page: the same two lists as open(), but in pages (nothing is cut off silently).
+     * "Needs marking" = confirmed and ended, newest first; "Upcoming" = confirmed and not ended, soonest first.
+     *
+     * @return array{upcoming: LengthAwarePaginator, to_mark: LengthAwarePaginator}
+     */
+    public function lists(User $counselor, int $upcomingPage = 1, int $markPage = 1): array
     {
+        $now = $this->availability->now();
+        $today = $now->format('Y-m-d');
+
+        // Only today can be both "not over by date" and ended: those few are sorted out here, everything else by date in SQL.
+        $endedToday = $this->mine($counselor)
+            ->where('bookings.status', BookingStatus::Confirmed->value)->whereDate('calendar_entries.entry_date', $today)
+            ->get()->filter(fn (Booking $b) => $this->ended($b))->pluck('id')->all();
+
+        $toMark = $this->mine($counselor)->where('bookings.status', BookingStatus::Confirmed->value)
+            ->where(fn ($q) => $q->whereDate('calendar_entries.entry_date', '<', $today)->orWhereIn('bookings.id', $endedToday))
+            ->orderByDesc('calendar_entries.entry_date')->orderByDesc('calendar_entries.start_time')
+            ->paginate(self::PAST_PER_PAGE, ['bookings.*'], 'mark_page', max(1, $markPage));
+
+        $upcoming = $this->mine($counselor)->where('bookings.status', BookingStatus::Confirmed->value)
+            ->whereDate('calendar_entries.entry_date', '>=', $today)->whereNotIn('bookings.id', $endedToday)
+            ->orderBy('calendar_entries.entry_date')->orderBy('calendar_entries.start_time')
+            ->paginate(self::PAST_PER_PAGE, ['bookings.*'], 'up_page', max(1, $upcomingPage));
+
+        return [
+            'upcoming' => $upcoming->through(fn (Booking $booking) => $this->row($booking)),
+            'to_mark' => $toMark->through(fn (Booking $booking) => $this->row($booking)),
+        ];
+    }
+
+    /**
+     * Completed, no-show and cancelled sessions, newest first.
+     *
+     * @param  array{status?: ?string, from?: ?string, to?: ?string, context?: ?int}  $filters  status (one of the three), first and last day, and the
+     *                                                                                          organization the session was held for
+     */
+    public function past(User $counselor, int $page, array $filters = []): LengthAwarePaginator
+    {
+        $statuses = [BookingStatus::Completed->value, BookingStatus::NoShow->value, BookingStatus::Cancelled->value];
+        $status = $filters['status'] ?? null;
+
         $paginator = $this->mine($counselor)
-            ->whereIn('bookings.status', [BookingStatus::Completed->value, BookingStatus::NoShow->value, BookingStatus::Cancelled->value])
+            ->whereIn('bookings.status', in_array($status, $statuses, true) ? [$status] : $statuses)
+            ->when($filters['from'] ?? null, fn ($q, $from) => $q->whereDate('calendar_entries.entry_date', '>=', $from))
+            ->when($filters['to'] ?? null, fn ($q, $to) => $q->whereDate('calendar_entries.entry_date', '<=', $to))
+            ->when($filters['context'] ?? null, fn ($q, $context) => $q->where('bookings.org_id', (int) $context))
             ->orderByDesc('calendar_entries.entry_date')->orderByDesc('calendar_entries.start_time')
             ->paginate(self::PAST_PER_PAGE, ['bookings.*'], 'page', max(1, $page));
 
