@@ -25,7 +25,8 @@ use RuntimeException;
  *
  * - A place is owned by the counselor (`owner_type = counselor`, `owner_id` = their user id). An organization's places stay the organization's.
  *   Only someone with an independent practice (an active counselor membership of the MyKaunsel platform itself) has places.
- * - At most `counselors.profile.max_places` active places. No map pin in this step: coordinates stay empty.
+ * - At most `counselors.profile.max_places` active places. Every place has a PIN on the map (latitude and longitude, set on the form and moved
+ *   by the counselor until it sits exactly on the entrance). The pin goes only to a client who booked there, like the full address.
  * - Clients and searches only ever see a place's NAME and CITY; the full address and the directions go only to a client who booked (the existing
  *   rule of the booking details). The page tells the counselor not to use a home address as the name.
  * - A place can not be CHANGED while a confirmed session or a waiting request depends on it (the client was told that address). It can not be
@@ -69,6 +70,9 @@ class CounselorPlaces
                 'state' => (string) $place->state,
                 'postcode' => (string) $place->postcode,
                 'description' => (string) $place->description,
+                'latitude' => $place->latitude === null ? null : (float) $place->latitude,
+                'longitude' => $place->longitude === null ? null : (float) $place->longitude,
+                'has_pin' => $place->latitude !== null && $place->longitude !== null,
                 'change_blocked' => $changeBlock,
                 'remove_blocked' => $removeBlock,
             ];
@@ -118,7 +122,8 @@ class CounselorPlaces
             }
 
             $place->fill($this->fields($input));
-            $changed = array_keys($place->getDirty());
+            // The two coordinates are one change: "pin".
+            $changed = array_values(array_unique(array_map(fn (string $f) => in_array($f, ['latitude', 'longitude'], true) ? 'pin' : $f, array_keys($place->getDirty()))));
 
             if ($changed !== []) {
                 $place->save();
@@ -157,8 +162,18 @@ class CounselorPlaces
 
     // ---- rules --------------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * One of the counselor's own active places (someone else's, an organization's and an archived one are not found).
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function find(User $counselor, int $placeId): PracticeLocation
+    {
+        return $this->own($counselor)->findOrFail($placeId);
+    }
+
     /** Why this place can not be changed now, or null. */
-    private function changeBlock(PracticeLocation $place): ?string
+    public function changeBlock(PracticeLocation $place): ?string
     {
         if ($this->upcomingBookings($place) > 0 || $this->waitingRequests($place) > 0) {
             return 'A client has a booked session or a waiting request at this place and was told this address. Change it after those sessions are over, or add a new place.';
@@ -231,6 +246,9 @@ class CounselorPlaces
             'state' => (string) ($input['state'] ?? ''),
             'postcode' => preg_replace('/\D/', '', (string) ($input['postcode'] ?? '')),
             'description' => ($d = trim((string) ($input['description'] ?? ''))) === '' ? null : mb_substr($d, 0, 500),
+            // The pin on the map (six decimals is about 11 centimetres). The controller makes it required and inside Malaysia.
+            'latitude' => isset($input['latitude']) && is_numeric($input['latitude']) ? round((float) $input['latitude'], 6) : null,
+            'longitude' => isset($input['longitude']) && is_numeric($input['longitude']) ? round((float) $input['longitude'], 6) : null,
         ];
     }
 }

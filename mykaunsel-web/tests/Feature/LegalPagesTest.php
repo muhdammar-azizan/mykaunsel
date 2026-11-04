@@ -79,6 +79,8 @@ class LegalPagesTest extends TestCase
         $this->get(route('privacy'))
             ->assertSee('The places you add for your independent practice')
             ->assertSee('Clients see only the name and the city before they book')
+            ->assertSee('a pin on the map')
+            ->assertSee('the address you type is sent to OpenStreetMap')
             ->assertSee('A place you remove: deleted if it was never used');
     }
 

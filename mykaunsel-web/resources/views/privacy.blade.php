@@ -57,7 +57,8 @@
         <li>{{ __('The result of comparing your details with the registration records we hold. These records are a copy that we keep; we do not have a live connection to a government system. Our team reviews every application.') }}</li>
         <li>{{ __('The history and notes of the review of your application.') }}</li>
         <li>{{ __('The times you open, your weekly hours, your blocked times (and the note you may add to one), and the requests and bookings you receive.') }}</li>
-        <li>{{ __('The places you add for your independent practice (a name, the full address, and directions if you write them). Clients see only the name and the city before they book; the full address goes only to a client who has booked a session there.') }}</li>
+        <li>{{ __('The places you add for your independent practice (a name, the full address, a pin on the map, and directions if you write them). Clients see only the name and the city before they book; the full address and the pin go only to a client who has booked a session there.') }}</li>
+        <li>{{ __('To place the pin, the address you type is sent to OpenStreetMap\'s search service, and the map is loaded from OpenStreetMap, so OpenStreetMap can see that your device asked for them.') }}</li>
         <li>{{ __('Reviews and complaints about you.') }}</li>
         <li>{{ __('A photo, if you add one to your own account. It is never shown to clients.') }}</li>
         <li>{{ __('The choices you make on your profile: the names clients see, your languages and your specializations.') }}</li>

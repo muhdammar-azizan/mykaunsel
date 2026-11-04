@@ -179,35 +179,38 @@
                 @forelse ($places as $place)
                     <li class="rounded-xl border border-[#E4E2DE] p-4">
                         <div class="flex flex-wrap items-start justify-between gap-3">
-                            <div>
+                            <div class="min-w-0">
                                 <p class="font-semibold">{{ $place['name'] }} <span class="font-normal text-brand-ink/65">· {{ $place['city'] }}</span></p>
                                 <p class="text-[13px] text-brand-ink/65">{{ $place['address'] }}, {{ $place['postcode'] }} {{ $place['city'] }}, {{ $place['state'] }}</p>
+                                @if ($place['has_pin'])
+                                    <p class="mt-1 text-[12.5px] text-emerald-800">Pin set on the map ·
+                                        <a href="https://www.openstreetmap.org/?mlat={{ $place['latitude'] }}&amp;mlon={{ $place['longitude'] }}#map=18/{{ $place['latitude'] }}/{{ $place['longitude'] }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-brand-blue hover:underline">View on map</a></p>
+                                @else
+                                    <p class="mt-1 text-[12.5px] font-semibold text-[#6B4C0C]">No pin on the map yet. Change this place and set the pin.</p>
+                                @endif
                             </div>
-                            @if ($place['remove_blocked'])
-                                <p class="max-w-xs text-[12.5px] text-brand-ink/60">{{ $place['remove_blocked'] }}</p>
-                            @else
-                                <form method="POST" action="{{ route('counselor.places.destroy', $place['id']) }}"
-                                      data-confirm-title="Remove {{ $place['name'] }}?" data-confirm="It will not be offered for new times. Past sessions keep it in their history." data-confirm-button="Remove place" data-confirm-cancel="Keep">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="inline-flex min-h-[44px] items-center rounded-md border border-brand-red/50 px-4 text-[14px] font-semibold text-brand-red transition hover:bg-brand-red/[.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red">Remove</button>
-                                </form>
-                            @endif
+
+                            <div class="flex flex-wrap items-center gap-2">
+                                @if (! $place['change_blocked'])
+                                    <a href="{{ route('counselor.places.edit', $place['id']) }}" class="inline-flex min-h-[44px] items-center rounded-md border border-brand-ink/25 px-4 text-[14px] font-semibold text-brand-ink transition hover:bg-brand-ink/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue">Change</a>
+                                @endif
+                                @if (! $place['remove_blocked'])
+                                    <form method="POST" action="{{ route('counselor.places.destroy', $place['id']) }}"
+                                          data-confirm-title="Remove {{ $place['name'] }}?" data-confirm="It will not be offered for new times. Past sessions keep it in their history." data-confirm-button="Remove place" data-confirm-cancel="Keep">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="inline-flex min-h-[44px] items-center rounded-md border border-brand-red/50 px-4 text-[14px] font-semibold text-brand-red transition hover:bg-brand-red/[.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red">Remove</button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
 
-                        <details class="mt-3">
-                            <summary class="cursor-pointer text-[14px] font-semibold text-brand-blue hover:underline">Change this place</summary>
-                            @if ($place['change_blocked'])
-                                <p class="mt-2 text-[13px] text-brand-ink/70">{{ $place['change_blocked'] }}</p>
-                            @else
-                                <form method="POST" action="{{ route('counselor.places.update', $place['id']) }}" class="mt-3 space-y-3">
-                                    @csrf
-                                    @method('PUT')
-                                    @include('counselors.dashboard._place-fields', ['prefix' => 'place-'.$place['id'], 'values' => $place, 'states' => $states])
-                                    <button class="inline-flex min-h-[44px] items-center rounded-md bg-brand-blue px-5 text-[14px] font-semibold text-white transition hover:bg-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2">Save the place</button>
-                                </form>
-                            @endif
-                        </details>
+                        @if ($place['change_blocked'])
+                            <p class="mt-2 text-[12.5px] text-brand-ink/60">{{ $place['change_blocked'] }}</p>
+                        @endif
+                        @if ($place['remove_blocked'])
+                            <p class="mt-1 text-[12.5px] text-brand-ink/60">{{ $place['remove_blocked'] }}</p>
+                        @endif
                     </li>
                 @empty
                     <li class="rounded-xl border border-[#E4E2DE] p-5 text-[14px] text-brand-ink/65">You have no places yet. Add one to open in-person times for your independent practice.</li>
@@ -215,15 +218,7 @@
             </ul>
 
             @if (count($places) < $maxPlaces)
-                <details class="mt-4 rounded-xl border border-[#E4E2DE]" @if (old('_new_place')) open @endif>
-                    <summary class="flex min-h-[48px] cursor-pointer items-center px-4 text-[15px] font-bold text-brand-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-blue">Add a place</summary>
-                    <form method="POST" action="{{ route('counselor.places.store') }}" class="space-y-3 border-t border-[#EEEDEA] p-4">
-                        @csrf
-                        <input type="hidden" name="_new_place" value="1">
-                        @include('counselors.dashboard._place-fields', ['prefix' => 'new-place', 'values' => old('_new_place') ? ['name' => old('name'), 'city' => old('city'), 'address' => old('address'), 'state' => old('state'), 'postcode' => old('postcode'), 'description' => old('description')] : [], 'states' => $states])
-                        <button class="inline-flex min-h-[44px] items-center rounded-md bg-brand-blue px-5 text-[14px] font-semibold text-white transition hover:bg-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2">Add the place</button>
-                    </form>
-                </details>
+                <a href="{{ route('counselor.places.create') }}" class="mt-4 inline-flex min-h-[44px] items-center rounded-md bg-brand-blue px-5 text-[14px] font-semibold text-white transition hover:bg-brand-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2">Add a place</a>
             @else
                 <p class="mt-4 text-[13px] text-brand-ink/65">You have the most places allowed ({{ $maxPlaces }}). Remove one you do not use to add another.</p>
             @endif

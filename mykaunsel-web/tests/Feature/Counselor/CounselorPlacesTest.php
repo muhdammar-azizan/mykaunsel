@@ -49,7 +49,10 @@ class CounselorPlacesTest extends TestCase
 
     private function payload(array $over = []): array
     {
-        return $over + ['name' => 'Klinik Aman', 'address' => '12 Jalan Mawar, Taman Indah', 'city' => 'Kuantan', 'state' => 'Pahang', 'postcode' => '25000', 'description' => 'Second floor, lift on the left.'];
+        return $over + [
+            'name' => 'Klinik Aman', 'address' => '12 Jalan Mawar, Taman Indah', 'city' => 'Kuantan', 'state' => 'Pahang', 'postcode' => '25000',
+            'description' => 'Second floor, lift on the left.', 'latitude' => '3.806300', 'longitude' => '103.326000',
+        ];
     }
 
     private function add(array $over = [], ?CounselorProfile $who = null)
@@ -62,6 +65,7 @@ class CounselorPlacesTest extends TestCase
         return PracticeLocation::create($over + [
             'owner_type' => 'counselor', 'owner_id' => ($who ?? $this->aina)->user_id, 'name' => 'Klinik Aman', 'address' => '12 Jalan Mawar, Taman Indah',
             'city' => 'Kuantan', 'state' => 'Pahang', 'postcode' => '25000', 'description' => 'Second floor, lift on the left.',
+            'latitude' => 3.8063, 'longitude' => 103.326,
         ]);
     }
 
@@ -84,13 +88,13 @@ class CounselorPlacesTest extends TestCase
 
     // ---- adding -------------------------------------------------------------------------------------------------------------------------
 
-    public function test_a_place_is_added_with_no_map_pin_and_audited_with_ids_only(): void
+    public function test_a_place_is_added_with_its_pin_and_audited_with_ids_only(): void
     {
         $this->add(['name' => "  Klinik   Aman \n"])->assertSessionHasNoErrors()->assertRedirect(route('counselor.profile').'#my-places');
 
         $place = PracticeLocation::where('owner_type', 'counselor')->sole();
         $this->assertSame([$this->aina->user_id, 'Klinik Aman', 'Kuantan', 'Pahang', '25000'], [$place->owner_id, $place->name, $place->city, $place->state, $place->postcode]);
-        $this->assertNull($place->latitude);
+        $this->assertEquals([3.8063, 103.326], [(float) $place->latitude, (float) $place->longitude]);
         $this->assertNull($place->archived_at);
 
         $entry = $this->logs('counselor.place_added')->sole();
@@ -98,7 +102,82 @@ class CounselorPlacesTest extends TestCase
         $this->assertStringNotContainsString('Jalan Mawar', json_encode($entry->getAttributes()));
         $this->assertStringNotContainsString('Klinik Aman', json_encode($entry->getAttributes()));
 
-        $this->as()->get(route('counselor.profile'))->assertOk()->assertSee('Klinik Aman')->assertSee('12 Jalan Mawar, Taman Indah');
+        $this->assertStringNotContainsString('3.8063', json_encode($entry->getAttributes()), 'the pin is not in the audit log either');
+
+        $this->as()->get(route('counselor.profile'))->assertOk()->assertSee('Klinik Aman')->assertSee('12 Jalan Mawar, Taman Indah')
+            ->assertSee('Pin set on the map')->assertSee('View on map')->assertSee('mlat=3.8063', false)
+            ->assertSee(route('counselor.places.edit', $place->id), false)->assertSee(route('counselor.places.create'), false);
+    }
+
+    public function test_the_pin_is_required_and_has_to_be_inside_malaysia(): void
+    {
+        foreach ([['latitude' => ''], ['longitude' => ''], ['latitude' => 'abc'], ['latitude' => '0.1'], ['longitude' => '120.5'], ['latitude' => '51.5', 'longitude' => '-0.12']] as $bad) {
+            $this->add($bad)->assertSessionHasErrors();
+        }
+
+        $this->add(['latitude' => null, 'longitude' => null])->assertSessionHasErrors(['latitude', 'longitude']);
+        $this->assertSame(0, PracticeLocation::where('owner_type', 'counselor')->count());
+    }
+
+    public function test_a_place_without_a_pin_is_flagged_so_it_gets_one(): void
+    {
+        $this->place(['latitude' => null, 'longitude' => null]);
+
+        $this->as()->get(route('counselor.profile'))->assertOk()->assertSee('No pin on the map yet')->assertDontSee('View on map');
+    }
+
+    // ---- the page: address, map and pin -------------------------------------------------------------------------------------------------
+
+    public function test_the_add_page_has_the_address_the_map_the_pin_and_the_ways_to_move_it(): void
+    {
+        $page = $this->as()->get(route('counselor.places.create'))->assertOk();
+
+        $page->assertSee('Add a place')->assertSee('Pin the exact spot')->assertSee('Find on map')->assertSee('Use my current location')
+            ->assertSee('id="pl-map"', false)->assertSee('id="place-picker"', false)
+            ->assertSee('name="latitude"', false)->assertSee('name="longitude"', false)
+            ->assertSee('data-nudge="n"', false)->assertSee('data-nudge="e"', false)
+            ->assertSee('Street, building and unit')->assertSee('Postcode')->assertSee('Choose a state')
+            ->assertSee('sent to OpenStreetMap')->assertDontSee('data-lat=', false);
+    }
+
+    public function test_the_change_page_shows_the_saved_pin_and_a_refused_form_keeps_what_was_typed(): void
+    {
+        $place = $this->place(['latitude' => 3.8063, 'longitude' => 103.326]);
+
+        $this->as()->get(route('counselor.places.edit', $place->id))->assertOk()
+            ->assertSee('Change this place')->assertSee('value="Klinik Aman"', false)->assertSee('data-lat="3.8063"', false)->assertSee('data-lng="103.326"', false);
+
+        // A form sent without a pin comes back with the typed address and the error.
+        $page = $this->followingRedirects()->as()->from(route('counselor.places.create'))->post(route('counselor.places.store'), $this->payload(['name' => 'Typed name', 'latitude' => '', 'longitude' => '']))->getContent();
+        $this->assertStringContainsString('Place the pin on the map for this place.', $page);
+        $this->assertStringContainsString('value="Typed name"', $page);
+    }
+
+    public function test_the_add_page_is_not_for_an_organization_only_counselor_nor_beyond_five_places(): void
+    {
+        $orgOnly = $this->counselor('Bakar', [$this->open]);
+        $this->as($orgOnly)->get(route('counselor.places.create'))->assertRedirect(route('counselor.profile').'#my-places')->assertSessionHasErrors('place');
+
+        foreach (range(1, 5) as $i) {
+            $this->place(['name' => "Place {$i}"]);
+        }
+        $this->as()->get(route('counselor.places.create'))->assertRedirect(route('counselor.profile').'#my-places')->assertSessionHasErrors('place');
+    }
+
+    public function test_a_place_a_client_was_told_about_has_no_change_page(): void
+    {
+        $place = $this->place();
+        $this->book($this->slot($this->aina, $this->platform, '2026-11-05 10:00', SessionMode::Physical, $place), User::factory()->create());
+
+        $this->as()->get(route('counselor.places.edit', $place->id))->assertRedirect(route('counselor.profile').'#my-places')->assertSessionHasErrors('place');
+    }
+
+    public function test_someone_elses_place_has_no_change_page(): void
+    {
+        $bakar = $this->counselor('Bakar', [$this->platform]);
+        $theirs = $this->place(['name' => 'Bakar Clinic'], $bakar);
+
+        $this->as()->get(route('counselor.places.edit', $theirs->id))->assertNotFound();
     }
 
     public function test_every_field_is_checked_and_nothing_is_made_when_one_is_wrong(): void

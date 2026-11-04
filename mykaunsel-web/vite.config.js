@@ -5,7 +5,7 @@ export default defineConfig({
     plugins: [
         laravel({
             // schedule-calendar.js is only loaded by the counselor's Schedule page (it carries the calendar library).
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/schedule-calendar.js'],
+            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/schedule-calendar.js', 'resources/js/place-picker.js'],
             refresh: true,
         }),
     ],

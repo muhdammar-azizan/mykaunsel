@@ -256,6 +256,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
         Route::post('/requests/{publicId}/approve', [CounselorAppointmentController::class, 'approveRequest'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('requests.approve');
         Route::post('/requests/{publicId}/decline', [CounselorAppointmentController::class, 'declineRequest'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('requests.decline');
         Route::post('/appointments/{publicId}/outcome', [CounselorAppointmentController::class, 'outcome'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('appointments.outcome');
+        Route::get('/places/create', [\App\Http\Controllers\Counselor\CounselorPlaceController::class, 'create'])->name('places.create');
+        Route::get('/places/{id}/edit', [\App\Http\Controllers\Counselor\CounselorPlaceController::class, 'edit'])->whereNumber('id')->name('places.edit');
         Route::post('/places', [\App\Http\Controllers\Counselor\CounselorPlaceController::class, 'store'])->middleware('throttle:20,1')->name('places.store');
         Route::put('/places/{id}', [\App\Http\Controllers\Counselor\CounselorPlaceController::class, 'update'])->whereNumber('id')->middleware('throttle:30,1')->name('places.update');
         Route::delete('/places/{id}', [\App\Http\Controllers\Counselor\CounselorPlaceController::class, 'destroy'])->whereNumber('id')->middleware('throttle:30,1')->name('places.destroy');
