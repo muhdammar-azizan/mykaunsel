@@ -35,6 +35,8 @@ return [
     // flow must be named and listed here (a test fails if a new one is forgotten): an unnamed or unlisted one locks admins out.
     'maintenance_allowed_routes' => [
         'login', 'login.store', 'logout',
+        // "Continue with Google" signs in an existing account (an admin too), so it is part of the sign-in flow.
+        'google.redirect', 'google.callback',
         'two-factor.challenge', 'two-factor.challenge.store',
         'password.request', 'password.email', 'password.reset', 'password.store',
         'context.select', 'context.store',
