@@ -214,6 +214,7 @@ class CounselorPaExpiryService
 
     private function today(): Carbon
     {
-        return Carbon::now(config('app.timezone'))->startOfDay();
+        // Malaysian time, like every other PA date (App\Support\PaValidity); the daily check is also scheduled in that zone.
+        return Carbon::now(PaValidity::timezone())->startOfDay();
     }
 }

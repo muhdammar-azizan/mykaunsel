@@ -18,6 +18,7 @@ use App\Services\CounselorReviewService;
 use App\Services\CounselorTimeline;
 use App\Services\LkmVerificationService;
 use App\Support\CounselorListFilters;
+use App\Support\PaValidity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -78,7 +79,7 @@ class PlatformCounselorController extends Controller
             'kbAttempts' => fn ($q) => $q->latest('created_at')->latest('id'),
         ]);
 
-        $today = Carbon::now(config('app.timezone'))->toDateString();
+        $today = PaValidity::today();   // Malaysian time, like the calendar and every PA date
 
         // Counts only. Never a client's name, never anything about what was said or done in a session.
         $stats = [

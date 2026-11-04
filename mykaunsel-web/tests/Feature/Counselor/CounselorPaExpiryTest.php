@@ -25,7 +25,7 @@ class CounselorPaExpiryTest extends CounselorTestCase
     {
         parent::setUp();
         $this->seedSamples();
-        Carbon::setTestNow(Carbon::parse('2026-10-25 00:10:00', config('app.timezone')));
+        Carbon::setTestNow(Carbon::parse('2026-10-25 00:10:00', config('counselors.directory.slot_timezone')));
     }
 
     /** Sets the PA date on the profile AND on its LKM record (so the daily check's LKM look-up agrees). */
@@ -111,12 +111,12 @@ class CounselorPaExpiryTest extends CounselorTestCase
         $this->setPa('KB10891', '2026-10-24');
 
         // Last second of 24 Oct: still valid.
-        Carbon::setTestNow(Carbon::parse('2026-10-24 23:59:59', config('app.timezone')));
+        Carbon::setTestNow(Carbon::parse('2026-10-24 23:59:59', config('counselors.directory.slot_timezone')));
         $this->assertSame([], $this->check()['suspended']);
         $this->assertSame(VerificationStatus::Approved, $this->profile('KB10891')->verification_status);
 
         // First second of 25 Oct: expired.
-        Carbon::setTestNow(Carbon::parse('2026-10-25 00:00:00', config('app.timezone')));
+        Carbon::setTestNow(Carbon::parse('2026-10-25 00:00:00', config('counselors.directory.slot_timezone')));
         $this->assertContains('KB10891', $this->check()['suspended']);
     }
 
@@ -188,19 +188,19 @@ class CounselorPaExpiryTest extends CounselorTestCase
         $this->assertContains('KB10891', $this->check()['reminded']);                       // step 30
         $this->assertNotContains('KB10891', $this->check()['reminded']);                    // same day again
 
-        Carbon::setTestNow(Carbon::parse('2026-11-04 00:10:00', config('app.timezone'))); // 10 left: still the 30 step
+        Carbon::setTestNow(Carbon::parse('2026-11-04 00:10:00', config('counselors.directory.slot_timezone'))); // 10 left: still the 30 step
         $this->assertNotContains('KB10891', $this->check()['reminded']);
 
-        Carbon::setTestNow(Carbon::parse('2026-11-07 00:10:00', config('app.timezone'))); // 7 left: the 7 step
+        Carbon::setTestNow(Carbon::parse('2026-11-07 00:10:00', config('counselors.directory.slot_timezone'))); // 7 left: the 7 step
         $this->assertContains('KB10891', $this->check()['reminded']);
 
-        Carbon::setTestNow(Carbon::parse('2026-11-10 00:10:00', config('app.timezone'))); // 4 left: 7 step already sent
+        Carbon::setTestNow(Carbon::parse('2026-11-10 00:10:00', config('counselors.directory.slot_timezone'))); // 4 left: 7 step already sent
         $this->assertNotContains('KB10891', $this->check()['reminded']);
 
-        Carbon::setTestNow(Carbon::parse('2026-11-13 00:10:00', config('app.timezone'))); // 1 left: the 1 step
+        Carbon::setTestNow(Carbon::parse('2026-11-13 00:10:00', config('counselors.directory.slot_timezone'))); // 1 left: the 1 step
         $this->assertContains('KB10891', $this->check()['reminded']);
 
-        Carbon::setTestNow(Carbon::parse('2026-11-14 00:10:00', config('app.timezone'))); // last valid day: nothing more
+        Carbon::setTestNow(Carbon::parse('2026-11-14 00:10:00', config('counselors.directory.slot_timezone'))); // last valid day: nothing more
         $this->assertNotContains('KB10891', $this->check()['reminded']);
 
         Notification::assertSentToTimes($profile->user, CounselorPaRenewalReminder::class, 3);
@@ -335,6 +335,8 @@ class CounselorPaExpiryTest extends CounselorTestCase
         $event = collect(app(Schedule::class)->events())->first(fn ($e) => str_contains($e->command, 'counselors:check-pa-expiry'));
         $this->assertNotNull($event);
         $this->assertSame('10 0 * * *', $event->expression);
+        // 00:10 MALAYSIAN time (not the server's zone), just after the last valid second of the "valid until" day in Malaysia.
+        $this->assertSame('Asia/Kuala_Lumpur', (string) $event->timezone);
     }
 
     public function test_a_counselor_suspended_by_the_system_can_be_reactivated_once_lkm_shows_a_valid_pa(): void

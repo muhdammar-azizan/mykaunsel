@@ -134,7 +134,11 @@ class CounselorPlannerController extends Controller
     {
         $input = $request->validate(['weeks' => ['required', 'integer', 'between:1,'.CounselorWeeklyHours::MAX_WEEKS]]);
 
-        $done = $hours->fill($request->user(), (int) $input['weeks']);
+        try {
+            $done = $hours->fill($request->user(), (int) $input['weeks']);
+        } catch (BookingRefused $refused) {
+            return back()->withErrors(['planner' => $refused->getMessage()]);
+        }
 
         return back()->with('status', __(':created times opened, :skipped skipped (already open, or they would clash with something on your calendar).', $done));
     }

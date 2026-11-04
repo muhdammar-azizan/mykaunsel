@@ -24,7 +24,7 @@ class PaValidityTest extends TestCase
 
     private function at(string $moment): void
     {
-        Carbon::setTestNow(Carbon::parse($moment, config('app.timezone')));
+        Carbon::setTestNow(Carbon::parse($moment, config('counselors.directory.slot_timezone')));
     }
 
     public function test_the_boundary_yesterday_today_tomorrow(): void
@@ -50,17 +50,48 @@ class PaValidityTest extends TestCase
         $this->assertTrue(PaValidity::isExpired($date));
     }
 
-    public function test_it_uses_the_application_timezone_not_the_dates_own(): void
+    public function test_the_day_is_a_malaysian_day_not_a_server_day(): void
     {
-        config(['app.timezone' => 'Asia/Kuala_Lumpur']);
-        date_default_timezone_set('Asia/Kuala_Lumpur');
-        Carbon::setTestNow(Carbon::parse('2026-10-22 23:30:00', 'Asia/Kuala_Lumpur')); // still the 22nd in KL, already the 23rd in... nowhere earlier
+        $date = Carbon::parse('2026-10-22');   // valid until 22 Oct
 
-        $this->assertTrue(PaValidity::isValid(Carbon::parse('2026-10-22', 'UTC')));
-        $this->assertSame('2026-10-22 23:59:59', PaValidity::lastMoment(Carbon::parse('2026-10-22', 'UTC'))->format('Y-m-d H:i:s'));
+        // 23:59:59 on 22 Oct in Malaysia is 15:59:59 UTC: still valid. One second later it is 23 Oct in Malaysia (16:00:00 UTC): expired,
+        // although the server's own (UTC) calendar still says 22 Oct for another eight hours.
+        Carbon::setTestNow(Carbon::parse('2026-10-22 15:59:59', 'UTC'));
+        $this->assertTrue(PaValidity::isValid($date));
+        $this->assertSame('2026-10-22', PaValidity::today());
 
-        config(['app.timezone' => 'UTC']);
-        date_default_timezone_set('UTC');
+        Carbon::setTestNow(Carbon::parse('2026-10-22 16:00:00', 'UTC'));
+        $this->assertFalse(PaValidity::isValid($date));
+        $this->assertSame('2026-10-23', PaValidity::today());
+        $this->assertSame(-1, PaValidity::daysLeft($date));
+
+        // The last moment is the end of that day in Malaysia, whatever zone the date arrives in.
+        $this->assertSame('2026-10-22 23:59:59 Asia/Kuala_Lumpur', PaValidity::lastMoment(Carbon::parse('2026-10-22', 'UTC'))->format('Y-m-d H:i:s e'));
+        $this->assertSame('2026-10-22 15:59:59', PaValidity::lastMoment($date)->utc()->format('Y-m-d H:i:s'));
+    }
+
+    public function test_the_server_zone_changes_nothing(): void
+    {
+        $date = Carbon::parse('2026-10-22');
+        Carbon::setTestNow(Carbon::parse('2026-10-22 20:00:00', 'Asia/Kuala_Lumpur'));
+        $before = [PaValidity::isValid($date), PaValidity::today(), PaValidity::daysLeft($date)];
+
+        config(['app.timezone' => 'America/New_York']);
+
+        $this->assertSame($before, [PaValidity::isValid($date), PaValidity::today(), PaValidity::daysLeft($date)]);
+        $this->assertSame('Asia/Kuala_Lumpur', PaValidity::timezone());
+    }
+
+    public function test_the_status_scopes_follow_the_malaysian_day(): void
+    {
+        $lkm = LkmDirectorySnapshot::create(['kb_number' => 'KB77777', 'pa_number' => 'PA77777', 'full_name' => 'Scope Test', 'status' => 'Aktif', 'pa_valid_from' => '2025-01-01', 'pa_valid_until' => '2026-10-22']);
+
+        Carbon::setTestNow(Carbon::parse('2026-10-22 15:59:59', 'UTC'));
+        $this->assertTrue(LkmDirectorySnapshot::paStatus('valid')->whereKey($lkm->getKey())->exists());
+
+        Carbon::setTestNow(Carbon::parse('2026-10-22 16:00:00', 'UTC'));
+        $this->assertTrue(LkmDirectorySnapshot::paStatus('expired')->whereKey($lkm->getKey())->exists());
+        $this->assertFalse(LkmDirectorySnapshot::paStatus('valid')->whereKey($lkm->getKey())->exists());
     }
 
     public function test_unknown_dates_are_never_valid(): void

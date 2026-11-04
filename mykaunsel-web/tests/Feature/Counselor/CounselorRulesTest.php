@@ -63,7 +63,7 @@ class CounselorRulesTest extends CounselorTestCase
 
     public function test_an_expired_pa_blocks_listing_but_the_last_day_still_counts(): void
     {
-        Carbon::setTestNow(Carbon::parse('2026-10-23 15:00:00', config('app.timezone')));
+        Carbon::setTestNow(Carbon::parse('2026-10-23 15:00:00', config('counselors.directory.slot_timezone')));
         $rajesh = $this->profile('KB11935');
 
         $rajesh->update(['pa_valid_until' => '2026-10-24']);
@@ -77,7 +77,7 @@ class CounselorRulesTest extends CounselorTestCase
         $this->assertFalse($rajesh->fresh()->isListable(), 'yesterday: expired');
         $this->assertNotContains('KB11935', $this->listableKbs());
 
-        Carbon::setTestNow(Carbon::parse('2026-10-24 00:00:01', config('app.timezone')));
+        Carbon::setTestNow(Carbon::parse('2026-10-24 00:00:01', config('counselors.directory.slot_timezone')));
         $rajesh->update(['pa_valid_until' => '2026-10-23']);
         $this->assertFalse($rajesh->fresh()->isListable(), 'one second into the next day');
     }
@@ -149,7 +149,7 @@ class CounselorRulesTest extends CounselorTestCase
 
     public function test_pa_status_scopes_use_whole_days(): void
     {
-        Carbon::setTestNow(Carbon::parse('2026-10-23 20:00:00', config('app.timezone')));
+        Carbon::setTestNow(Carbon::parse('2026-10-23 20:00:00', config('counselors.directory.slot_timezone')));
         $kb = fn (string $s) => CounselorProfile::query()->paStatus($s)->whereIn('kb_number', ['KB11935'])->count();
         $rajesh = $this->profile('KB11935');
 

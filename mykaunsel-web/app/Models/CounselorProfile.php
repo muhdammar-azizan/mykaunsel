@@ -324,9 +324,9 @@ class CounselorProfile extends Model
         });
     }
 
-    /** Today's date in the application timezone, as Y-m-d (what every PA comparison uses). */
+    /** Today's date in MALAYSIAN time, as Y-m-d (what every PA comparison uses: App\Support\PaValidity). */
     private static function today(): string
     {
-        return Carbon::now(config('app.timezone'))->toDateString();
+        return PaValidity::today();
     }
 }

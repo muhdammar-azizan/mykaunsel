@@ -35,8 +35,8 @@ Schedule::command('accounts:purge-deleted')->dailyAt('03:40')->withoutOverlappin
 Schedule::command('lkm:purge-review-evidence')->dailyAt('02:45')->withoutOverlapping();
 
 // Practising certificate (PA): reminders before it runs out, automatic suspension once it has expired.
-// Runs in the application timezone, just after the last valid second of the "valid until" day (see PaValidity).
-Schedule::command('counselors:check-pa-expiry')->dailyAt('00:10')->withoutOverlapping();
+// Runs at 00:10 MALAYSIAN time (not the server's zone), just after the last valid second of the "valid until" day (see PaValidity).
+Schedule::command('counselors:check-pa-expiry')->dailyAt('00:10')->timezone(config('counselors.directory.slot_timezone'))->withoutOverlapping();
 
 // Time requests nobody answered in time are closed, and the people who asked are told.
 Schedule::command('requests:expire')->everyTenMinutes()->withoutOverlapping();

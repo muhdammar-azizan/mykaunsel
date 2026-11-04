@@ -26,6 +26,9 @@ class CounselorWeeklyHours
 
     public const MAX_WEEKS = 8;
 
+    /** The most times one "open the next weeks" request may try to open (counted before skip rules, checked before anything is written). */
+    public const MAX_FILL = 200;
+
     public function __construct(private readonly CounselorPlanner $planner, private readonly AvailabilityService $availability) {}
 
     /** @return list<array<string, mixed>> */
@@ -110,7 +113,11 @@ class CounselorWeeklyHours
      * Opens the times of every line for the next [weeks] weeks (today included). Whatever does not fit (already open, in the past, clashes
      * with a booking or a block, a place that is gone) is skipped and counted.
      *
+     * If the request would try more than MAX_FILL times, the WHOLE request is refused before anything is written (never cut short silently).
+     *
      * @return array{created: int, skipped: int}
+     *
+     * @throws BookingRefused weekly_fill_too_many
      */
     public function fill(User $counselor, int $weeks): array
     {
@@ -120,6 +127,10 @@ class CounselorWeeklyHours
         $skipped = 0;
 
         $lines = CounselorWeeklyHour::query()->where('counselor_user_id', $counselor->getKey())->orderBy('weekday')->orderBy('start_time')->get();
+
+        if ($this->candidates($lines, $today, $weeks) > self::MAX_FILL) {
+            throw new BookingRefused('weekly_fill_too_many');
+        }
 
         for ($day = 0; $day < $weeks * 7; $day++) {
             $date = $today->addDays($day);
@@ -150,6 +161,20 @@ class CounselorWeeklyHours
         }
 
         return ['created' => $created, 'skipped' => $skipped];
+    }
+
+    /** How many times a fill of [weeks] weeks would try to open, before any skip rule. */
+    private function candidates(\Illuminate\Support\Collection $lines, CarbonImmutable $today, int $weeks): int
+    {
+        $total = 0;
+
+        for ($day = 0; $day < $weeks * 7; $day++) {
+            foreach ($lines->where('weekday', $today->addDays($day)->isoWeekday()) as $line) {
+                $total += intdiv($this->minutes((string) $line->end_time) - $this->minutes((string) $line->start_time), $line->slot_minutes);
+            }
+        }
+
+        return $total;
     }
 
     private function minutes(string $time): int

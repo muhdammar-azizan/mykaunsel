@@ -121,7 +121,7 @@ class LkmDirectoryTest extends CounselorTestCase
         $this->assertSame([], $this->names(['state' => 'Narnia']));
 
         // PA: whole days — valid until today is still valid and "expiring", yesterday is expired.
-        Carbon::setTestNow(Carbon::parse('2026-10-24 15:00:00', config('app.timezone')));
+        Carbon::setTestNow(Carbon::parse('2026-10-24 15:00:00', config('counselors.directory.slot_timezone')));
         LkmDirectorySnapshot::query()->update(['pa_valid_until' => '2030-01-01']);
         $this->record('KB10234')->update(['pa_valid_until' => '2026-10-24']);
         $this->record('KB10567')->update(['pa_valid_until' => '2026-11-23']);

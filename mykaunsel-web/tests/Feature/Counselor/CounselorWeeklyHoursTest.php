@@ -126,6 +126,20 @@ class CounselorWeeklyHoursTest extends TestCase
         $this->assertSame(30, CounselorWeeklyHour::count());
     }
 
+    public function test_a_fill_of_more_than_200_times_is_refused_whole_and_writes_nothing(): void
+    {
+        // Mondays 08:00-20:00 in 30-minute times = 24 a week; Tuesdays 08:00-09:00 = 2 a week. Eight weeks = 8 x 26 = 208 candidates.
+        $this->line(['weekday' => 1, 'from' => '08:00', 'to' => '20:00', 'duration' => 30])->assertSessionHasNoErrors();
+        $this->line(['weekday' => 2, 'from' => '08:00', 'to' => '09:00', 'duration' => 30])->assertSessionHasNoErrors();
+
+        $this->fill(8)->assertSessionHasErrors('planner')->assertSessionMissing('status');
+        $this->assertSame(0, CalendarEntry::count(), 'the whole request is refused: nothing is cut short and nothing is written');
+
+        // Fewer weeks fit under the cap and work as before (4 x 26 = 104).
+        $this->fill(4)->assertSessionHasNoErrors()->assertSessionHas('status');
+        $this->assertGreaterThan(0, CalendarEntry::count());
+    }
+
     public function test_a_line_can_be_removed_and_the_times_it_opened_stay(): void
     {
         $this->line();

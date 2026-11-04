@@ -89,7 +89,7 @@ class CounselorStatusService
             if ($cancelUpcoming) {
                 $bookings = $locked->bookings()
                     ->where('status', BookingStatus::Confirmed->value)
-                    ->whereHas('calendarEntry', fn ($q) => $q->whereDate('entry_date', '>=', Carbon::now(config('app.timezone'))->toDateString()))
+                    ->whereHas('calendarEntry', fn ($q) => $q->whereDate('entry_date', '>=', PaValidity::today()))
                     ->with('calendarEntry')
                     ->get();
 
