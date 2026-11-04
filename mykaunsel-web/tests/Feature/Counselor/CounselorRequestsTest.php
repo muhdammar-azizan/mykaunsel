@@ -248,6 +248,74 @@ class CounselorRequestsTest extends TestCase
         $this->assertSame(0, AuditLog::where('action', 'request.declined')->count());
     }
 
+    // ---- the Answered tab and the pages -----------------------------------------------------------------------------------
+
+    public function test_the_answered_tab_shows_what_was_dealt_with_in_the_last_30_days(): void
+    {
+        Notification::fake();
+        $yes = $this->request(['requested_time' => '10:00:00']);
+        $this->approve($yes);
+        $this->decline($this->request(['requested_time' => '11:00:00']), 'I am full that day.');
+        $this->request(['requested_time' => '12:00:00', 'status' => BookingRequestStatus::Expired]);
+        $this->request(['requested_time' => '13:00:00', 'status' => BookingRequestStatus::Withdrawn]);
+        $this->request(['requested_time' => '14:00:00', 'expires_at' => now()->subMinute()]);     // still "pending" in the table, but too late to answer
+        $this->request(['requested_time' => '15:00:00']);                                         // waiting: not here
+
+        $old = $this->request(['requested_time' => '16:00:00', 'status' => BookingRequestStatus::Rejected]);
+        BookingRequest::whereKey($old->id)->update(['updated_at' => now()->subDays(40)]);
+
+        $other = $this->counselor('Bakar', [$this->platform]);
+        $this->request(['counselor_user_id' => $other->user_id, 'status' => BookingRequestStatus::Rejected, 'requested_time' => '17:00:00']);
+
+        $page = $this->as()->get(route('counselor.requests', ['tab' => 'answered']))->assertOk();
+
+        $page->assertSee('Approved')->assertSee('Declined')->assertSee('Expired')->assertSee('Withdrawn');
+        $page->assertSee('Reason you gave')->assertSee('I am full that day.');
+        $page->assertSee(route('counselor.appointments.show', Booking::sole()->public_id), false);
+        $page->assertSee('10:00 AM – 11:00 AM')->assertSee('2:00 PM – 3:00 PM');
+        $page->assertDontSee('3:00 PM – 4:00 PM')->assertDontSee('4:00 PM – 5:00 PM')->assertDontSee('5:00 PM – 6:00 PM');
+        $page->assertDontSee('Approve</button>', false)->assertDontSee('Decline</button>', false);   // nothing left to answer here
+    }
+
+    public function test_the_tabs_say_how_many_are_waiting_and_the_waiting_tab_has_no_answered_requests(): void
+    {
+        $this->request();
+        $this->request(['requested_time' => '11:00:00']);
+        $this->request(['requested_time' => '12:00:00', 'status' => BookingRequestStatus::Rejected]);
+
+        $page = $this->as()->get(route('counselor.requests'))->assertOk();
+
+        $page->assertSee('Waiting for you (2)')->assertSee('Answered')->assertDontSee('12:00 PM – 1:00 PM');
+        $this->as()->get(route('counselor.requests', ['tab' => 'answered']))->assertSee('12:00 PM – 1:00 PM')->assertDontSee('10:00 AM – 11:00 AM');
+        $this->as()->get(route('counselor.requests', ['tab' => 'nonsense']))->assertOk()->assertSee('Waiting for you (2)');
+    }
+
+    public function test_an_empty_answered_tab_says_so(): void
+    {
+        $this->as()->get(route('counselor.requests', ['tab' => 'answered']))->assertOk()->assertSee('No answered requests in the last 30 days.');
+    }
+
+    public function test_waiting_requests_come_in_pages_and_none_is_cut_off(): void
+    {
+        foreach (range(0, 20) as $i) {   // 21 requests, one every day
+            $this->request(['requested_date' => Carbon::parse('2026-11-05')->addDays($i)->format('Y-m-d')]);
+        }
+        $last = Carbon::parse('2026-11-05')->addDays(20)->format('D, j M Y');
+
+        $this->as()->get(route('counselor.requests'))->assertSee('Thu, 5 Nov 2026')->assertDontSee($last)->assertSee('Waiting for you (21)');
+        $this->as()->get(route('counselor.requests', ['page' => 2]))->assertSee($last)->assertDontSee('Thu, 5 Nov 2026');
+    }
+
+    public function test_the_organization_is_named_only_for_a_counselor_who_works_in_several_places(): void
+    {
+        $this->request();
+        $this->as()->get(route('counselor.requests'))->assertOk()->assertDontSee('Klinik Damai');
+
+        $bakar = $this->counselor('Bakar', [$this->platform, $this->open]);
+        $this->request(['counselor_user_id' => $bakar->user_id, 'context_org_id' => $this->open->id]);
+        $this->as($bakar)->get(route('counselor.requests'))->assertOk()->assertSee('Klinik Damai');
+    }
+
     // ---- the rules at the moment of approving ---------------------------------------------------------------------------
 
     /** Approving must be refused, nothing booked, nothing written, and the request stays waiting. */

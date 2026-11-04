@@ -17,6 +17,7 @@ use App\Models\BookingRequest;
 use App\Models\CalendarEntry;
 use App\Models\CounselorProfile;
 use App\Models\User;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -40,29 +41,77 @@ class CounselorRequests
         private readonly CounselorPlanner $planner,
     ) {}
 
-    /** The requests still waiting for this counselor, soonest time first. @return list<array<string, mixed>> */
+    /** How many days back the "Answered" tab looks. */
+    public const ANSWERED_DAYS = 30;
+
+    public const PER_PAGE = 20;
+
+    /** The requests still waiting for this counselor, soonest time first (at most 200: used for counts and previews). @return list<array<string, mixed>> */
     public function pending(User $counselor): array
+    {
+        return $this->waiting($counselor)->limit(200)->get()->map(fn (BookingRequest $request) => $this->row($request))->all();
+    }
+
+    /** The requests waiting for this counselor, in pages (nothing is cut off). */
+    public function pendingPage(User $counselor, int $page): LengthAwarePaginator
+    {
+        return $this->waiting($counselor)->paginate(self::PER_PAGE, ['*'], 'page', max(1, $page))->through(fn (BookingRequest $request) => $this->row($request));
+    }
+
+    /**
+     * Requests already dealt with in the last ANSWERED_DAYS days (approved, declined, expired, or withdrawn by the client), newest first.
+     * A request that is still marked pending but whose time to answer has passed counts as expired, even before the job has closed it.
+     */
+    public function answered(User $counselor, int $page): LengthAwarePaginator
+    {
+        $now = $this->requests->stored($this->availability->now());
+
+        return BookingRequest::query()
+            ->where('counselor_user_id', $counselor->getKey())
+            ->where(fn ($q) => $q
+                ->where(fn ($done) => $done->where('status', '!=', BookingRequestStatus::Pending->value)->where('updated_at', '>=', $now->copy()->subDays(self::ANSWERED_DAYS)))
+                ->orWhere(fn ($late) => $late->where('status', BookingRequestStatus::Pending->value)->where('expires_at', '<=', $now)->where('expires_at', '>=', $now->copy()->subDays(self::ANSWERED_DAYS))))
+            ->with(['user:id,name', 'location:id,name,city', 'contextOrg:id,name', 'booking:id,public_id'])
+            ->orderByDesc('updated_at')->orderByDesc('id')
+            ->paginate(self::PER_PAGE, ['*'], 'page', max(1, $page))
+            ->through(fn (BookingRequest $request) => $this->row($request));
+    }
+
+    public function waitingCount(User $counselor): int
+    {
+        return $this->waiting($counselor)->count();
+    }
+
+    private function waiting(User $counselor)
     {
         return BookingRequest::query()
             ->where('counselor_user_id', $counselor->getKey())->where('status', BookingRequestStatus::Pending->value)->where('expires_at', '>', $this->requests->stored($this->availability->now()))
-            ->with(['user:id,name', 'location:id,name,city'])
-            ->orderBy('requested_date')->orderBy('requested_time')->limit(200)->get()
-            ->map(function (BookingRequest $request) {
-                $start = $this->requests->startOf($request);
-                $mode = $request->session_mode ?? SessionMode::Online;
+            ->with(['user:id,name', 'location:id,name,city', 'contextOrg:id,name', 'booking:id,public_id'])
+            ->orderBy('requested_date')->orderBy('requested_time');
+    }
 
-                return [
-                    'id' => $request->public_id,
-                    'client' => (string) $request->user?->name,
-                    'date' => $start->format('D, j M Y'),
-                    'time' => $start->format('g:i A').' – '.$start->addMinutes((int) $request->duration_minutes)->format('g:i A'),
-                    'minutes' => (int) $request->duration_minutes,
-                    'mode' => $mode->value,
-                    'place' => $mode === SessionMode::Physical && $request->location !== null ? $request->location->name.', '.$request->location->city : null,
-                    'note' => $request->message,
-                    'until' => $request->expires_at->setTimezone($this->availability->timezone())->format('D, j M, g:i A'),
-                ];
-            })->all();
+    /** @return array<string, mixed> */
+    private function row(BookingRequest $request): array
+    {
+        $start = $this->requests->startOf($request);
+        $mode = $request->session_mode ?? SessionMode::Online;
+        $status = $this->requests->effectiveStatus($request);
+
+        return [
+            'id' => $request->public_id,
+            'client' => (string) $request->user?->name,
+            'status' => $status->value,
+            'date' => $start->format('D, j M Y'),
+            'time' => $start->format('g:i A').' – '.$start->addMinutes((int) $request->duration_minutes)->format('g:i A'),
+            'minutes' => (int) $request->duration_minutes,
+            'mode' => $mode->value,
+            'place' => $mode === SessionMode::Physical && $request->location !== null ? $request->location->name.', '.$request->location->city : null,
+            'context' => (string) $request->contextOrg?->name,
+            'note' => $request->message,
+            'until' => $request->expires_at->setTimezone($this->availability->timezone())->format('D, j M, g:i A'),
+            'reason' => $request->response_reason,
+            'booking' => $status === BookingRequestStatus::Approved && $request->booking !== null ? $request->booking->public_id : null,
+        ];
     }
 
     /**

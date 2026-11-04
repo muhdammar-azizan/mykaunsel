@@ -50,9 +50,21 @@ class CounselorAppointmentController extends Controller
     }
 
     /** The people who asked for a time inside the weekly hours, waiting for this counselor's answer. */
-    public function requests(Request $request, CounselorRequests $requests)
+    public function requests(Request $request, CounselorRequests $requests, CounselorPlanner $planner)
     {
-        return view('counselors.dashboard.requests', ['requests' => $requests->pending($request->user())]);
+        $counselor = $request->user();
+        $tab = $request->query('tab') === 'answered' ? 'answered' : 'waiting';
+        $page = (int) $request->query('page', 1);
+
+        $list = $tab === 'answered' ? $requests->answered($counselor, $page) : $requests->pendingPage($counselor, $page);
+
+        return view('counselors.dashboard.requests', [
+            'tab' => $tab,
+            'requests' => $list->withPath(route('counselor.requests'))->appends(['tab' => $tab]),
+            'waitingCount' => $requests->waitingCount($counselor),
+            'answeredDays' => CounselorRequests::ANSWERED_DAYS,
+            'manyContexts' => count($planner->contexts($counselor)) > 1,
+        ]);
     }
 
     public function show(Request $request, string $publicId, CounselorSessions $sessions)
