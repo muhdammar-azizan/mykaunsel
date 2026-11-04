@@ -8,11 +8,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Counselor\StoreCounselorDocumentsRequest;
 use App\Models\CounselorDocument;
 use App\Models\CounselorProfile;
+use App\Notifications\CounselorApplicationReceived;
 use App\Services\PlatformAdminNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Throwable;
 
 class CounselorDocumentController extends Controller
 {
@@ -108,6 +111,13 @@ class CounselorDocumentController extends Controller
         if ($notify !== null) {
             $profile->refresh();
             DB::afterCommit(fn () => $notifier->newCounselorApplication($profile, resubmitted: $notify));
+
+            // The applicant is told it arrived. A failing e-mail never undoes the submission.
+            try {
+                $request->user()->notify(new CounselorApplicationReceived(resubmitted: $notify));
+            } catch (Throwable $e) {
+                Log::warning('Could not e-mail the applicant that the application was received.', ['profile_id' => $profile->id, 'error' => $e->getMessage()]);
+            }
         }
 
         return redirect()->route('counselors.signup.waiting-approval');

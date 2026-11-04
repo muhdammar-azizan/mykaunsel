@@ -30,7 +30,7 @@
 
             <div class="mt-6 flex gap-3">
                 <a href="{{ route('counselors.signup.create') }}" class="flex-1 rounded-full border border-navy/25 px-6 py-3 text-[14px] font-medium text-navy transition-all duration-300 hover:-translate-y-0.5 hover:border-navy hover:bg-navy/5">{{ __('Try again') }}</a>
-                <a href="mailto:support@mykaunsel.com" class="flex-1 rounded-full px-6 py-3 text-center text-[14px] font-medium text-white transition-all duration-300 hover:-translate-y-0.5" style="background:#4A7DFF">{{ __('Contact support') }}</a>
+                <a href="mailto:{{ config('landing.contact_email') }}" class="flex-1 rounded-full px-6 py-3 text-center text-[14px] font-medium text-white transition-all duration-300 hover:-translate-y-0.5" style="background:#4A7DFF">{{ __('Contact support') }}</a>
             </div>
         </div>
     @else

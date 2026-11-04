@@ -21,7 +21,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 class CounselorSignupController extends Controller
 {
@@ -54,7 +56,7 @@ class CounselorSignupController extends Controller
         $platform = Organization::where('org_type', 'platform')->firstOrFail();
 
         try {
-            DB::transaction(function () use ($data, $kbNumber, $paNumber, $lkmRecord, $platform) {
+            $user = DB::transaction(function () use ($data, $kbNumber, $paNumber, $lkmRecord, $platform) {
                 $user = User::create([
                     'name' => $data['name'],
                     'email' => $data['email'],
@@ -80,6 +82,8 @@ class CounselorSignupController extends Controller
                 ]);
 
                 Auth::login($user);
+
+                return $user;
             });
         } catch (UniqueConstraintViolationException) {
             // Two sign-ups with the same KB number or e-mail at the same moment: the database let only one through. Nothing was saved for this one.
@@ -98,6 +102,14 @@ class CounselorSignupController extends Controller
 
         // A new sign-in gets a new session id (the one from before the sign-up must never carry on as a signed-in session).
         $request->session()->regenerate();
+
+        // The link that confirms the e-mail address, sent now that the account is saved. A failing e-mail never undoes the sign-up:
+        // the person can ask for it again ("Resend") from the status page or the verify page.
+        try {
+            $user->sendEmailVerificationNotification();
+        } catch (Throwable $e) {
+            Log::warning('Could not send the verification e-mail after a counselor sign-up.', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+        }
 
         return redirect()->route('counselors.signup.verified');
     }

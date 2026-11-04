@@ -93,7 +93,7 @@
                         @endif
 
                         <p class="mt-5 text-[13px] leading-relaxed text-navy/50">{{ __('We\'ll email you at') }} <strong class="font-semibold text-navy/70">{{ auth()->user()->email }}</strong> {{ __('once a decision is made.') }}</p>
-                        <a href="mailto:support@mykaunsel.com" class="mt-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-teal">{{ __('Questions? Contact support') }} <span aria-hidden="true">→</span></a>
+                        <a href="mailto:{{ config('landing.contact_email') }}" class="mt-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-teal">{{ __('Questions? Contact support') }} <span aria-hidden="true">→</span></a>
                     </div>
                 @elseif ($status->value === 'active')
                     <div id="waApproved" class="wa-lapis w-full">
@@ -129,7 +129,7 @@
                         </div>
 
                         <div class="mt-6 flex gap-3">
-                            <a href="mailto:support@mykaunsel.com" class="grid h-[44px] flex-1 place-items-center rounded-full border border-navy/20 text-[13.5px] font-medium text-navy transition-all duration-200 hover:-translate-y-0.5 hover:border-navy hover:bg-navy/5">{{ __('Contact support') }}</a>
+                            <a href="mailto:{{ config('landing.contact_email') }}" class="grid h-[44px] flex-1 place-items-center rounded-full border border-navy/20 text-[13.5px] font-medium text-navy transition-all duration-200 hover:-translate-y-0.5 hover:border-navy hover:bg-navy/5">{{ __('Contact support') }}</a>
                             <a href="{{ route('organizations.signup.create') }}" class="btn-utama grid h-[44px] flex-1 place-items-center rounded-full text-[13.5px] font-medium text-white transition-all duration-200 hover:-translate-y-0.5" style="background:#4A7DFF">{{ __('Edit and resubmit') }}</a>
                         </div>
                         <form method="POST" action="{{ route('logout') }}" class="mt-5">

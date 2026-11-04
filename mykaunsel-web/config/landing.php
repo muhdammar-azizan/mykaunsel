@@ -14,6 +14,7 @@ return [
     'placeholder_blocks' => ['proof_logos', 'proof_quotes', 'proof_figures', 'problem'],
 
     // An invented address on a reserved example domain (it can never reach a real person). Replace with the real one before launch.
+    // It is also the support address on the application pages (counselor and organization sign up, waiting for approval).
     'contact_email' => env('LANDING_CONTACT_EMAIL', 'hello@mykaunsel.example'),
 
     'locales' => ['ms', 'en'],
