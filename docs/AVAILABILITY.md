@@ -245,11 +245,19 @@ On the same page. Code: `CounselorWeeklyHours`, table `counselor_weekly_hours` (
 - Both are safe to repeat (no second booking, no second e-mail); answering the other way round, or a request that expired or was withdrawn, is `request_not_pending`. Someone else's request is the same 404.
 - **E-mails** (queued after commit, a queue worker is needed): the counselor on a new request (client name, date, time, kind, answer-by; the note is read in the portal, not mailed); the client on approve, decline (with the reason) and expiry. No push, no in-app notice (B11). No audit entry (B12).
 
-**`requests:expire`** (every ten minutes, needs the scheduler): closes every request past its time to answer and tells the person once. Safe to run again.
+**The rules at the moment of approving** (`CounselorRequests::approve`, after the locks, all or nothing; a failure is `request_cannot_approve`, the request stays waiting and nothing is written): the time has not started; the day is inside the booking horizon; the counselor is still approved and listable (`CounselorProfile::isListable`); the organization is still **Active** and its plan covers the day; the counselor still works there; the time is **still inside a weekly-hours line of that organization with the same length** (`BookingRequests::stillInWorkingHours`: a line removed or changed meanwhile refuses it); the time is free on the calendar (blocks and buffer, `isFree`); the client has no overlapping session and is under the cap. **The minimum notice (`min_lead_hours`) is NOT applied again**: a counselor may say yes to a request that has become close.
+
+**The counselor's page** (`/counselor/requests`, `CounselorRequests::pendingPage` and `answered`, tests `CounselorRequestsTest`): two tabs, **Waiting for you (N)** (soonest first) and **Answered** (approved, declined, expired or withdrawn in the last `CounselorRequests::ANSWERED_DAYS` = 30 days, newest first; a request still marked pending past its time to answer counts as expired). 20 a page, nothing cut off. Every card has a text badge (Waiting, Approved, Declined, Expired, Withdrawn); a declined one shows the reason the counselor gave, an approved one links to its booking; the organization is named only for a counselor who works in several places. The dashboard and the Bookings page still use `pending()` (at most 200) for their counts.
+
+**Audit** (category Counselors, in the same transaction as the decision; ids only, never the client's name or note, never the reason a counselor wrote): `request.approved` (request, booking and organization ids), `request.declined` (`has_reason` yes or no) and, from the expiry job, ONE `request.expired_batch` per run that closed something (`closed` = a count; actor "system").
+
+**`requests:expire`** (every ten minutes, needs the scheduler): closes every request past its time to answer and tells the person once. Safe to run again. `--dry-run` only counts what would be closed (changes nothing, tells nobody, writes nothing). The closing and its one audit entry are one transaction; a request being answered at the same moment wins or loses cleanly (each is closed by a conditional update on "still pending"; the approval locks the request and checks it again).
+
+**When a counselor stops working for an organization** (the organization removes them, or they leave): the requests waiting for that organization are closed as expired and **the people who asked are told** (e-mail and app, the same words as when nobody answered), see `OrgCounselors::endAssignment`. Requests for the counselor's other organizations stay. A suspension by the platform closes all of them (`CounselorStatusService`).
 
 **Stored times:** the request's `expires_at` and `responded_at` are stored in the application timezone (UTC), not Malaysian wall time; `requested_date` and `requested_time` are Malaysian wall time, like the calendar.
 
-**Not built:** a counselor-facing history of answered requests. (Closing the waiting requests of a counselor who is suspended is already done by the suspension, `CounselorStatusService`.)
+**Not built, on purpose:** suspending a counselor in ONE organization only (a suspension by the platform is for the whole counselor; the organization's own tool is removing the counselor from it); a separate detail page for a request (everything is on its card).
 
 ## For the app
 
