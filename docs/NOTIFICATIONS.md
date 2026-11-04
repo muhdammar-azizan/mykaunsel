@@ -43,6 +43,7 @@ State resolver: given the ids of many targets, says for each `open` (still waiti
 | `complaint.escalated` (hook) | Complaints | the complaint | closed |
 | `admin.invitation_accepted` | Admins | Platform Admins | never |
 | `counselor.pa_expired_suspended` | System | the counselor | no longer suspended |
+| `counselor.name_changed` | System | the counselor | never (a heads-up) |
 | `system.maintenance_auto_reopened` | System | Registration Control | n/a (no target) |
 
 "Hook" = the type is defined and tested with fixtures, but no code produces it yet (no code creates or escalates a complaint, and a rejected organization cannot apply again yet). The two system types have a source that exists (the PA expiry check and the maintenance reopen), and are wired in step 3.
@@ -96,6 +97,7 @@ Each producer calls `NotificationCenter::publish()` (or `publishCoalescing()`) *
 | `lkm.review_requested` | `LkmReviewService::request` | the request itself |
 | `admin.invitation_accepted` | `AdminInvitationService::accept`; **everyone but the new admin** is told | the invitation |
 | `counselor.pa_expired_suspended` | `CounselorStatusService::suspend`, **only** for the automatic (system) suspension, not an admin's own | the PA date that ran out |
+| `counselor.name_changed` | `Platform\AccountController::update`, after the commit, **only** when a counselor's account name changed, an LKM record exists for their KB number and the name no longer matches it (capitals, spacing, punctuation and accents do not count). The change is never blocked | the time of the change |
 | `system.maintenance_auto_reopened` | `PlatformSettings::reopenIfDue` | the time maintenance was due to end |
 
 **Defined, not produced yet (hooks):** `organization.application_resubmitted` (a rejected organization cannot apply again yet), `complaint.received` and `complaint.escalated` (nothing creates or escalates a complaint yet). When their source exists, it only has to call `publish()`.
@@ -131,6 +133,26 @@ The same table and `NotificationCenter` also serve the app (owner's decision of 
 **Retention** is the same as for the admins (read after 90 days, unread after 180). Deleting an account deletes its notifications.
 
 **API:** see [API.md](API.md): `GET /notifications`, `GET /notifications/unread-count`, `POST /notifications/{id}/read`, `POST /notifications/read-all`.
+
+## The counselor's notifications (group `portal`, built 4 November 2026)
+
+The bell and the page of the counselor portal (`portal.notifications*`, `PortalNotificationController`, the same polling as the admin bell: 60 seconds) used to be empty for a counselor: no type was meant for them. `CounselorNotificationTypes` now defines nine, in their own group **`portal`** ("Your work"), which neither the Platform Admin page (it is left out of its filters, `OTHER_AUDIENCE_GROUPS`) nor the mobile app (it lists only `activity`) ever shows. **The e-mails stay**; this is the second channel, written from the same place that sends each e-mail, after the commit, best effort (a failure is reported and never undoes the action).
+
+| Type | Written by | One per | Opens |
+|---|---|---|---|
+| `session.booked` | `Api\V1\BookingController` | booking | Bookings |
+| `session.cancelled_by_client` | `Api\V1\MyBookingController` (cancel) | booking | Bookings |
+| `session.rescheduled` | `Api\V1\MyBookingController` (move) | move (`reschedule_count`) | Bookings |
+| `request.received` | `Api\V1\TimeRequestController` (ask) | request | Time requests |
+| `request.lapsed` | `requests:expire` | request | Time requests, Answered tab |
+| `request.withdrawn` | `Api\V1\TimeRequestController` (withdraw) | request | Time requests, Answered tab |
+| `pa.expiring` | `CounselorPaExpiryService::remind` | PA date and reminder step | Profile |
+| `profile.suspended` | `CounselorStatusService::suspend` | suspension | Dashboard |
+| `profile.reactivated` | `CounselorStatusService::reactivate` | reactivation | Dashboard |
+
+- **What is stored:** the key, the id of the booking, request or profile, and a label that is **only the date and time** ("Thu, 5 Nov, 10:00 AM"), or "20 days left" for the PA, or nothing for a suspension. **Never a client's name, a note, a reason, or a KB or PA number.** Each type opens a **list page**, never one record.
+- **Not here on purpose:** application approved or rejected (a Pending or Rejected applicant cannot open the portal; they get the e-mail and the status page), and things the counselor did themselves (cancelling a session, answering a request).
+- Tests: `CounselorNotificationsTest` (types, bell and page, opening, isolation, no duplicates), and next to each e-mail's own tests: `BookingApiTest`, `BookingCancelApiTest`, `BookingRescheduleApiTest`, `TimeRequestApiTest`, `ExpireTimeRequestsTest`, `CounselorPaExpiryTest`, `CounselorStatusTest`.
 
 ## Not built (app notifications)
 
