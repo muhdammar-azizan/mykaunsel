@@ -290,6 +290,38 @@ class CounselorPaExpiryTest extends CounselorTestCase
         Notification::assertNothingSent();
     }
 
+    public function test_a_run_that_did_something_leaves_one_system_entry_with_counts_only(): void
+    {
+        Notification::fake();
+        $this->setPa('KB10891', '2026-10-20');
+
+        $result = $this->check();
+
+        $entry = AuditLog::where('action', 'counselor.pa_check_completed')->sole();
+        $this->assertSame('system', $entry->actor_type);
+        $this->assertNull($entry->target_id);
+        $this->assertSame(
+            ['suspended' => count($result['suspended']), 'extended' => count($result['extended']), 'reminded' => count($result['reminded']), 'errors' => $result['errors']],
+            $entry->metadata,
+        );
+        $this->assertGreaterThanOrEqual(1, $entry->metadata['suspended']);
+        $this->assertStringNotContainsString('KB10891', json_encode($entry->toArray()), 'counts only: no KB number');
+    }
+
+    public function test_a_run_where_nothing_happened_and_a_dry_run_leave_no_summary_entry(): void
+    {
+        Notification::fake();
+        $this->check();                                   // the sample data: do whatever there is to do once
+        $before = AuditLog::where('action', 'counselor.pa_check_completed')->count();
+
+        $this->check();                                   // the second run finds nothing new
+        $this->assertSame($before, AuditLog::where('action', 'counselor.pa_check_completed')->count());
+
+        $this->setPa('KB11935', '2026-10-20');
+        $this->check(dryRun: true);
+        $this->assertSame($before, AuditLog::where('action', 'counselor.pa_check_completed')->count());
+    }
+
     public function test_the_command_reports_what_it_did_and_is_scheduled_daily_after_the_last_valid_second(): void
     {
         Notification::fake();

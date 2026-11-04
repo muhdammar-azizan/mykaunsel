@@ -101,6 +101,9 @@ class CounselorDocumentController extends Controller
             } elseif ($complete && $locked->submitted_at === null) {
                 // The application counts as submitted once all three documents are in — admins hear about it once.
                 $locked->update(['submitted_at' => now()]);
+
+                Audit::log('counselor.application_submitted', $locked, ['attempt' => (int) $locked->submission_count], $request->user());
+
                 $notify = false;
             }
         });

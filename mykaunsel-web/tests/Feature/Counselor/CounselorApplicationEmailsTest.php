@@ -6,6 +6,7 @@ use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
 use App\Enums\VerificationStatus;
 use App\Enums\VerificationType;
+use App\Models\AuditLog;
 use App\Models\CounselorProfile;
 use App\Models\LkmDirectorySnapshot;
 use App\Models\Membership;
@@ -122,6 +123,34 @@ class CounselorApplicationEmailsTest extends TestCase
         // Replacing a file later is not a new application: no second e-mail.
         $this->actingAs($user)->post(route('counselors.signup.documents.store'), $this->files(['ic']));
         Notification::assertSentToTimes($user, CounselorApplicationReceived::class, 1);
+    }
+
+    public function test_the_first_submission_is_audited_once_and_a_resubmission_has_its_own_entry(): void
+    {
+        Storage::fake('counselor_documents');
+        Notification::fake();
+        $user = $this->applicant();
+        $profileId = $user->counselorProfile->id;
+        $count = fn (string $action) => AuditLog::where('action', $action)->where('target_id', $profileId)->count();
+
+        $this->actingAs($user)->post(route('counselors.signup.documents.store'), $this->files(['cert', 'pa']));
+        $this->assertSame(0, $count('counselor.application_submitted'), 'two of three documents: not submitted yet');
+
+        $this->actingAs($user)->post(route('counselors.signup.documents.store'), $this->files(['ic']));
+        $this->assertSame(1, $count('counselor.application_submitted'));
+        $entry = AuditLog::where('action', 'counselor.application_submitted')->sole();
+        $this->assertSame(['attempt' => 1], $entry->metadata);
+        $this->assertSame($user->id, $entry->actor_user_id);
+
+        // Replacing a file is not a new submission.
+        $this->actingAs($user)->post(route('counselors.signup.documents.store'), $this->files(['ic']));
+        $this->assertSame(1, $count('counselor.application_submitted'));
+
+        // After a rejection the new attempt is "resubmitted", not "submitted" again.
+        $user->counselorProfile->update(['verification_status' => VerificationStatus::Rejected]);
+        $this->actingAs($user)->post(route('counselors.signup.documents.store'), $this->files(['pa']));
+        $this->assertSame(1, $count('counselor.application_submitted'));
+        $this->assertSame(1, $count('counselor.resubmitted'));
     }
 
     public function test_the_applicant_is_told_again_when_they_send_documents_after_a_rejection(): void

@@ -89,6 +89,11 @@ return [
         'counselor.renewal_reminder_sent' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'PA renewal reminder sent'],
         // Written by the daily PA check (counselors:check-pa-expiry) — always the "system" actor.
         'counselor.pa_expired_suspended' => ['category' => 'counselors', 'badge' => 'suspended', 'label' => 'Suspended automatically: practising certificate expired'],
+        // The start of a web application (account made, then the application counted as submitted once all three documents are in). Ids and counts only.
+        'counselor.signed_up' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Counselor signed up (application started)'],
+        'counselor.application_submitted' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Counselor application submitted'],
+        // One entry per run of the daily PA check, with counts only (written by the "system" actor; nothing when the run changed and sent nothing).
+        'counselor.pa_check_completed' => ['category' => 'counselors', 'badge' => 'system', 'label' => 'Daily PA check finished'],
 
         // LKM records
         'lkm.record_created' => ['category' => 'lkm', 'badge' => 'created', 'label' => 'LKM record added'],

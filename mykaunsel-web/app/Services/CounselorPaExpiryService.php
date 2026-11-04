@@ -42,6 +42,14 @@ class CounselorPaExpiryService
         Audit::asSystem(function () use ($dryRun, &$result) {
             $this->expired($dryRun, $result);
             $this->reminders($dryRun, $result);
+
+            // One entry for the whole run, counts only (the KB numbers of the run are in the command's own output, never in the log).
+            // A dry run changes and sends nothing, so it writes nothing; neither does a run where nothing happened.
+            $counts = ['suspended' => count($result['suspended']), 'extended' => count($result['extended']), 'reminded' => count($result['reminded']), 'errors' => $result['errors']];
+
+            if (! $dryRun && array_sum($counts) > 0) {
+                DB::transaction(fn () => Audit::log('counselor.pa_check_completed', null, $counts, 'system'));
+            }
         });
 
         return $result;
@@ -53,7 +61,7 @@ class CounselorPaExpiryService
         CounselorProfile::query()
             ->where('verification_status', VerificationStatus::Approved->value)
             ->whereNotNull('pa_valid_until')
-            ->whereDate('pa_valid_until', '<', $this->today()->toDateString())
+            ->paStatus('expired')   // the shared whole-day rule (App\Support\PaValidity), the same as every list and the profile
             ->with('user')
             ->chunkById(100, function ($profiles) use ($dryRun, &$result) {
                 foreach ($profiles as $profile) {

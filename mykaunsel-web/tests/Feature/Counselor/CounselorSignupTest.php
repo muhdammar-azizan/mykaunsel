@@ -3,6 +3,7 @@
 namespace Tests\Feature\Counselor;
 
 use App\Enums\MembershipRole;
+use App\Models\AuditLog;
 use App\Models\CounselorKbAttempt;
 use App\Models\CounselorProfile;
 use App\Models\LkmDirectorySnapshot;
@@ -58,6 +59,27 @@ class CounselorSignupTest extends TestCase
         $this->assertSame('pending', $user->counselorProfile->verification_status->value);
         $this->assertSame('KB12345', $user->counselorProfile->kb_number);
         $this->assertTrue(Membership::where('user_id', $user->id)->where('org_id', $this->platform->id)->where('role', MembershipRole::Counselor->value)->exists());
+    }
+
+    public function test_a_sign_up_leaves_one_audit_entry_with_no_number_and_no_name_in_it(): void
+    {
+        $this->signUp()->assertRedirect();
+
+        $profile = CounselorProfile::where('kb_number', 'KB12345')->firstOrFail();
+        $entry = AuditLog::where('action', 'counselor.signed_up')->sole();
+
+        $this->assertSame(['counselor', $profile->id, $profile->user_id], [$entry->target_type, $entry->target_id, $entry->actor_user_id]);
+        $this->assertSame(['source' => 'web'], $entry->metadata);
+        foreach (['KB12345', 'PA12345', 'Aminah', 'aminah@example.test'] as $sensitive) {
+            $this->assertStringNotContainsString($sensitive, json_encode($entry->metadata), 'ids and facts only');
+        }
+    }
+
+    public function test_a_refused_sign_up_leaves_no_audit_entry(): void
+    {
+        $this->signUp(['kb_number' => 'KB99999'])->assertSessionHasErrors('lkm');
+
+        $this->assertSame(0, AuditLog::where('action', 'counselor.signed_up')->count());
     }
 
     // ---- the directory can not be searched through the form ------------------------------------------------

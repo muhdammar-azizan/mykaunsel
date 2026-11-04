@@ -7,6 +7,7 @@ use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
 use App\Enums\VerificationStatus;
 use App\Enums\VerificationType;
+use App\Facades\Audit;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Counselor\StoreCounselorSignupRequest;
 use App\Models\CounselorProfile;
@@ -63,7 +64,7 @@ class CounselorSignupController extends Controller
                     'password' => Hash::make($data['password']),
                 ]);
 
-                CounselorProfile::create([
+                $profile = CounselorProfile::create([
                     'user_id' => $user->id,
                     'kb_number' => $kbNumber,
                     'pa_number' => $paNumber,
@@ -82,6 +83,9 @@ class CounselorSignupController extends Controller
                 ]);
 
                 Auth::login($user);
+
+                // In the same transaction as the account: no KB, PA or name in the entry, only that it happened and how.
+                Audit::log('counselor.signed_up', $profile, ['source' => 'web'], $user);
 
                 return $user;
             });
