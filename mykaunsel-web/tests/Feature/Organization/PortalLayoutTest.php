@@ -99,4 +99,28 @@ class PortalLayoutTest extends TestCase
         [$employee, $employeeSession] = $this->as(MembershipRole::Employee, 'An Employee');
         $this->actingAs($employee)->withSession($employeeSession)->get(route('portal.notifications'))->assertForbidden();
     }
+
+    public function test_every_portal_page_keeps_the_sidebar_header_and_footer_still_when_moving_to_another_page(): void
+    {
+        foreach ([[MembershipRole::Counselor, 'counselor.dashboard'], [MembershipRole::OrgAdmin, 'org.dashboard']] as [$role, $route]) {
+            [$user, $session] = $this->as($role, 'Someone '.$role->value);
+
+            $page = $this->actingAs($user)->withSession($session)->get(route($route))->assertOk();
+
+            // The opt-in appears once, and each fixed part has its own single name (two with the same name would cancel the transition).
+            $page->assertSee('@view-transition { navigation: auto; }', false);
+            foreach (['portal-sidebar', 'portal-header', 'portal-footer'] as $name) {
+                $this->assertSame(1, substr_count($page->getContent(), 'style="view-transition-name: '.$name.'"'), "{$role->value}: {$name}");
+            }
+            $page->assertSee('prefers-reduced-motion: reduce', false);
+        }
+    }
+
+    public function test_the_sign_in_and_public_pages_do_not_take_part_in_the_page_transition(): void
+    {
+        auth()->logout();
+
+        $this->get(route('login'))->assertOk()->assertDontSee('@view-transition', false);
+        $this->get(route('terms'))->assertOk()->assertDontSee('@view-transition', false);
+    }
 }

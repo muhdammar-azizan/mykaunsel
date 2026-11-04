@@ -8,7 +8,7 @@
 @endphp
 
 {{-- Fixed dark bar to the right of the sidebar. Left: menu button (small screens). Middle: the AI chat bar. Middle: page finder. Right: who you are working as, help, notifications, account. --}}
-<header class="relative z-40 flex h-[64px] shrink-0 items-center gap-3 bg-brand-ink px-3 text-white sm:gap-5 sm:px-5">
+<header style="view-transition-name: portal-header" class="relative z-40 flex h-[64px] shrink-0 items-center gap-3 bg-brand-ink px-3 text-white sm:gap-5 sm:px-5">
     <button type="button" class="grid h-10 w-10 shrink-0 place-items-center rounded-md text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white lg:hidden" aria-label="Open menu" @click="menuOpen = !menuOpen">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>

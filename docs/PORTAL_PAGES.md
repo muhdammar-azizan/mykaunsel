@@ -4,6 +4,7 @@ Tick a page when it is built. Layout, design and decisions: see PORTALS_PLAN.md.
 
 ## Shared (build first)
 - [x] Layout: fixed dark header (menu, logo, search, notifications bell, help, avatar), left sidebar, content area, fixed footer (`x-portal-layout`, `config/portal-nav.php`; the 8 existing counselor and organization pages already use it)
+- [x] **Smooth page changes (5 November 2026):** moving from one portal page to another no longer "blinks" in Chrome and Edge. The layout opts in to a cross-document view transition (`@view-transition { navigation: auto; }` in `portal-layout`), the sidebar, the header and the footer each have a fixed `view-transition-name` (`portal-sidebar`, `portal-header`, `portal-footer`) so they stay in place, and only the page fades (140 ms; none with "reduce motion"). Other browsers load the page as before. It only happens between two portal pages, never to or from the sign-in or public pages. Not covered: a counselor who collapsed the sidebar still sees it open for an instant on each page, because its width is set by Alpine after the page loads (a possible follow-up). Test: `PortalLayoutTest`.
 - [x] Notifications bell and list (`/portal/notifications`)
 - [x] Account menu (profile, security, sign out) and role switch (`/portal/account`, `/portal/account/security`, `/portal/account/notifications`: the same pages as Platform Admin, in the portal shell; see ACCOUNT_PAGES.md)
 
