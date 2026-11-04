@@ -78,7 +78,10 @@ class CounselorPlanner
             ->withExists(['bookings as has_active' => fn ($q) => $q->where('status', '!=', 'cancelled')])
             ->orderBy('entry_date')->orderBy('start_time')->limit(400)->get();
 
-        return $entries->map(function (CalendarEntry $entry) {
+        // Why a free time is hidden from clients (a personal block, or too close to a booked session): shown to this counselor ONLY.
+        $hidden = $this->availability->hiddenReasons($entries->filter(fn (CalendarEntry $e) => $e->is_available && ! $e->has_active));
+
+        return $entries->map(function (CalendarEntry $entry) use ($hidden) {
             $start = $this->availability->startOf($entry);
 
             return [
@@ -92,6 +95,7 @@ class CounselorPlanner
                 'context' => (string) $entry->contextOrg?->name,
                 'offered' => Subscription::allows($entry->contextOrg, $start->format('Y-m-d')),
                 'booked' => ! $entry->is_available || $entry->has_active,
+                'hidden' => $hidden[$entry->id] ?? null,   // null | 'block' | 'session' (see AvailabilityService::hiddenReasons)
                 'removable' => ! $entry->has_history && $entry->is_available,
             ];
         })->all();

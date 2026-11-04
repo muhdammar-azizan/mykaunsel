@@ -34,6 +34,11 @@ class AvailabilityService
 
     public const BOOKED = 'booked';
 
+    /** Why a free slot is hidden (counselor screens only): see hiddenReasons(). */
+    public const HIDDEN_BLOCK = 'block';
+
+    public const HIDDEN_SESSION = 'session';
+
     public function timezone(): string
     {
         return (string) config('counselors.directory.slot_timezone');
@@ -101,6 +106,45 @@ class AvailabilityService
 
             return $this->clashes($start->getTimestamp(), $start->addMinutes((int) $slot->duration_minutes)->getTimestamp(), $busy[$slot->counselor_user_id] ?? [], $slot->id);
         })->values();
+    }
+
+    /**
+     * WHY free slots are hidden from clients, for the COUNSELOR's own screens only (never part of any client answer): slot id => 'block'
+     * (it overlaps a personal block, buffer included) or 'session' (too close to a booked session, buffer included). A personal block wins
+     * when both apply. Slots that are not hidden are not in the result. Same single query and same clash rule as withoutConflicts().
+     *
+     * @param  Collection<int, CalendarEntry>  $slots  free slots (not booked)
+     * @return array<int, string>
+     */
+    public function hiddenReasons(Collection $slots): array
+    {
+        if ($slots->isEmpty()) {
+            return [];
+        }
+
+        $first = $slots->min(fn (CalendarEntry $slot) => $this->startOf($slot)->getTimestamp());
+        $last = $slots->max(fn (CalendarEntry $slot) => $this->startOf($slot)->getTimestamp());
+
+        $busy = $this->busy(
+            $slots->pluck('counselor_user_id')->unique()->all(),
+            CarbonImmutable::createFromTimestamp($first, $this->timezone())->startOfDay()->subDay(),
+            CarbonImmutable::createFromTimestamp($last, $this->timezone())->startOfDay()->addDay(),
+        );
+
+        $reasons = [];
+
+        foreach ($slots as $slot) {
+            $start = $this->startOf($slot)->getTimestamp();
+            $end = $start + (int) $slot->duration_minutes * 60;
+
+            foreach ($busy[$slot->counselor_user_id] ?? [] as [$busyStart, $busyEnd, $entryId, $kind]) {
+                if ($entryId !== $slot->id && $start < $busyEnd && $end > $busyStart) {
+                    $reasons[$slot->id] = ($reasons[$slot->id] ?? null) === self::HIDDEN_BLOCK ? self::HIDDEN_BLOCK : $kind;
+                }
+            }
+        }
+
+        return $reasons;
     }
 
     /**
@@ -239,7 +283,7 @@ class AvailabilityService
      * every personal block and every booked slot, whatever its context. ONE query for the entries and one for the buffers.
      *
      * @param  list<int>  $counselorUserIds
-     * @return array<int, list<array{0: int, 1: int, 2: int}>> counselor user id => [start timestamp, end timestamp, entry id]
+     * @return array<int, list<array{0: int, 1: int, 2: int, 3: string}>> counselor user id => [start timestamp, end timestamp, entry id, kind (block|session)]
      */
     private function busy(array $counselorUserIds, CarbonImmutable $from, CarbonImmutable $to): array
     {
@@ -258,7 +302,7 @@ class AvailabilityService
                         ->orWhereExists(fn ($booking) => $booking->select(DB::raw(1))->from('bookings')
                             ->whereColumn('bookings.calendar_entry_id', 'calendar_entries.id')
                             ->where('bookings.status', '!=', 'cancelled')))))
-            ->get(['id', 'counselor_user_id', 'entry_date', 'start_time', 'duration_minutes']);
+            ->get(['id', 'counselor_user_id', 'entry_type', 'entry_date', 'start_time', 'duration_minutes']);
 
         $busy = [];
 
@@ -270,6 +314,7 @@ class AvailabilityService
                 $start->getTimestamp() - $buffer,
                 $start->addMinutes((int) $entry->duration_minutes)->getTimestamp() + $buffer,
                 $entry->id,
+                $entry->entry_type === CalendarEntryType::PersonalBlock ? self::HIDDEN_BLOCK : self::HIDDEN_SESSION,
             ];
         }
 
@@ -279,11 +324,11 @@ class AvailabilityService
     /**
      * Does [start, end) overlap any busy stretch? Touching exactly at the edge does not count as overlapping.
      *
-     * @param  list<array{0: int, 1: int, 2: int}>  $busy
+     * @param  list<array{0: int, 1: int, 2: int, 3: string}>  $busy
      */
     private function clashes(int $start, int $end, array $busy, ?int $exceptEntryId): bool
     {
-        foreach ($busy as [$busyStart, $busyEnd, $entryId]) {
+        foreach ($busy as [$busyStart, $busyEnd, $entryId]) {   // a fourth value (the kind) is for hiddenReasons only
             if ($entryId !== $exceptEntryId && $start < $busyEnd && $end > $busyStart) {
                 return true;
             }

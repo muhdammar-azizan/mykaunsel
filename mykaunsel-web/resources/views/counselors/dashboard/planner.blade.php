@@ -238,6 +238,9 @@
                                             @if (! $t['offered'])
                                                 <span class="rounded-full px-2.5 py-0.5 text-xs font-medium bg-brand-yellow/25 text-[#6B4C0C]" title="{{ __('After your organization\'s subscription ends. Clients can not see it until the subscription is renewed.') }}">{{ __('Hidden: plan ended') }}</span>
                                             @endif
+                                            @if ($t['hidden'])
+                                                <span class="rounded-full px-2.5 py-0.5 text-xs font-medium bg-brand-yellow/25 text-[#6B4C0C]" title="{{ $t['hidden'] === 'block' ? __('This time overlaps a day or time you blocked. Clients can not see it. Remove the block and it shows again.') : __('This time is too close to a booked session (the buffer between sessions). Clients can not see it.') }}">{{ $t['hidden'] === 'block' ? __('Hidden from clients: blocked time') : __('Hidden from clients: too close to a session') }}</span>
+                                            @endif
                                             @if ($t['booked'])
                                                 <span class="rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800">{{ __('Booked') }}</span>
                                             @else
