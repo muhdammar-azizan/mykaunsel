@@ -70,7 +70,7 @@
                                 <div>
                                     <p class="font-medium text-brand-ink">{{ $s['client'] }}</p>
                                     <p class="text-sm text-brand-ink/65">{{ $s['date'] }}, {{ $s['time'] }} ({{ __('Malaysia time') }}) · {{ $s['minutes'] }} {{ __('min') }}</p>
-                                    <p class="text-sm text-brand-ink/65">{{ $s['mode'] === 'online' ? __('Online') : __('In-person').($s['place'] ? ' · '.$s['place'] : '') }}</p>
+                                    <p class="text-sm text-brand-ink/65">{{ $s['mode'] === 'online' ? __('Online') : __('In-person').($s['place'] ? ' · '.$s['place'] : '') }}@if (count($contexts) > 1 && $s['context']) · {{ $s['context'] }}@endif</p>
                                 </div>
                                 <div class="flex items-center gap-3"><a href="{{ route('counselor.appointments.show', $s['id']) }}" class="text-[13px] font-semibold text-brand-blue hover:underline">{{ __('Details') }}</a><span class="rounded-full px-2.5 py-0.5 text-xs font-medium {{ $badge['confirmed'] }}">{{ $label['confirmed'] }}</span></div>
                             </div>
@@ -92,7 +92,7 @@
                                         <input id="url-{{ $s['id'] }}" name="meeting_url" type="url" maxlength="255" value="{{ $s['meeting_url'] }}" placeholder="https://" class="mt-1 block w-full min-h-[44px] rounded-md border-brand-ink/20">
                                     </div>
                                     <button class="min-h-[44px] px-4 rounded-md bg-brand-blue text-white text-sm font-medium">{{ __('Save link') }}</button>
-                                    <p class="sm:col-span-3 text-xs text-brand-ink/55">{{ $s['meeting_url'] ? __('The client sees this link 15 minutes before the session. Leave it empty and save to remove it.') : __('No link added yet. The client sees "link not added yet" until you add one.') }}</p>
+                                    <p class="sm:col-span-3 text-xs text-brand-ink/55">{{ $s['meeting_url'] ? __('The client sees this link :minutes minutes before the session. Leave it empty and save to remove it.', ['minutes' => $s['link_minutes']]) : __('No link added yet. The client sees "link not added yet" until you add one.') }}</p>
                                 </form>
                             @endif
                         </div>

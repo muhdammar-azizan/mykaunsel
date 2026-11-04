@@ -263,7 +263,7 @@ class CounselorSessions
             ->select('bookings.*')
             ->join('calendar_entries', 'calendar_entries.id', '=', 'bookings.calendar_entry_id')
             ->where('bookings.counselor_user_id', $counselor->getKey())
-            ->with(['user:id,name', 'calendarEntry.location:id,name,city']);
+            ->with(['user:id,name', 'organization:id,name', 'calendarEntry.location:id,name,city']);
     }
 
     /** The counselor's own booking, locked. Anyone else's is the same "not found". */
@@ -304,8 +304,10 @@ class CounselorSessions
             'minutes' => (int) $entry->duration_minutes,
             'mode' => $mode->value,
             'place' => $mode === SessionMode::Physical && $entry->location !== null ? $entry->location->name.', '.$entry->location->city : null,
+            'context' => (string) $booking->organization?->name,   // the organization (or MyKaunsel) the session was held for
             'meeting_provider' => $booking->meeting_provider,
             'meeting_url' => $booking->meeting_url,
+            'link_minutes' => (int) config('booking.meeting_link_visible_minutes'),   // how long before the start the client sees the link
         ];
     }
 }

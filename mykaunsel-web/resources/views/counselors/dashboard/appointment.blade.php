@@ -32,6 +32,9 @@
                 <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Time (Malaysia time)</dt><dd class="font-semibold">{{ $s['time'] }}</dd></div>
                 <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Length</dt><dd class="font-semibold">{{ $s['minutes'] }} min</dd></div>
                 <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Where</dt><dd class="text-right font-semibold">{{ $s['mode'] === 'online' ? 'Online' : 'In person'.($s['place'] ? ' · '.$s['place'] : '') }}</dd></div>
+                @if ($s['context'])
+                    <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Organization</dt><dd class="text-right font-semibold">{{ $s['context'] }}</dd></div>
+                @endif
                 @if ($s['status'] === 'cancelled')
                     <div class="flex justify-between gap-4 py-3"><dt class="text-brand-ink/65">Cancelled by</dt><dd class="font-semibold">{{ $s['cancelled_by'] === 'counselor' ? 'You' : ($s['cancelled_by'] === 'client' ? 'The client' : 'The client, or the system') }}</dd></div>
                     @if ($s['cancel_reason'])
@@ -55,7 +58,7 @@
                         <input id="url" name="meeting_url" type="url" maxlength="255" value="{{ $s['meeting_url'] }}" placeholder="https://" class="{{ $input }}">
                     </div>
                     <button class="{{ $primary }}">Save link</button>
-                    <p class="text-[12.5px] text-brand-ink/55 sm:col-span-3">The client sees this link 15 minutes before the session. Leave it empty and save to remove it.</p>
+                    <p class="text-[12.5px] text-brand-ink/55 sm:col-span-3">{{ __('The client sees this link :minutes minutes before the session. Leave it empty and save to remove it.', ['minutes' => $s['link_minutes']]) }}</p>
                 </form>
             @endif
         </section>

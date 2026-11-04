@@ -304,6 +304,32 @@ class CounselorSessionsTest extends TestCase
             ->assertSee('Tue, 20 Oct 2026')->assertDontSee('Fri, 30 Oct 2026');
     }
 
+    public function test_the_details_show_the_organization_of_the_session(): void
+    {
+        $bakar = $this->counselor('Bakar', [$this->platform, $this->open]);
+        $booking = $this->book($this->slot($bakar, $this->open, '2026-11-05 10:00'), User::factory()->create());
+
+        $this->as($bakar)->get(route('counselor.appointments.show', $booking->public_id))->assertOk()->assertSee('Organization')->assertSee('Klinik Damai');
+
+        // In the list the organization is named only for someone who works in several places.
+        $this->as($bakar)->get(route('counselor.appointments'))->assertOk()->assertSee('Klinik Damai');
+        $mine = $this->mine('2026-11-05 10:00');
+        $this->as()->get(route('counselor.appointments'))->assertOk()->assertDontSee('Klinik Damai');
+        $this->assertNotNull($mine);
+    }
+
+    public function test_the_link_hint_follows_the_configured_minutes(): void
+    {
+        $booking = $this->mine('2026-11-05 10:00');
+
+        $this->as()->get(route('counselor.appointments.show', $booking->public_id))->assertOk()->assertSee('this link 15 minutes before');
+
+        config(['booking.meeting_link_visible_minutes' => 30]);
+
+        $this->as()->get(route('counselor.appointments.show', $booking->public_id))->assertOk()->assertSee('this link 30 minutes before')->assertDontSee('this link 15 minutes before');
+        $this->as()->get(route('counselor.appointments'))->assertOk()->assertSee('this link 30 minutes before');
+    }
+
     public function test_the_page_is_called_bookings(): void
     {
         $this->as()->get(route('counselor.appointments'))->assertOk()->assertSee('Bookings')->assertDontSee('Temujanji');
