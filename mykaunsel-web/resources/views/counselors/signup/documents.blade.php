@@ -39,18 +39,39 @@
 
             @php
                 $docs = [
-                    ['key' => 'cert', 'label' => 'Registered Counselor Certificate', 'labelMy' => 'Sijil Pendaftaran Kaunselor', 'hint' => 'Your official KB registration certificate from LKM.', 'existing' => $profile->cert_document_path],
-                    ['key' => 'pa', 'label' => 'Practicing Certificate', 'labelMy' => 'Sijil Perakuan Amalan', 'hint' => 'Your current PA certificate showing validity dates.', 'existing' => $profile->pa_document_path],
-                    ['key' => 'ic', 'label' => 'Identity Card (IC) or Passport', 'labelMy' => null, 'hint' => 'Used to confirm your identity matches your LKM registration.', 'existing' => $profile->ic_document_path],
+                    ['key' => 'cert', 'label' => 'Registered Counselor Certificate', 'labelMy' => 'Sijil Pendaftaran Kaunselor', 'hint' => 'Your official KB registration certificate from LKM.'],
+                    ['key' => 'pa', 'label' => 'Practicing Certificate', 'labelMy' => 'Sijil Perakuan Amalan', 'hint' => 'Your current PA certificate showing validity dates.'],
+                    ['key' => 'ic', 'label' => 'Identity Card (IC) or Passport', 'labelMy' => null, 'hint' => 'Used to confirm your identity matches your LKM registration.'],
                 ];
+                $badge = ['unreviewed' => 'bg-navy/[.07] text-navy/65', 'ok' => 'bg-teal/10 text-teal', 'needs_replacement' => 'bg-[#C4574A]/10 text-[#C4574A]'];
             @endphp
 
             @foreach ($docs as $index => $doc)
+                @php
+                    $on = $documents[$doc['key']] ?? null;
+                    $hasFile = $on && $on['status'] !== 'missing';
+                    $needsNew = $on && $on['needs_replacement'];
+                    $state = $hasFile && ! $needsNew ? 'done' : 'empty';
+                @endphp
                 <div class="uz" data-doc="{{ $doc['key'] }}" style="--tunda:{{ $index * 0.08 }}s">
-                    <p class="mb-1 text-[13.5px] font-medium text-navy/80">{{ __($doc['label']) }} @if ($doc['labelMy']) <span class="text-navy/40">({{ $doc['labelMy'] }})</span> @endif</p>
-                    <p class="mb-2.5 text-[11.5px] text-navy/45">{{ __($doc['hint']) }}</p>
-                    <div class="uz-zone relative rounded-[14px] border-2 border-dashed p-8 text-center" style="border-color:rgba(14,42,51,.2); background:rgba(14,42,51,.02)" data-state="{{ $doc['existing'] ? 'done' : 'empty' }}">
-                        <input type="file" name="{{ $doc['key'] }}" class="uz-input absolute inset-0 h-full w-full cursor-pointer opacity-0" accept=".pdf,.jpg,.jpeg,.png">
+                    <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
+                        <p class="text-[13.5px] font-medium text-navy/80" id="doc-{{ $doc['key'] }}-title">{{ __($doc['label']) }} @if ($doc['labelMy']) <span class="text-navy/40">({{ $doc['labelMy'] }})</span> @endif</p>
+                        @if ($hasFile)
+                            <span class="rounded-full px-2.5 py-0.5 text-[11px] font-semibold {{ $badge[$on['status']] ?? $badge['unreviewed'] }}">{{ __($on['status_label']) }}</span>
+                        @endif
+                    </div>
+                    <p class="mb-2.5 text-[11.5px] text-navy/45" id="doc-{{ $doc['key'] }}-hint">{{ __($doc['hint']) }}</p>
+
+                    @if ($needsNew)
+                        <div class="mb-2.5 rounded-[10px] p-3 text-[12.5px] leading-relaxed" style="background:rgba(196,87,74,.07);border-left:3px solid #C4574A" role="note">
+                            <p class="font-semibold" style="color:#C4574A">{{ __('Please upload this document again.') }}</p>
+                            @if ($on['note'])<p class="mt-1 text-navy/75">{{ __('Note from our team:') }} {{ $on['note'] }}</p>@endif
+                        </div>
+                    @endif
+
+                    <div class="uz-zone relative rounded-[14px] border-2 border-dashed p-8 text-center focus-within:ring-2 focus-within:ring-teal focus-within:ring-offset-2" style="border-color:{{ $needsNew ? 'rgba(196,87,74,.55)' : 'rgba(14,42,51,.2)' }}; background:rgba(14,42,51,.02)" data-state="{{ $state }}">
+                        <label for="doc-{{ $doc['key'] }}" class="sr-only">{{ __($doc['label']) }}: {{ __('choose a file') }}</label>
+                        <input type="file" id="doc-{{ $doc['key'] }}" name="{{ $doc['key'] }}" aria-describedby="doc-{{ $doc['key'] }}-hint" class="uz-input absolute inset-0 h-full w-full cursor-pointer opacity-0" accept=".pdf,.jpg,.jpeg,.png">
                         <div class="uz-empty">
                             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-navy/40" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
                             <p class="mt-3 text-[13.5px] text-navy/55">{{ __('Drag and drop your file here, or') }}</p>
@@ -61,22 +82,22 @@
                             <div class="flex items-center gap-3">
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
                                 <div class="min-w-0 flex-1">
-                                    <p class="uz-filename truncate text-[13.5px] font-medium text-navy">{{ $doc['existing'] ? basename($doc['existing']) : '' }}</p>
-                                    <p class="uz-filesize text-[11.5px] text-navy/45"></p>
+                                    <p class="uz-filename truncate text-[13.5px] font-medium text-navy">{{ $hasFile && ! $needsNew ? ($on['file_name'] ?: __('Uploaded file')) : '' }}</p>
+                                    <p class="uz-filesize text-[11.5px] text-navy/45">{{ $hasFile && ! $needsNew && $on['uploaded_on'] ? __('Uploaded').' '.$on['uploaded_on'] : '' }}</p>
                                 </div>
                                 <svg class="uz-check shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F6B7D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
-                                <button type="button" class="uz-remove grid h-6 w-6 shrink-0 place-items-center rounded-full text-navy/40 hover:bg-navy/5 hover:text-navy" aria-label="Remove file">×</button>
+                                <button type="button" class="uz-remove grid h-6 w-6 shrink-0 place-items-center rounded-full text-navy/40 hover:bg-navy/5 hover:text-navy" aria-label="{{ __('Remove file') }}">×</button>
                             </div>
-                            <p class="mt-2 text-[11.5px] text-teal">{{ $doc['existing'] ? __('Already uploaded — choose a new file to replace') : __('Ready to upload') }}</p>
+                            <p class="mt-2 text-[11.5px] text-teal">{{ $hasFile && ! $needsNew ? __('Already uploaded — choose a new file to replace') : __('Ready to upload') }}</p>
                         </div>
-                        <div class="uz-error text-left" style="position:relative;z-index:1">
+                        <div class="uz-error text-left" style="position:relative;z-index:1" role="alert">
                             <div class="flex items-center gap-2 text-[13px]" style="color:#C4574A">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
                                 <span class="uz-error-msg"></span>
                             </div>
                         </div>
                     </div>
-                    @error($doc['key'])<p class="mt-1.5 text-[11.5px]" style="color:#C4574A">{{ $message }}</p>@enderror
+                    @error($doc['key'])<p class="mt-1.5 text-[11.5px]" style="color:#C4574A" role="alert">{{ $message }}</p>@enderror
                 </div>
             @endforeach
 
@@ -86,10 +107,10 @@
     </div>
 
     <!-- MODAL: Save your progress -->
-    <div id="d3Modal" hidden class="fixed inset-0 z-50 grid place-items-center bg-navy/40 p-6" style="opacity:0">
+    <div id="d3Modal" hidden class="fixed inset-0 z-50 grid place-items-center bg-navy/40 p-6" style="opacity:0" role="dialog" aria-modal="true" aria-labelledby="d3ModalTitle" aria-describedby="d3ModalText">
         <div id="d3ModalCard" class="w-full max-w-[380px] rounded-2xl bg-cream p-6" style="transform:scale(.95)">
-            <h2 class="text-[19px] font-semibold tracking-tightest">{{ __('Save your progress?') }}</h2>
-            <p class="mt-2.5 text-[13.5px] leading-relaxed text-navy/60">{{ __('Your uploaded documents will be saved. You can come back to finish this step anytime: sign in and you will land on your application status.') }}</p>
+            <h2 id="d3ModalTitle" class="text-[19px] font-semibold tracking-tightest">{{ __('Save your progress?') }}</h2>
+            <p id="d3ModalText" class="mt-2.5 text-[13.5px] leading-relaxed text-navy/60">{{ __('Your uploaded documents will be saved. You can come back to finish this step anytime: sign in and you will land on your application status.') }}</p>
             <div class="mt-6 flex gap-3">
                 <button type="button" id="d3ModalContinue" class="flex-1 rounded-full border border-navy/25 px-5 py-2.5 text-[13.5px] font-medium text-navy transition-all duration-200 hover:-translate-y-0.5 hover:border-navy hover:bg-navy/5">{{ __('Continue uploading') }}</button>
                 <button type="submit" form="d3Form" id="d3ModalSave" class="flex-1 rounded-full px-5 py-2.5 text-[13.5px] font-medium text-white transition-all duration-200 hover:-translate-y-0.5" style="background:#4A7DFF">{{ __('Save for later') }}</button>
@@ -149,17 +170,35 @@
                 });
 
                 var modal = document.getElementById('d3Modal');
-                document.getElementById('d3SaveLater').addEventListener('click', function () {
+                var opener = null;
+
+                function openModal() {
+                    opener = document.activeElement;
                     modal.hidden = false;
                     requestAnimationFrame(function () {
                         modal.style.opacity = '1';
                         document.getElementById('d3ModalCard').style.transform = 'scale(1)';
+                        document.getElementById('d3ModalContinue').focus();
                     });
-                });
-                document.getElementById('d3ModalContinue').addEventListener('click', function () {
+                }
+                function closeModal() {
+                    if (modal.hidden) return;
                     modal.style.opacity = '0';
                     document.getElementById('d3ModalCard').style.transform = 'scale(.95)';
                     setTimeout(function () { modal.hidden = true; }, 200);
+                    if (opener && opener.focus) opener.focus();
+                }
+
+                document.getElementById('d3SaveLater').addEventListener('click', openModal);
+                document.getElementById('d3ModalContinue').addEventListener('click', closeModal);
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') closeModal();
+                    // Keep Tab inside the dialog while it is open.
+                    if (e.key === 'Tab' && !modal.hidden) {
+                        var first = document.getElementById('d3ModalContinue'), last = document.getElementById('d3ModalSave');
+                        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+                    }
                 });
             });
         </script>

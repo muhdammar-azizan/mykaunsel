@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Enums\VerificationStatus;
 use App\Facades\Audit;
+use App\Models\CounselorDocument;
 use App\Models\CounselorProfile;
 use App\Models\User;
+use App\Support\LkmComparison;
 use App\Support\PaValidity;
 use Illuminate\Support\Facades\DB;
 
@@ -62,6 +64,9 @@ class CounselorProfileSettings
             'specialization_options' => $this->options(config('counselors.profile.specializations'), $specializations),
             'buffer_options' => config('counselors.profile.buffer_minutes'),
             'providers' => CounselorSessions::PROVIDERS,
+            // What was sent and checked when they applied (only for someone who applied on the web).
+            'lkm' => $profile->isIndependent() ? $this->lkmResult($profile) : null,
+            'documents' => $this->documents($profile),
         ];
     }
 
@@ -113,6 +118,55 @@ class CounselorProfileSettings
     }
 
     // ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * How the application compares with the LKM directory record MyKaunsel holds (a copy, not a live connection), in plain words.
+     * Only the result: the record's own details stay with the Platform Admin review.
+     *
+     * @return array{tone: string, text: string}
+     */
+    private function lkmResult(CounselorProfile $profile): array
+    {
+        return match (app(LkmVerificationService::class)->compare($profile)->outcome) {
+            LkmComparison::MATCH => ['tone' => 'ok', 'text' => 'Your details match the LKM directory record we hold.'],
+            LkmComparison::MISMATCH => ['tone' => 'warn', 'text' => 'Some of your details differ from the LKM directory record we hold. Our team will check.'],
+            LkmComparison::INACTIVE => ['tone' => 'bad', 'text' => 'The LKM directory record we hold is not active.'],
+            LkmComparison::EXPIRED => ['tone' => 'bad', 'text' => 'The LKM directory record we hold shows an expired practising certificate.'],
+            default => ['tone' => 'bad', 'text' => 'We could not find your KB number in the LKM directory record we hold.'],
+        };
+    }
+
+    /**
+     * The documents of an application and what our team made of each (the note is the one written for the applicant). Never the file itself.
+     *
+     * @return list<array{type: string, label: string, status: string, status_label: string, note: ?string, file_name: ?string, uploaded_on: ?string, needs_replacement: bool}>
+     */
+    public function documents(CounselorProfile $profile): array
+    {
+        $documents = $profile->documents()->get()->keyBy('type');
+        $labels = [
+            CounselorDocument::STATUS_UNREVIEWED => 'Received, not checked yet',
+            CounselorDocument::STATUS_OK => 'Checked and fine',
+            CounselorDocument::STATUS_NEEDS_REPLACEMENT => 'Needs replacement',
+        ];
+
+        return collect(CounselorDocument::TYPES)->map(function (string $label, string $type) use ($documents, $labels) {
+            /** @var CounselorDocument|null $document */
+            $document = $documents->get($type);
+            $has = $document !== null && $document->hasFile();
+
+            return [
+                'type' => $type,
+                'label' => $label,
+                'status' => $has ? $document->status : 'missing',
+                'status_label' => $has ? ($labels[$document->status] ?? 'Received') : 'Not uploaded yet',
+                'note' => $has && $document->needsReplacement() ? $document->note : null,
+                'file_name' => $has ? $document->original_name : null,
+                'uploaded_on' => $has ? $document->uploaded_at?->format('j M Y') : null,
+                'needs_replacement' => $has && $document->needsReplacement(),
+            ];
+        })->values()->all();
+    }
 
     private function profile(User $counselor): CounselorProfile
     {

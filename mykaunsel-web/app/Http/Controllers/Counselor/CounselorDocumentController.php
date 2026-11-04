@@ -9,6 +9,7 @@ use App\Http\Requests\Counselor\StoreCounselorDocumentsRequest;
 use App\Models\CounselorDocument;
 use App\Models\CounselorProfile;
 use App\Notifications\CounselorApplicationReceived;
+use App\Services\CounselorProfileSettings;
 use App\Services\PlatformAdminNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,12 +27,13 @@ class CounselorDocumentController extends Controller
         'ic' => 'ic',
     ];
 
-    public function create(Request $request)
+    public function create(Request $request, CounselorProfileSettings $settings)
     {
         $profile = $request->user()->counselorProfile;
         abort_unless($profile, 404);
 
-        return view('counselors.signup.documents', ['profile' => $profile]);
+        // What is on file for each of the three documents, and what our team made of it (the old path columns on the profile are gone).
+        return view('counselors.signup.documents', ['profile' => $profile, 'documents' => collect($settings->documents($profile))->keyBy('type')]);
     }
 
     public function store(StoreCounselorDocumentsRequest $request, PlatformAdminNotifier $notifier)

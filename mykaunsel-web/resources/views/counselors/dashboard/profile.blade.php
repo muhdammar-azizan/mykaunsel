@@ -44,6 +44,27 @@
                 </div>
             </dl>
             <p class="mt-3 text-[12.5px] text-brand-ink/55">Renew your PA with LKM before it runs out. MyKaunsel checks it every day and reminds you.</p>
+
+            {{-- What was checked when they applied (applicants only) and the documents on file --}}
+            @if ($p['lkm'])
+                <p class="mt-4 rounded-lg px-4 py-2.5 text-[13.5px] font-semibold {{ ['ok' => 'bg-emerald-50 text-emerald-700', 'warn' => 'bg-[#FDF4E3] text-[#6B4C0C]', 'bad' => 'bg-brand-red/[.06] text-brand-red'][$p['lkm']['tone']] }}" data-lkm-result="{{ $p['lkm']['tone'] }}">{{ $p['lkm']['text'] }}</p>
+            @endif
+
+            @if (collect($p['documents'])->contains(fn ($d) => $d['status'] !== 'missing'))
+                <h3 class="mt-5 text-[15px] font-bold tracking-tight">Your documents</h3>
+                <ul class="mt-2 divide-y divide-[#EEEDEA] text-[14px]" aria-label="Documents on file">
+                    @foreach ($p['documents'] as $document)
+                        <li class="py-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="font-semibold">{{ $document['label'] }}</span>
+                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-[12px] font-bold {{ ['ok' => 'bg-emerald-50 text-emerald-700', 'needs_replacement' => 'bg-brand-red/10 text-brand-red', 'unreviewed' => 'bg-brand-ink/10 text-brand-ink/65', 'missing' => 'bg-brand-ink/10 text-brand-ink/65'][$document['status']] ?? 'bg-brand-ink/10 text-brand-ink/65' }}">{{ $document['status_label'] }}</span>
+                            </div>
+                            @if ($document['file_name'])<p class="mt-0.5 text-[12.5px] text-brand-ink/55">{{ $document['file_name'] }}@if ($document['uploaded_on']) · uploaded {{ $document['uploaded_on'] }}@endif</p>@endif
+                            @if ($document['note'])<p class="mt-1 text-[12.5px] text-brand-red">Note from our team: {{ $document['note'] }}</p>@endif
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         </section>
 
         <form method="POST" action="{{ route('counselor.profile.update') }}" class="{{ $card }} space-y-6" aria-labelledby="edit-title">
