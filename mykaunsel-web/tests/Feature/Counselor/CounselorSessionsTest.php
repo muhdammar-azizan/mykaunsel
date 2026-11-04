@@ -236,7 +236,7 @@ class CounselorSessionsTest extends TestCase
         $this->getJson('/api/v1/bookings?scope=upcoming')->assertOk()->assertJsonCount(0, 'data');
     }
 
-    // ---- the list: pages and filters ---------------------------------------------------------------------------------
+    // ---- the list: pages and the filters ---------------------------------------------------------------------------------
 
     public function test_a_session_that_ended_today_is_in_needs_marking_and_one_later_today_is_upcoming(): void
     {
