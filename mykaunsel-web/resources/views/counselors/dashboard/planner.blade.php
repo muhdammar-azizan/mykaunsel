@@ -25,14 +25,16 @@
         #schedule-calendar .fc-timegrid-slot { height: 28px; }
         #schedule-calendar .fc-event { border-radius: 6px; cursor: pointer; overflow: hidden; }
         #schedule-calendar .fc-event:focus-visible { outline: 2px solid #0A4F88; outline-offset: 1px; }
-        #schedule-calendar .sc-body { padding: 2px 5px; line-height: 1.25; }
-        #schedule-calendar .sc-time { font-size: 11px; font-weight: 600; }
-        #schedule-calendar .sc-title { font-weight: 700; }
-        #schedule-calendar .sc-flag { margin-top: 2px; font-size: 11px; font-weight: 600; }
-        #schedule-calendar .sc-open { background: #DCFCE7; color: #14532D; border-left: 4px solid #16A34A; }
-        #schedule-calendar .sc-open.sc-hidden { background: #FEF3C7; color: #6B4C0C; border-left: 4px dashed #B45309; }
-        #schedule-calendar .sc-session { background: #DBEAFE; color: #1E3A8A; border-left: 4px solid #1D4ED8; }
-        #schedule-calendar .sc-block { background: repeating-linear-gradient(135deg, #EDEBE7, #EDEBE7 6px, #F6F5F2 6px, #F6F5F2 12px); color: #3F3F46; border-left: 4px solid #71717A; }
+        /* The library paints the inside of every item white; the text colour is set per kind through ITS variable, so it always reads on the item's own background. */
+        #schedule-calendar .fc-event-main, #schedule-calendar .fc-event-main * { color: var(--fc-event-text-color); }
+        #schedule-calendar .sc-body { padding: 3px 6px; line-height: 1.3; }
+        #schedule-calendar .sc-time { font-size: 12px; font-weight: 600; }
+        #schedule-calendar .sc-title { font-size: 13px; font-weight: 700; }
+        #schedule-calendar .sc-flag { margin-top: 2px; font-size: 12px; font-weight: 600; }
+        #schedule-calendar .sc-open { --fc-event-text-color: #052E16; background: #DCFCE7; border-left: 4px solid #16A34A; }
+        #schedule-calendar .sc-open.sc-hidden { --fc-event-text-color: #451A03; background: #FEF3C7; border-left: 4px dashed #B45309; }
+        #schedule-calendar .sc-session { --fc-event-text-color: #172554; background: #DBEAFE; border-left: 4px solid #1D4ED8; }
+        #schedule-calendar .sc-block { --fc-event-text-color: #27272A; background: repeating-linear-gradient(135deg, #E7E5E0, #E7E5E0 6px, #F3F2EE 6px, #F3F2EE 12px); border-left: 4px solid #52525B; }
         #schedule-calendar .sc-hours.fc-bg-event { background: #EEF5FB; opacity: 1; }
         .sc-swatch { display: inline-block; height: 12px; width: 18px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
         @media (prefers-reduced-motion: reduce) { #schedule-calendar * { transition: none !important; } }
@@ -55,7 +57,8 @@
     <div class="mt-5 grid gap-5 xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start">
         {{-- ---- The tools (left on a wide screen; under the calendar on a narrow one) ------------------------------------------------------- --}}
         <div class="order-2 space-y-3 xl:order-1">
-            <details class="{{ $card }}" @if ($openTime) open @endif>
+            {{-- The three tools share one name, so the browser keeps only one open: opening another closes the one before (the column stays short). --}}
+            <details name="schedule-tools" class="{{ $card }}" @if ($openTime) open @endif>
                 <summary class="{{ $summary }}">{{ __('Open a time') }}</summary>
                 <div class="border-t border-[#EEEDEA] p-5">
                     <p class="text-sm text-brand-ink/65">{{ __('Times are Malaysia time. Clients can book a time up to the booking window ahead, and not sooner than the minimum notice.') }}</p>
