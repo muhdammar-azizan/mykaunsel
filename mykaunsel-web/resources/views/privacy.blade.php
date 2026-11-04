@@ -48,6 +48,47 @@
         <li>{{ __('The e-mail address on the sign-up reminder list: erased once the reminder has been sent.') }}</li>
     </ul>
 
+    <h2>{{ __('If you are a counselor') }}</h2>
+
+    <h3>{{ __('What we keep about counselors') }}</h3>
+    <ul>
+        <li>{{ __('Your KB number, your PA number and when it is valid.') }}</li>
+        <li>{{ __('The documents you send to apply: your KB certificate, your PA certificate and a copy of your ID or passport.') }}</li>
+        <li>{{ __('The result of comparing your details with the registration records we hold. These records are a copy that we keep; we do not have a live connection to a government system. Our team reviews every application.') }}</li>
+        <li>{{ __('The history and notes of the review of your application.') }}</li>
+        <li>{{ __('The times you open, your weekly hours, your blocked times (and the note you may add to one), and the requests and bookings you receive.') }}</li>
+        <li>{{ __('Reviews and complaints about you.') }}</li>
+        <li>{{ __('A photo, if you add one to your own account. It is never shown to clients.') }}</li>
+        <li>{{ __('The choices you make on your profile: the names clients see, your languages and your specializations.') }}</li>
+    </ul>
+
+    <h3>{{ __('Who can see counselor data') }}</h3>
+    <ul>
+        <li>{{ __('You need to be signed in with a confirmed e-mail address to find a counselor. A counselor who works for a closed organization is shown only to that organization\'s members.') }}</li>
+        <li>{{ __('Clients see the name you choose, your languages, your specializations and the times you open. They do not see your photo, your KB or PA number, your e-mail address or your documents.') }}</li>
+        <li>{{ __('The people who run an organization you work for can see your name, whether your practising certificate is valid or about to expire, and counts of your sessions. They see the stars clients give, never a comment, and never what a client said or your private notes.') }}</li>
+        <li>{{ __('The MyKaunsel team that reviews applications sees your documents and details. Every time a document is opened, it is recorded.') }}</li>
+        <li>{{ __('Reviews written about you are shown to you without the client\'s name. If a client complained about you, you are not shown who.') }}</li>
+        <li>{{ __('Your private session notes can be read only by you.') }}</li>
+    </ul>
+
+    <h3>{{ __('How long we keep counselor data') }}</h3>
+    <ul>
+        <li>{{ __('The copy of your ID or passport: :days days after the final decision on your application.', ['days' => config('counselors.retention.ic_days')]) }}</li>
+        <li>{{ __('Certificates of an application that was rejected: :days days after the rejection.', ['days' => config('counselors.retention.rejected_certificates_days')]) }}</li>
+        <li>{{ __('Certificates of an approved counselor: while your account exists.') }}</li>
+        <li>{{ __('Session notes: :years years after the session, then they are erased.', ['years' => config('session-notes.retention_years')]) }}</li>
+        <li>{{ __('The words of a complaint about you: :years years after it is closed. The record that it happened stays.', ['years' => config('complaints.retention.closed_years')]) }}</li>
+        <li>{{ __('Notices inside the portal: :read days after you read them, :unread days if you never do.', ['read' => config('notifications.retention.read_days'), 'unread' => config('notifications.retention.unread_days')]) }}</li>
+        <li>{{ __('Records of important actions (the audit log). They hold numbers and counts, never a client\'s name or what was written in a note.') }} {{ $tbc(__('how long records of important actions are kept, with a lawyer')) }}</li>
+    </ul>
+
+    <h3>{{ __('Your rights as a counselor') }}</h3>
+    <p>{{ __('You can see and correct what you can change yourself: the names clients see, your languages and specializations, and your account details. Your KB number, PA number, PA date and status come from your application and our checks; the MyKaunsel team changes them, so write to us if one is wrong. You can ask for a copy of your data and withdraw an agreement you gave.') }} {{ $tbc(__('the contact to write to and how long we take to answer')) }}</p>
+
+    <h3>{{ __('Session notes when a counselor leaves') }}</h3>
+    <p>{{ $tbc(__('what happens to a counselor\'s private session notes if the counselor leaves an organization or MyKaunsel')) }}</p>
+
     <h2>{{ __('Deleting your account') }}</h2>
     <p>{{ __('You can delete your account yourself in the app (Account, then Delete account). It can not be undone.') }}</p>
     <ul>
@@ -62,6 +103,12 @@
 
     <h2>{{ __('Cookies and sign-in on the website') }}</h2>
     <p>{{ __('The website uses only the cookies it needs to keep you signed in and to protect forms. We do not use advertising or tracking cookies. Its pages load their text style from Google Fonts, so Google can see that your device asked for it.') }}</p>
+
+    <h2>{{ __('Signing in with Google') }}</h2>
+    <p>{{ __('On the website you can choose to sign in with Google. Google sends us your e-mail address (and whether Google has verified it), your name and the address of your Google picture. We use only the e-mail address, to find the MyKaunsel account that already has it, and we do not keep the rest: signing in with Google never creates an account. We do not receive your Google password. If your account uses two-factor sign-in, it is still asked for.') }} {{ $tbc(__('whether Google sign-in stays available to counselors and administrators; today it works for any existing account')) }}</p>
+
+    <h2>{{ __('If something goes wrong with your data') }}</h2>
+    <p>{{ __('If personal data we hold about you is lost or seen by people who should not see it, we will tell the people affected and, where the law requires it, the authorities.') }} {{ $tbc(__('the exact notification process and timeline, with a lawyer')) }}</p>
 
     <h2>{{ __('Children') }}</h2>
     <p>{{ $tbc(__('the minimum age, and what happens for people under it')) }}</p>

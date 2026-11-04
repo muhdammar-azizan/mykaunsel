@@ -18,7 +18,7 @@
         <h1 class="text-[26px] font-semibold tracking-tight">{{ $title }}</h1>
         <p class="mt-1 text-[13px] text-navy/55">{{ __('Last updated: :date', ['date' => config('legal.updated')]) }}</p>
 
-        <div class="mt-6 space-y-4 text-[15px] leading-relaxed text-navy/80 [&_h2]:mt-8 [&_h2]:text-[18px] [&_h2]:font-semibold [&_h2]:text-navy [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_a]:font-medium [&_a]:underline">
+        <div class="mt-6 space-y-4 text-[15px] leading-relaxed text-navy/80 [&_h2]:mt-8 [&_h2]:text-[18px] [&_h2]:font-semibold [&_h2]:text-navy [&_h3]:mt-5 [&_h3]:text-[16px] [&_h3]:font-semibold [&_h3]:text-navy [&_h4]:mt-4 [&_h4]:text-[15px] [&_h4]:font-semibold [&_h4]:text-navy[&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_a]:font-medium [&_a]:underline">
             {{ $slot }}
         </div>
     </article>
