@@ -118,7 +118,7 @@
                 </div>
             </details>
 
-            <details class="{{ $card }}" @if ($openWeekly) open @endif>
+            <details name="schedule-tools" class="{{ $card }}" @if ($openWeekly) open @endif>
                 <summary class="{{ $summary }}">{{ __('Weekly hours') }}</summary>
                 <div class="border-t border-[#EEEDEA] p-5">
                     <p class="text-sm text-brand-ink/65">{{ __('Say once when you usually see clients, then open the coming weeks in one click. Weekly hours are only a pattern: nothing is bookable until you open the weeks. They show as a light background in the calendar.') }}</p>
@@ -214,7 +214,7 @@
                 </div>
             </details>
 
-            <details class="{{ $card }}" @if ($openBlock) open @endif>
+            <details name="schedule-tools" class="{{ $card }}" @if ($openBlock) open @endif>
                 <summary class="{{ $summary }}">{{ __('Block a time') }}</summary>
                 <div class="border-t border-[#EEEDEA] p-5">
                     <p class="text-sm text-brand-ink/65">{{ __('Leave, a holiday or a private appointment. Times open for booking inside a block can not be booked until you remove it (click the block in the calendar). A session that is already booked must be cancelled first. Only you see the note.') }}</p>

@@ -62,6 +62,23 @@ class CounselorScheduleEventsTest extends TestCase
         $this->assertStringContainsString('xl:grid-cols-[400px_minmax(0,1fr)]', $page->getContent());
     }
 
+    public function test_the_three_tools_share_one_name_so_only_one_is_open_at_a_time(): void
+    {
+        $page = $this->as()->get(route('counselor.planner'))->assertOk()->getContent();
+
+        $this->assertSame(3, substr_count($page, '<details name="schedule-tools"'));
+        $this->assertSame(1, preg_match_all('/<details name="schedule-tools" class="[^"]*" open>/', $page), 'one is open to begin with: Open a time');
+    }
+
+    public function test_the_tool_whose_form_failed_is_the_one_left_open(): void
+    {
+        // A block in the past is refused and sent back to the Schedule page with what was typed: "Block a time" is the one still open.
+        $page = $this->followingRedirects()->as()->from(route('counselor.planner'))->post(route('counselor.planner.blocks.store'), ['from' => '2026-11-01', 'all_day' => 1])->getContent();
+
+        $this->assertSame(1, preg_match_all('/<details name="schedule-tools" class="[^"]*" open>/', $page));
+        $this->assertMatchesRegularExpression('/<details name="schedule-tools" class="[^"]*" open>\s*<summary[^>]*>Block a time/', $page);
+    }
+
     public function test_the_calendar_can_open_on_a_week_and_the_old_calendar_address_leads_to_it(): void
     {
         $this->as()->get(route('counselor.planner', ['date' => '2026-11-11']))->assertOk()->assertSee('data-initial-date="2026-11-11"', false);
