@@ -90,6 +90,10 @@
                         <label for="reason" class="block text-[13px] font-semibold text-brand-ink/70">Reason for the client</label>
                         <textarea id="reason" name="reason" rows="3" maxlength="300" required class="mt-1 block w-full rounded-md border border-brand-ink/20 px-3 py-2 text-[14px] focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20">{{ old('reason') }}</textarea>
                         <p class="mt-1 text-[12.5px] text-brand-ink/55">Keep it short and kind. Do not write private details about yourself or the client.</p>
+                        <label class="mt-3 flex items-start gap-2 text-[14px] text-brand-ink">
+                            <input type="checkbox" name="keep_closed" value="1" class="mt-1 h-4 w-4 rounded border-brand-ink/30">
+                            <span>Do not open this time again<span class="block text-[12.5px] text-brand-ink/55">It becomes a blocked time on your Schedule, so nobody else can book it. Remove the block to open it later.</span></span>
+                        </label>
                         <button type="submit" class="mt-3 inline-flex min-h-[44px] items-center rounded-md border border-brand-red/50 px-5 text-[14px] font-semibold text-brand-red transition hover:bg-brand-red/[.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red">Cancel session</button>
                     </form>
                 </section>

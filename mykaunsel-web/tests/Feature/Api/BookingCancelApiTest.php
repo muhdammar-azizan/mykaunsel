@@ -96,6 +96,8 @@ class BookingCancelApiTest extends TestCase
 
         $this->assertSame(BookingStatus::Cancelled, $booking->fresh()->status);
         $this->assertTrue($slot->fresh()->is_available, 'the contract: ending a booking gives the time back');
+        $this->assertSame('client', $booking->fresh()->cancelled_by, 'who cancelled is recorded for the client too');
+        $this->assertNotNull($booking->fresh()->cancelled_at);
         $this->assertFalse($response->json('booking.can_cancel'));
         $this->assertNull($response->json('booking.meeting'));
         $this->assertNull($response->json('booking.place'));

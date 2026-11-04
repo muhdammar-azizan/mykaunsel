@@ -56,7 +56,7 @@ class CounselorAppointmentController extends Controller
         $input = $request->validate(['reason' => ['required', 'string', 'min:3', 'max:300']], ['reason.required' => __('Write a short reason for the client.')]);
 
         try {
-            $done = $sessions->cancel($request->user(), $publicId, $input['reason']);
+            $done = $sessions->cancel($request->user(), $publicId, $input['reason'], $request->boolean('keep_closed'));
         } catch (BookingRefused $refused) {
             return $this->refused($refused);
         }

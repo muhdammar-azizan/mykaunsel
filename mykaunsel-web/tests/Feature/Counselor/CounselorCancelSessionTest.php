@@ -131,4 +131,87 @@ class CounselorCancelSessionTest extends TestCase
 
         $this->as()->get(route('counselor.appointments'))->assertOk()->assertSee(route('counselor.appointments.show', $booking->public_id), false);
     }
+
+    public function test_cancelling_is_audited_with_the_booking_id_only(): void
+    {
+        $booking = $this->mine('2026-11-05 10:00');
+
+        $this->cancel($booking, 'A private reason about my health.')->assertSessionHasNoErrors();
+
+        $entry = \App\Models\AuditLog::where('action', 'booking.cancelled_by_counselor')->sole();
+        $this->assertSame('booking', $entry->target_type);
+        $this->assertSame($booking->id, $entry->target_id);
+        $this->assertSame($booking->id, $entry->metadata['booking_id']);
+        $this->assertFalse($entry->metadata['kept_closed']);
+        $this->assertSame($this->aina->user_id, $entry->actor_user_id);
+
+        $everything = json_encode($entry->getAttributes());
+        $this->assertStringNotContainsString('Siti Client', $everything);
+        $this->assertStringNotContainsString('private reason', $everything);
+    }
+
+    public function test_a_repeat_or_a_refused_cancel_writes_no_second_audit_entry(): void
+    {
+        $booking = $this->mine('2026-11-05 10:00');
+        $this->cancel($booking);
+        $this->cancel($booking);
+
+        $this->cancel($this->mine('2026-10-30 10:00', BookingStatus::Completed))->assertSessionHasErrors('session');
+
+        $this->assertSame(1, \App\Models\AuditLog::where('action', 'booking.cancelled_by_counselor')->count());
+    }
+
+    public function test_do_not_open_again_covers_the_time_with_a_block_that_clients_never_see_as_booked(): void
+    {
+        $booking = $this->mine('2026-11-05 10:00');
+        $slot = CalendarEntry::sole();
+
+        $this->as()->post(route('counselor.appointments.cancel', $booking->public_id), ['reason' => 'I am unwell.', 'keep_closed' => 1])->assertSessionHasNoErrors();
+
+        $this->assertSame(BookingStatus::Cancelled, $booking->fresh()->status);
+        $this->assertTrue($slot->fresh()->is_available, 'the slot itself is not marked booked');
+        $this->assertFalse(app(\App\Services\AvailabilityService::class)->slotBookable($slot->fresh()), 'nobody can book it');
+
+        $block = CalendarEntry::where('entry_type', 'personal_block')->sole();
+        $this->assertSame('2026-11-05', $block->entry_date->format('Y-m-d'));
+        $this->assertSame('10:00:00', (string) $block->start_time);
+        $this->assertSame(60, (int) $block->duration_minutes);
+
+        $this->assertTrue(\App\Models\AuditLog::where('action', 'booking.cancelled_by_counselor')->sole()->metadata['kept_closed']);
+
+        // The Schedule page tells the counselor why, and never says "Booked".
+        $this->as()->get(route('counselor.planner'))->assertOk()->assertSee('Hidden from clients: blocked time');
+    }
+
+    public function test_by_default_the_time_opens_again_and_no_block_is_made(): void
+    {
+        $booking = $this->mine('2026-11-05 10:00');
+        $this->cancel($booking);
+
+        $this->assertSame(0, CalendarEntry::where('entry_type', 'personal_block')->count());
+        $this->assertTrue(app(\App\Services\AvailabilityService::class)->slotBookable(CalendarEntry::sole()));
+    }
+
+    public function test_a_session_that_has_started_but_not_ended_can_not_be_cancelled(): void
+    {
+        $booking = $this->mine('2026-11-02 08:30');   // 08:30-09:30; the clock stands at 09:00
+
+        $this->cancel($booking)->assertSessionHasErrors('session');
+        $this->assertSame(BookingStatus::Confirmed, $booking->fresh()->status);
+        $this->assertSame(0, \App\Models\AuditLog::where('action', 'booking.cancelled_by_counselor')->count());
+
+        $this->as()->get(route('counselor.appointments.show', $booking->public_id))->assertOk()->assertDontSee('Cancel this session');
+    }
+
+    public function test_the_lock_order_matches_the_clients_own_cancelling(): void
+    {
+        // Static guard (a real race needs two processes): the counselor's cancel must not take the booking lock before the client's and the
+        // profile's, or it can deadlock with the client cancelling, rescheduling or booking.
+        $source = file_get_contents(app_path('Services/CounselorSessions.php'));
+        $body = substr($source, (int) strpos($source, 'public function cancel('), 1800);
+
+        $this->assertStringNotContainsString('lockOwn(', $body);
+        $this->assertLessThan(strpos($body, "\\App\\Models\\CounselorProfile::query()"), strpos($body, 'User::query()->whereKey($found->user_id)->lockForUpdate()'));
+        $this->assertLessThan(strpos($body, 'Booking::query()->with(\'calendarEntry\')->whereKey($found->getKey())->lockForUpdate()'), strpos($body, "\\App\\Models\\CounselorProfile::query()"));
+    }
 }

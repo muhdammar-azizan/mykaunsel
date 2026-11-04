@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\BookingStatus;
 use App\Enums\SessionMode;
 use App\Exceptions\BookingRefused;
+use App\Facades\Audit;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -18,7 +19,8 @@ use Illuminate\Support\Facades\DB;
  * - Three lists: upcoming (confirmed, not ended), to mark (confirmed, ended: the counselor says what happened) and past (completed, no-show,
  *   cancelled). A session is NEVER assumed completed because its time has passed: only the counselor marks it.
  * - The meeting link: online, confirmed, not ended yet. Clearing it is allowed. The link is what the client's app shows 15 minutes before.
- * - No audit entry (B12), no e-mail, no change to any time (these actions never touch `is_available`).
+ * - Only cancelling is audited (booking id only, never the client or the reason). Setting a link and marking an outcome are not.
+ * - Cancelling is allowed until the session STARTS; marking and the link do not touch any time (they never change `is_available`).
  */
 class CounselorSessions
 {
@@ -136,7 +138,7 @@ class CounselorSessions
         $ended = $this->ended($booking);
 
         return $row + [
-            'can_cancel' => $confirmed && ! $ended,
+            'can_cancel' => $confirmed && ! $this->started($booking),
             'can_mark' => $confirmed && $ended,
             'can_note' => app(SessionNotes::class)->allowed($booking),
             'can_set_meeting' => $confirmed && ! $ended && ($booking->session_mode ?? SessionMode::Online) === SessionMode::Online,
@@ -146,7 +148,8 @@ class CounselorSessions
     }
 
     /**
-     * The counselor cancels one of their own sessions that has not started: the status, who and why, and the time given back, in one
+     * The counselor cancels one of their own sessions that has not STARTED: the status, who and why, the time given back (or, with
+     * $keepClosed, covered by a personal block so nobody can book it and clients still never see it as "booked") and the audit entry, in one
      * transaction (B9). There is no deadline (a counselor may be ill the same morning); the caller tells the client after the commit.
      * Cancelling again changes nothing and returns null.
      *
@@ -154,21 +157,23 @@ class CounselorSessions
      *
      * @throws BookingRefused booking_not_found | not_cancellable
      */
-    public function cancel(User $counselor, string $publicId, string $reason): ?array
+    public function cancel(User $counselor, string $publicId, string $reason, bool $keepClosed = false): ?array
     {
-        return DB::transaction(function () use ($counselor, $publicId, $reason) {
-            $found = $this->lockOwn($counselor, $publicId);
+        // Read without a lock first, so the locks below can be taken in the same order as the client's own cancelling, rescheduling and booking.
+        $found = $this->mine($counselor)->where('bookings.public_id', strtolower($publicId))->whereNotNull('bookings.calendar_entry_id')->first()
+            ?? throw new BookingRefused('booking_not_found');
 
-            // LOCK ORDER: the client, the counselor's profile, then the booking (the same as the client's own cancelling).
+        return DB::transaction(function () use ($counselor, $found, $reason, $keepClosed) {
+            // LOCK ORDER: the client, the counselor's profile, then the booking (the same as the client's own cancelling and rescheduling).
             User::query()->whereKey($found->user_id)->lockForUpdate()->first();
-            \App\Models\CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
+            $profile = \App\Models\CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
             $booking = Booking::query()->with('calendarEntry')->whereKey($found->getKey())->lockForUpdate()->firstOrFail();
 
             if ($booking->status === BookingStatus::Cancelled) {
                 return null; // a repeat
             }
 
-            if ($booking->status !== BookingStatus::Confirmed || $this->ended($booking)) {
+            if ($booking->status !== BookingStatus::Confirmed || $this->started($booking)) {
                 throw new BookingRefused('not_cancellable');
             }
 
@@ -186,6 +191,22 @@ class CounselorSessions
             \App\Models\CalendarEntry::query()->whereKey($booking->calendar_entry_id)->update(['is_available' => true]);
 
             $start = $this->availability->startOf($booking->calendarEntry);
+
+            // "Do not open this time again": the time is covered by an ordinary personal block. It is hidden from clients (never "booked") and
+            // the counselor removes the block on the Schedule page when they want it back.
+            if ($keepClosed) {
+                \App\Models\CalendarEntry::create([
+                    'counselor_user_id' => $counselor->getKey(),
+                    'entry_type' => \App\Enums\CalendarEntryType::PersonalBlock,
+                    'entry_date' => $start->format('Y-m-d'),
+                    'start_time' => $start->format('H:i:s'),
+                    'duration_minutes' => (int) $booking->calendarEntry->duration_minutes,
+                    'is_available' => true,
+                ]);
+            }
+
+            // The booking's id and whether the time was kept closed: never the client, never the reason.
+            Audit::log('booking.cancelled_by_counselor', $booking, ['booking_id' => $booking->getKey(), 'kept_closed' => $keepClosed], $counselor);
 
             return ['booking' => $booking->fresh(), 'client' => $booking->user()->firstOrFail(), 'when' => $start->format('D, j M Y').', '.$start->format('g:i A').' (Malaysia time)'];
         });
@@ -210,6 +231,11 @@ class CounselorSessions
             ->lockForUpdate()->first();
 
         return $booking ?? throw new BookingRefused('booking_not_found');
+    }
+
+    private function started(Booking $booking): bool
+    {
+        return $this->availability->startOf($booking->calendarEntry)->lte($this->availability->now());
     }
 
     private function ended(Booking $booking): bool

@@ -86,7 +86,7 @@ class BookingCancellation
             }
 
             // The status, only if it is still confirmed (the lock makes this certain; the condition keeps it honest)...
-            $changed = Booking::query()->whereKey($booking->getKey())->where('status', BookingStatus::Confirmed->value)->update(['status' => BookingStatus::Cancelled->value]);
+            $changed = Booking::query()->whereKey($booking->getKey())->where('status', BookingStatus::Confirmed->value)->update(['status' => BookingStatus::Cancelled->value, 'cancelled_by' => 'client', 'cancelled_at' => now()]);
 
             if ($changed !== 1) {
                 throw new BookingRefused('not_cancellable');
