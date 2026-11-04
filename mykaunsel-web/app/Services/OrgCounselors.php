@@ -133,16 +133,46 @@ class OrgCounselors
      */
     public function remove(Organization $org, int $membershipId, User $admin, string $reason): array
     {
+        return $this->endAssignment($org, $membershipId, $admin, $reason, byCounselor: false);
+    }
+
+    /**
+     * A counselor leaves one organization by themselves (counselor portal, Organizations). The same effects as the organization ending the
+     * assignment (later sessions with it are cancelled and the time given back, waiting requests closed, its open times and weekly lines removed,
+     * clients told), but the audit entry is `counselor.left_org` and it is the organization's admins who are told, not the counselor. Their other
+     * organizations, and independent work, are not touched. The independent practice on MyKaunsel itself can not be left here.
+     *
+     * @return array{counselor: string, cancelled: int}
+     *
+     * @throws ModelNotFoundException someone else's membership, or one that is not a counselor membership
+     * @throws RuntimeException in plain words
+     */
+    public function leave(User $counselor, int $membershipId, string $reason): array
+    {
+        $membership = Membership::query()->where('user_id', $counselor->getKey())->where('role', MembershipRole::Counselor->value)->with('organization')->findOrFail($membershipId);
+
+        if ($membership->organization->org_type === OrgType::Platform) {
+            throw new RuntimeException('Your independent practice on MyKaunsel can not be ended here. Please contact MyKaunsel.');
+        }
+
+        return $this->endAssignment($membership->organization, $membershipId, $counselor, $reason, byCounselor: true);
+    }
+
+    /** @return array{counselor: string, cancelled: int} */
+    private function endAssignment(Organization $org, int $membershipId, User $actor, string $reason, bool $byCounselor): array
+    {
         $notices = [];
         $cancelledIds = [];
         $closedRequestIds = [];
+        $admin = $actor;
 
-        $counselor = DB::transaction(function () use ($org, $membershipId, $admin, $reason, &$notices, &$cancelledIds, &$closedRequestIds) {
-            $membership = Membership::query()->where('org_id', $org->getKey())->where('role', MembershipRole::Counselor->value)->lockForUpdate()->find($membershipId)
+        $counselor = DB::transaction(function () use ($org, $membershipId, $admin, $reason, $byCounselor, &$notices, &$cancelledIds, &$closedRequestIds) {
+            $membership = Membership::query()->where('org_id', $org->getKey())->where('role', MembershipRole::Counselor->value)
+                ->when($byCounselor, fn ($q) => $q->where('user_id', $admin->getKey()))->lockForUpdate()->find($membershipId)
                 ?? throw new ModelNotFoundException;
 
             if ($membership->status !== MembershipStatus::Active) {
-                throw new RuntimeException('This counselor no longer works for your organization.');
+                throw new RuntimeException($byCounselor ? 'You no longer work for this organization.' : 'This counselor no longer works for your organization.');
             }
 
             $counselor = $membership->user()->firstOrFail();
@@ -159,7 +189,7 @@ class OrgCounselors
 
             foreach ($bookings as $booking) {
                 Booking::query()->whereKey($booking->getKey())->update([
-                    'status' => BookingStatus::Cancelled->value, 'cancelled_by' => 'system', 'cancelled_at' => now(),
+                    'status' => BookingStatus::Cancelled->value, 'cancelled_by' => $byCounselor ? 'counselor' : 'system', 'cancelled_at' => now(),
                     'cancel_reason' => 'The counselor no longer works with this organization.',
                 ]);
                 CalendarEntry::query()->whereKey($booking->calendar_entry_id)->update(['is_available' => true]);
@@ -183,13 +213,13 @@ class OrgCounselors
                 ->whereDoesntHave('bookings')->delete();
             CounselorWeeklyHour::query()->where('counselor_user_id', $counselor->getKey())->where('context_org_id', $org->getKey())->delete();
 
-            Audit::log('counselor.removed_from_org', $org, ['membership_id' => $membership->getKey(), 'counselor_id' => $profile?->getKey(), 'cancelled_booking_ids' => $cancelledIds, 'closed_request_ids' => $closedRequestIds], $admin);
+            Audit::log($byCounselor ? 'counselor.left_org' : 'counselor.removed_from_org', $org, ['membership_id' => $membership->getKey(), 'counselor_id' => $profile?->getKey(), 'cancelled_booking_ids' => $cancelledIds, 'closed_request_ids' => $closedRequestIds], $admin);
 
             return $counselor;
         });
 
         // Told after the change is saved; a failing e-mail never undoes it.
-        (function () use ($org, $counselor, $notices, $cancelledIds, $closedRequestIds, $reason) {
+        (function () use ($org, $counselor, $notices, $cancelledIds, $closedRequestIds, $reason, $byCounselor) {
             $center = app(NotificationCenter::class);
 
             // A request that can no longer be answered is closed as "expired" for the person, the same words as when nobody answered in time.
@@ -222,7 +252,16 @@ class OrgCounselors
                 $center->notify($booking->user, 'booking.cancelled', $booking, $counselor->name);
             }
 
-            $this->tell($counselor, new CounselorRemovedFromOrganization($org->name, count($cancelledIds), $reason));
+            if (! $byCounselor) {
+                $this->tell($counselor, new CounselorRemovedFromOrganization($org->name, count($cancelledIds), $reason));
+
+                return;
+            }
+
+            // The counselor left: the organization's admins are told (their own reason stays with the counselor and the membership).
+            foreach (Membership::query()->with('user')->where('org_id', $org->getKey())->where('role', MembershipRole::OrgAdmin->value)->where('status', MembershipStatus::Active->value)->get() as $admin) {
+                $this->tell($admin->user, new \App\Notifications\CounselorLeftOrganization($counselor->name, $org->name, count($cancelledIds)));
+            }
         })();
 
         return ['counselor' => $counselor->name, 'cancelled' => count($cancelledIds)];

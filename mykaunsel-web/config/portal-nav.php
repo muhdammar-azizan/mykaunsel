@@ -14,6 +14,7 @@ return [
         ['label' => 'Schedule', 'route' => 'counselor.planner', 'match' => 'counselor.planner*', 'icon' => 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2'],
         ['label' => 'Session notes', 'route' => 'counselor.notes', 'match' => 'counselor.notes*', 'icon' => 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8'],
         ['label' => 'Reviews', 'route' => 'counselor.reviews', 'match' => 'counselor.reviews*', 'icon' => 'm12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z'],
+        ['label' => 'Organizations', 'route' => 'counselor.organizations', 'match' => 'counselor.organizations*', 'icon' => 'M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M9 17h1M14 17h1'],
         ['label' => 'Profile', 'route' => 'counselor.profile', 'match' => 'counselor.profile*', 'icon' => 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 3.5-6 8-6s8 2 8 6'],
     ],
 

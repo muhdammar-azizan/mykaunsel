@@ -224,6 +224,8 @@ return [
         'counselor.invitation_revoked' => ['category' => 'members', 'badge' => 'deleted', 'label' => 'Counselor invitation cancelled'],
         'counselor.invitation_accepted' => ['category' => 'members', 'badge' => 'approved', 'label' => 'Counselor accepted an organization'],
         'counselor.invitation_declined' => ['category' => 'members', 'badge' => 'rejected', 'label' => 'Counselor declined an organization'],
+        // The counselor left an organization by themselves (counselor portal, Organizations). Ids only: never the reason they wrote, never a client.
+        'counselor.left_org' => ['category' => 'members', 'badge' => 'deleted', 'label' => 'Counselor left an organization'],
         'counselor.removed_from_org' => ['category' => 'members', 'badge' => 'suspended', 'label' => 'Counselor removed by an organization'],
         'organization.counselor_settings_updated' => ['category' => 'members', 'badge' => 'updated', 'label' => 'Organization changed who may be booked'],
         'subscription.renewal_requested' => ['category' => 'pricing', 'badge' => 'created', 'label' => 'Organization asked to renew its subscription'],
