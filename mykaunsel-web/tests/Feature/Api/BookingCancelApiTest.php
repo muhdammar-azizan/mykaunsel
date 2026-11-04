@@ -121,6 +121,20 @@ class BookingCancelApiTest extends TestCase
         $this->assertSame($other->id, Booking::where('status', 'confirmed')->sole()->user_id);
     }
 
+    public function test_the_counselor_also_gets_a_bell_notification_once_with_the_time_only(): void
+    {
+        Notification::fake();
+        $booking = $this->mine('2026-11-05 10:00');
+
+        $this->cancel($booking)->assertOk();
+        $this->cancel($booking)->assertOk();   // a repeat makes no second one
+
+        $row = \App\Models\UserNotification::where('recipient_user_id', $this->aina()->user_id)->sole();
+        $this->assertSame('session.cancelled_by_client', $row->type);
+        $this->assertSame('Thu, 5 Nov, 10:00 AM', $row->label);
+        $this->assertStringNotContainsString($this->me->name, json_encode($row->getAttributes()));
+    }
+
     public function test_the_counselor_is_told_by_e_mail_with_the_clients_name_only(): void
     {
         Notification::fake();

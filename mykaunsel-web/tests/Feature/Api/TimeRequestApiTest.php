@@ -299,6 +299,21 @@ class TimeRequestApiTest extends TestCase
         $this->postJson('/api/v1/requests/'.$id.'/withdraw')->assertStatus(409)->assertJson(['code' => 'request_not_pending']);
     }
 
+    public function test_the_counselor_also_gets_a_bell_notification_when_asked_and_when_it_is_taken_back(): void
+    {
+        Notification::fake();
+        $id = $this->ask()->assertCreated()->json('request.id');
+
+        $received = \App\Models\UserNotification::where('recipient_user_id', $this->aina->user_id)->where('type', 'request.received')->sole();
+        $this->assertSame('Thu, 5 Nov, 10:00 AM', $received->label);
+        $this->assertStringNotContainsString($this->me->name, json_encode($received->getAttributes()));
+
+        $this->postJson('/api/v1/requests/'.$id.'/withdraw')->assertOk();
+        $this->postJson('/api/v1/requests/'.$id.'/withdraw')->assertOk();   // a repeat makes no second one
+
+        $this->assertSame(1, \App\Models\UserNotification::where('recipient_user_id', $this->aina->user_id)->where('type', 'request.withdrawn')->count());
+    }
+
     public function test_withdrawing_takes_it_back_and_repeating_changes_nothing(): void
     {
         $id = $this->ask()->assertCreated()->json('request.id');

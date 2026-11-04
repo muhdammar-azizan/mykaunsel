@@ -71,9 +71,16 @@ class TimeRequestController extends Controller
     public function withdraw(Request $request, string $publicId, BookingRequests $requests): JsonResponse
     {
         try {
-            $requests->withdraw($request->user(), $publicId);
+            $withdrawn = $requests->withdraw($request->user(), $publicId);
         } catch (BookingRefused $refused) {
             return $refused->toResponse();
+        }
+
+        // The counselor's bell: a repeat of the same withdrawal makes no second notification (same request, same occurrence).
+        try {
+            app(\App\Services\NotificationCenter::class)->notify($withdrawn->counselor, 'request.withdrawn', $withdrawn, $requests->startOf($withdrawn)->format('D, j M, g:i A'));
+        } catch (Throwable $e) {
+            report($e);
         }
 
         return $this->private(response()->json(['request' => $requests->find($request->user(), $publicId)]));
@@ -93,6 +100,9 @@ class TimeRequestController extends Controller
                 'mode' => ($request->session_mode ?? \App\Enums\SessionMode::Online)->value,
                 'until' => $request->expires_at->setTimezone($availability->timezone())->format('l, j F, g:i A'),
             ]));
+
+            // The bell too: the date and time asked for only, no name and no note.
+            app(\App\Services\NotificationCenter::class)->notify($request->counselor, 'request.received', $request, $start->format('D, j M, g:i A'));
         } catch (Throwable $e) {
             report($e);
         }

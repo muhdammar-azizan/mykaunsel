@@ -30,5 +30,7 @@ return [
         'system' => 'System',
         // The mobile app's notifications (App\Support\Inbox\ClientNotificationTypes): never listed on the Platform Admin page.
         'activity' => 'Your activity',
+        // The counselor portal's bell (App\Support\Inbox\CounselorNotificationTypes): never listed on the Platform Admin page or in the mobile app.
+        'portal' => 'Your work',
     ],
 ];

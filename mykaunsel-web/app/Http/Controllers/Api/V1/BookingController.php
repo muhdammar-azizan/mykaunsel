@@ -106,6 +106,9 @@ class BookingController extends Controller
             ]));
 
             $booking->counselor->notify(new NewBookingCounselor($base + ['client' => $booking->user->name, 'mode' => $details['mode']]));
+
+            // The counselor's bell too: the date and time only, no name (best effort, never throws).
+            app(\App\Services\NotificationCenter::class)->notify($booking->counselor, 'session.booked', $booking, $start->format('D, j M, g:i A'));
         } catch (Throwable $e) {
             report($e);
         }

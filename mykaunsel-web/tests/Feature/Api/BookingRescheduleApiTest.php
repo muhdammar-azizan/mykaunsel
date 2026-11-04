@@ -159,6 +159,19 @@ class BookingRescheduleApiTest extends TestCase
         });
     }
 
+    public function test_the_counselor_also_gets_a_bell_notification_for_each_move_with_the_new_time_only(): void
+    {
+        Notification::fake();
+        $booking = $this->mine('2026-11-05 10:00');
+
+        $this->move($booking, $this->freeSlot('2026-11-06 14:00'))->assertOk();
+        $this->move($booking, $this->freeSlot('2026-11-09 11:00'))->assertOk();
+
+        $rows = \App\Models\UserNotification::where('recipient_user_id', $this->aina()->user_id)->where('type', 'session.rescheduled')->orderBy('id')->get();
+        $this->assertSame(['Fri, 6 Nov, 2:00 PM', 'Mon, 9 Nov, 11:00 AM'], $rows->pluck('label')->all());
+        $this->assertStringNotContainsString($this->me->name, json_encode($rows->map->getAttributes()->all()));
+    }
+
     public function test_a_failing_mail_never_undoes_the_move(): void
     {
         Notification::shouldReceive('send')->andThrow(new RuntimeException('mail down'));

@@ -285,7 +285,8 @@ class NotificationProducersTest extends CounselorTestCase
         app(CounselorStatusService::class)->suspend($this->profile('KB11935'), $this->admin, 'Repeated complaints about conduct.');
 
         $this->assertSame(0, $this->of('counselor.pa_expired_suspended')->count());
-        $this->assertSame(0, UserNotification::count());
+        // Nothing for any admin; the only notification is the counselor's own "your profile was suspended" (see CounselorNotificationsTest).
+        $this->assertSame(0, UserNotification::where('type', '!=', 'profile.suspended')->count());
     }
 
     // ---- system.maintenance_auto_reopened ---------------------------------------------------------------------------------------------------------------

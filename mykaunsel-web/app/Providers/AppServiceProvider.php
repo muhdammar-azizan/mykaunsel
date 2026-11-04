@@ -33,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
             $registry = new \App\Support\Inbox\NotificationRegistry;
             \App\Support\Inbox\CoreNotificationTypes::register($registry);
             \App\Support\Inbox\ClientNotificationTypes::register($registry);
+            \App\Support\Inbox\CounselorNotificationTypes::register($registry);
 
             return $registry;
         });

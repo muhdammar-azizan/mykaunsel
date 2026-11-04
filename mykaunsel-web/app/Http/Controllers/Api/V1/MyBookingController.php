@@ -119,6 +119,9 @@ class MyBookingController extends Controller
                 'minutes' => (int) $to->duration_minutes,
                 'mode' => $booking->session_mode->value,
             ]));
+
+            // The bell too, one per move (the count tells two moves of the same session apart): the new date and time only.
+            app(\App\Services\NotificationCenter::class)->notify($booking->counselor, 'session.rescheduled', $booking, $new->format('D, j M, g:i A'), (string) $booking->reschedule_count);
         } catch (Throwable $e) {
             report($e);
         }
@@ -138,6 +141,9 @@ class MyBookingController extends Controller
                 'minutes' => (int) $entry->duration_minutes,
                 'mode' => $booking->session_mode->value,
             ]));
+
+            // The bell too: the date and time only. A repeated cancel makes no second one (same booking, same occurrence).
+            app(\App\Services\NotificationCenter::class)->notify($booking->counselor, 'session.cancelled_by_client', $booking, $start->format('D, j M, g:i A'));
         } catch (Throwable $e) {
             report($e);
         }

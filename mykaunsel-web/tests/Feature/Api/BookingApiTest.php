@@ -172,6 +172,23 @@ class BookingApiTest extends TestCase
         $this->assertContains('2026-11-03 10:00', $this->startsOf($this->availability($aina), 'booked'));
     }
 
+    public function test_the_counselor_also_gets_a_bell_notification_with_the_time_only(): void
+    {
+        Notification::fake();
+        $aina = $this->aina();
+        $slot = $this->slot($aina, $this->platform, '2026-11-03 10:00');
+        $client = $this->client();
+
+        $this->confirm($slot)->assertCreated();
+
+        $row = \App\Models\UserNotification::where('recipient_user_id', $aina->user_id)->sole();
+        $this->assertSame('session.booked', $row->type);
+        $this->assertSame('Tue, 3 Nov, 10:00 AM', $row->label);
+        $this->assertSame(Booking::sole()->id, $row->target_id);
+        $this->assertStringNotContainsString($client->name, json_encode($row->getAttributes()));
+        $this->assertSame(0, \App\Models\UserNotification::where('recipient_user_id', $client->id)->count(), 'nothing for the client who did it');
+    }
+
     public function test_both_e_mails_are_queued_to_the_right_people_with_nothing_private(): void
     {
         Notification::fake();

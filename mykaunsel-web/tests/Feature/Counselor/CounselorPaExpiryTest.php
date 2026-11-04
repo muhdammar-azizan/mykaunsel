@@ -180,6 +180,24 @@ class CounselorPaExpiryTest extends CounselorTestCase
 
     // ---- reminders ---------------------------------------------------------------------------
 
+    public function test_each_reminder_also_goes_to_the_bell_once_with_the_days_left_only(): void
+    {
+        Notification::fake();
+        $profile = $this->setPa('KB10891', '2026-11-14'); // 20 days left on 25 Oct
+
+        $this->check();
+        $this->check();                                    // the same day again: no second one
+
+        $rows = \App\Models\UserNotification::where('recipient_user_id', $profile->user_id)->where('type', 'pa.expiring')->get();
+        $this->assertCount(1, $rows);
+        $this->assertSame('20 days left', $rows->first()->label);
+        $this->assertStringNotContainsString('KB10891', json_encode($rows->first()->getAttributes()));
+
+        Carbon::setTestNow(Carbon::parse('2026-11-07 00:10:00', config('counselors.directory.slot_timezone')));   // the 7-day step
+        $this->check();
+        $this->assertSame(2, \App\Models\UserNotification::where('recipient_user_id', $profile->user_id)->where('type', 'pa.expiring')->count());
+    }
+
     public function test_reminders_go_out_once_per_step(): void
     {
         Notification::fake();

@@ -100,6 +100,24 @@ class ExpireTimeRequestsTest extends TestCase
         $this->assertSame(BookingRequestStatus::Expired, $request->fresh()->status);
     }
 
+    public function test_the_counselor_also_gets_a_bell_notification_once_per_closed_request(): void
+    {
+        Notification::fake();
+        $aina = $this->counselor('Aina', [$this->platform]);
+        $a = User::factory()->create(['name' => 'Siti Client']);
+        $late = $this->request($a, $aina, now()->subMinute());
+        $this->request(User::factory()->create(), $aina, now()->addHour());   // still waiting: nothing
+
+        $this->artisan('requests:expire')->assertSuccessful();
+        $this->artisan('requests:expire')->assertSuccessful();
+
+        $rows = \App\Models\UserNotification::where('recipient_user_id', $aina->user_id)->where('type', 'request.lapsed')->get();
+        $this->assertCount(1, $rows);
+        $this->assertSame($late->id, $rows->first()->target_id);
+        $this->assertSame('Thu, 5 Nov, 10:00 AM', $rows->first()->label);
+        $this->assertStringNotContainsString('Siti', json_encode($rows->first()->getAttributes()));
+    }
+
     public function test_a_dry_run_changes_nothing_tells_nobody_and_records_nothing(): void
     {
         Notification::fake();

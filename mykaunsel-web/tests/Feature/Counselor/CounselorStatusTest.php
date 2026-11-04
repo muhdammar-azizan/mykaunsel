@@ -231,6 +231,22 @@ class CounselorStatusTest extends CounselorTestCase
         Notification::assertSentTimes(ClientSessionNotice::class, 2);
     }
 
+    public function test_the_counselor_also_gets_a_bell_notification_when_suspended_and_when_reactivated(): void
+    {
+        Notification::fake();
+        $profile = $this->profile('KB10891');
+
+        app(CounselorStatusService::class)->suspend($profile, $this->admin, 'A very private reason about conduct.');
+
+        $suspended = \App\Models\UserNotification::where('recipient_user_id', $profile->user_id)->where('type', 'profile.suspended')->sole();
+        $this->assertNull($suspended->label, 'no reason and nothing else in it');
+        $this->assertStringNotContainsString('private reason', json_encode($suspended->getAttributes()));
+
+        $this->reactivate('KB10891')->assertSessionHas('status');
+
+        $this->assertSame(1, \App\Models\UserNotification::where('recipient_user_id', $profile->user_id)->where('type', 'profile.reactivated')->count());
+    }
+
     public function test_sessions_on_the_page_and_in_the_log_never_name_a_client(): void
     {
         Notification::fake();

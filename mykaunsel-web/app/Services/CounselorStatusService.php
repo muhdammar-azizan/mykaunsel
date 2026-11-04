@@ -127,6 +127,9 @@ class CounselorStatusService
         DB::afterCommit(function () use ($profile, $reason, $cancelUpcoming, $clientNotices, $cancelledIds, $expiredIds) {
             $this->tell($profile->user, new CounselorSuspended($reason, $cancelUpcoming));
 
+            // The counselor's bell too: no reason in it (the reason is in the e-mail and on the status page). One per suspension.
+            app(NotificationCenter::class)->notify($profile->user, 'profile.suspended', $profile, null, (string) now()->getTimestamp());
+
             foreach ($this->organizationAdmins($profile) as [$orgAdmin, $organizationName]) {
                 $this->tell($orgAdmin, new CounselorSuspendedForOrganization($profile->user->name, $organizationName, $cancelUpcoming));
             }
@@ -194,7 +197,11 @@ class CounselorStatusService
             ], $admin);
         });
 
-        DB::afterCommit(fn () => $this->tell($profile->user, new CounselorReactivated));
+        DB::afterCommit(function () use ($profile) {
+            $this->tell($profile->user, new CounselorReactivated);
+
+            app(NotificationCenter::class)->notify($profile->user, 'profile.reactivated', $profile, null, (string) now()->getTimestamp());
+        });
     }
 
     /**

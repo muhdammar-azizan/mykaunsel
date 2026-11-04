@@ -24,6 +24,9 @@ use Illuminate\View\View;
  */
 class PlatformNotificationController extends Controller
 {
+    /** Type groups that belong to other audiences (the mobile app, the counselor portal): never offered as a filter here. */
+    protected const OTHER_AUDIENCE_GROUPS = [\App\Support\Inbox\ClientNotificationTypes::GROUP, \App\Support\Inbox\CounselorNotificationTypes::GROUP];
+
     public function __construct(private readonly NotificationCenter $center, private readonly NotificationRegistry $registry) {}
 
     /** The route-name prefix of this controller's pages: the portal subclass uses its own routes and nothing else. */
@@ -138,7 +141,7 @@ class PlatformNotificationController extends Controller
             'page' => $page,
             'tab' => $tab,
             'group' => $group,
-            'groups' => collect(config('notifications.groups'))->except(\App\Support\Inbox\ClientNotificationTypes::GROUP)->all(),
+            'groups' => collect(config('notifications.groups'))->except(self::OTHER_AUDIENCE_GROUPS)->all(),
             'counts' => ['all' => $base()->count(), 'unread' => $base()->unread()->count()],
             'empty' => ! $has ? 'none' : ($page->isEmpty() ? ($group === null && $tab === 'unread' ? 'no_unread' : 'no_match') : null),
             'unreadTotal' => $this->center->unreadCount($user),
@@ -156,7 +159,7 @@ class PlatformNotificationController extends Controller
     /** A known type group, or null (anything else typed into the address is ignored). */
     protected function group(mixed $value): ?string
     {
-        return is_string($value) && $value !== \App\Support\Inbox\ClientNotificationTypes::GROUP && array_key_exists($value, config('notifications.groups')) ? $value : null;
+        return is_string($value) && ! in_array($value, self::OTHER_AUDIENCE_GROUPS, true) && array_key_exists($value, config('notifications.groups')) ? $value : null;
     }
 
     /**

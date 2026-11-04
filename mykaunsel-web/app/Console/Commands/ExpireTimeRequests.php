@@ -34,6 +34,9 @@ class ExpireTimeRequests extends Command
 
                 app(\App\Services\NotificationCenter::class)->notify($request->user, 'request.expired', $request, $requests->present($request)['counselor']['display_name']);
 
+                // The counselor's bell: a request they did not answer closed. The date and time only; one per request, however often this runs.
+                app(\App\Services\NotificationCenter::class)->notify($request->counselor, 'request.lapsed', $request, $start->format('D, j M, g:i A'));
+
                 $request->user->notify(new TimeRequestAnsweredClient([
                     'outcome' => 'expired',
                     'counselor' => $requests->present($request)['counselor']['display_name'],

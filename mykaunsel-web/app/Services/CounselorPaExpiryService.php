@@ -194,6 +194,9 @@ class CounselorPaExpiryService
         // The email first: the profile and the audit entry say "sent" only if it really was (a failure is retried tomorrow).
         $profile->user->notify(new CounselorPaRenewalReminder($profile->pa_valid_until->copy(), false));
 
+        // The counselor's bell too: one per reminder step for this PA date (the label is how many days are left; never the PA or KB number).
+        app(NotificationCenter::class)->notify($profile->user, 'pa.expiring', $profile, $daysLeft.' '.($daysLeft === 1 ? 'day' : 'days').' left', $profile->pa_valid_until->toDateString().':'.$step);
+
         DB::transaction(function () use ($profile, $step, $daysLeft) {
             $profile->update(['pa_reminder_for' => $profile->pa_valid_until->toDateString(), 'pa_reminder_days' => $step]);
 
