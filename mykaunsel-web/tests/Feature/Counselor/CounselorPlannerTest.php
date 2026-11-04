@@ -53,16 +53,20 @@ class CounselorPlannerTest extends TestCase
 
     // ---- the page --------------------------------------------------------------------------------------------------
 
-    public function test_the_page_lists_the_counselors_own_times_with_booked_and_open(): void
+    public function test_the_page_has_the_calendar_and_the_calendar_gets_the_counselors_own_times_with_booked_and_open(): void
     {
         $this->slot($this->aina, $this->platform, '2026-11-05 10:00');
         $this->book($this->slot($this->aina, $this->platform, '2026-11-06 10:00'));
         $other = $this->counselor('Bakar', [$this->platform]);
         $this->slot($other, $this->platform, '2026-11-07 15:00');
 
-        $this->as()->get(route('counselor.planner'))->assertOk()
-            ->assertSee('Thursday, 5 November 2026')->assertSee('10:00 AM – 11:00 AM')->assertSee('Open')->assertSee('Booked')
-            ->assertDontSee('3:00 PM – 4:00 PM');
+        $this->as()->get(route('counselor.planner'))->assertOk()->assertSee('id="schedule-calendar"', false)->assertSee(route('counselor.schedule.events'), false);
+
+        $events = collect($this->as()->getJson(route('counselor.schedule.events', ['start' => '2026-11-02T00:00:00+08:00', 'end' => '2026-11-09T00:00:00+08:00']))->assertOk()->json());
+
+        $this->assertSame(['Open', 'Booked session'], $events->pluck('title')->all());
+        $this->assertSame(['2026-11-05T10:00:00+08:00', '2026-11-06T10:00:00+08:00'], $events->pluck('start')->all());
+        $this->assertStringNotContainsString('15:00', json_encode($events->all()), 'someone else\'s time is never in it');
     }
 
     public function test_only_counselors_may_use_it(): void

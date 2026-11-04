@@ -118,7 +118,7 @@
             <nav class="{{ $card }} p-6" aria-labelledby="links-title">
                 <h2 id="links-title" class="text-[20px] font-bold tracking-tight">Quick links</h2>
                 <ul class="mt-3 space-y-2 text-[14px] font-semibold">
-                    <li><a href="{{ route('counselor.week') }}" class="text-brand-blue hover:underline">Calendar: this week</a></li>
+                    <li><a href="{{ route('counselor.planner') }}" class="text-brand-blue hover:underline">Schedule and calendar</a></li>
                     <li><a href="{{ route('counselor.appointments') }}" class="text-brand-blue hover:underline">Bookings</a></li>
                     <li><a href="{{ route('counselor.requests') }}" class="text-brand-blue hover:underline">Time requests</a></li>
                     <li><a href="{{ route('counselor.organizations') }}" class="text-brand-blue hover:underline">Organizations</a></li>

@@ -216,8 +216,11 @@ class SubscriptionEnforcementTest extends TestCase
         $aina = $this->counselor('Aina', [$until]);
         $this->slot($aina, $until, '2026-11-20 10:00');
 
-        $this->actingAs($aina->user)->withSession(['current_org_id' => $until->id, 'current_role' => 'counselor'])
-            ->get(route('counselor.planner'))->assertOk()->assertSee('Hidden: plan ended');
+        $events = $this->actingAs($aina->user)->withSession(['current_org_id' => $until->id, 'current_role' => 'counselor'])
+            ->getJson(route('counselor.schedule.events', ['start' => '2026-11-16T00:00:00+08:00', 'end' => '2026-11-23T00:00:00+08:00']))->assertOk()->json();
+
+        $this->assertSame('Hidden: plan ended', $events[0]['extendedProps']['hiddenLabel']);
+        $this->assertSame('plan', $events[0]['extendedProps']['hidden']);
     }
 
     // ---- time requests ----------------------------------------------------------------------------------------------

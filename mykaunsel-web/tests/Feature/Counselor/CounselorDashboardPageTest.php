@@ -78,11 +78,11 @@ class CounselorDashboardPageTest extends TestCase
         $page->assertSeeInOrder(['Sessions today', '2']);
     }
 
-    public function test_the_dashboard_links_to_the_calendar_the_bookings_the_requests_and_the_organizations(): void
+    public function test_the_dashboard_links_to_the_schedule_the_bookings_the_requests_and_the_organizations(): void
     {
         $page = $this->as()->get(route('counselor.dashboard'))->assertOk()->assertSee('Quick links');
 
-        foreach (['counselor.week', 'counselor.appointments', 'counselor.requests', 'counselor.organizations'] as $route) {
+        foreach (['counselor.planner', 'counselor.appointments', 'counselor.requests', 'counselor.organizations'] as $route) {
             $page->assertSee(route($route), false);
         }
     }

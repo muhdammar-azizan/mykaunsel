@@ -17,18 +17,24 @@ use Illuminate\Validation\Rule;
  */
 class CounselorPlannerController extends Controller
 {
-    public function index(Request $request, CounselorPlanner $planner, CounselorWeeklyHours $hours, CounselorBlocks $blocks)
+    /**
+     * The Schedule page: the tools on the left (open a time, weekly hours, block a time) and the calendar on the right. The times and blocks
+     * themselves are not listed in HTML: the calendar asks for them (CounselorScheduleController::events).
+     */
+    public function index(Request $request, CounselorPlanner $planner, CounselorWeeklyHours $hours)
     {
         $counselor = $request->user();
+        $date = $request->query('date');
 
         return view('counselors.dashboard.planner', [
-            'times' => $planner->upcoming($counselor),
-            'blocks' => $blocks->upcoming($counselor),
             'lines' => $hours->lines($counselor),
             'maxWeeks' => CounselorWeeklyHours::MAX_WEEKS,
             'contexts' => $planner->contexts($counselor),
             'durations' => CounselorPlanner::durations(),
             'today' => now(config('counselors.directory.slot_timezone'))->format('Y-m-d'),
+            'timezone' => (string) config('counselors.directory.slot_timezone'),
+            // ?date=2026-11-09 opens the calendar on the week of that day; anything else opens this week.
+            'initialDate' => is_string($date) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) === 1 && strtotime($date) !== false ? $date : null,
         ]);
     }
 

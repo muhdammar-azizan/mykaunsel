@@ -73,8 +73,8 @@
             <p class="{{ $p }}">{{ __('Your buffer (set on your Profile: :options minutes) is kept free before and after every booked session and blocked time, in every organization, because you are one person.', ['options' => implode(', ', $n['buffers'])]) }}</p>
             <ul class="{{ $ul }}">
                 <li>{{ __('An open time that clashes with a block, or that is too close to a booked session, is left out for clients. They never see it, and they never see it as "booked".') }}</li>
-                <li>{{ __('You see these on your Schedule and Calendar with "Hidden from clients" and the reason: blocked time, or too close to a session.') }}</li>
-                <li>{{ __('The Calendar shows your week, Monday to Sunday: open times, blocks and booked sessions. A booked session links to its page; the client\'s name is not shown there.') }}</li>
+                <li>{{ __('You see these in the calendar on your Schedule page with "Hidden from clients" and the reason written on them: blocked time, or too close to a session.') }}</li>
+                <li>{{ __('The calendar shows your week (or one day), Monday to Sunday: open times, blocked times and booked sessions, with your weekly hours as a light background. Click an item to see its details and what you can do with it. A booked session links to its page; the client\'s name is not shown there.') }}</li>
             </ul>
         </section>
 

@@ -226,7 +226,8 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
 
     Route::prefix('counselor')->name('counselor.')->middleware(['role:counselor', 'counselor.standing'])->group(function () {
         Route::get('/dashboard', [CounselorDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/calendar', [\App\Http\Controllers\Counselor\CounselorWeekController::class, 'index'])->middleware('throttle:120,1')->name('week');
+        Route::get('/calendar', [\App\Http\Controllers\Counselor\CounselorScheduleController::class, 'week'])->name('week');
+        Route::get('/schedule/events', [\App\Http\Controllers\Counselor\CounselorScheduleController::class, 'events'])->middleware('throttle:120,1')->name('schedule.events');
         Route::get('/help', [\App\Http\Controllers\Counselor\CounselorHelpController::class, 'show'])->name('help');
         Route::get('/organizations', [\App\Http\Controllers\Counselor\CounselorOrganizationController::class, 'index'])->name('organizations');
         Route::post('/organizations/{id}/leave', [\App\Http\Controllers\Counselor\CounselorOrganizationController::class, 'leave'])->whereNumber('id')->middleware('throttle:10,1')->name('organizations.leave');

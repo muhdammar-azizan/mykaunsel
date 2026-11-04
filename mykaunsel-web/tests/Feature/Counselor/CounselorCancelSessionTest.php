@@ -179,8 +179,11 @@ class CounselorCancelSessionTest extends TestCase
 
         $this->assertTrue(\App\Models\AuditLog::where('action', 'booking.cancelled_by_counselor')->sole()->metadata['kept_closed']);
 
-        // The Schedule page tells the counselor why, and never says "Booked".
-        $this->as()->get(route('counselor.planner'))->assertOk()->assertSee('Hidden from clients: blocked time');
+        // The calendar tells the counselor why, and never says "Booked".
+        $events = collect($this->as()->getJson(route('counselor.schedule.events', ['start' => '2026-11-02T00:00:00+08:00', 'end' => '2026-11-09T00:00:00+08:00']))->assertOk()->json());
+        $open = $events->firstWhere('extendedProps.kind', 'open');
+        $this->assertSame('Hidden from clients: blocked time', $open['extendedProps']['hiddenLabel']);
+        $this->assertNull($events->firstWhere('extendedProps.kind', 'session'), 'the cancelled session is not shown as booked');
     }
 
     public function test_by_default_the_time_opens_again_and_no_block_is_made(): void

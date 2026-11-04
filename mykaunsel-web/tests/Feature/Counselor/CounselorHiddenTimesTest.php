@@ -70,7 +70,7 @@ class CounselorHiddenTimesTest extends TestCase
         $this->assertSame([$between->id => AvailabilityService::HIDDEN_BLOCK], app(AvailabilityService::class)->hiddenReasons(collect([$between])));
     }
 
-    public function test_the_schedule_page_shows_the_badge_with_a_reason_and_booked_times_stay_booked(): void
+    public function test_the_calendar_gets_the_reason_written_on_a_hidden_time_and_booked_times_stay_booked(): void
     {
         $this->block($this->aina, '2026-11-11 11:00');
         $this->slot($this->aina, $this->platform, '2026-11-11 10:00');
@@ -81,11 +81,13 @@ class CounselorHiddenTimesTest extends TestCase
 
         $this->slot($this->aina, $this->platform, '2026-11-13 10:00');
 
-        $page = $this->as()->get(route('counselor.planner'))->assertOk();
+        $events = collect($this->as()->getJson(route('counselor.schedule.events', ['start' => '2026-11-09T00:00:00+08:00', 'end' => '2026-11-16T00:00:00+08:00']))->assertOk()->json());
+        $labels = $events->pluck('extendedProps.hiddenLabel')->filter()->values()->all();
 
-        $page->assertSee('Hidden from clients: blocked time')->assertSee('Hidden from clients: too close to a session');
-        $this->assertSame(1, substr_count($page->getContent(), 'Hidden from clients: blocked time'));
-        $this->assertSame(1, substr_count($page->getContent(), 'Hidden from clients: too close to a session'), 'the booked time itself is "Booked", not hidden');
+        $this->assertSame(['Hidden from clients: blocked time', 'Hidden from clients: too close to a session'], $labels);
+        $this->assertSame(['sc-open', 'sc-hidden'], $events->firstWhere('extendedProps.hidden', 'block')['classNames']);
+        $this->assertSame(['sc-session'], $events->firstWhere('extendedProps.kind', 'session')['classNames'], 'the booked time itself is "Booked session", not hidden');
+        $this->assertNull($events->firstWhere('extendedProps.kind', 'session')['extendedProps']['hiddenLabel']);
     }
 
     public function test_a_client_never_sees_the_reason_or_the_hidden_time(): void

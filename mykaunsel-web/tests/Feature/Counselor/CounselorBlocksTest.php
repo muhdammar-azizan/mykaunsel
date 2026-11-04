@@ -106,7 +106,12 @@ class CounselorBlocksTest extends TestCase
         $this->as($bakar)->post(route('counselor.planner.blocks.store'), ['from' => '2026-11-10', 'all_day' => 1, 'title' => 'Bakars secret']);
         $this->as()->post(route('counselor.planner.blocks.store'), ['from' => '2026-11-11', 'all_day' => 1, 'title' => 'My leave']);
 
-        $this->as()->get(route('counselor.planner'))->assertOk()->assertSee('Blocked times')->assertSee('My leave')->assertDontSee('Bakars secret');
+        $this->as()->get(route('counselor.planner'))->assertOk()->assertSee('Block a time');
+
+        // The blocks themselves come to the calendar as events: mine, with my own note, and never anyone else's.
+        $events = $this->as()->getJson(route('counselor.schedule.events', ['start' => '2026-11-09T00:00:00+08:00', 'end' => '2026-11-16T00:00:00+08:00']))->assertOk()->json();
+        $this->assertSame(['My leave'], array_column($events, 'title'));
+        $this->assertStringNotContainsString('Bakars secret', json_encode($events));
 
         $theirs = $this->blocks($bakar)->sole();
         $this->as()->delete(route('counselor.planner.blocks.destroy', $theirs->public_id))->assertNotFound();
