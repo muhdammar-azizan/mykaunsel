@@ -212,4 +212,19 @@ class CounselorApplicationEmailsTest extends TestCase
         $this->assertStringContainsString('mailto:help@real-domain.test', $page);
         $this->assertStringNotContainsString('support@mykaunsel.com', $page);
     }
+
+    public function test_the_decision_and_status_e_mails_to_a_counselor_are_queued_and_sent_after_the_commit(): void
+    {
+        $notifications = [
+            new \App\Notifications\CounselorApproved,
+            new \App\Notifications\CounselorRejected('Please upload a clearer copy.', ['ID / passport']),
+            new \App\Notifications\CounselorSuspended('A reason.', false),
+            new \App\Notifications\CounselorReactivated,
+        ];
+
+        foreach ($notifications as $notification) {
+            $this->assertInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class, $notification, $notification::class);
+            $this->assertTrue($notification->afterCommit, $notification::class.' is sent only after the database commit');
+        }
+    }
 }

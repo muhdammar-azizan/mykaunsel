@@ -2,13 +2,24 @@
 
 namespace App\Notifications;
 
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/** Sent to the counselor when Platform Admin suspends them: why, and what happens to existing sessions. */
-class CounselorSuspended extends Notification
+/**
+ * Sent to the counselor when Platform Admin suspends them: why, and what happens to existing sessions.
+ *
+ * Queued and sent after the database commit: a queue worker must be running (`php artisan queue:work`).
+ */
+class CounselorSuspended extends Notification implements ShouldQueue
 {
-    public function __construct(private string $reason, private bool $upcomingCancelled) {}
+    use Queueable;
+
+    public function __construct(private string $reason, private bool $upcomingCancelled)
+    {
+        $this->afterCommit();
+    }
 
     public function via(object $notifiable): array
     {

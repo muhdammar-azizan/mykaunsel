@@ -62,6 +62,31 @@ class CounselorDashboardPageTest extends TestCase
         $page->assertSee('Sessions today')->assertSee('Waiting to be marked');
     }
 
+    public function test_a_session_that_ended_today_is_still_in_todays_list_in_time_order_and_says_it_needs_marking(): void
+    {
+        $this->mine('2026-11-02 15:00', client: 'Afternoon Client');
+        $this->mine('2026-11-02 07:00', client: 'Morning Client');                       // ended, still to be marked
+        $this->mine('2026-11-02 08:00', client: 'Completed Client', status: BookingStatus::Completed);   // already marked: not in the list
+
+        $page = $this->as()->get(route('counselor.dashboard'))->assertOk();
+
+        $page->assertSeeInOrder(['Morning Client', 'Ended: needs marking', 'Afternoon Client']);
+        $page->assertDontSee('Completed Client');
+        $this->assertSame(1, substr_count($page->getContent(), 'Ended: needs marking'));
+
+        // The number on the card is the same two sessions the Bookings page shows under Needs marking and Upcoming for today.
+        $page->assertSeeInOrder(['Sessions today', '2']);
+    }
+
+    public function test_the_dashboard_links_to_the_calendar_the_bookings_the_requests_and_the_organizations(): void
+    {
+        $page = $this->as()->get(route('counselor.dashboard'))->assertOk()->assertSee('Quick links');
+
+        foreach (['counselor.week', 'counselor.appointments', 'counselor.requests', 'counselor.organizations'] as $route) {
+            $page->assertSee(route($route), false);
+        }
+    }
+
     public function test_the_next_session_is_shown_when_nothing_is_today(): void
     {
         $this->mine('2026-11-05 10:00', client: 'Later Client');

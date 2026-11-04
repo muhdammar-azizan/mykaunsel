@@ -63,7 +63,9 @@
                                 <p class="text-[15px] font-semibold">{{ $row['client'] }}</p>
                                 <p class="text-[13px] text-brand-ink/65">{{ $row['time'] }} · {{ $row['minutes'] }} min · {{ $row['mode'] === 'online' ? 'Online' : 'In person'.($row['place'] ? ' · '.$row['place'] : '') }}</p>
                             </div>
-                            @if ($row['mode'] === 'online' && $row['meeting_url'])
+                            @if ($row['ended'])
+                                <a href="{{ route('counselor.appointments') }}" class="inline-flex rounded-full bg-brand-yellow/25 px-2.5 py-1 text-[12px] font-bold text-[#6B4C0C] hover:underline">Ended: needs marking</a>
+                            @elseif ($row['mode'] === 'online' && $row['meeting_url'])
                                 <a href="{{ $row['meeting_url'] }}" rel="noopener noreferrer" target="_blank" class="{{ $outline }}">Open meeting ({{ $row['meeting_provider'] }})</a>
                             @elseif ($row['mode'] === 'online')
                                 <a href="{{ route('counselor.appointments') }}" class="text-[13px] font-semibold text-brand-blue hover:underline">Add a meeting link</a>
@@ -112,6 +114,16 @@
                 @endif
                 <a href="{{ route('counselor.planner') }}" class="{{ $outline }} mt-4">Open schedule</a>
             </section>
+
+            <nav class="{{ $card }} p-6" aria-labelledby="links-title">
+                <h2 id="links-title" class="text-[20px] font-bold tracking-tight">Quick links</h2>
+                <ul class="mt-3 space-y-2 text-[14px] font-semibold">
+                    <li><a href="{{ route('counselor.week') }}" class="text-brand-blue hover:underline">Calendar: this week</a></li>
+                    <li><a href="{{ route('counselor.appointments') }}" class="text-brand-blue hover:underline">Bookings</a></li>
+                    <li><a href="{{ route('counselor.requests') }}" class="text-brand-blue hover:underline">Time requests</a></li>
+                    <li><a href="{{ route('counselor.organizations') }}" class="text-brand-blue hover:underline">Organizations</a></li>
+                </ul>
+            </nav>
         </div>
     </div>
 </x-portal-layout>

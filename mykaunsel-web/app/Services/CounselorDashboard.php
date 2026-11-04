@@ -35,10 +35,18 @@ class CounselorDashboard
         $upcoming = $open['upcoming'];
         $requests = $this->requests->pending($counselor);
 
+        // Today's sessions: the ones still to come AND the ones that already ended today and wait to be marked, in time order. The same sessions
+        // the Bookings page shows under "Needs marking" and "Upcoming", so the two never disagree.
+        $todayRows = array_merge(
+            array_map(fn (array $row) => $row + ['ended' => true], array_filter($open['to_mark'], fn (array $row) => $row['date'] === $today)),
+            array_map(fn (array $row) => $row + ['ended' => false], array_filter($upcoming, fn (array $row) => $row['date'] === $today)),
+        );
+        usort($todayRows, fn (array $a, array $b) => strcmp($a['starts'], $b['starts']));
+
         return [
             'name' => (string) $counselor->name,
             'today_label' => $now->format('l, j F Y'),
-            'today' => array_values(array_filter($upcoming, fn (array $row) => $row['date'] === $today)),
+            'today' => $todayRows,
             'next' => $upcoming[0] ?? null,
             'upcoming_count' => count($upcoming),
             'to_mark' => count($open['to_mark']),

@@ -300,6 +300,7 @@ class CounselorSessions
             'client' => (string) $booking->user?->name,
             'status' => $booking->status->value,
             'date' => $start->format('D, j M Y'),
+            'starts' => $start->format('H:i'),   // sortable, for ordering one day
             'time' => $start->format('g:i A').' – '.$start->addMinutes((int) $entry->duration_minutes)->format('g:i A'),
             'minutes' => (int) $entry->duration_minutes,
             'mode' => $mode->value,

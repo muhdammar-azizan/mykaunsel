@@ -2,12 +2,25 @@
 
 namespace App\Notifications;
 
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/** Sent to the counselor when Platform Admin approves their application. */
-class CounselorApproved extends Notification
+/**
+ * Sent to the counselor when Platform Admin approves their application.
+ *
+ * Queued and sent after the database commit: a queue worker must be running (`php artisan queue:work`).
+ */
+class CounselorApproved extends Notification implements ShouldQueue
 {
+    use Queueable;
+
+    public function __construct()
+    {
+        $this->afterCommit();
+    }
+
     public function via(object $notifiable): array
     {
         return ['mail'];

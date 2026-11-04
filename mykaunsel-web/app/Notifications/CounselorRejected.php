@@ -2,14 +2,25 @@
 
 namespace App\Notifications;
 
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/** Sent to the counselor when their application is rejected: the reason, and which documents to upload again. */
-class CounselorRejected extends Notification
+/**
+ * Sent to the counselor when their application is rejected: the reason, and which documents to upload again.
+ *
+ * Queued and sent after the database commit: a queue worker must be running (`php artisan queue:work`).
+ */
+class CounselorRejected extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     /** @param  list<string>  $documentsToReplace  labels, e.g. "ID / passport" */
-    public function __construct(private string $reason, private array $documentsToReplace = []) {}
+    public function __construct(private string $reason, private array $documentsToReplace = [])
+    {
+        $this->afterCommit();
+    }
 
     public function via(object $notifiable): array
     {
