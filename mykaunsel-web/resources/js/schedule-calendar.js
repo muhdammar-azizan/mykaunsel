@@ -87,8 +87,9 @@ if (element) {
         nowIndicator: true,
         allDaySlot: true,
         allDayText: 'All day',
-        slotMinTime: '06:00:00',
-        slotMaxTime: '23:00:00',
+        // The hours drawn are the same ones the time pickers offer (config/counselors.php, sent by the page).
+        slotMinTime: element.dataset.slotMin || '06:00:00',
+        slotMaxTime: element.dataset.slotMax || '23:00:00',
         scrollTime: '08:00:00',
         slotDuration: '00:30:00',
         slotLabelFormat: { hour: 'numeric', minute: '2-digit', hour12: true },

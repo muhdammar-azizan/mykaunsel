@@ -8,6 +8,10 @@
     $openWeekly = (bool) old('weekday');
     $openBlock = (bool) old('from') && ! $openWeekly;
     $openTime = ! $openWeekly && ! $openBlock;
+    // The day the calendar draws and the pickers offer (config/counselors.php). A start can be no later than the shortest time before the day ends.
+    $dayFrom = config('counselors.schedule.day_from', '06:00');
+    $dayTo = config('counselors.schedule.day_to', '23:00');
+    $lastStart = \Illuminate\Support\Carbon::createFromTimeString($dayTo)->subMinutes(min($durations))->format('H:i');
 @endphp
 
 <x-portal-layout title="Schedule">
@@ -85,7 +89,7 @@
                             </div>
                             <div>
                                 <label for="start" class="{{ $label }}">{{ __('Start time') }}</label>
-                                <input id="start" name="start" type="time" step="300" value="{{ old('start') }}" required class="{{ $field }}">
+                                <x-time-select id="start" name="start" :value="old('start')" :to="$lastStart" required class="{{ $field }}" />
                             </div>
                             <div>
                                 <label for="duration" class="{{ $label }}">{{ __('Length') }}</label>
@@ -185,11 +189,11 @@
                             </div>
                             <div>
                                 <label for="h-from" class="{{ $label }}">{{ __('From') }}</label>
-                                <input id="h-from" name="from" type="time" step="300" required class="{{ $field }}">
+                                <x-time-select id="h-from" name="from" :to="$lastStart" required class="{{ $field }}" />
                             </div>
                             <div>
                                 <label for="h-to" class="{{ $label }}">{{ __('Until') }}</label>
-                                <input id="h-to" name="to" type="time" step="300" required class="{{ $field }}">
+                                <x-time-select id="h-to" name="to" required class="{{ $field }}" />
                             </div>
                             <div>
                                 <label for="h-mode" class="{{ $label }}">{{ __('Type') }}</label>
@@ -238,11 +242,11 @@
                         </div>
                         <div x-show="!allDay" x-cloak>
                             <label for="b-start" class="{{ $label }}">{{ __('From') }}</label>
-                            <input id="b-start" name="start" type="time" step="300" value="{{ old('start') }}" :required="!allDay" :disabled="allDay" class="{{ $field }}">
+                            <x-time-select id="b-start" name="start" :value="old('start')" :to="$lastStart" x-bind:required="!allDay" x-bind:disabled="allDay" class="{{ $field }}" />
                         </div>
                         <div x-show="!allDay" x-cloak>
                             <label for="b-end" class="{{ $label }}">{{ __('Until') }}</label>
-                            <input id="b-end" name="end" type="time" step="300" value="{{ old('end') }}" :required="!allDay" :disabled="allDay" class="{{ $field }}">
+                            <x-time-select id="b-end" name="end" :value="old('end')" x-bind:required="!allDay" x-bind:disabled="allDay" class="{{ $field }}" />
                         </div>
                         <div class="sm:col-span-2 xl:col-span-1">
                             <label for="b-title" class="{{ $label }}">{{ __('Note for yourself (optional)') }}</label>
@@ -274,6 +278,7 @@
                 <div id="schedule-calendar" class="h-[70vh] min-h-[520px] xl:h-[calc(100vh-19rem)]"
                      data-events-url="{{ route('counselor.schedule.events') }}"
                      data-timezone="{{ $timezone }}"
+                     data-slot-min="{{ $dayFrom }}:00" data-slot-max="{{ $dayTo }}:00"
                      @if ($initialDate) data-initial-date="{{ $initialDate }}" @endif
                      data-error-text="{{ __('The calendar could not be loaded. Reload the page and try again.') }}"></div>
 

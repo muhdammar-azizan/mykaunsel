@@ -53,6 +53,13 @@ return [
         'states' => ['Johor', 'Kedah', 'Kelantan', 'Melaka', 'Negeri Sembilan', 'Pahang', 'Perak', 'Perlis', 'Pulau Pinang', 'Sabah', 'Sarawak', 'Selangor', 'Terengganu', 'W.P. Kuala Lumpur', 'W.P. Labuan', 'W.P. Putrajaya'],
     ],
 
+    // The Schedule: the hours of the day the calendar draws and the time pickers offer (every 5 minutes, both ends included). Times outside
+    // them can not be picked, so they could not be seen on the calendar either.
+    'schedule' => [
+        'day_from' => '06:00',
+        'day_to' => '23:00',
+    ],
+
     // Platform Admin "Send renewal reminder\": at most one email to the same counselor in this many hours.
     'renewal_reminder_cooldown_hours' => 24,
 ];

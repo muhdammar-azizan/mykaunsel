@@ -62,6 +62,51 @@ class CounselorScheduleEventsTest extends TestCase
         $this->assertStringContainsString('xl:grid-cols-[400px_minmax(0,1fr)]', $page->getContent());
     }
 
+    public function test_every_time_is_picked_from_a_list_of_the_times_that_can_be_used(): void
+    {
+        $page = $this->as()->get(route('counselor.planner'))->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('type="time"', $page, 'no free typing: nothing can be "not a valid value"');
+        foreach (['start', 'h-from', 'h-to', 'b-start', 'b-end'] as $id) {
+            $this->assertStringContainsString('<select id="'.$id.'"', $page, $id);
+        }
+
+        // Every five minutes, shown as 08:05 AM and sent as 08:05; the day is 06:00-23:00 and a start is no later than 22:30 (the shortest time is 30 minutes).
+        $this->assertStringContainsString('<option value="06:00">06:00 AM</option>', $page);
+        $this->assertStringContainsString('<option value="10:25">10:25 AM</option>', $page);
+        $this->assertStringContainsString('<option value="13:05">01:05 PM</option>', $page);
+        $this->assertStringContainsString('<option value="23:00">11:00 PM</option>', $page, 'an end can be 23:00');
+        $this->assertStringNotContainsString('value="10:28"', $page);
+        $this->assertStringNotContainsString('value="05:55"', $page);
+        $this->assertStringNotContainsString('value="23:05"', $page);
+
+        $this->assertSame(1, preg_match('/<select id="start".*?<\/select>/s', $page, $start));
+        $this->assertStringContainsString('value="22:30"', $start[0]);
+        $this->assertStringNotContainsString('value="22:35"', $start[0]);
+    }
+
+    public function test_a_refused_time_comes_back_chosen_not_lost(): void
+    {
+        // 10:28 can not be sent from the list, but a hand-made request can: the page keeps what was sent as the chosen option.
+        $page = $this->followingRedirects()->as()->from(route('counselor.planner'))->post(route('counselor.planner.store'), [
+            'context' => $this->platform->id, 'date' => '2026-11-10', 'start' => '10:28', 'duration' => 60, 'mode' => 'online',
+        ])->getContent();
+
+        $this->assertStringContainsString('<option value="10:28" selected>10:28 AM</option>', $page);
+    }
+
+    public function test_the_hours_of_the_day_come_from_the_configuration_for_the_pickers_and_the_calendar_alike(): void
+    {
+        config(['counselors.schedule.day_from' => '08:00', 'counselors.schedule.day_to' => '20:00']);
+
+        $page = $this->as()->get(route('counselor.planner'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-slot-min="08:00:00" data-slot-max="20:00:00"', $page);
+        $this->assertStringNotContainsString('<option value="07:55">', $page);
+        $this->assertStringContainsString('<option value="08:00">08:00 AM</option>', $page);
+        $this->assertStringNotContainsString('<option value="20:05">', $page);
+    }
+
     public function test_the_three_tools_share_one_name_so_only_one_is_open_at_a_time(): void
     {
         $page = $this->as()->get(route('counselor.planner'))->assertOk()->getContent();
