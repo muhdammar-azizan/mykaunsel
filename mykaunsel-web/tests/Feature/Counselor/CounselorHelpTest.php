@@ -60,6 +60,12 @@ class CounselorHelpTest extends TestCase
             ->assertSeeInOrder(['Opening times', 'Weekly hours', 'Blocked times', 'The buffer and hidden times', 'Bookings, the meeting link and marking a session', 'Cancelling a session', 'Time requests', 'Organizations', 'Your practising certificate (PA)', 'What clients see about you', 'Notifications and e-mails', 'Your account', 'Session notes', 'If you need help']);
     }
 
+    public function test_it_tells_an_independent_counselor_to_add_a_place_before_an_in_person_time(): void
+    {
+        $this->as()->get(route('counselor.help'))->assertOk()
+            ->assertSee('needs one of your own places')->assertSee('under')->assertSee('My places');
+    }
+
     public function test_every_number_in_it_comes_from_the_configuration_and_the_services_that_enforce_it(): void
     {
         config([

@@ -30,7 +30,14 @@ class PracticeLocation extends Model
             'latitude' => 'decimal:8',
             'longitude' => 'decimal:8',
             'is_primary' => 'boolean',
+            'archived_at' => 'datetime',
         ];
+    }
+
+    /** Places that can still be offered for new times (not archived by their owner). */
+    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->whereNull('archived_at');
     }
 
     public function locationPhotos(): HasMany

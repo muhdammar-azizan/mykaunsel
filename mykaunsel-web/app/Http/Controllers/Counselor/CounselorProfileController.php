@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Counselor;
 
 use App\Http\Controllers\Controller;
+use App\Services\CounselorPlaces;
 use App\Services\CounselorProfileSettings;
 use App\Services\CounselorSessions;
 use Illuminate\Http\RedirectResponse;
@@ -12,11 +13,20 @@ use Illuminate\Validation\Rule;
 /** The counselor's own Profile page: verification status (read only) and what they may change about how clients see and book them. */
 class CounselorProfileController extends Controller
 {
-    public function index(Request $request, CounselorProfileSettings $settings)
+    public function index(Request $request, CounselorProfileSettings $settings, CounselorPlaces $places)
     {
         abort_if($request->user()->counselorProfile === null, 404);
 
-        return view('counselors.dashboard.profile', ['p' => $settings->for($request->user())]);
+        $counselor = $request->user();
+
+        return view('counselors.dashboard.profile', [
+            'p' => $settings->for($counselor),
+            // "My places": only for someone with an independent practice.
+            'independent' => $places->hasIndependentPractice($counselor),
+            'places' => $places->list($counselor),
+            'maxPlaces' => CounselorPlaces::max(),
+            'states' => config('counselors.profile.states'),
+        ]);
     }
 
     public function update(Request $request, CounselorProfileSettings $settings): RedirectResponse

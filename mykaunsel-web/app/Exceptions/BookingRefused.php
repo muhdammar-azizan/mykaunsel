@@ -34,7 +34,7 @@ class BookingRefused extends RuntimeException
         'planner_in_past' => [422, 'That time has already passed.'],
         'planner_too_far' => [422, 'That is too far ahead to open yet.'],
         'planner_context_invalid' => [422, 'Choose where you work from the list.'],
-        'planner_place_invalid' => [422, 'An in-person time needs one of that organization\'s places.'],
+        'planner_place_invalid' => [422, 'An in-person time needs one of that organization\'s places, or one of your own places for your independent practice (add it on your Profile, under My places).'],
         'planner_overlap' => [409, 'That time overlaps something else on your calendar (including the buffer around booked sessions).'],
         'block_invalid' => [422, 'Choose the first day, the last day (the same or later, at most 60 days in all), and either "all day" or a start and end on 5-minute marks with the end after the start.'],
         'block_has_session' => [409, 'You have a booked session in that time. Cancel the session first, then block the time.'],

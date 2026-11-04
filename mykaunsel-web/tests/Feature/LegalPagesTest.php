@@ -74,6 +74,14 @@ class LegalPagesTest extends TestCase
         $this->get(route('privacy'))->assertOk()->assertSeeInOrder(['If you are a counselor', 'What we keep about counselors', 'Who can see counselor data', 'How long we keep counselor data', 'Your rights as a counselor', 'Deleting your account']);
     }
 
+    public function test_the_privacy_policy_says_what_is_kept_about_a_counselors_places(): void
+    {
+        $this->get(route('privacy'))
+            ->assertSee('The places you add for your independent practice')
+            ->assertSee('Clients see only the name and the city before they book')
+            ->assertSee('A place you remove: deleted if it was never used');
+    }
+
     public function test_every_number_in_the_counselor_text_comes_from_the_configuration(): void
     {
         config([

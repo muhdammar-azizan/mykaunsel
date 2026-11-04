@@ -57,6 +57,7 @@
         <li>{{ __('The result of comparing your details with the registration records we hold. These records are a copy that we keep; we do not have a live connection to a government system. Our team reviews every application.') }}</li>
         <li>{{ __('The history and notes of the review of your application.') }}</li>
         <li>{{ __('The times you open, your weekly hours, your blocked times (and the note you may add to one), and the requests and bookings you receive.') }}</li>
+        <li>{{ __('The places you add for your independent practice (a name, the full address, and directions if you write them). Clients see only the name and the city before they book; the full address goes only to a client who has booked a session there.') }}</li>
         <li>{{ __('Reviews and complaints about you.') }}</li>
         <li>{{ __('A photo, if you add one to your own account. It is never shown to clients.') }}</li>
         <li>{{ __('The choices you make on your profile: the names clients see, your languages and your specializations.') }}</li>
@@ -77,6 +78,7 @@
         <li>{{ __('The copy of your ID or passport: :days days after the final decision on your application.', ['days' => config('counselors.retention.ic_days')]) }}</li>
         <li>{{ __('Certificates of an application that was rejected: :days days after the rejection.', ['days' => config('counselors.retention.rejected_certificates_days')]) }}</li>
         <li>{{ __('Certificates of an approved counselor: while your account exists.') }}</li>
+        <li>{{ __('A place you remove: deleted if it was never used. If past sessions used it, it is hidden from you and from new times but kept for the history of those sessions.') }}</li>
         <li>{{ __('Session notes: :years years after the session, then they are erased.', ['years' => config('session-notes.retention_years')]) }}</li>
         <li>{{ __('The words of a complaint about you: :years years after it is closed. The record that it happened stays.', ['years' => config('complaints.retention.closed_years')]) }}</li>
         <li>{{ __('Notices inside the portal: :read days after you read them, :unread days if you never do.', ['read' => config('notifications.retention.read_days'), 'unread' => config('notifications.retention.unread_days')]) }}</li>

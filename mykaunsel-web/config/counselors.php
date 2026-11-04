@@ -48,6 +48,9 @@ return [
         'specializations' => ['Anxiety', 'Depression', 'Stress', 'Relationships', 'Family', 'Grief and loss', 'Trauma', 'Addiction', 'Career', 'Study and exams', 'Self-esteem', 'Sleep'],
         // Gap kept free between two sessions, in minutes.
         'buffer_minutes' => [0, 5, 10, 15, 30, 45, 60],
+        // "My places": where an independent counselor sees clients in person. At most this many active places each.
+        'max_places' => 5,
+        'states' => ['Johor', 'Kedah', 'Kelantan', 'Melaka', 'Negeri Sembilan', 'Pahang', 'Perak', 'Perlis', 'Pulau Pinang', 'Sabah', 'Sarawak', 'Selangor', 'Terengganu', 'W.P. Kuala Lumpur', 'W.P. Labuan', 'W.P. Putrajaya'],
     ],
 
     // Platform Admin "Send renewal reminder\": at most one email to the same counselor in this many hours.

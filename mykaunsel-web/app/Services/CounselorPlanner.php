@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Enums\CalendarEntryType;
 use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
+use App\Enums\OrgType;
 use App\Enums\SessionMode;
 use App\Exceptions\BookingRefused;
 use App\Facades\Audit;
@@ -49,15 +50,19 @@ class CounselorPlanner
     {
         $memberships = Membership::query()
             ->where('user_id', $counselor->getKey())->where('role', MembershipRole::Counselor->value)->where('status', MembershipStatus::Active->value)
-            ->with('organization:id,name')->get();
+            ->with('organization:id,name,org_type')->get();
 
         $orgIds = $memberships->pluck('org_id')->all();
-        $places = PracticeLocation::query()->where('owner_type', 'organization')->whereIn('owner_id', $orgIds)->orderBy('name')->get(['id', 'owner_id', 'name', 'city']);
+        $places = PracticeLocation::query()->active()->where('owner_type', 'organization')->whereIn('owner_id', $orgIds)->orderBy('name')->get(['id', 'owner_id', 'name', 'city']);
+
+        // The independent practice (the platform itself) has no organization places: it uses the counselor's own ("My places" on the Profile).
+        $own = PracticeLocation::query()->active()->where('owner_type', 'counselor')->where('owner_id', $counselor->getKey())->orderBy('name')->get(['id', 'owner_id', 'name', 'city']);
 
         return $memberships->filter(fn (Membership $m) => $m->organization !== null)->map(fn (Membership $m) => [
             'id' => (int) $m->org_id,
             'name' => (string) $m->organization->name,
-            'locations' => $places->where('owner_id', $m->org_id)->map(fn ($p) => ['id' => (int) $p->id, 'name' => (string) $p->name, 'city' => (string) $p->city])->values()->all(),
+            'locations' => ($m->organization->org_type === OrgType::Platform ? $own : $places->where('owner_id', $m->org_id))
+                ->map(fn ($p) => ['id' => (int) $p->id, 'name' => (string) $p->name, 'city' => (string) $p->city])->values()->all(),
         ])->values()->all();
     }
 

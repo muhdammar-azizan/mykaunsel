@@ -96,6 +96,10 @@ return [
         'request.approved' => ['category' => 'counselors', 'badge' => 'approved', 'label' => 'Counselor approved a time request'],
         'request.declined' => ['category' => 'counselors', 'badge' => 'rejected', 'label' => 'Counselor declined a time request'],
         'request.expired_batch' => ['category' => 'counselors', 'badge' => 'system', 'label' => 'Unanswered time requests closed'],
+        // "My places" of an independent counselor (Profile). Ids, and for a change the NAMES of the fields: never the address.
+        'counselor.place_added' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Counselor added a place of their own'],
+        'counselor.place_updated' => ['category' => 'counselors', 'badge' => 'updated', 'label' => 'Counselor changed a place of their own (which fields, not the values)'],
+        'counselor.place_removed' => ['category' => 'counselors', 'badge' => 'deleted', 'label' => 'Counselor removed a place of their own'],
         // A counselor cancelled one of their own sessions. The booking id and whether the time was kept closed only: never the client, never the reason.
         'booking.cancelled_by_counselor' => ['category' => 'counselors', 'badge' => 'deleted', 'label' => 'Counselor cancelled a session'],
         // The counselor's own calendar (Part 2). One entry per action; ids, dates, lengths and counts only: never a client, never the title of a block,
