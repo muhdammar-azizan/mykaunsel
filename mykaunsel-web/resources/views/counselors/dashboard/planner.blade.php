@@ -25,6 +25,9 @@
         #schedule-calendar .fc-timegrid-slot { height: 28px; }
         #schedule-calendar .fc-event { border-radius: 6px; cursor: pointer; overflow: hidden; }
         #schedule-calendar .fc-event:focus-visible { outline: 2px solid #0A4F88; outline-offset: 1px; }
+        /* A clicked item used to be covered by the library's dark layer (25% black). Only a very light one stays, and a clear outline says "this one". */
+        #schedule-calendar { --fc-event-selected-overlay-color: rgb(27 42 78 / .06); }
+        #schedule-calendar .fc-event-selected, #schedule-calendar .fc-event:focus { box-shadow: 0 0 0 2px #0A4F88; }
         /* The library paints the inside of every item white; the text colour is set per kind through ITS variable, so it always reads on the item's own background. */
         #schedule-calendar .fc-event-main, #schedule-calendar .fc-event-main * { color: var(--fc-event-text-color); }
         #schedule-calendar .sc-body { padding: 3px 6px; line-height: 1.3; }
