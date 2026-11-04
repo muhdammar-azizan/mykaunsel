@@ -119,6 +119,49 @@ class CounselorSignupTest extends TestCase
         $this->signUp()->assertSessionHasErrors(['lkm' => 'Your practicing certificate (PA) has expired.']);
     }
 
+    public function test_an_lkm_record_that_is_not_active_is_not_called_an_expired_certificate(): void
+    {
+        LkmDirectorySnapshot::where('kb_number', 'KB12345')->update(['status' => 'Digantung']);
+
+        $this->signUp(['name' => 'Someone Else'])->assertSessionHasErrors(['lkm' => LkmVerificationService::NOT_VERIFIED_MESSAGE]);
+        $this->signUp()->assertSessionHasErrors(['lkm' => LkmVerificationService::NOT_ACTIVE_MESSAGE]);
+
+        // An active record with a PA that ran out is the "expired" message, as before.
+        LkmDirectorySnapshot::where('kb_number', 'KB12345')->update(['status' => 'Aktif', 'pa_valid_until' => '2026-10-01']);
+        $this->signUp()->assertSessionHasErrors(['lkm' => 'Your practicing certificate (PA) has expired.']);
+    }
+
+    // ---- how names are matched --------------------------------------------------------------------------------
+
+    public function test_capitals_spacing_punctuation_and_accents_do_not_make_a_real_name_fail(): void
+    {
+        LkmDirectorySnapshot::where('kb_number', 'KB12345')->update(['full_name' => "Nur Sa'adah binti Mohd. Zaki"]);
+
+        foreach (['NUR SA\'ADAH BINTI MOHD. ZAKI', '  nur   saadah  binti  mohd zaki ', 'Nur Saadah binti Mohd, Zaki', 'Núr Sa’adah binti Mohd Zakí'] as $i => $typed) {
+            $this->assertNull(app(LkmVerificationService::class)->verificationFailureReason('KB12345', 'PA12345', $typed), "typed: {$typed}");
+        }
+    }
+
+    public function test_a_different_name_never_matches_however_close(): void
+    {
+        LkmDirectorySnapshot::where('kb_number', 'KB12345')->update(['full_name' => 'Aina binti Ali']);
+        $same = LkmVerificationService::NOT_VERIFIED_MESSAGE;
+
+        foreach (['Aina bt Ali', 'Aina b. Ali', 'Aina Ali', 'Aina binti', 'Ali binti Aina', 'Aina binti Ali Ahmad', 'Aini binti Ali', 'Zz'] as $typed) {
+            $this->signUp(['name' => $typed])->assertSessionHasErrors(['lkm' => $same]);
+        }
+
+        $this->assertSame(0, User::where('email', 'aminah@example.test')->count());
+    }
+
+    public function test_the_names_in_other_scripts_are_compared_as_they_are_not_turned_into_letters(): void
+    {
+        $this->assertSame('陈 伟明', LkmVerificationService::normalizeName(' 陈  伟明 '));
+        $this->assertNotSame(LkmVerificationService::normalizeName('陈伟明'), LkmVerificationService::normalizeName('沉伟明'));
+        $this->assertSame('a p', LkmVerificationService::normalizeName('A/P'));
+        $this->assertSame('', LkmVerificationService::normalizeName(' .,- '));
+    }
+
     public function test_sign_up_is_limited_per_address(): void
     {
         for ($i = 0; $i < 10; $i++) {

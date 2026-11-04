@@ -52,6 +52,8 @@ class LkmVerificationService
 
     public const ALREADY_REGISTERED_MESSAGE = 'This KB number is already registered on MyKaunsel.';
 
+    public const NOT_ACTIVE_MESSAGE = 'The LKM directory record for this KB number is not active, so we can not register you yet. Please check your registration with LKM, or contact support.';
+
     /**
      * Returns a human-readable reason the given details failed verification, or null if they would pass.
      *
@@ -71,7 +73,12 @@ class LkmVerificationService
             return self::ALREADY_REGISTERED_MESSAGE;
         }
 
-        if ($record->status !== self::ACTIVE_STATUS || ! $this->recordHasValidPa($record)) {
+        // Said apart: an LKM record that is not active (suspended or lapsed by LKM) is not an expired certificate.
+        if ($record->status !== self::ACTIVE_STATUS) {
+            return self::NOT_ACTIVE_MESSAGE;
+        }
+
+        if (! $this->recordHasValidPa($record)) {
             return 'Your practicing certificate (PA) has expired.';
         }
 
@@ -185,8 +192,32 @@ class LkmVerificationService
         return PaValidity::isValid($record->pa_valid_until);
     }
 
+    /**
+     * Two spellings of one name: capitals, spacing, punctuation and accents do not matter ("AINA  BINTI   ali" is "Aina binti Ali").
+     * A word is never expanded, cut or swapped: "Aina bt. Ali" is NOT "Aina binti Ali". See normalizeName().
+     */
     private function namesMatch(string $a, string $b): bool
     {
-        return Str::lower(trim($a)) === Str::lower(trim($b));
+        $left = self::normalizeName($a);
+
+        return $left !== '' && $left === self::normalizeName($b);
+    }
+
+    /**
+     * Lower case, accents removed (é becomes e: letters of any script stay as they are, nothing is transliterated), apostrophes dropped,
+     * every other mark (dot, comma, hyphen, slash) read as a space, spaces collapsed. "Sa'adah", "SAADAH" and "saadah" are one name;
+     * "a/p" and "A. P." are too. "bin", "binti", "bt" and "b." are different words and stay different.
+     */
+    public static function normalizeName(string $name): string
+    {
+        $name = mb_strtolower(trim($name));
+
+        if (class_exists(\Normalizer::class)) {
+            $name = (string) preg_replace('/\p{Mn}+/u', '', \Normalizer::normalize($name, \Normalizer::FORM_D) ?: $name);
+        }
+
+        $name = (string) preg_replace('/[\'’‘`]+/u', '', $name);
+
+        return trim((string) preg_replace('/[^\p{L}\p{N}]+/u', ' ', $name));
     }
 }
