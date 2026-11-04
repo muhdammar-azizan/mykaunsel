@@ -27,15 +27,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+        @if (config('portal.page_transition'))
         /* Moving between two portal pages: the browser keeps the sidebar, the header and the footer in place and only fades the page in between
            (a "cross-document view transition": Chrome and Edge; other browsers simply load the page as before). Both pages must opt in, so
-           this only ever happens from one portal page to another, never to or from the login or the public pages. */
+           this only ever happens from one portal page to another, never to or from the login or the public pages. OFF by default: config/portal.php. */
         @view-transition { navigation: auto; }
         ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 140ms; animation-timing-function: ease-out; }
         ::view-transition-group(portal-sidebar), ::view-transition-group(portal-header), ::view-transition-group(portal-footer) { animation-duration: 0s; }
         @media (prefers-reduced-motion: reduce) {
             ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
         }
+        @endif
 
         /* On paper the page is just the page: no header, sidebar or footer, and it may run over several sheets. */
         @media print {

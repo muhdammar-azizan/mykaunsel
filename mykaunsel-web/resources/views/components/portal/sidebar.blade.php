@@ -1,7 +1,7 @@
 @props(['items' => []])
 
 {{-- Large screens: a full height column with the logo at the top; the button at the bottom shrinks it to icons only (and back). Small screens: a drawer opened by the menu button. --}}
-<aside style="view-transition-name: portal-sidebar" class="fixed inset-y-0 left-0 z-50 flex w-[240px] -translate-x-full flex-col border-r border-[#EAEAEA] bg-[#FAFAFA] pb-3 shadow-2xl transition-[transform,width] duration-300 ease-in-out lg:static lg:z-30 lg:translate-x-0 lg:shadow-none"
+<aside @if (config('portal.page_transition')) style="view-transition-name: portal-sidebar" @endif class="fixed inset-y-0 left-0 z-50 flex w-[240px] -translate-x-full flex-col border-r border-[#EAEAEA] bg-[#FAFAFA] pb-3 shadow-2xl transition-[transform,width] duration-300 ease-in-out lg:static lg:z-30 lg:translate-x-0 lg:shadow-none"
        :class="[menuOpen ? 'translate-x-0' : '', collapsed ? 'lg:w-[68px]' : '']">
     {{-- Both logos stay in place and cross fade, so nothing jumps while the sidebar changes width. --}}
     <a href="{{ route('dashboard') }}" aria-label="MyKaunsel" class="relative flex h-[64px] shrink-0 items-center overflow-hidden border-b border-[#EAEAEA] px-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-blue">

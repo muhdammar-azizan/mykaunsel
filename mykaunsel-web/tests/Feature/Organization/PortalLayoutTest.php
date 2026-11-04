@@ -100,8 +100,22 @@ class PortalLayoutTest extends TestCase
         $this->actingAs($employee)->withSession($employeeSession)->get(route('portal.notifications'))->assertForbidden();
     }
 
-    public function test_every_portal_page_keeps_the_sidebar_header_and_footer_still_when_moving_to_another_page(): void
+    public function test_the_page_transition_is_off_by_default_so_the_menu_does_no_extra_work(): void
     {
+        $this->assertFalse(config('portal.page_transition'));
+
+        foreach ([[MembershipRole::Counselor, 'counselor.dashboard'], [MembershipRole::OrgAdmin, 'org.dashboard']] as [$role, $route]) {
+            [$user, $session] = $this->as($role, 'Someone '.$role->value);
+
+            $this->actingAs($user)->withSession($session)->get(route($route))->assertOk()
+                ->assertDontSee('@view-transition', false)->assertDontSee('view-transition-name', false);
+        }
+    }
+
+    public function test_switched_on_every_portal_page_keeps_the_sidebar_header_and_footer_still_when_moving_to_another_page(): void
+    {
+        config(['portal.page_transition' => true]);
+
         foreach ([[MembershipRole::Counselor, 'counselor.dashboard'], [MembershipRole::OrgAdmin, 'org.dashboard']] as [$role, $route]) {
             [$user, $session] = $this->as($role, 'Someone '.$role->value);
 
