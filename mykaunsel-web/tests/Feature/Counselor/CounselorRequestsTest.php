@@ -6,11 +6,14 @@ use App\Enums\BookingMode;
 use App\Enums\BookingRequestStatus;
 use App\Enums\BookingStatus;
 use App\Enums\CalendarEntryType;
+use App\Enums\OrgStatus;
+use App\Enums\VerificationStatus;
 use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\BookingRequest;
 use App\Models\CalendarEntry;
 use App\Models\CounselorProfile;
+use App\Models\CounselorWeeklyHour;
 use App\Models\Membership;
 use App\Models\User;
 use App\Notifications\TimeRequestAnsweredClient;
@@ -43,6 +46,14 @@ class CounselorRequestsTest extends TestCase
         $this->startClock();
         $this->aina = $this->counselor('Aina', [$this->platform]);
         $this->client = User::factory()->create(['name' => 'Siti Client']);
+
+        // Her weekly hours: every day 06:00-22:00 in one-hour times, online. Approving checks the time is still inside them.
+        foreach (range(1, 7) as $weekday) {
+            CounselorWeeklyHour::create([
+                'counselor_user_id' => $this->aina->user_id, 'context_org_id' => $this->platform->id, 'weekday' => $weekday,
+                'start_time' => '06:00:00', 'end_time' => '22:00:00', 'slot_minutes' => 60, 'session_mode' => 'online',
+            ]);
+        }
     }
 
     protected function tearDown(): void
@@ -235,6 +246,70 @@ class CounselorRequestsTest extends TestCase
 
         $this->assertSame(1, AuditLog::where('action', 'request.approved')->count());
         $this->assertSame(0, AuditLog::where('action', 'request.declined')->count());
+    }
+
+    // ---- the rules at the moment of approving ---------------------------------------------------------------------------
+
+    /** Approving must be refused, nothing booked, nothing written, and the request stays waiting. */
+    private function assertRefused(BookingRequest $request): void
+    {
+        $this->approve($request)->assertSessionHasErrors('session');
+
+        $this->assertSame(BookingRequestStatus::Pending, $request->fresh()->status);
+        $this->assertSame(0, Booking::count());
+        $this->assertSame(0, CalendarEntry::count());
+        $this->assertSame(0, AuditLog::where('action', 'request.approved')->count());
+    }
+
+    public function test_it_is_refused_when_the_organization_is_no_longer_active(): void
+    {
+        Notification::fake();
+        $request = $this->request();
+        $this->platform->update(['subscription_status' => OrgStatus::Suspended]);
+
+        $this->assertRefused($request);
+    }
+
+    public function test_it_is_refused_when_the_counselor_is_no_longer_approved(): void
+    {
+        Notification::fake();
+        $request = $this->request();
+        $this->aina->update(['verification_status' => VerificationStatus::Suspended]);
+
+        $this->assertRefused($request);
+    }
+
+    public function test_it_is_refused_beyond_the_booking_horizon(): void
+    {
+        Notification::fake();
+        $this->assertRefused($this->request(['requested_date' => '2026-12-20']));   // 48 days ahead; the horizon is 30
+    }
+
+    public function test_it_is_refused_when_the_weekly_hours_changed_or_were_removed(): void
+    {
+        Notification::fake();
+        $sameLength = $this->request();
+        $shortLines = $this->request(['requested_time' => '11:00:00']);
+
+        CounselorWeeklyHour::query()->where('weekday', 4)->update(['slot_minutes' => 30]);   // Thursday's pattern is now 30-minute times
+        $this->assertRefused($sameLength);
+
+        CounselorWeeklyHour::query()->delete();
+        $this->approve($shortLines)->assertSessionHasErrors('session');
+        $this->assertSame(BookingRequestStatus::Pending, $shortLines->fresh()->status);
+        $this->assertSame(0, Booking::count());
+    }
+
+    public function test_the_minimum_notice_is_not_applied_again_a_close_request_can_still_be_approved(): void
+    {
+        Notification::fake();
+        // 10:00 today is one hour ahead, closer than the two hours a client must give; the counselor may still say yes.
+        $close = $this->request(['requested_date' => '2026-11-02', 'requested_time' => '10:00:00', 'expires_at' => now()->addHour()]);
+
+        $this->approve($close)->assertSessionHasNoErrors();
+
+        $this->assertSame(BookingRequestStatus::Approved, $close->fresh()->status);
+        $this->assertSame(1, Booking::count());
     }
 
     public function test_approving_twice_is_harmless(): void

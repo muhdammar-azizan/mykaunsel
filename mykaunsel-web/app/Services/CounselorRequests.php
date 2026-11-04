@@ -8,6 +8,7 @@ use App\Enums\BookingMode;
 use App\Enums\BookingRequestStatus;
 use App\Enums\BookingStatus;
 use App\Enums\CalendarEntryType;
+use App\Enums\OrgStatus;
 use App\Enums\SessionMode;
 use App\Exceptions\BookingRefused;
 use App\Facades\Audit;
@@ -76,7 +77,7 @@ class CounselorRequests
         return DB::transaction(function () use ($counselor, $found) {
             // LOCK ORDER (the same as booking): the client, the counselor's profile, then the request.
             User::query()->whereKey($found->user_id)->lockForUpdate()->first();
-            CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
+            $profile = CounselorProfile::query()->where('user_id', $counselor->getKey())->lockForUpdate()->first();
             $request = BookingRequest::query()->whereKey($found->getKey())->lockForUpdate()->firstOrFail();
 
             if ($request->status === BookingRequestStatus::Approved) {
@@ -91,8 +92,17 @@ class CounselorRequests
             $start = $this->requests->startOf($request);
             $minutes = (int) $request->duration_minutes;
 
+            $organization = Organization::query()->find($request->context_org_id);
+
+            // The rules of Part 2 that still matter at the moment of approving. The minimum notice is NOT applied again: a counselor may say yes
+            // to a request that has become close. Everything else must still hold: the counselor is still approved and listed, the organization
+            // is active and its plan covers the day, the day is inside the booking horizon and the time is still inside the weekly hours.
             $stillFits = $start->gt($this->availability->now())
-                && Subscription::allows(Organization::query()->find($request->context_org_id), $start->format('Y-m-d'))
+                && $start->startOfDay()->lte($this->availability->lastDate())
+                && $profile !== null && $profile->isListable()
+                && $organization?->subscription_status === OrgStatus::Active
+                && Subscription::allows($organization, $start->format('Y-m-d'))
+                && $this->requests->stillInWorkingHours($request)
                 && collect($this->planner->contexts($counselor))->contains('id', (int) $request->context_org_id)
                 && $this->availability->isFree((int) $counselor->getKey(), $start, $minutes)
                 && $this->bookings->limitsRefusalAt($client, $start, $minutes) === null;

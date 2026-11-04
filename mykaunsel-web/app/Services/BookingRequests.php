@@ -315,6 +315,17 @@ class BookingRequests
             ?? throw new BookingRefused('request_not_found');
     }
 
+    /**
+     * Is the requested time still inside a weekly-hours line of the same organization and the same length? (The counselor may have changed or
+     * removed the line since the request was made. Used when the counselor approves.)
+     */
+    public function stillInWorkingHours(BookingRequest $request): bool
+    {
+        $line = $this->lineFor((int) $request->counselor_user_id, [(int) $request->context_org_id], $this->startOf($request));
+
+        return $line !== null && (int) $line->slot_minutes === (int) $request->duration_minutes;
+    }
+
     /** The weekly-hours line the time falls in (the whole length inside its window), among the contexts this person may see. */
     private function lineFor(int $counselorUserId, array $orgIds, CarbonImmutable $start): ?CounselorWeeklyHour
     {
