@@ -68,7 +68,7 @@ class CounselorDashboard
         return null;
     }
 
-    /** @return list<array{tone: string, text: string}> */
+    /** @return list<array{tone: string, text: string, url?: string, label?: string}> */
     private function notices(User $counselor, CarbonImmutable $now): array
     {
         $profile = $counselor->counselorProfile;
@@ -79,7 +79,14 @@ class CounselorDashboard
         }
 
         if ($profile->verification_status !== VerificationStatus::Approved) {
-            $notices[] = ['tone' => 'red', 'text' => 'Your profile is '.$profile->verification_status->value.', so people can not book you.'];
+            $notice = ['tone' => 'red', 'text' => 'Your profile is '.$profile->verification_status->value.', so people can not book you.'];
+
+            // Someone who applied on the web has a page for their application (the reason, and what to do next).
+            if ($profile->isIndependent()) {
+                $notice += ['url' => route('counselors.signup.waiting-approval'), 'label' => 'See the details'];
+            }
+
+            $notices[] = $notice;
         }
 
         $left = PaValidity::daysLeft($profile->pa_valid_until, $now);

@@ -89,7 +89,7 @@
     <div id="d3Modal" hidden class="fixed inset-0 z-50 grid place-items-center bg-navy/40 p-6" style="opacity:0">
         <div id="d3ModalCard" class="w-full max-w-[380px] rounded-2xl bg-cream p-6" style="transform:scale(.95)">
             <h2 class="text-[19px] font-semibold tracking-tightest">{{ __('Save your progress?') }}</h2>
-            <p class="mt-2.5 text-[13.5px] leading-relaxed text-navy/60">{{ __('Your uploaded documents will be saved. You can come back to finish this step anytime from your dashboard.') }}</p>
+            <p class="mt-2.5 text-[13.5px] leading-relaxed text-navy/60">{{ __('Your uploaded documents will be saved. You can come back to finish this step anytime: sign in and you will land on your application status.') }}</p>
             <div class="mt-6 flex gap-3">
                 <button type="button" id="d3ModalContinue" class="flex-1 rounded-full border border-navy/25 px-5 py-2.5 text-[13.5px] font-medium text-navy transition-all duration-200 hover:-translate-y-0.5 hover:border-navy hover:bg-navy/5">{{ __('Continue uploading') }}</button>
                 <button type="submit" form="d3Form" id="d3ModalSave" class="flex-1 rounded-full px-5 py-2.5 text-[13.5px] font-medium text-white transition-all duration-200 hover:-translate-y-0.5" style="background:#4A7DFF">{{ __('Save for later') }}</button>

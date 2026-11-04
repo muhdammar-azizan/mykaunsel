@@ -45,6 +45,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RequireRole::class,
             'org.status' => \App\Http\Middleware\CheckOrgStatus::class,
             'legacy.account' => \App\Http\Middleware\LegacyAccountGuard::class,
+            'counselor.standing' => \App\Http\Middleware\EnsureCounselorStanding::class,
+            'counselor.can-open-times' => \App\Http\Middleware\EnsureCounselorCanOpenTimes::class,
             'api.verified' => \App\Http\Middleware\ApiEnsureEmailVerified::class,
         ]);
     })

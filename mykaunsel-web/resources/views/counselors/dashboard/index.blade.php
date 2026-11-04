@@ -32,7 +32,7 @@
     @foreach ($notices as $notice)
         <div class="mt-4 flex items-start gap-3 rounded-xl px-5 py-4 text-[14px] font-semibold {{ $notice['tone'] === 'red' ? 'bg-brand-red/[.07] text-brand-red' : 'bg-[#FDF4E3] text-[#6B4C0C]' }}" role="status">
             <svg class="mt-0.5 shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-            <span>{{ $notice['text'] }}</span>
+            <span>{{ $notice['text'] }}@isset($notice['url']) <a href="{{ $notice['url'] }}" class="ml-1 underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red">{{ $notice['label'] }}</a>@endisset</span>
         </div>
     @endforeach
 

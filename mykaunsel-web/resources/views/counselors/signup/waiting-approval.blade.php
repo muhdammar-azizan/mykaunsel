@@ -105,7 +105,7 @@
                             setTimeout(function () { window.location.href = @json(route('dashboard')); }, 2200);
                         });
                     </script>
-                @else
+                @elseif ($status->value === 'rejected')
                     <div id="d4Rejected" class="wa-lapis w-full">
                         <span class="mx-auto grid h-16 w-16 place-items-center rounded-full" style="background:rgba(196,87,74,.10);color:#C4574A">
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
@@ -126,6 +126,31 @@
                             @csrf
                             <button type="submit" class="inline-flex items-center gap-1.5 text-[13px] text-navy/50"><span aria-hidden="true">←</span> {{ __('Back to log in') }}</button>
                         </form>
+                    </div>
+                @else
+                    {{-- Suspended: the portal is open, but people can not find or book this counselor --}}
+                    <div id="d4Suspended" class="wa-lapis w-full">
+                        <span class="mx-auto grid h-16 w-16 place-items-center rounded-full" style="background:rgba(196,87,74,.10);color:#C4574A">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg>
+                        </span>
+                        <h1 class="mt-6 text-[28px] font-semibold leading-[1.15] tracking-tightest">{{ __('Your profile is suspended') }}</h1>
+                        <p class="mx-auto mt-3 max-w-[38ch] text-[14.5px] leading-relaxed text-navy/60">{{ __('People can not find or book you at the moment, and you can not open new times. Sessions that are already booked are looked after on your dashboard.') }}</p>
+
+                        @if (filled($profile->suspension_reason))
+                            <div class="mt-6 rounded-xl p-4 text-left" style="background:rgba(196,87,74,.06);border-left:3px solid #C4574A">
+                                <p class="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style="color:#C4574A">{{ __('Reason from our team') }}</p>
+                                <p class="mt-2 text-[13.5px] leading-relaxed text-navy">{{ $profile->suspension_reason }}</p>
+                            </div>
+                        @endif
+
+                        @if ($profile->suspension_source === 'system')
+                            <p class="mt-4 text-left text-[13px] leading-relaxed text-navy/60">{{ __('Renew your practising certificate (PA) with LKM. Once the LKM record shows the new date, MyKaunsel can list you again.') }}</p>
+                        @endif
+
+                        <div class="mt-6 flex gap-3">
+                            <a href="mailto:support@mykaunsel.com" class="grid h-[44px] flex-1 place-items-center rounded-full border border-navy/20 text-[13.5px] font-medium text-navy transition hover:bg-navy/5">{{ __('Contact support') }}</a>
+                            <a href="{{ route('counselor.dashboard') }}" class="btn-utama grid h-[44px] flex-1 place-items-center rounded-full text-[13.5px] font-medium text-white" style="background:#4A7DFF">{{ __('Go to my dashboard') }}</a>
+                        </div>
                     </div>
                 @endif
 
