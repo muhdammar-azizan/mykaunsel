@@ -226,6 +226,7 @@ Route::middleware(['auth', 'verified', 'org.context', 'membership.active', 'org.
 
     Route::prefix('counselor')->name('counselor.')->middleware(['role:counselor', 'counselor.standing'])->group(function () {
         Route::get('/dashboard', [CounselorDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/calendar', [\App\Http\Controllers\Counselor\CounselorWeekController::class, 'index'])->middleware('throttle:120,1')->name('week');
         Route::get('/planner', [CounselorPlannerController::class, 'index'])->name('planner');
         Route::post('/planner', [CounselorPlannerController::class, 'store'])->middleware(['counselor.can-open-times', 'throttle:60,1'])->name('planner.store');
         Route::delete('/planner/{publicId}', [CounselorPlannerController::class, 'destroy'])->where('publicId', '[0-9A-Za-z]{26}')->middleware('throttle:60,1')->name('planner.destroy');

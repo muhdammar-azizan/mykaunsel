@@ -81,7 +81,7 @@ For **approved** counselors, independent or organization. Platform admins only.
 
 ## Daily PA check (`php artisan counselors:check-pa-expiry [--dry-run]`)
 
-Scheduled daily at **00:10 in the application timezone** (needs the scheduler / cron). That is right after the last valid second of the "valid until" day (see `PaValidity`), so a PA valid until 22 Oct is suspended on the run of 23 Oct. Everything is in `CounselorPaExpiryService`. Safe to run twice or late; one counselor failing never stops the others (the command exits with an error and tries them again next run).
+Scheduled daily at **00:10 Malaysian time** (`Asia/Kuala_Lumpur`, from `counselors.directory.slot_timezone`, not the server's zone; needs the scheduler / cron). That is right after the last valid second of the "valid until" day (see `PaValidity`), so a PA valid until 22 Oct is suspended on the run of 23 Oct. Everything is in `CounselorPaExpiryService`. Safe to run twice or late; one counselor failing never stops the others (the command exits with an error and tries them again next run).
 
 1. **Expired PA → suspended by "system"** (approved counselors only; pending, rejected and already-suspended are never touched). First the LKM directory is checked: if LKM already shows a newer date for that KB number (record exists and is Aktif) the profile is simply updated (audit `counselor.lkm_rechecked`, actor System) and **not** suspended. Otherwise: status → suspended, source `system`, `suspended_by` empty, audit `counselor.pa_expired_suspended` (actor System), same rules as a manual suspension — they leave search, **pending requests are closed and the clients told**, the counselor and the admins of their organization are emailed.
 2. **Booked sessions are kept** (not cancelled automatically). *Open question: say if expired-PA suspensions should cancel upcoming sessions.*
@@ -89,7 +89,7 @@ Scheduled daily at **00:10 in the application timezone** (needs the scheduler / 
 4. **Automatic reminders** at 30, 7 and 1 days before the PA runs out (`config/counselors.php` → `pa_reminder_days`), to approved counselors, **once per step per PA date**: the step is remembered on the profile (`pa_reminder_for`, `pa_reminder_days`). If the check runs late only the current step is sent; a renewed PA date starts again. The email is sent first; the profile and the audit entry (`counselor.renewal_reminder_sent`, actor System) are written only if it really went (a failure is retried next day).
 5. `--dry-run` lists who would be suspended / updated from LKM / reminded and changes nothing.
 
-**Timezone note:** `config/app.php` has `timezone => UTC`, and `PaValidity` uses it, so "valid until 22 Oct" ends at 23 Oct 00:00 UTC = 08:00 in Malaysia. Set the application timezone to `Asia/Kuala_Lumpur` if the PA should end at Malaysian midnight (the schedule time follows it automatically).
+**Timezone note:** `config/app.php` keeps `timezone => UTC` for database timestamps, but a PA date is a **Malaysian** day: `PaValidity` (and the status scopes, the suspension's "upcoming sessions" cut-off and the scheduler) use `Asia/Kuala_Lumpur`, so "valid until 22 Oct" ends at 22 Oct 23:59:59 Malaysian time, whatever the server's zone.
 
 ## Counselors of an organization (built 2 November 2026)
 
