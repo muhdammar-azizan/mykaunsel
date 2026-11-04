@@ -225,6 +225,34 @@ class OrgCounselorsTest extends TestCase
         $this->assertSame(1, $this->audit('counselor.removed_from_org')->count());
     }
 
+    public function test_removing_a_counselor_closes_the_waiting_requests_of_this_organization_only_and_tells_those_clients(): void
+    {
+        Notification::fake();
+        $beta = $this->org('Beta', AccessModel::Closed, OrgType::Corporate);
+        $aina = $this->counselor('Aina', [$this->acme, $beta]);
+        $membership = Membership::where('user_id', $aina->user_id)->where('org_id', $this->acme->id)->sole();
+        $asking = User::factory()->create();
+        $elsewhere = User::factory()->create();
+
+        $make = fn (User $who, $org) => \App\Models\BookingRequest::create([
+            'user_id' => $who->id, 'counselor_user_id' => $aina->user_id, 'context_org_id' => $org->id, 'requested_date' => '2026-11-05',
+            'requested_time' => '10:00:00', 'duration_minutes' => 60, 'session_mode' => 'online', 'status' => \App\Enums\BookingRequestStatus::Pending,
+            'expires_at' => now()->addHours(40),
+        ]);
+        $here = $make($asking, $this->acme);
+        $there = $make($elsewhere, $beta);
+
+        $this->hr()->post(route('org.counselors.remove', $membership->id), ['reason' => 'The contract ended'])->assertSessionHas('status');
+
+        $this->assertSame(\App\Enums\BookingRequestStatus::Expired, $here->fresh()->status);
+        $this->assertSame(\App\Enums\BookingRequestStatus::Pending, $there->fresh()->status);
+
+        Notification::assertSentTo($asking, \App\Notifications\TimeRequestAnsweredClient::class, fn ($n) => ! str_contains(json_encode($n->toMail($asking)->toArray()), 'The contract ended'));
+        Notification::assertNotSentTo($elsewhere, \App\Notifications\TimeRequestAnsweredClient::class);
+        $this->assertSame(1, UserNotification::query()->ownedBy($asking)->where('type', 'request.expired')->count());
+        $this->assertSame([$here->id], $this->audit('counselor.removed_from_org')->first()->metadata['closed_request_ids']);
+    }
+
     public function test_removing_a_counselor_needs_a_written_reason(): void
     {
         Notification::fake();

@@ -6,6 +6,7 @@ use App\Enums\BookingMode;
 use App\Enums\BookingRequestStatus;
 use App\Enums\BookingStatus;
 use App\Enums\CalendarEntryType;
+use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\BookingRequest;
 use App\Models\CalendarEntry;
@@ -198,6 +199,42 @@ class CounselorRequestsTest extends TestCase
         $this->assertSame('Aina', $rows[0]->label, "the counselor's name only: no time, no reason");
         $this->assertStringNotContainsString('Not that day', json_encode($rows->toArray()));
         $this->assertSame(0, \App\Models\UserNotification::query()->where('recipient_user_id', $this->aina->user_id)->count(), 'the counselor is not told here');
+    }
+
+    public function test_approving_and_declining_are_audited_with_ids_only(): void
+    {
+        Notification::fake();
+        $approved = $this->request();
+        $declined = $this->request(['requested_time' => '14:00:00', 'message' => 'A private worry']);
+
+        $this->approve($approved)->assertSessionHasNoErrors();
+        $this->decline($declined, 'Sorry, I am full that week.')->assertSessionHasNoErrors();
+
+        $yes = AuditLog::where('action', 'request.approved')->sole();
+        $this->assertSame($approved->id, $yes->metadata['request_id']);
+        $this->assertSame(Booking::sole()->id, $yes->metadata['booking_id']);
+        $this->assertSame($this->aina->user_id, $yes->actor_user_id);
+
+        $no = AuditLog::where('action', 'request.declined')->sole();
+        $this->assertSame($declined->id, $no->metadata['request_id']);
+        $this->assertTrue($no->metadata['has_reason']);
+
+        $everything = json_encode([$yes->getAttributes(), $no->getAttributes()]);
+        foreach (['Siti', 'private worry', 'I am full'] as $secret) {
+            $this->assertStringNotContainsString($secret, $everything);
+        }
+    }
+
+    public function test_a_repeat_or_a_refused_answer_writes_no_second_entry(): void
+    {
+        Notification::fake();
+        $request = $this->request();
+        $this->approve($request);
+        $this->approve($request);
+        $this->decline($request)->assertSessionHasErrors();
+
+        $this->assertSame(1, AuditLog::where('action', 'request.approved')->count());
+        $this->assertSame(0, AuditLog::where('action', 'request.declined')->count());
     }
 
     public function test_approving_twice_is_harmless(): void

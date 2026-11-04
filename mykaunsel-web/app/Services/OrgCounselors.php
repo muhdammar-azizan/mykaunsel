@@ -135,8 +135,9 @@ class OrgCounselors
     {
         $notices = [];
         $cancelledIds = [];
+        $closedRequestIds = [];
 
-        $counselor = DB::transaction(function () use ($org, $membershipId, $admin, $reason, &$notices, &$cancelledIds) {
+        $counselor = DB::transaction(function () use ($org, $membershipId, $admin, $reason, &$notices, &$cancelledIds, &$closedRequestIds) {
             $membership = Membership::query()->where('org_id', $org->getKey())->where('role', MembershipRole::Counselor->value)->lockForUpdate()->find($membershipId)
                 ?? throw new ModelNotFoundException;
 
@@ -169,8 +170,12 @@ class OrgCounselors
             }
 
             // Requests nobody answered yet for this organization can not be answered any more.
-            BookingRequest::query()->where('counselor_user_id', $counselor->getKey())->where('context_org_id', $org->getKey())
-                ->where('status', BookingRequestStatus::Pending->value)->update(['status' => BookingRequestStatus::Expired]);
+            // The people who asked are told after the commit (below), like the clients of a cancelled session.
+            $closedRequestIds = BookingRequest::query()->where('counselor_user_id', $counselor->getKey())->where('context_org_id', $org->getKey())
+                ->where('status', BookingRequestStatus::Pending->value)->lockForUpdate()->pluck('id')->all();
+
+            BookingRequest::query()->whereIn('id', $closedRequestIds)->where('status', BookingRequestStatus::Pending->value)
+                ->update(['status' => BookingRequestStatus::Expired, 'responded_at' => now()]);
 
             // Times opened for this organization and never booked, and the weekly lines that would open more.
             CalendarEntry::query()->where('counselor_user_id', $counselor->getKey())->where('context_org_id', $org->getKey())
@@ -178,14 +183,36 @@ class OrgCounselors
                 ->whereDoesntHave('bookings')->delete();
             CounselorWeeklyHour::query()->where('counselor_user_id', $counselor->getKey())->where('context_org_id', $org->getKey())->delete();
 
-            Audit::log('counselor.removed_from_org', $org, ['membership_id' => $membership->getKey(), 'counselor_id' => $profile?->getKey(), 'cancelled_booking_ids' => $cancelledIds], $admin);
+            Audit::log('counselor.removed_from_org', $org, ['membership_id' => $membership->getKey(), 'counselor_id' => $profile?->getKey(), 'cancelled_booking_ids' => $cancelledIds, 'closed_request_ids' => $closedRequestIds], $admin);
 
             return $counselor;
         });
 
         // Told after the change is saved; a failing e-mail never undoes it.
-        (function () use ($org, $counselor, $notices, $cancelledIds, $reason) {
+        (function () use ($org, $counselor, $notices, $cancelledIds, $closedRequestIds, $reason) {
             $center = app(NotificationCenter::class);
+
+            // A request that can no longer be answered is closed as "expired" for the person, the same words as when nobody answered in time.
+            $asked = app(BookingRequests::class);
+
+            foreach (BookingRequest::query()->with('user')->whereIn('id', $closedRequestIds)->get() as $request) {
+                try {
+                    $start = $asked->startOf($request);
+                    $center->notify($request->user, 'request.expired', $request, $counselor->name);
+                    $this->tell($request->user, new \App\Notifications\TimeRequestAnsweredClient([
+                        'outcome' => 'expired',
+                        'counselor' => $counselor->name,
+                        'date' => $start->format('l, j F Y'),
+                        'time' => $start->format('g:i A').' – '.$start->addMinutes((int) $request->duration_minutes)->format('g:i A'),
+                        'minutes' => (int) $request->duration_minutes,
+                        'mode' => ($request->session_mode ?? \App\Enums\SessionMode::Online)->value,
+                        'reason' => null,
+                    ]));
+                } catch (Throwable $e) {
+                    report($e);
+                }
+            }
+
 
             foreach ($notices as [$userId, $when]) {
                 $this->tell(User::find($userId), new ClientSessionNotice($counselor->name, $when, 'session'));

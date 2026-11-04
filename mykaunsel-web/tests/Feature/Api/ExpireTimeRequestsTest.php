@@ -100,6 +100,39 @@ class ExpireTimeRequestsTest extends TestCase
         $this->assertSame(BookingRequestStatus::Expired, $request->fresh()->status);
     }
 
+    public function test_a_dry_run_changes_nothing_tells_nobody_and_records_nothing(): void
+    {
+        Notification::fake();
+        $aina = $this->counselor('Aina', [$this->platform]);
+        $a = User::factory()->create();
+        $late = $this->request($a, $aina, now()->subMinute());
+
+        $this->artisan('requests:expire --dry-run')->expectsOutput('1 request(s) would be closed. Nothing was changed.')->assertSuccessful();
+
+        $this->assertSame(BookingRequestStatus::Pending, $late->fresh()->status);
+        Notification::assertNothingSent();
+        $this->assertSame(0, \App\Models\AuditLog::where('action', 'request.expired_batch')->count());
+    }
+
+    public function test_a_run_that_closes_requests_writes_one_system_entry_with_the_count_only(): void
+    {
+        Notification::fake();
+        $aina = $this->counselor('Aina', [$this->platform]);
+        $this->request(User::factory()->create(['name' => 'Siti Client']), $aina, now()->subMinute());
+        $this->request(User::factory()->create(), $aina, now()->subHour());
+
+        $this->artisan('requests:expire')->assertSuccessful();
+
+        $entry = \App\Models\AuditLog::where('action', 'request.expired_batch')->sole();
+        $this->assertSame(2, $entry->metadata['closed']);
+        $this->assertNull($entry->actor_user_id);
+        $this->assertStringNotContainsString('Siti', json_encode($entry->getAttributes()));
+
+        // A run that closes nothing writes nothing.
+        $this->artisan('requests:expire')->assertSuccessful();
+        $this->assertSame(1, \App\Models\AuditLog::where('action', 'request.expired_batch')->count());
+    }
+
     public function test_it_is_scheduled(): void
     {
         $commands = collect(app(Schedule::class)->events())->pluck('command')->implode("\n");

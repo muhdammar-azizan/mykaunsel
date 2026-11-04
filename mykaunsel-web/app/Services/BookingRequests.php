@@ -6,6 +6,7 @@ use App\Support\Subscription;
 use App\Enums\BookingRequestStatus;
 use App\Enums\SessionMode;
 use App\Exceptions\BookingRefused;
+use App\Facades\Audit;
 use App\Models\BookingRequest;
 use App\Models\CounselorProfile;
 use App\Models\CounselorWeeklyHour;
@@ -266,26 +267,42 @@ class BookingRequests
     // =============================================================================================================
 
     /**
-     * Closes every request nobody answered in time. Safe to run again and again.
+     * Closes every request nobody answered in time. Safe to run again and again. With $dryRun nothing is changed or recorded: it only returns the
+     * requests that WOULD be closed.
+     *
+     * The closing and ONE system audit entry (the count only, never a request or a person) are one transaction. A request being answered at the
+     * same moment wins or loses cleanly: each is closed by a conditional update on "still pending".
      *
      * @return list<BookingRequest> the ones closed now (so the people can be told)
      */
-    public function expireDue(): array
+    public function expireDue(bool $dryRun = false): array
     {
         $closed = [];
         $now = $this->availability->now();
 
-        BookingRequest::query()->where('status', BookingRequestStatus::Pending->value)->where('expires_at', '<=', $this->stored($now))->orderBy('id')
-            ->chunkById(200, function ($requests) use (&$closed, $now) {
-                foreach ($requests as $request) {
-                    $changed = BookingRequest::query()->whereKey($request->getKey())->where('status', BookingRequestStatus::Pending->value)
-                        ->update(['status' => BookingRequestStatus::Expired->value, 'responded_at' => $this->stored($now)]);
+        DB::transaction(function () use (&$closed, $now, $dryRun) {
+            BookingRequest::query()->where('status', BookingRequestStatus::Pending->value)->where('expires_at', '<=', $this->stored($now))->orderBy('id')
+                ->chunkById(200, function ($requests) use (&$closed, $now, $dryRun) {
+                    foreach ($requests as $request) {
+                        if ($dryRun) {
+                            $closed[] = $request;
 
-                    if ($changed === 1) {
-                        $closed[] = $request->fresh();
+                            continue;
+                        }
+
+                        $changed = BookingRequest::query()->whereKey($request->getKey())->where('status', BookingRequestStatus::Pending->value)
+                            ->update(['status' => BookingRequestStatus::Expired->value, 'responded_at' => $this->stored($now)]);
+
+                        if ($changed === 1) {
+                            $closed[] = $request->fresh();
+                        }
                     }
-                }
-            });
+                });
+
+            if (! $dryRun && $closed !== []) {
+                Audit::log('request.expired_batch', null, ['closed' => count($closed)], 'system');
+            }
+        });
 
         return $closed;
     }

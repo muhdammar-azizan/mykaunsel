@@ -92,6 +92,10 @@ return [
         // The start of a web application (account made, then the application counted as submitted once all three documents are in). Ids and counts only.
         'counselor.signed_up' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Counselor signed up (application started)'],
         'counselor.application_submitted' => ['category' => 'counselors', 'badge' => 'created', 'label' => 'Counselor application submitted'],
+        // Time requests (Mode B). Ids only: never the client's name or note, never the reason a counselor gave. The expiry job writes ONE entry per run (a count).
+        'request.approved' => ['category' => 'counselors', 'badge' => 'approved', 'label' => 'Counselor approved a time request'],
+        'request.declined' => ['category' => 'counselors', 'badge' => 'rejected', 'label' => 'Counselor declined a time request'],
+        'request.expired_batch' => ['category' => 'counselors', 'badge' => 'system', 'label' => 'Unanswered time requests closed'],
         // A counselor cancelled one of their own sessions. The booking id and whether the time was kept closed only: never the client, never the reason.
         'booking.cancelled_by_counselor' => ['category' => 'counselors', 'badge' => 'deleted', 'label' => 'Counselor cancelled a session'],
         // The counselor's own calendar (Part 2). One entry per action; ids, dates, lengths and counts only: never a client, never the title of a block,

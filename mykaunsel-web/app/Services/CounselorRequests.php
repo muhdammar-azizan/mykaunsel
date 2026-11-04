@@ -10,6 +10,7 @@ use App\Enums\BookingStatus;
 use App\Enums\CalendarEntryType;
 use App\Enums\SessionMode;
 use App\Exceptions\BookingRefused;
+use App\Facades\Audit;
 use App\Models\Booking;
 use App\Models\BookingRequest;
 use App\Models\CalendarEntry;
@@ -128,6 +129,9 @@ class CounselorRequests
 
             $request->update(['status' => BookingRequestStatus::Approved, 'responded_at' => $this->requests->stored($this->availability->now()), 'booking_id' => $booking->id]);
 
+            // Same transaction as the booking. Ids only: never the client, never their note.
+            Audit::log('request.approved', $request, ['request_id' => $request->getKey(), 'booking_id' => $booking->getKey(), 'context_org_id' => $request->context_org_id], $counselor);
+
             return ['request' => $request->fresh(), 'booking' => $booking, 'changed' => true];
         });
     }
@@ -156,6 +160,9 @@ class CounselorRequests
             }
 
             $request->update(['status' => BookingRequestStatus::Rejected, 'response_reason' => $reason === '' ? null : $reason, 'responded_at' => $this->requests->stored($this->availability->now())]);
+
+            // Whether a reason was given, never the reason itself (the client sees it; the audit log does not keep it).
+            Audit::log('request.declined', $request, ['request_id' => $request->getKey(), 'has_reason' => $reason !== '', 'context_org_id' => $request->context_org_id], $counselor);
 
             return ['request' => $request->fresh(), 'changed' => true];
         });

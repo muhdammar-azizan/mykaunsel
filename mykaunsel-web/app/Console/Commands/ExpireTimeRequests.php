@@ -14,12 +14,18 @@ use Throwable;
  */
 class ExpireTimeRequests extends Command
 {
-    protected $signature = 'requests:expire';
+    protected $signature = 'requests:expire {--dry-run : Only count what would be closed; change and send nothing}';
 
     protected $description = 'Close time requests that nobody answered in time, and tell the people who asked';
 
     public function handle(BookingRequests $requests, AvailabilityService $availability): int
     {
+        if ($this->option('dry-run')) {
+            $this->info(count($requests->expireDue(dryRun: true)).' request(s) would be closed. Nothing was changed.');
+
+            return self::SUCCESS;
+        }
+
         $closed = $requests->expireDue();
 
         foreach ($closed as $request) {
