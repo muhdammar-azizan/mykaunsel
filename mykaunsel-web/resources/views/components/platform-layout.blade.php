@@ -17,7 +17,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#05294A] bg-[radial-gradient(circle_at_0%_0%,#3A92D0_0%,rgba(20,105,176,.6)_14%,rgba(10,79,136,0)_38%)] fixed inset-0 flex flex-col overflow-hidden font-sans text-brand-ink antialiased" x-data="{ menuOpen: false, searchOpen: false }">
+<body class="bg-[#05294A] bg-[radial-gradient(ellipse_58%_110%_at_0%_0%,#3A92D0_0%,rgba(20,105,176,.6)_35%,rgba(10,79,136,0)_100%)] fixed inset-0 flex flex-col overflow-hidden font-sans text-brand-ink antialiased" x-data="{ menuOpen: false, searchOpen: false }">
 
     <x-platform.topbar />
 
