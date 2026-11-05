@@ -1,7 +1,9 @@
 @props(['title' => 'Platform Admin'])
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+{{-- The page's own background colour: it stops the body's background (with its gradient) from being handed to the window, where it would be laid
+     out against an empty <html> (the body is fixed to the window) and the gradient would vanish. The body now paints its own. --}}
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="bg-[#05294A]">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">

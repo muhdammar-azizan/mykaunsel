@@ -114,6 +114,10 @@ class PortalLayoutTest extends TestCase
         $platform = file_get_contents(resource_path('views/components/platform-layout.blade.php'));
         $this->assertSame(1, substr_count($platform, 'fixed inset-0 flex flex-col overflow-hidden'), 'the page shell');
         $this->assertSame(1, substr_count($platform, 'overflow-hidden overflow-clip'), 'the panel around the sidebar and the content');
+
+        // The shell is fixed, so <html> is empty: it needs its own colour, or the body's background (and its gradient behind the logo) would be
+        // handed to the window and drawn against that empty box, and the gradient would disappear.
+        $this->assertStringContainsString('class="bg-[#05294A]"', substr($platform, (int) strpos($platform, '<html'), 120));
     }
 
     public function test_the_page_transition_is_off_by_default_so_the_menu_does_no_extra_work(): void
