@@ -100,6 +100,22 @@ class PortalLayoutTest extends TestCase
         $this->actingAs($employee)->withSession($employeeSession)->get(route('portal.notifications'))->assertForbidden();
     }
 
+    public function test_a_jump_to_a_part_of_the_page_never_pushes_the_header_out_of_view(): void
+    {
+        // A redirect to "page#part" scrolls whatever CAN scroll around that part, the page itself included: the header went out of sight and the
+        // footer rose. Two things stop it. The page shell is FIXED to the window (a fixed box adds nothing to the page's scrollable area, so
+        // there is nothing for the page to scroll; "overflow" on the body does not help, it is handed to the window, which "clip" turns back into
+        // "hidden"), and the panel around the sidebar and the content uses overflow:clip (never scrollable; "hidden" stays first as the fallback).
+        [$user, $session] = $this->as(MembershipRole::Counselor, 'Dr Aisyah');
+        $page = $this->actingAs($user)->withSession($session)->get(route('counselor.dashboard'))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/<body class="fixed inset-0 flex flex-col overflow-hidden/', $page);
+        $this->assertStringNotContainsString('<body class="flex h-screen', $page);
+
+        $platform = file_get_contents(resource_path('views/components/platform-layout.blade.php'));
+        $this->assertSame(1, substr_count($platform, 'fixed inset-0 flex flex-col overflow-hidden'), 'the page shell');
+        $this->assertSame(1, substr_count($platform, 'overflow-hidden overflow-clip'), 'the panel around the sidebar and the content');
+    }
+
     public function test_the_page_transition_is_off_by_default_so_the_menu_does_no_extra_work(): void
     {
         $this->assertFalse(config('portal.page_transition'));

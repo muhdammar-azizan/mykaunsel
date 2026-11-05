@@ -41,14 +41,14 @@
 
         /* On paper the page is just the page: no header, sidebar or footer, and it may run over several sheets. */
         @media print {
-            body { height: auto !important; overflow: visible !important; display: block !important; }
+            body { position: static !important; height: auto !important; overflow: visible !important; display: block !important; }
             header, footer, aside, body > a.sr-only { display: none !important; }
             body > div { display: block !important; }
             main { overflow: visible !important; padding: 0 !important; }
         }
     </style>
 </head>
-<body class="flex h-screen flex-col overflow-hidden bg-white font-geist text-brand-ink antialiased" x-data="{ menuOpen: false, collapsed: (() => { try { return localStorage.getItem('portal.collapsed') === '1'; } catch (e) { return false; } })(),
+<body class="fixed inset-0 flex flex-col overflow-hidden bg-white font-geist text-brand-ink antialiased" x-data="{ menuOpen: false, collapsed: (() => { try { return localStorage.getItem('portal.collapsed') === '1'; } catch (e) { return false; } })(),
                        toggle() { this.collapsed = ! this.collapsed; try { localStorage.setItem('portal.collapsed', this.collapsed ? '1' : '0'); } catch (e) {} } }" @keydown.escape.window="menuOpen = false">
     <a href="#portal-main" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-[14px] focus:font-semibold">Skip to the page</a>
 

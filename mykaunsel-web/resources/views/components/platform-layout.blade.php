@@ -15,7 +15,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#05294A] bg-[radial-gradient(circle_at_0%_0%,#3A92D0_0%,rgba(20,105,176,.6)_14%,rgba(10,79,136,0)_38%)] flex h-screen flex-col overflow-hidden font-sans text-brand-ink antialiased" x-data="{ menuOpen: false, searchOpen: false }">
+<body class="bg-[#05294A] bg-[radial-gradient(circle_at_0%_0%,#3A92D0_0%,rgba(20,105,176,.6)_14%,rgba(10,79,136,0)_38%)] fixed inset-0 flex flex-col overflow-hidden font-sans text-brand-ink antialiased" x-data="{ menuOpen: false, searchOpen: false }">
 
     <x-platform.topbar />
 
@@ -30,7 +30,7 @@
     @endif
 
     {{-- One joined light panel: sidebar + content share the same surface and the same rounded outer corners. --}}
-    <div class="mx-2.5 mb-2.5 flex min-h-0 flex-1 overflow-hidden rounded-[28px] bg-[#F5F5F6]">
+    <div class="mx-2.5 mb-2.5 flex min-h-0 flex-1 overflow-hidden overflow-clip rounded-[28px] bg-[#F5F5F6]">
         <x-platform.sidebar />
 
         <main class="min-w-0 flex-1 overflow-y-auto scroll-subtle px-5 pb-12 pt-8 md:px-10">
